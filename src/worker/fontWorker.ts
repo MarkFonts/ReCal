@@ -180,12 +180,10 @@ def _measure_words():
             return {}
         subs = {}
         for rec in fv.FeatureVariationRecord:
-            met = all(
-                getattr(c, 'FilterRangeMinValue', -2) <= geom_norm <= getattr(c, 'FilterRangeMaxValue', 2)
-                for c in rec.ConditionSet.ConditionTable
-                if getattr(c, 'AxisIndex', None) == gi
-            )
-            if not met:
+            geom_conds = [c for c in rec.ConditionSet.ConditionTable if getattr(c, 'AxisIndex', None) == gi]
+            if not geom_conds:
+                continue
+            if not all(c.FilterRangeMinValue <= geom_norm <= c.FilterRangeMaxValue for c in geom_conds):
                 continue
             for sr in rec.FeatureTableSubstitution.SubstitutionRecord:
                 for li in sr.Feature.LookupListIndex:

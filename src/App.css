@@ -54,6 +54,11 @@ body {
 
 header {
   margin-bottom: 40px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
 .preset-buttons {
@@ -172,9 +177,26 @@ h2 {
 }
 
 @media (max-width: 700px) {
+  .app {
+    padding: 24px 16px;
+  }
+  header {
+    gap: 12px;
+  }
   .main-layout {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+  .controls {
+    position: static;
+  }
+  .zone-preview-large-wrap {
+    overflow-x: auto;
+  }
+  .download-gate {
+    order: -1;
+    width: 100%;
+    justify-content: flex-end;
   }
 }
 
@@ -671,4 +693,161 @@ button:hover:not(:disabled) {
 button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+/* Download gate (OFL reveal) */
+
+.download-gate {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.ofl-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: #888;
+  white-space: nowrap;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: max-width 0.4s ease, opacity 0.25s ease 0.1s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.ofl-check a {
+  color: #aaa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.ofl-check a:hover {
+  color: #e8e8e8;
+}
+
+.download-gate.ofl-shown .ofl-check {
+  max-width: 280px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Auto-controlled axis (grayed out) */
+
+.axis-row--auto {
+  opacity: 0.35;
+  pointer-events: none;
+}
+
+/* Ascender modal */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.modal-panel {
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 28px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.modal-close {
+  background: none;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.modal-close:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #ccc;
+}
+
+.waterfall {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-top: 16px;
+}
+
+.waterfall-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  border-top: 1px solid #1a1a1a;
+  padding: 8px 0;
+}
+
+.waterfall-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 70px;
+  flex-shrink: 0;
+}
+
+.waterfall-opsz {
+  font-size: 0.7rem;
+  font-family: monospace;
+  color: #555;
+}
+
+.waterfall-ytas {
+  font-size: 0.65rem;
+  font-family: monospace;
+  color: #3a3a3a;
+}
+
+.waterfall-text {
+  font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
+  font-optical-sizing: none;
+  font-feature-settings: 'rclt' 1;
+  color: #e8e8e8;
+  line-height: 1.2;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.auto-ascender-preview-btn {
+  background: none;
+  border: 1px solid #2a2a2a;
+  color: #666;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 4px;
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.auto-ascender-preview-btn:hover:not(:disabled) {
+  background: #1a1a1a;
+  color: #aaa;
+  border-color: #444;
 }

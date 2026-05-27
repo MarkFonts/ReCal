@@ -38,6 +38,10 @@ export default function App() {
   const [freezeOpsz, setFreezeOpsz] = useState(false)
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
   const [trackWidth, setTrackWidth] = useState(0)
+  const [oflRevealed, setOflRevealed] = useState(false)
+  const [oflAgreed, setOflAgreed] = useState(false)
+  const [autoAscender, setAutoAscender] = useState(false)
+  const [showAscenderModal, setShowAscenderModal] = useState(false)
 
   const workerRef = useRef<Worker | null>(null)
   const defaultsRef = useRef<Record<string, number>>({})
@@ -168,6 +172,14 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    function onEscape(e: KeyboardEvent) {
+      if (e.key === 'Escape') setShowAscenderModal(false)
+    }
+    window.addEventListener('keydown', onEscape)
+    return () => window.removeEventListener('keydown', onEscape)
+  }, [])
+
+  useEffect(() => {
     if (!workerReadyRef.current) return
     if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current)
     previewDebounceRef.current = setTimeout(() => {
@@ -240,7 +252,8 @@ export default function App() {
     const parts = axes
       .filter((a) => a.tag !== 'opsz')
       .map((a) => {
-        const val = (a.tag === 'GEOM' && geomOverride !== undefined) ? geomOverride : (defaults[a.tag] ?? a.default)
+        let val = (a.tag === 'GEOM' && geomOverride !== undefined) ? geomOverride : (defaults[a.tag] ?? a.default)
+        if (a.tag === 'YTAS' && autoYtasValue !== null) val = autoYtasValue
         return `'${a.tag}' ${val}`
       })
     if (opszAxis) {
@@ -277,14 +290,25 @@ export default function App() {
     return Math.floor(gapPx * wordWidths.upm / maxAdvance)
   })()
   const showZonePreview = previewSize > overlapThreshold
+
+  const ytasAxis = parametricAxes.find(a => a.tag === 'YTAS')
+  const autoYtasValue = (ytasAxis && autoAscender && opszAxis) ? (() => {
+    const effectiveOpsz = (defaults['opsz'] ?? opszAxis.default) * opszMultiplier
+    const minOpsz = opszAxis.min * opszMultiplier
+    const maxOpsz = opszAxis.max * opszMultiplier
+    const t = Math.max(0, Math.min(1, (effectiveOpsz - minOpsz) / (maxOpsz - minOpsz)))
+    return Math.round(ytasAxis.min + t * (ytasAxis.max - ytasAxis.min))
+  })() : null
+
   const activeZoneName = LANDING_ZONES.find(
     z => (defaults['GEOM'] ?? 0) >= z.start && (defaults['GEOM'] ?? 0) <= z.end
   )?.label
 
   function renderSlider(axis: AxisInfo) {
-    const val = defaults[axis.tag] ?? axis.default
+    const isAuto = axis.tag === 'YTAS' && autoYtasValue !== null
+    const val = isAuto ? autoYtasValue! : (defaults[axis.tag] ?? axis.default)
     return (
-      <div key={axis.tag} className="axis-row">
+      <div key={axis.tag} className={`axis-row${isAuto ? ' axis-row--auto' : ''}`}>
         <div className="axis-header">
           <span className="axis-name">{axis.name}</span>
           <span className="axis-tag">{axis.tag}</span>
@@ -309,8 +333,29 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>ReCal Sans</h1>
-        <p className="subtitle">Cal Sans Customizer</p>
+        <div>
+          <h1>ReCal Sans</h1>
+          <p className="subtitle">Cal Sans Customizer</p>
+        </div>
+        <div className={`download-gate${oflRevealed ? ' ofl-shown' : ''}`}>
+          <label className="ofl-check">
+            <input
+              type="checkbox"
+              checked={oflAgreed}
+              onChange={(e) => setOflAgreed(e.target.checked)}
+            />
+            <span>I agree to the <a href="https://openfontlicense.org/open-font-license-official-text/" target="_blank" rel="noopener noreferrer">OFL 1.1</a></span>
+          </label>
+          <button
+            disabled={isDownloading || axes.length === 0 || (oflRevealed && !oflAgreed)}
+            onClick={() => {
+              if (!oflRevealed) { setOflRevealed(true); return }
+              downloadTTF()
+            }}
+          >
+            {isDownloading ? 'Generating…' : 'Download TTF'}
+          </button>
+        </div>
       </header>
 
       {error && (
@@ -398,6 +443,27 @@ export default function App() {
                   Loads a build with higher-order (parabolic) interpolation along the GEOM axis.
                   This is a test font — only the <em>y</em> glyph is affected.
                 </p>
+                {ytasAxis && (
+                  <>
+                    <label className="hoi-toggle" style={{ marginTop: 12 }}>
+                      <input
+                        type="checkbox"
+                        checked={autoAscender}
+                        onChange={(e) => setAutoAscender(e.target.checked)}
+                      />
+                      <span>Auto Ascender Height</span>
+                    </label>
+                    <p className="control-note">
+                      Locks YTAS to an opsz-driven value instead of a fixed default.
+                      The exported font will use this relationship parametrically.
+                    </p>
+                    {autoAscender && (
+                      <button className="auto-ascender-preview-btn" onClick={() => setShowAscenderModal(true)}>
+                        View ascender waterfall
+                      </button>
+                    )}
+                  </>
+                )}
             </div>
           </section>
 
@@ -475,10 +541,49 @@ export default function App() {
               />
             )}
 
-            <button onClick={downloadTTF} disabled={isDownloading || axes.length === 0}>
-              {isDownloading ? 'Generating…' : 'Download TTF'}
-            </button>
           </section>
+        </div>
+      )}
+
+      {showAscenderModal && ytasAxis && opszAxis && (
+        <div className="modal-overlay" onClick={() => setShowAscenderModal(false)}>
+          <div className="modal-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Ascender Height Waterfall</h2>
+              <button className="modal-close" onClick={() => setShowAscenderModal(false)}>✕</button>
+            </div>
+            <p className="control-note">
+              How YTAS varies across the opsz range at ×{opszMultiplier} scale. The auto mode maps this linearly — avar2 integration pending.
+            </p>
+            <div className="waterfall">
+              {Array.from({ length: 7 }, (_, i) => {
+                const t = i / 6
+                const rawOpsz = opszAxis.min + t * (opszAxis.max - opszAxis.min)
+                const displayOpsz = Math.round(rawOpsz * opszMultiplier)
+                const ytas = Math.round(ytasAxis.min + t * (ytasAxis.max - ytasAxis.min))
+                const varSettings = axes
+                  .filter(a => a.tag !== 'opsz')
+                  .map(a => `'${a.tag}' ${a.tag === 'YTAS' ? ytas : (defaults[a.tag] ?? a.default)}`)
+                  .concat([`'opsz' ${rawOpsz.toFixed(1)}`])
+                  .join(', ')
+                const fontSize = Math.round(14 + t * 42)
+                return (
+                  <div key={i} className="waterfall-row">
+                    <div className="waterfall-meta">
+                      <span className="waterfall-opsz">{displayOpsz}pt</span>
+                      <span className="waterfall-ytas">YTAS {ytas}</span>
+                    </div>
+                    <p className="waterfall-text" style={{
+                      fontSize,
+                      fontVariationSettings: varSettings,
+                    }}>
+                      High
+                    </p>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
         </div>
       )}
     </div>
