@@ -698,36 +698,58 @@ button:disabled {
   flex-shrink: 0;
 }
 
-.ofl-check {
+.ofl-gate {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.8rem;
-  color: #888;
-  white-space: nowrap;
   max-width: 0;
   overflow: hidden;
   opacity: 0;
   pointer-events: none;
-  transition: max-width 0.4s ease, opacity 0.25s ease 0.1s;
-  cursor: pointer;
+  white-space: nowrap;
   flex-shrink: 0;
+  transition: max-width 0.35s ease, opacity 0.2s ease;
 }
 
-.ofl-check a {
-  color: #aaa;
+.download-gate:not(.ofl-agreed):hover .ofl-gate {
+  max-width: 160px;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ofl-link {
+  font-size: 0.8rem;
+  color: #888;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.ofl-check a:hover {
+.ofl-link:hover {
   color: #e8e8e8;
 }
 
-.download-gate.ofl-shown .ofl-check {
-  max-width: 280px;
-  opacity: 1;
-  pointer-events: auto;
+.ofl-accept-btn {
+  font-size: 0.8rem;
+  color: #ccc;
+  background: none;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 4px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ofl-accept-btn:hover {
+  color: #fff;
+  border-color: #aaa;
+}
+
+@media (max-width: 700px) {
+  .ofl-gate {
+    max-width: 160px;
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 /* Auto-controlled axis (grayed out) */

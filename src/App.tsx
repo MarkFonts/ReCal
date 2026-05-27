@@ -38,7 +38,6 @@ export default function App() {
   const [freezeOpsz, setFreezeOpsz] = useState(false)
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
   const [trackWidth, setTrackWidth] = useState(0)
-  const [oflRevealed, setOflRevealed] = useState(false)
   const [oflAgreed, setOflAgreed] = useState(false)
   const [autoAscender, setAutoAscender] = useState(false)
   const [showAscenderModal, setShowAscenderModal] = useState(false)
@@ -334,21 +333,21 @@ export default function App() {
           <h1>ReCal Sans</h1>
           <p className="subtitle">Cal Sans Customizer</p>
         </div>
-        <div className={`download-gate${oflRevealed ? ' ofl-shown' : ''}`}>
-          <label className="ofl-check">
-            <input
-              type="checkbox"
-              checked={oflAgreed}
-              onChange={(e) => setOflAgreed(e.target.checked)}
-            />
-            <span>I agree to the <a href="https://openfontlicense.org/open-font-license-official-text/" target="_blank" rel="noopener noreferrer">OFL 1.1</a></span>
-          </label>
+        <div className={`download-gate${oflAgreed ? ' ofl-agreed' : ''}`}>
+          <div className="ofl-gate">
+            <a
+              href="https://openfontlicense.org/open-font-license-official-text/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ofl-link"
+            >OFL 1.1</a>
+            <button className="ofl-accept-btn" onClick={() => setOflAgreed(true)}>
+              Accept
+            </button>
+          </div>
           <button
-            disabled={isDownloading || axes.length === 0 || (oflRevealed && !oflAgreed)}
-            onClick={() => {
-              if (!oflRevealed) { setOflRevealed(true); return }
-              downloadTTF()
-            }}
+            disabled={isDownloading || axes.length === 0 || !oflAgreed}
+            onClick={downloadTTF}
           >
             {isDownloading ? 'Generating…' : 'Download TTF'}
           </button>
