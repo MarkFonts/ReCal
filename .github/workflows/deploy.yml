@@ -9,9 +9,9 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4.2.2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4.4.0
         with:
           node-version: 20
           cache: npm
@@ -23,7 +23,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.WORDMARK_DEPLOY_TOKEN3 }}
         run: |
-          git clone https://x-access-token:${TOKEN}@github.com/MarkFonts/wordmark.git wordmark-repo
+          GIT_TERMINAL_PROMPT=0 git clone https://x-access-token:${TOKEN}@github.com/MarkFonts/wordmark.git wordmark-repo
           rm -rf wordmark-repo/recalsans
           cp -r dist/ wordmark-repo/recalsans
           cd wordmark-repo
