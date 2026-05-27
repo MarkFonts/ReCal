@@ -139,7 +139,7 @@ export default function App() {
     })
     ro.observe(el)
     return () => ro.disconnect()
-  }, [])
+  }, [axes.length, error])
 
   function pushThresholdHistory() {
     thresholdPastRef.current = [...thresholdPastRef.current, glyphThresholdsRef.current]
@@ -275,19 +275,16 @@ export default function App() {
     const maxAdvance = Math.max(...Object.values(zoneWidths))
     if (maxAdvance === 0) return 130
 
-    // Find which zone column the current GEOM belongs to (or nearest)
-    const zoneIdx = LANDING_ZONES.reduce((best, z, i) => {
-      const mid = (z.start + z.end) / 2
-      const bestMid = (LANDING_ZONES[best].start + LANDING_ZONES[best].end) / 2
-      return Math.abs(currentGeom - mid) < Math.abs(currentGeom - bestMid) ? i : best
-    }, 0)
-    if (zoneIdx >= LANDING_ZONES.length - 1) return 130
-
-    const zone = LANDING_ZONES[zoneIdx]
-    const nextZone = LANDING_ZONES[zoneIdx + 1]
+    // All 4 columns are visible simultaneously, so use the tightest adjacent gap
+    // (A11Y→UI at 15%) as the switching threshold — not the current GEOM zone's gap.
     const innerTrack = trackWidth - LABELS_W
-    const gapPx = (nextZone.start - zone.start) / 100 * innerTrack
-    return Math.floor(gapPx * wordWidths.upm / maxAdvance)
+    const minThreshold = Math.min(
+      ...LANDING_ZONES.slice(0, -1).map((z, i) => {
+        const gapPx = (LANDING_ZONES[i + 1].start - z.start) / 100 * innerTrack
+        return Math.floor(gapPx * wordWidths.upm / maxAdvance)
+      })
+    )
+    return minThreshold
   })()
   const showZonePreview = previewSize > overlapThreshold
 
