@@ -55,6 +55,17 @@ header {
   flex-wrap: wrap;
 }
 
+/* Keep attribution consistently positioned at the controls-column offset at all wide widths */
+@media (min-width: 701px) {
+  header {
+    display: grid;
+    grid-template-columns: 280px 1fr auto;
+    column-gap: 48px;
+    row-gap: 0;
+    align-items: end;
+  }
+}
+
 .preset-buttons {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -107,6 +118,32 @@ h1 {
   color: #666;
   font-size: 0.875rem;
   margin-top: 2px;
+}
+
+.attribution {
+  font-size: 0.72rem;
+  color: #444;
+  line-height: 1.5;
+  max-width: 340px;
+  align-self: flex-end;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
+}
+
+.attribution a {
+  color: #666;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.attribution a:hover {
+  color: #aaa;
+}
+
+.attribution .emoji {
+  display: inline-block;
+  position: relative;
+  top: -2px;
 }
 
 h2 {

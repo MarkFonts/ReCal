@@ -342,6 +342,13 @@ export default function App() {
           <h1>ReCal Sans</h1>
           <p className="subtitle">Cal Sans Customizer</p>
         </div>
+        <p className="attribution">
+          This tool has been wholly inspired by the <span className="emoji">🐐</span>{' '}
+          <a href="https://input.djr.com/download/" target="_blank" rel="noopener noreferrer">
+            DJR's Input font download customizer
+          </a>
+          , repurposed by WORDMARK to make the OFL mission more accessible.
+        </p>
         <div className={`download-gate${oflAgreed ? ' ofl-agreed' : ''}`}>
           <div className="ofl-gate">
             <a
@@ -358,7 +365,7 @@ export default function App() {
             disabled={isDownloading || axes.length === 0 || !oflAgreed}
             onClick={downloadTTF}
           >
-            {isDownloading ? 'Generating…' : 'Download TTF'}
+            {isDownloading ? 'Generating…' : 'Download Custom TTF'}
           </button>
         </div>
       </header>
