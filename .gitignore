@@ -4,6 +4,10 @@ dist/
 dist-ssr/
 *.local
 
+# Project docs (kept local only)
+VISION.md
+CLAUDE.md
+
 # macOS
 .DS_Store
 
