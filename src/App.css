@@ -675,8 +675,11 @@ button {
   color: #0f0f0f;
   border: none;
   border-radius: 6px;
+  font-family: inherit;
   font-size: 0.875rem;
   font-weight: 600;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
   cursor: pointer;
 }
 
@@ -739,7 +742,8 @@ button:disabled {
   white-space: nowrap;
 }
 
-.ofl-accept-btn:hover {
+.download-gate .ofl-accept-btn:hover {
+  background: none;
   color: #fff;
   border-color: #aaa;
 }
