@@ -510,6 +510,7 @@ export default function App() {
                         <p key={word} className="zone-preview-large-word" style={{
                           fontSize: previewSize,
                           fontVariationSettings: previewVarSettings(previewSize, z.mid),
+                          fontFeatureSettings: "'rclt' 1",
                         }}>
                           {word}
                         </p>

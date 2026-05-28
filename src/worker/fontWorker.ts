@@ -85,43 +85,102 @@ import io, json
 from fontTools.ttLib import TTFont
 
 def _do_preview():
-    ORIG = {
-        'I': [5], 'l': [11], 'a': [14, 35], 'G': [41], 'g': [16],
-        'f': [40], 'j': [40, 76], 't': [40, 76], 'y': [40, 61],
-        'u': [60], 'C': [79], 'c': [79], 'M': [79]
-    }
+    from fontTools.ttLib.tables import otTables as ot
     thresh = json.loads(_thresholds_json)
     fnt = TTFont(io.BytesIO(_font_data))
     ga = next((a for a in fnt['fvar'].axes if a.axisTag == 'GEOM'), None)
     if not ga:
         out = io.BytesIO(); fnt.save(out); return out.getvalue()
-    gi = next(i for i, a in enumerate(fnt['fvar'].axes) if a.axisTag == 'GEOM')
     gmin, gdef, gmax = ga.minValue, ga.defaultValue, ga.maxValue
+    gi = next(i for i, a in enumerate(fnt['fvar'].axes) if a.axisTag == 'GEOM')
     def u2n(v):
         v = min(max(float(v), gmin), gmax)
         d = (gdef - gmin) if v <= gdef else (gmax - gdef)
         return (v - gdef) / d if d else 0.0
-    def n2u(n):
-        return (gdef + n * (gdef - gmin)) if n <= 0 else (gdef + n * (gmax - gdef))
-    def make_segs(bounds):
-        if not bounds: return [(gmin, gmax)]
-        return [(gmin, bounds[0])] + [(bounds[i], bounds[i+1]) for i in range(len(bounds)-1)] + [(bounds[-1], gmax)]
-    def vsig(lo, hi, td):
-        mid = (lo + hi) / 2
-        return tuple(sorted((g, sum(1 for t in ts if mid >= t)) for g, ts in td.items()))
-    nb = sorted(set(float(v) for ts in thresh.values() for v in ts))
-    sig_map = {vsig(s[0], s[1], thresh): s for s in make_segs(nb)}
-    fv = fnt.get('FeatureVariations')
-    if fv:
-        for rec in fv.FeatureVariationRecord:
-            for cond in rec.ConditionSet.ConditionTable:
-                if getattr(cond, 'AxisIndex', None) == gi:
-                    lo = round(n2u(cond.FilterRangeMinValue), 2)
-                    hi = round(n2u(cond.FilterRangeMaxValue), 2)
-                    new_s = sig_map.get(vsig(lo, hi, ORIG))
-                    if new_s:
-                        cond.FilterRangeMinValue = u2n(new_s[0])
-                        cond.FilterRangeMaxValue = u2n(new_s[1])
+    gsub = fnt['GSUB']
+    BASE = {'I', 'l', 'a', 'G', 'g', 'f', 'j', 't', 'y', 'u', 'C', 'c', 'M'}
+    # Discover (glyph, variant_suffix) → first lookup index that provides that sub
+    var_lk = {}
+    for i, lk in enumerate(gsub.table.LookupList.Lookup):
+        for sub in lk.SubTable:
+            if not hasattr(sub, 'mapping'):
+                continue
+            for base, variant in sub.mapping.items():
+                if base in BASE and '.' in variant:
+                    key = (base, variant.rsplit('.', 1)[1])
+                    if key not in var_lk:
+                        var_lk[key] = i
+    # Variant order per glyph — must match GROUP_DEFS in GlyphGroups.tsx
+    GV = {
+        'I': ['rcltA11Y', 'default'],
+        'l': ['rcltA11Y', 'default'],
+        'a': ['rcltA11Y', 'default', 'rcltText'],
+        'G': ['rcltUI', 'default'],
+        'g': ['rcltA11Y', 'default'],
+        'f': ['default', 'rcltText'],
+        'j': ['default', 'rcltText', 'rcltGeo'],
+        't': ['default', 'rcltText', 'rcltGeo'],
+        'y': ['default', 'rcltText', 'rcltGeo'],
+        'u': ['default', 'rcltGeo'],
+        'C': ['default', 'rcltGeo'],
+        'c': ['default', 'rcltGeo'],
+        'M': ['default', 'rcltGeo'],
+    }
+    def lks_at(geom):
+        seen, result = set(), []
+        for glyph, variants in GV.items():
+            ts = thresh.get(glyph, [])
+            vi = min(sum(1 for t in ts if geom >= float(t)), len(variants) - 1)
+            suf = variants[vi]
+            if suf == 'default':
+                continue
+            key = (glyph, suf)
+            if key in var_lk and var_lk[key] not in seen:
+                seen.add(var_lk[key])
+                result.append(var_lk[key])
+        return sorted(result)
+    # Find ALL rclt feature indices (FeatureList can have one per script/language)
+    rclt_indices = [
+        i for i, r in enumerate(gsub.table.FeatureList.FeatureRecord) if r.FeatureTag == 'rclt'
+    ]
+    if not rclt_indices:
+        out = io.BytesIO(); fnt.save(out); return out.getvalue()
+    # Compute GEOM segments from the union of all user threshold values
+    all_t = sorted(set(float(v) for ts in thresh.values() for v in ts))
+    bounds = [0.0] + all_t + [100.0]
+    segs = [(bounds[i], bounds[i + 1]) for i in range(len(bounds) - 1)]
+    # Build FeatureVariations table
+    gsub.table.Version = 0x00010001
+    fv_tbl = ot.FeatureVariations()
+    fv_tbl.Version = 0x00010000
+    fv_tbl.FeatureVariationRecord = []
+    for lo, hi in segs:
+        mid = (lo + hi) / 2.0
+        lks = lks_at(mid)
+        rec = ot.FeatureVariationRecord()
+        cs = ot.ConditionSet()
+        cs.ConditionTable = []
+        cond = ot.ConditionTable()
+        cond.Format = 1
+        cond.AxisIndex = gi
+        cond.FilterRangeMinValue = u2n(lo)
+        cond.FilterRangeMaxValue = u2n(hi)
+        cs.ConditionTable.append(cond)
+        rec.ConditionSet = cs
+        fts = ot.FeatureTableSubstitution()
+        fts.Version = 0x00010000
+        fts.SubstitutionRecord = []
+        for rclt_idx in rclt_indices:
+            sr = ot.FeatureTableSubstitutionRecord()
+            sr.FeatureIndex = rclt_idx
+            alt = ot.Feature()
+            alt.FeatureParams = None
+            alt.LookupListIndex = lks
+            sr.Feature = alt
+            fts.SubstitutionRecord.append(sr)
+        rec.FeatureTableSubstitution = fts
+        fv_tbl.FeatureVariationRecord.append(rec)
+    gsub.table.FeatureVariations = fv_tbl
     out = io.BytesIO(); fnt.save(out); return out.getvalue()
 
 _do_preview()
