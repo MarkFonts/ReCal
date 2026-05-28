@@ -20,7 +20,7 @@ const OPSZ_CONTEXT = [
 
 const FONT_URLS = {
   hoi: `${import.meta.env.BASE_URL}fonts/CalSans-y-VariableFont_opsz,wght,GEOM.ttf`,
-  standard: `${import.meta.env.BASE_URL}fonts/cal-sans-vf.ttf`,
+  standard: `${import.meta.env.BASE_URL}fonts/CalSans-Regular_1_950_opsz14_GEOM25.ttf`,
 }
 
 export default function App() {
