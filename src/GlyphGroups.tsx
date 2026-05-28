@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-type VariantLabel = 'A11Y' | 'UI' | 'default' | 'Text' | 'Geo'
+type VariantLabel = 'A11Y' | 'UI' | 'default' | 'Base' | 'Geo'
 type Variant = { label: VariantLabel; color: string }
 
 export type GroupDef = {
@@ -13,20 +13,20 @@ const V: Record<VariantLabel, Variant> = {
   A11Y:    { label: 'A11Y',    color: '#c97050' },
   UI:      { label: 'UI',      color: '#999' },
   default: { label: 'default', color: '#666' },
-  Text:    { label: 'Text',    color: '#4a7fd4' },
+  Base:    { label: 'Base',    color: '#4a7fd4' },
   Geo:     { label: 'Geo',     color: '#4aad5c' },
 }
 
 export const GROUP_DEFS: GroupDef[] = [
   { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [5] },
   { glyph: 'l', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'a', variants: [V.A11Y, V.default, V.Text], defaultThresholds: [14, 35] },
+  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [14, 35] },
   { glyph: 'G', variants: [V.UI, V.default], defaultThresholds: [41] },
   { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [16] },
-  { glyph: 'f', variants: [V.default, V.Text], defaultThresholds: [40] },
-  { glyph: 'j', variants: [V.default, V.Text, V.Geo], defaultThresholds: [40, 76] },
-  { glyph: 't', variants: [V.default, V.Text, V.Geo], defaultThresholds: [40, 76] },
-  { glyph: 'y', variants: [V.default, V.Text, V.Geo], defaultThresholds: [40, 61] },
+  { glyph: 'f', variants: [V.default, V.Base], defaultThresholds: [40] },
+  { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 76] },
+  { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 76] },
+  { glyph: 'y', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 61] },
   { glyph: 'u', variants: [V.default, V.Geo], defaultThresholds: [60] },
   { glyph: 'C', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: 'c', variants: [V.default, V.Geo], defaultThresholds: [79] },
@@ -34,10 +34,10 @@ export const GROUP_DEFS: GroupDef[] = [
 ]
 
 export const LANDING_ZONES = [
-  { label: 'A11Y', start: 0,  end: 10,  mid: 5,  color: '#c97050' },
-  { label: 'UI',   start: 15, end: 30,  mid: 22, color: '#999' },
-  { label: 'Text', start: 40, end: 60,  mid: 50, color: '#4a7fd4' },
-  { label: 'Geo',  start: 80, end: 100, mid: 90, color: '#4aad5c' },
+  { label: 'A11Y', start: 0,  end: 10,  mid: 5,  sampleGeom: 3,  color: '#c97050' },
+  { label: 'UI',   start: 15, end: 30,  mid: 22, sampleGeom: 22, color: '#999' },
+  { label: 'Base', start: 40, end: 60,  mid: 50, sampleGeom: 50, color: '#4a7fd4' },
+  { label: 'Geo',  start: 80, end: 100, mid: 90, sampleGeom: 90, color: '#4aad5c' },
 ]
 
 const HATCH = 'repeating-linear-gradient(-45deg, rgba(140,120,0,0.07) 0px, rgba(140,120,0,0.07) 1px, transparent 1px, transparent 10px)'
@@ -160,6 +160,171 @@ function GlyphRow({ def, thresholds, geomDefault, otherDefaults, opszDefault, on
 }
 
 export const PREVIEW_WORDS = ["I\u2019ll jag", 'Guy', 'Mact', '2160'] as const
+
+export type ZoneToken = {
+  glyph: string
+  variantIdx: number
+  variantLabel: VariantLabel
+  isDefault: boolean
+  defaultActivation: number  // GEOM value for sort order (lower = left)
+}
+
+function tokenZone(def: GroupDef, vi: number, thresholds: number[]): string | null {
+  const lo = vi === 0 ? 0 : thresholds[vi - 1]
+  const hi = vi === def.variants.length - 1 ? 100 : thresholds[vi]
+
+  // Primary: zone that contains the key threshold for this variant.
+  // vi=0 (first): deactivating threshold is hi; check zone containing (hi-1)
+  //   using strict interior (hi-1 > start && hi-1 < end) to avoid zones that
+  //   START exactly at hi (e.g. G threshold 41 landing at Text start 40).
+  // vi>0 (others): activating threshold is lo; check zone containing lo
+  //   using [start, end) so lo=40 lands in Text (40-60) not the gutter before it.
+  let keyZone: typeof LANDING_ZONES[0] | undefined
+  if (vi === 0) {
+    const key = hi - 1
+    keyZone = LANDING_ZONES.find(z => key > z.start && key < z.end)
+  } else {
+    keyZone = LANDING_ZONES.find(z => lo >= z.start && lo < z.end)
+  }
+  if (keyZone) return keyZone.label
+
+  // Fallback: max overlap
+  let best: string | null = null
+  let bestOverlap = 0
+  for (const z of LANDING_ZONES) {
+    const overlap = Math.max(0, Math.min(hi, z.end) - Math.max(lo, z.start))
+    if (overlap > bestOverlap) { bestOverlap = overlap; best = z.label }
+  }
+  return best
+}
+
+function activeVariantAt(def: GroupDef, geom: number, thresholds: number[]): number {
+  return thresholds.reduce((acc, t) => (geom >= t ? acc + 1 : acc), 0)
+}
+
+export function getZoneTokens(glyphThresholds: Record<string, number[]>): Record<string, ZoneToken[]> {
+  const map: Record<string, ZoneToken[]> = {}
+
+  const defActivation = (def: GroupDef, vi: number): number =>
+    vi === 0
+      ? (def.defaultThresholds[0] ?? 100)
+      : (def.defaultThresholds[vi - 1] ?? 0)
+
+  // Pass 1: place named-variant tokens using max-overlap zone assignment
+  for (const def of GROUP_DEFS) {
+    for (let vi = 0; vi < def.variants.length; vi++) {
+      if (def.variants[vi].label === 'default') continue
+      const t = glyphThresholds[def.glyph] ?? [...def.defaultThresholds]
+      const zone = tokenZone(def, vi, t)
+      if (!zone) continue
+      if (!map[zone]) map[zone] = []
+      map[zone].push({ glyph: def.glyph, variantIdx: vi, variantLabel: def.variants[vi].label, isDefault: false, defaultActivation: defActivation(def, vi) })
+    }
+  }
+
+  // Pass 2: billiards default tokens — appears in zone Z when a threshold falls in [prevZone.start, z.start)
+  for (let zi = 1; zi < LANDING_ZONES.length; zi++) {
+    const z = LANDING_ZONES[zi]
+    const prevZone = LANDING_ZONES[zi - 1]
+    if (!map[z.label]) map[z.label] = []
+    const placed = new Set(map[z.label].map(t => t.glyph))
+    for (const def of GROUP_DEFS) {
+      if (placed.has(def.glyph)) continue
+      const t = glyphThresholds[def.glyph] ?? [...def.defaultThresholds]
+      const vi = activeVariantAt(def, z.sampleGeom, t)
+      if (def.variants[vi].label !== 'default') continue
+      const hasThresholdInWindow = t.some(thresh => thresh >= prevZone.start && thresh < z.start)
+      if (!hasThresholdInWindow) continue
+      map[z.label].push({ glyph: def.glyph, variantIdx: vi, variantLabel: 'default', isDefault: true, defaultActivation: Infinity })
+    }
+  }
+
+  // Sort each bin: named tokens left→right by default activation order, defaults last
+  for (const key of Object.keys(map)) {
+    map[key].sort((a, b) => a.defaultActivation - b.defaultActivation)
+  }
+
+  return map
+}
+
+const ZONE_ORDER = LANDING_ZONES.map(z => z.label)
+
+// Thresholds land in the gutter midpoint between zones, leaving a sliver of the
+// variant visible in the transition band rather than cutting off at the zone edge.
+const ZONE_DEACT = Object.fromEntries(LANDING_ZONES.map((z, i) => {
+  const next = LANDING_ZONES[i + 1]
+  return [z.label, next ? Math.round((z.end + next.start) / 2) : z.end]
+}))
+// A11Y→UI gutter: 12, UI→Base gutter: 35, Base→Geo gutter: 70
+const ZONE_ACT = Object.fromEntries(LANDING_ZONES.map((z, i) => {
+  const prev = LANDING_ZONES[i - 1]
+  return [z.label, prev ? Math.round((prev.end + z.start) / 2) : z.start]
+}))
+
+export function applyDrop(
+  glyph: string,
+  variantIdx: number,
+  targetZone: string | null,
+  glyphThresholds: Record<string, number[]>
+): Record<string, number[]> {
+  const def = GROUP_DEFS.find(d => d.glyph === glyph)
+  if (!def) return glyphThresholds
+
+  // Current zone for each non-default variant
+  const currentMap = getZoneTokens(glyphThresholds)
+  const assignments: Record<number, string | null> = {}
+  for (const z of LANDING_ZONES) {
+    for (const tok of (currentMap[z.label] ?? [])) {
+      if (tok.glyph === glyph) assignments[tok.variantIdx] = z.label
+    }
+  }
+  assignments[variantIdx] = targetZone
+
+  // Non-default variants in axis order
+  const nonDef = def.variants
+    .map((v, vi) => ({ label: v.label, vi }))
+    .filter(x => x.label !== 'default')
+
+  const zi = (z: string | null | undefined) =>
+    z == null ? -1 : ZONE_ORDER.indexOf(z as string)
+
+  // Cascade: axis ordering (vi1 before vi2) must be preserved.
+  // Always push the HIGHER-vi (later-axis) token forward — never push lower-vi backward.
+  // This prevents a backward drag from pocketing earlier-axis variants.
+  for (let pass = 0; pass < nonDef.length + 2; pass++) {
+    let changed = false
+    for (let i = 0; i < nonDef.length - 1; i++) {
+      const vi1 = nonDef[i].vi   // lower axis index → must be in earlier zone
+      const vi2 = nonDef[i + 1].vi  // higher axis index → must be in later zone
+      if (zi(assignments[vi1]) >= zi(assignments[vi2])) {
+        const next = zi(assignments[vi1]) + 1
+        assignments[vi2] = next >= ZONE_ORDER.length ? null : ZONE_ORDER[next]
+        changed = true
+      }
+    }
+    if (!changed) break
+  }
+
+  // Thresholds from assignments — snap to gutter midpoints for a transition sliver
+  const newT = [...(glyphThresholds[glyph] ?? def.defaultThresholds)]
+  for (let ti = 0; ti < def.variants.length - 1; ti++) {
+    const lLabel = def.variants[ti].label
+    const rLabel = def.variants[ti + 1].label
+    if (rLabel !== 'default') {
+      const z = assignments[ti + 1]
+      newT[ti] = z == null ? 100 : ZONE_ACT[z]
+    } else if (lLabel !== 'default') {
+      const z = assignments[ti]
+      newT[ti] = z == null ? 0 : ZONE_DEACT[z]
+    }
+    newT[ti] = Math.max(0, Math.min(100, newT[ti]))
+  }
+  for (let i = 1; i < newT.length; i++) {
+    newT[i] = Math.max(newT[i], newT[i - 1] + 1)
+  }
+
+  return { ...glyphThresholds, [glyph]: newT }
+}
 
 export function GlyphGroups({ thresholds, geomDefault, defaults, opszDefault, onThresholdChange, onGeomChange, varSettingsForGeom, previewSize, hidePreviewWords, onThresholdDragStart }: {
   thresholds: Record<string, number[]>

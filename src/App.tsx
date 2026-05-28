@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { GlyphGroups, GROUP_DEFS, LANDING_ZONES, PREVIEW_WORDS } from './GlyphGroups'
+import { GlyphGroups, GROUP_DEFS, LANDING_ZONES, PREVIEW_WORDS, getZoneTokens, applyDrop, type ZoneToken } from './GlyphGroups'
 
 export type AxisInfo = { tag: string; name: string; min: number; default: number; max: number }
 
 // Cal Sans-specific: these axes take direct measurements, not design-space defaults
 const PARAMETRIC_TAGS = new Set(['YTAS', 'SHRP'])
 const OPSZ_MULTIPLIERS = [1, 2, 3, 4, 5, 6]
-const LABELS_W = 28 // matches GlyphGroups LABELS_WIDTH, used to align preview with GEOM track
 
 const OPSZ_CONTEXT = [
   'mobile and desktop',
@@ -19,7 +18,7 @@ const OPSZ_CONTEXT = [
 ] as const
 
 const FONT_URLS = {
-  hoi: `${import.meta.env.BASE_URL}fonts/CalSans-y-VariableFont_opsz,wght,GEOM.ttf`,
+  hoi: `${import.meta.env.BASE_URL}fonts/CalSansVariable2.ttf`,
   standard: `${import.meta.env.BASE_URL}fonts/CalSans-Regular_1_950_opsz14_GEOM25.ttf`,
 }
 
@@ -37,10 +36,21 @@ export default function App() {
   const [useHoi, setUseHoi] = useState(false)
   const [freezeOpsz, setFreezeOpsz] = useState(false)
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
-  const [trackWidth, setTrackWidth] = useState(0)
   const [oflAgreed, setOflAgreed] = useState(false)
   const [autoAscender, setAutoAscender] = useState(false)
   const [showAscenderModal, setShowAscenderModal] = useState(false)
+  const [showXRay, setShowXRay] = useState(false)
+  const [previewRebuilding, setPreviewRebuilding] = useState(false)
+  const [previewModal, setPreviewModal] = useState<{
+    zone: typeof LANDING_ZONES[0]
+    size: number
+    spacing: number
+    axisValues: Record<string, number>
+  } | null>(null)
+  const [dragState, setDragState] = useState<{
+    tok: ZoneToken; sourceZone: string; x: number; y: number
+  } | null>(null)
+  const zoneGridRef = useRef<HTMLDivElement | null>(null)
 
   const workerRef = useRef<Worker | null>(null)
   const defaultsRef = useRef<Record<string, number>>({})
@@ -53,7 +63,6 @@ export default function App() {
   const useHoiRef = useRef(useHoi)
   const thresholdPastRef = useRef<Array<Record<string, number[]>>>([])
   const thresholdFutureRef = useRef<Array<Record<string, number[]>>>([])
-  const previewSectionRef = useRef<HTMLElement | null>(null)
 
   useEffect(() => { useHoiRef.current = useHoi }, [useHoi])
 
@@ -113,6 +122,7 @@ export default function App() {
           previewStyleRef.current = s
         }
         previewStyleRef.current.textContent = `@font-face { font-family: 'CalSansPreview'; src: url('${newUrl}') format('truetype'); font-display: swap; }`
+        setPreviewRebuilding(false)
       } else if (msg.type === 'error') {
         setError(msg.message)
         setIsDownloading(false)
@@ -129,16 +139,6 @@ export default function App() {
   }, [])
 
   useEffect(() => { glyphThresholdsRef.current = glyphThresholds }, [glyphThresholds])
-
-  useEffect(() => {
-    const el = previewSectionRef.current
-    if (!el) return
-    const ro = new ResizeObserver(entries => {
-      setTrackWidth(entries[0].contentRect.width)
-    })
-    ro.observe(el)
-    return () => ro.disconnect()
-  }, [axes.length, error])
 
   function pushThresholdHistory() {
     thresholdPastRef.current = [...thresholdPastRef.current, glyphThresholdsRef.current]
@@ -179,9 +179,42 @@ export default function App() {
   }, [])
 
   useEffect(() => {
+    if (!dragState) return
+    function onMove(e: PointerEvent) {
+      setDragState(s => s ? { ...s, x: e.clientX, y: e.clientY } : null)
+    }
+    function onUp(e: PointerEvent) {
+      setDragState(s => {
+        if (!s) return null
+        const el = zoneGridRef.current
+        let targetZone: string | null = null
+        if (el) {
+          const rect = el.getBoundingClientRect()
+          const pct = (e.clientX - rect.left) / rect.width
+          if (pct >= 0 && pct <= 1) {
+            const idx = Math.floor(pct * 4)
+            targetZone = LANDING_ZONES[idx]?.label ?? null
+          }
+        }
+        if (targetZone !== s.sourceZone) {
+          setGlyphThresholds(prev => applyDrop(s.tok.glyph, s.tok.variantIdx, targetZone, prev))
+        }
+        return null
+      })
+    }
+    window.addEventListener('pointermove', onMove)
+    window.addEventListener('pointerup', onUp)
+    return () => {
+      window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerup', onUp)
+    }
+  }, [dragState])
+
+  useEffect(() => {
     if (!workerReadyRef.current) return
     if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current)
     previewDebounceRef.current = setTimeout(() => {
+      setPreviewRebuilding(true)
       workerRef.current!.postMessage({
         type: 'previewFont',
         thresholdsJson: JSON.stringify(glyphThresholds),
@@ -262,30 +295,6 @@ export default function App() {
     return parts.join(', ') || 'normal'
   }
 
-
-  // Threshold: font size at which the widest word at the current GEOM value would
-  // overflow into the next zone column. Measured with real HVAR-adjusted advances.
-  const overlapThreshold = (() => {
-    if (!wordWidths || trackWidth === 0) return 130
-    const currentGeom = defaults['GEOM'] ?? 0
-    const geomKey = String(Math.round(currentGeom))
-    const zoneWidths = wordWidths.widths[geomKey]
-    if (!zoneWidths) return 130
-    const maxAdvance = Math.max(...Object.values(zoneWidths))
-    if (maxAdvance === 0) return 130
-
-    // All 4 columns are visible simultaneously, so use the tightest adjacent gap
-    // (A11Y→UI at 15%) as the switching threshold — not the current GEOM zone's gap.
-    const innerTrack = trackWidth - LABELS_W
-    const minThreshold = Math.min(
-      ...LANDING_ZONES.slice(0, -1).map((z, i) => {
-        const gapPx = (LANDING_ZONES[i + 1].start - z.start) / 100 * innerTrack
-        return Math.floor(gapPx * wordWidths.upm / maxAdvance)
-      })
-    )
-    return minThreshold
-  })()
-  const showZonePreview = previewSize > overlapThreshold
 
   const ytasAxis = parametricAxes.find(a => a.tag === 'YTAS')
   const autoYtasValue = (ytasAxis && autoAscender && opszAxis) ? (() => {
@@ -463,7 +472,7 @@ export default function App() {
             </div>
           </section>
 
-          <section className="preview" ref={previewSectionRef}>
+          <section className="preview">
             <div className="control-group">
               <h2>Dynamic Optical Size Map Preview</h2>
               <div className="preview-size-row">
@@ -487,41 +496,109 @@ export default function App() {
               </label>
             </div>
 
-            {axes.length > 0 && (
-              <div
-                className="zone-preview-large-wrap"
-                style={{ height: previewSize * 1.2 * PREVIEW_WORDS.length + 48 }}
-              >
-                {LANDING_ZONES.map((z, zi) => {
-                  const left = zi === 0
-                    ? `${LABELS_W}px`
-                    : showZonePreview
-                      ? `${zi * 25}%`
-                      : `calc(${(LABELS_W * (1 - z.start / 100)).toFixed(1)}px + ${z.start}%)`
+            {axes.length > 0 && (() => {
+              const zoneTokenMap = getZoneTokens(glyphThresholds)
+              const dragTargetZone = dragState && zoneGridRef.current ? (() => {
+                const rect = zoneGridRef.current!.getBoundingClientRect()
+                const pct = (dragState.x - rect.left) / rect.width
+                if (pct < 0 || pct > 1) return null
+                return LANDING_ZONES[Math.floor(pct * 4)]?.label ?? null
+              })() : null
+
+              return (
+              <div className={`zone-grid${previewRebuilding ? ' zone-grid--rebuilding' : ''}`} ref={zoneGridRef}>
+                {LANDING_ZONES.map((z) => {
+                  const isActive = activeZoneName === z.label
+                  const isDragTarget = dragTargetZone === z.label
                   return (
-                    <div key={z.label}
-                      className="zone-preview-large-col"
-                      style={{
-                        left,
-                        opacity: activeZoneName ? (activeZoneName === z.label ? 1 : 0.3) : 1,
-                      }}
+                    <div
+                      key={z.label}
+                      className={`zone-col${isActive ? ' zone-col--active' : ''}${isDragTarget ? ' zone-col--drag-target' : ''}`}
+                      style={{ '--zone-color': z.color } as React.CSSProperties}
                     >
-                      {PREVIEW_WORDS.map(word => (
-                        <p key={word} className="zone-preview-large-word" style={{
-                          fontSize: previewSize,
-                          fontVariationSettings: previewVarSettings(previewSize, z.mid),
-                          fontFeatureSettings: "'rclt' 1",
-                        }}>
-                          {word}
-                        </p>
-                      ))}
+                      <div
+                        className="zone-col-header"
+                        onClick={() => handleSliderChange('GEOM', z.mid)}
+                        style={{ cursor: 'pointer' }}
+                      >
+                        <span
+                          className="zone-col-preview-word"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setPreviewModal({
+                              zone: z,
+                              size: previewSize,
+                              spacing: 0,
+                              axisValues: { ...defaults, GEOM: z.mid },
+                            })
+                          }}
+                        >Preview</span>
+                        {!isActive && <>{' '}Variable</>}
+                        <br />
+                        {isActive ? 'Default' : 'Alternate'} Configuration
+                        <div className="zone-col-geom-default">
+                          {isActive
+                            ? `Default GEOM: ${Math.round(defaults['GEOM'] ?? 0)}`
+                            : 'Variable font feature'}
+                        </div>
+                      </div>
+                      <div className="zone-col-words">
+                        {PREVIEW_WORDS.map(word => (
+                          <p key={word} className="zone-col-word" style={{
+                            fontSize: previewSize,
+                            fontVariationSettings: previewVarSettings(previewSize, z.mid),
+                            fontFeatureSettings: "'rclt' 1",
+                          }}>
+                            {word}
+                          </p>
+                        ))}
+                      </div>
+                      <div
+                        className="zone-swatch-row"
+                        onClick={() => handleSliderChange('GEOM', z.mid)}
+                      >
+                        <div className="zone-swatch" />
+                        <span className="zone-range-label">
+                          GEOM: <span className="zone-range-nums">{z.start}–{z.end}</span> {z.label}
+                        </span>
+                      </div>
+                      <div className="zone-rosetta-bin">
+                        {(zoneTokenMap[z.label] ?? []).map(tok => {
+                          const isDraggingThis = dragState?.tok.glyph === tok.glyph && dragState.tok.variantIdx === tok.variantIdx
+                          return (
+                            <span
+                              key={`${tok.glyph}-${tok.variantIdx}`}
+                              className={`zone-token${tok.isDefault ? ' zone-token--default' : ''}${isDraggingThis ? ' zone-token--dragging' : ''}`}
+                              style={{
+                                fontVariationSettings: previewVarSettings(52, z.sampleGeom),
+                                fontFeatureSettings: "'rclt' 1",
+                              }}
+                              onPointerDown={tok.isDefault ? undefined : (e) => {
+                                e.preventDefault()
+                                e.currentTarget.setPointerCapture(e.pointerId)
+                                pushThresholdHistory()
+                                setDragState({ tok, sourceZone: z.label, x: e.clientX, y: e.clientY })
+                              }}
+                            >
+                              {tok.glyph}
+                            </span>
+                          )
+                        })}
+                      </div>
                     </div>
                   )
                 })}
               </div>
-            )}
+              )
+            })()}
 
-            {geomAxis && (
+            <div className="xray-toggle-row xray-toggle-row--left">
+              <button className="xray-toggle-btn" onClick={() => setShowXRay(v => !v)}>
+                {showXRay ? 'Hide Type Matrix' : 'Type Matrix'}
+              </button>
+            </div>
+
+            {showXRay && geomAxis && (
               <GlyphGroups
                 thresholds={glyphThresholds}
                 geomDefault={defaults['GEOM'] ?? geomAxis.default}
@@ -582,6 +659,127 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {previewModal && (() => {
+        const m = previewModal
+        const modalVarSettings = axes.map(a => `'${a.tag}' ${m.axisValues[a.tag] ?? a.default}`).join(', ')
+        const setAxis = (tag: string, v: number) =>
+          setPreviewModal(prev => prev && ({ ...prev, axisValues: { ...prev.axisValues, [tag]: v } }))
+        const shrpAxis = axes.find(a => a.tag === 'SHRP')
+        const wghtAxis = axes.find(a => a.tag === 'wght')
+
+        return (
+          <div className="preview-modal-overlay" onClick={() => setPreviewModal(null)}>
+            <div className="preview-modal-panel" onClick={e => e.stopPropagation()}>
+
+              <div className="preview-modal-header">
+                <span>
+                  {activeZoneName === m.zone.label
+                    ? 'Default font preview'
+                    : <><span style={{ color: m.zone.color }}>{m.zone.label}</span> variable feature preview</>
+                  }
+                </span>
+                <button className="modal-close" onClick={() => setPreviewModal(null)}>✕</button>
+              </div>
+
+              <div className="pm-top-row">
+                <div className="pm-ctrl">
+                  <div className="pm-label">Size <span className="pm-val">{m.size}px</span></div>
+                  <input type="range" min={12} max={200} step={1} value={m.size}
+                    onChange={e => setPreviewModal(prev => prev && ({ ...prev, size: +e.target.value }))} />
+                </div>
+                <div className="pm-ctrl">
+                  <div className="pm-label">Spacing <span className="pm-val">{m.spacing > 0 ? '+' : ''}{m.spacing}%</span></div>
+                  <input type="range" min={-10} max={30} step={1} value={m.spacing}
+                    onChange={e => setPreviewModal(prev => prev && ({ ...prev, spacing: +e.target.value }))} />
+                </div>
+              </div>
+
+              <div className="pm-axes-row">
+                {opszAxis && (
+                  <div className="pm-ctrl">
+                    <div className="pm-label">Optical Size <span className="pm-val">{Math.round(m.axisValues['opsz'] ?? opszAxis.default)}</span></div>
+                    <input type="range" min={opszAxis.min} max={opszAxis.max} step={1}
+                      value={m.axisValues['opsz'] ?? opszAxis.default}
+                      onChange={e => setAxis('opsz', +e.target.value)} />
+                  </div>
+                )}
+                {geomAxis && (
+                  <div className="pm-ctrl pm-ctrl--geom">
+                    <div className="pm-label">Geometric Form <span className="pm-val">{Math.round(m.axisValues['GEOM'] ?? geomAxis.default)}</span></div>
+                    <div className="pm-zone-tabs">
+                      {LANDING_ZONES.map(z => (
+                        <button key={z.label}
+                          className={`pm-zone-tab${m.zone.label === z.label ? ' active' : ''}`}
+                          style={{ '--tab-color': z.color } as React.CSSProperties}
+                          onClick={() => setPreviewModal(prev => prev && ({
+                            ...prev, zone: z, axisValues: { ...prev.axisValues, GEOM: z.mid }
+                          }))}
+                        >{z.label}</button>
+                      ))}
+                    </div>
+                    <input type="range" min={geomAxis.min} max={geomAxis.max} step={1}
+                      value={m.axisValues['GEOM'] ?? geomAxis.default}
+                      onChange={e => setAxis('GEOM', +e.target.value)} />
+                  </div>
+                )}
+                {wghtAxis && (
+                  <div className="pm-ctrl">
+                    <div className="pm-label">Weight <span className="pm-val">{Math.round(m.axisValues['wght'] ?? wghtAxis.default)}</span></div>
+                    <input type="range" min={wghtAxis.min} max={wghtAxis.max} step={1}
+                      value={m.axisValues['wght'] ?? wghtAxis.default}
+                      onChange={e => setAxis('wght', +e.target.value)} />
+                  </div>
+                )}
+                {ytasAxis && (
+                  <div className="pm-ctrl">
+                    <div className="pm-label">Ascender Height <span className="pm-val">{Math.round(m.axisValues['YTAS'] ?? ytasAxis.default)}</span></div>
+                    <input type="range" min={ytasAxis.min} max={ytasAxis.max} step={1}
+                      value={m.axisValues['YTAS'] ?? ytasAxis.default}
+                      onChange={e => setAxis('YTAS', +e.target.value)} />
+                  </div>
+                )}
+                {shrpAxis && (
+                  <div className="pm-ctrl">
+                    <div className="pm-label">Sharp <span className="pm-val">{Math.round(m.axisValues['SHRP'] ?? shrpAxis.default)}</span></div>
+                    <input type="range" min={shrpAxis.min} max={shrpAxis.max} step={1}
+                      value={m.axisValues['SHRP'] ?? shrpAxis.default}
+                      onChange={e => setAxis('SHRP', +e.target.value)} />
+                  </div>
+                )}
+              </div>
+
+              <div
+                className="preview-modal-text"
+                contentEditable
+                suppressContentEditableWarning
+                style={{
+                  fontSize: m.size,
+                  fontVariationSettings: modalVarSettings,
+                  fontFeatureSettings: "'rclt' 1",
+                  letterSpacing: `${m.spacing / 100}em`,
+                }}
+                data-placeholder="Type away..."
+              />
+            </div>
+          </div>
+        )
+      })()}
+
+      {dragState && (
+        <span
+          className="zone-token drag-ghost"
+          style={{
+            left: dragState.x,
+            top: dragState.y,
+            fontVariationSettings: previewVarSettings(52, LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.sampleGeom ?? 50),
+            fontFeatureSettings: "'rclt' 1",
+            color: LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.color ?? '#e8e8e8',
+          } as React.CSSProperties}
+        >
+          {dragState.tok.glyph}
+        </span>
       )}
     </div>
   )
