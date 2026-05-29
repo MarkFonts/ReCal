@@ -48,21 +48,16 @@ body {
 
 header {
   margin-bottom: 40px;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  column-gap: 48px;
+  align-items: start;
 }
 
-/* Keep attribution consistently positioned at the controls-column offset at all wide widths */
-@media (min-width: 701px) {
+@media (max-width: 700px) {
   header {
-    display: grid;
-    grid-template-columns: 280px 1fr auto;
-    column-gap: 48px;
-    row-gap: 0;
-    align-items: end;
+    grid-template-columns: 1fr;
+    gap: 20px;
   }
 }
 
@@ -124,8 +119,7 @@ h1 {
   font-size: 0.72rem;
   color: #444;
   line-height: 1.5;
-  max-width: 340px;
-  align-self: flex-end;
+  max-width: 500px;
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 10, 'GEOM' 25;
 }
@@ -225,9 +219,7 @@ h2 {
     overflow-x: auto;
   }
   .download-gate {
-    order: -1;
     width: 100%;
-    justify-content: flex-end;
   }
 }
 
@@ -976,8 +968,9 @@ button:disabled {
 
 .download-gate {
   display: flex;
-  align-items: center;
-  gap: 20px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
   flex-shrink: 0;
 }
 
