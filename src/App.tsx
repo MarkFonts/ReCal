@@ -37,6 +37,7 @@ export default function App() {
   const [freezeOpsz, setFreezeOpsz] = useState(false)
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
   const [oflAgreed, setOflAgreed] = useState(false)
+  const [oflAttempted, setOflAttempted] = useState(false)
   const [autoAscender, setAutoAscender] = useState(false)
   const [showAscenderModal, setShowAscenderModal] = useState(false)
   const [showXRay, setShowXRay] = useState(false)
@@ -377,21 +378,28 @@ export default function App() {
           </a>
           , repurposed by WORDMARK to make the OFL mission more accessible.
         </p>
-        <div className={`download-gate${oflAgreed ? ' ofl-agreed' : ''}`}>
-          <div className="ofl-gate">
+        <div className="download-gate">
+          <label className={`ofl-checkbox${oflAttempted && !oflAgreed ? ' ofl-checkbox--required' : ''}`} id="ofl-label">
+            <input
+              type="checkbox"
+              checked={oflAgreed}
+              onChange={e => setOflAgreed(e.target.checked)}
+            />
+            I accept the{' '}
             <a
               href="https://openfontlicense.org/open-font-license-official-text/"
               target="_blank"
               rel="noopener noreferrer"
-              className="ofl-link"
+              className="ofl-inline-link"
+              onClick={e => e.stopPropagation()}
             >OFL 1.1</a>
-            <button className="ofl-accept-btn" onClick={() => setOflAgreed(true)}>
-              Accept
-            </button>
-          </div>
+          </label>
           <button
-            disabled={isDownloading || axes.length === 0 || !oflAgreed}
-            onClick={downloadTTF}
+            disabled={isDownloading || axes.length === 0}
+            onClick={() => {
+              if (!oflAgreed) { setOflAttempted(true); return }
+              downloadTTF()
+            }}
           >
             {isDownloading ? 'Generating…' : 'Download Custom TTF'}
           </button>

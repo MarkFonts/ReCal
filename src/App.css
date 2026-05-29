@@ -977,64 +977,52 @@ button:disabled {
 .download-gate {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
   flex-shrink: 0;
 }
 
-.ofl-gate {
+.ofl-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
-  max-width: 0;
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: max-width 0.35s ease, opacity 0.2s ease;
-}
-
-.download-gate:not(.ofl-agreed):hover .ofl-gate {
-  max-width: 160px;
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.ofl-link {
-  font-size: 0.8rem;
+  gap: 6px;
+  font-size: 0.78rem;
   color: #888;
+  cursor: pointer;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.ofl-checkbox--required {
+  color: #c94040;
+  animation: ofl-nudge 0.35s ease;
+}
+
+.ofl-checkbox input[type="checkbox"] {
+  width: 13px;
+  height: 13px;
+  cursor: pointer;
+  accent-color: #c97050;
+  flex-shrink: 0;
+}
+
+.ofl-inline-link {
+  color: inherit;
   text-decoration: underline;
   text-underline-offset: 2px;
 }
 
-.ofl-link:hover {
-  color: #e8e8e8;
+.ofl-inline-link:hover {
+  opacity: 0.8;
 }
 
-.ofl-accept-btn {
-  font-size: 0.8rem;
-  color: #ccc;
-  background: none;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 4px 10px;
-  cursor: pointer;
-  white-space: nowrap;
+@keyframes ofl-nudge {
+  0%   { transform: translateX(0); }
+  20%  { transform: translateX(-4px); }
+  50%  { transform: translateX(5px); }
+  75%  { transform: translateX(-3px); }
+  100% { transform: translateX(0); }
 }
 
-.download-gate .ofl-accept-btn:hover {
-  background: none;
-  color: #fff;
-  border-color: #aaa;
-}
-
-@media (max-width: 700px) {
-  .ofl-gate {
-    max-width: 160px;
-    opacity: 1;
-    pointer-events: auto;
-  }
-}
 
 /* Auto-controlled axis (grayed out) */
 
