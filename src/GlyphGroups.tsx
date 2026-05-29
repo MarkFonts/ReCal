@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 
-type VariantLabel = 'A11Y' | 'UI' | 'default' | 'Base' | 'Geo'
+export type VariantLabel = 'A11Y' | 'UI' | 'default' | 'Base' | 'Geo'
 type Variant = { label: VariantLabel; color: string }
 
 export type GroupDef = {
@@ -18,15 +18,15 @@ const V: Record<VariantLabel, Variant> = {
 }
 
 export const GROUP_DEFS: GroupDef[] = [
-  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [5] },
+  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [11] },
   { glyph: 'l', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [14, 35] },
+  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [11, 35] },
   { glyph: 'G', variants: [V.UI, V.default], defaultThresholds: [41] },
   { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [16] },
   { glyph: 'f', variants: [V.default, V.Base], defaultThresholds: [40] },
-  { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 76] },
-  { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 76] },
-  { glyph: 'y', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 61] },
+  { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 74] },
+  { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 74] },
+  { glyph: 'y', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 60] },
   { glyph: 'u', variants: [V.default, V.Geo], defaultThresholds: [60] },
   { glyph: 'C', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: 'c', variants: [V.default, V.Geo], defaultThresholds: [79] },
@@ -251,7 +251,7 @@ const ZONE_ORDER = LANDING_ZONES.map(z => z.label)
 
 // Thresholds land in the gutter midpoint between zones, leaving a sliver of the
 // variant visible in the transition band rather than cutting off at the zone edge.
-const ZONE_DEACT = Object.fromEntries(LANDING_ZONES.map((z, i) => {
+export const ZONE_DEACT = Object.fromEntries(LANDING_ZONES.map((z, i) => {
   const next = LANDING_ZONES[i + 1]
   return [z.label, next ? Math.round((z.end + next.start) / 2) : z.end]
 }))
@@ -323,7 +323,110 @@ export function applyDrop(
     newT[i] = Math.max(newT[i], newT[i - 1] + 1)
   }
 
+  // Post-process: if the dragged variant's threshold didn't land it inside the
+  // target zone (can happen when gutter midpoints collide for 3-variant glyphs),
+  // force the activation threshold to the zone's start so tokenZone agrees.
+  if (targetZone !== null) {
+    const actualZone = tokenZone(def, variantIdx, newT)
+    if (actualZone !== targetZone) {
+      const tz = LANDING_ZONES.find(z => z.label === targetZone)
+      if (tz) {
+        if (variantIdx > 0) {
+          newT[variantIdx - 1] = tz.start
+        } else {
+          newT[0] = tz.end - 1
+        }
+        for (let i = 1; i < newT.length; i++) {
+          newT[i] = Math.max(newT[i], newT[i - 1] + 1)
+        }
+      }
+    }
+  }
+
   return { ...glyphThresholds, [glyph]: newT }
+}
+
+// Delete a variant while dragging: collapse its range to zero so the flanking
+// non-default variants expand to fill 0–100.
+export function applyDelete(
+  glyph: string,
+  variantIdx: number,
+  sourceZone: string,
+  glyphThresholds: Record<string, number[]>
+): Record<string, number[]> {
+  const def = GROUP_DEFS.find(d => d.glyph === glyph)
+  if (!def) return glyphThresholds
+  const t = [...(glyphThresholds[glyph] ?? [...def.defaultThresholds])]
+  const isDefaultVariant = def.variants[variantIdx].label === 'default'
+
+  if (isDefaultVariant) {
+    const vi = variantIdx
+    if (vi === 0) {
+      // default is first — next variant takes the whole range
+      t[0] = 0
+    } else if (vi === def.variants.length - 1) {
+      // default is last — previous variant takes the whole range
+      t[vi - 1] = 100
+    } else {
+      // default is in the middle (e.g. a: [A11Y, default, Base])
+      // Lower variant expands to fill sourceZone; upper starts at next zone.
+      const deact = ZONE_DEACT[sourceZone as keyof typeof ZONE_DEACT] ?? 99
+      t[vi - 1] = Math.min(deact, 99)
+      t[vi]     = Math.min(deact + 1, 100)
+    }
+  } else {
+    // Non-default: remove from rclt (collapse its range to 0 / 1 unit).
+    // The flanking default/other variants expand to fill the vacated range.
+    if (variantIdx === 0) {
+      // First variant (e.g. A11Y): threshold → 0, so geom is never below it.
+      t[0] = 0
+    } else if (variantIdx === def.variants.length - 1) {
+      // Last variant (e.g. Base in [default, Base]): push activation threshold
+      // to 100 so it only fires at exactly geom=100 — effectively never.
+      t[variantIdx - 1] = 100
+    } else {
+      // Middle non-default: compress range to 1 unit at current position.
+      t[variantIdx] = t[variantIdx - 1] + 1
+    }
+  }
+
+  for (let i = 0; i < t.length; i++) t[i] = Math.max(0, Math.min(100, t[i]))
+  return { ...glyphThresholds, [glyph]: t }
+}
+
+// Drop a default billiards token onto a new zone: moves the threshold that
+// placed the billiards to the gutter before targetZone.
+export function applyDefaultDrop(
+  glyph: string,
+  sourceZone: string,
+  targetZone: string,
+  glyphThresholds: Record<string, number[]>
+): Record<string, number[]> {
+  const def = GROUP_DEFS.find(d => d.glyph === glyph)
+  if (!def) return glyphThresholds
+  const t = [...(glyphThresholds[glyph] ?? [...def.defaultThresholds])]
+
+  const srcIdx = LANDING_ZONES.findIndex(z => z.label === sourceZone)
+  const tgtIdx = LANDING_ZONES.findIndex(z => z.label === targetZone)
+  if (srcIdx < 1 || tgtIdx < 0 || srcIdx === tgtIdx) return glyphThresholds
+
+  // The threshold that caused the billiards is the one in the window
+  // [prevZone.start, sourceZone.start).
+  const prevZone = LANDING_ZONES[srcIdx - 1]
+  const srcStart = LANDING_ZONES[srcIdx].start
+  const triggerIdx = t.findIndex(thresh => thresh >= prevZone.start && thresh < srcStart)
+  if (triggerIdx < 0) return glyphThresholds
+
+  // Move it to the gutter before targetZone (or zone start if no prevZone).
+  if (tgtIdx === 0) return glyphThresholds  // A11Y has no gutter before it
+  const tgtPrevZone = LANDING_ZONES[tgtIdx - 1]
+  t[triggerIdx] = ZONE_DEACT[tgtPrevZone.label as keyof typeof ZONE_DEACT] ?? tgtPrevZone.end
+
+  // Re-sort and clamp
+  t.sort((a, b) => a - b)
+  for (let i = 1; i < t.length; i++) t[i] = Math.max(t[i], t[i - 1] + 1)
+  for (let i = 0; i < t.length; i++) t[i] = Math.max(0, Math.min(100, t[i]))
+  return { ...glyphThresholds, [glyph]: t }
 }
 
 export function GlyphGroups({ thresholds, geomDefault, defaults, opszDefault, onThresholdChange, onGeomChange, varSettingsForGeom, previewSize, hidePreviewWords, onThresholdDragStart }: {

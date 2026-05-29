@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './App.css'
-import { GlyphGroups, GROUP_DEFS, LANDING_ZONES, PREVIEW_WORDS, getZoneTokens, applyDrop, type ZoneToken } from './GlyphGroups'
+import { GlyphGroups, GROUP_DEFS, LANDING_ZONES, PREVIEW_WORDS, getZoneTokens, applyDrop, applyDelete, applyDefaultDrop, type ZoneToken, type VariantLabel } from './GlyphGroups'
 
 export type AxisInfo = { tag: string; name: string; min: number; default: number; max: number }
 
@@ -19,7 +19,7 @@ const OPSZ_CONTEXT = [
 
 const FONT_URLS = {
   hoi: `${import.meta.env.BASE_URL}fonts/CalSansVariable2.ttf`,
-  standard: `${import.meta.env.BASE_URL}fonts/CalSans-Regular_1_950_opsz14_GEOM25.ttf`,
+  standard: `${import.meta.env.BASE_URL}fonts/ReCalSans-Variable.ttf`,
 }
 
 export default function App() {
@@ -50,6 +50,10 @@ export default function App() {
   const [dragState, setDragState] = useState<{
     tok: ZoneToken; sourceZone: string; x: number; y: number
   } | null>(null)
+  const [trashedGlyphs, setTrashedGlyphs] = useState<Array<{
+    glyph: string; variantIdx: number; variantLabel: VariantLabel
+    sourceZone: string; savedThresholds: number[]; color: string
+  }>>([])
   const zoneGridRef = useRef<HTMLDivElement | null>(null)
 
   const workerRef = useRef<Worker | null>(null)
@@ -197,16 +201,40 @@ export default function App() {
           }
         }
         if (targetZone !== s.sourceZone) {
-          setGlyphThresholds(prev => applyDrop(s.tok.glyph, s.tok.variantIdx, targetZone, prev))
+          if (s.tok.isDefault) {
+            if (targetZone) {
+              pushThresholdHistory()
+              setGlyphThresholds(prev => applyDefaultDrop(s.tok.glyph, s.sourceZone, targetZone!, prev))
+            }
+          } else {
+            setGlyphThresholds(prev => applyDrop(s.tok.glyph, s.tok.variantIdx, targetZone, prev))
+          }
         }
         return null
       })
     }
+    function onKey(e: KeyboardEvent) {
+      if (e.key !== 'Delete' && e.key !== 'Backspace') return
+      if (!dragState) return
+      e.preventDefault()
+      const s = dragState
+      const savedThresholds = [...(glyphThresholdsRef.current[s.tok.glyph] ?? GROUP_DEFS.find(d => d.glyph === s.tok.glyph)?.defaultThresholds ?? [])]
+      const color = LANDING_ZONES.find(z => z.label === s.sourceZone)?.color ?? '#888'
+      setTrashedGlyphs(prev => {
+        const filtered = prev.filter(t => !(t.glyph === s.tok.glyph && t.variantIdx === s.tok.variantIdx))
+        return [...filtered, { glyph: s.tok.glyph, variantIdx: s.tok.variantIdx, variantLabel: s.tok.variantLabel, sourceZone: s.sourceZone, savedThresholds, color }]
+      })
+      pushThresholdHistory()
+      setGlyphThresholds(prev => applyDelete(s.tok.glyph, s.tok.variantIdx, s.sourceZone, prev))
+      setDragState(null)
+    }
     window.addEventListener('pointermove', onMove)
     window.addEventListener('pointerup', onUp)
+    window.addEventListener('keydown', onKey)
     return () => {
       window.removeEventListener('pointermove', onMove)
       window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('keydown', onKey)
     }
   }, [dragState])
 
@@ -580,10 +608,10 @@ export default function App() {
                                 fontVariationSettings: previewVarSettings(52, z.sampleGeom),
                                 fontFeatureSettings: "'rclt' 1",
                               }}
-                              onPointerDown={tok.isDefault ? undefined : (e) => {
+                              onPointerDown={(e) => {
                                 e.preventDefault()
                                 e.currentTarget.setPointerCapture(e.pointerId)
-                                pushThresholdHistory()
+                                if (!tok.isDefault) pushThresholdHistory()
                                 setDragState({ tok, sourceZone: z.label, x: e.clientX, y: e.clientY })
                               }}
                             >
@@ -603,6 +631,17 @@ export default function App() {
               <button className="xray-toggle-btn" onClick={() => setShowXRay(v => !v)}>
                 {showXRay ? 'Hide Type Matrix' : 'Type Matrix'}
               </button>
+              <button
+                className="xray-toggle-btn"
+                style={{ marginLeft: 8 }}
+                onClick={() => {
+                  pushThresholdHistory()
+                  setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
+                  setTrashedGlyphs([])
+                }}
+              >
+                Reset
+              </button>
             </div>
 
             {showXRay && geomAxis && (
@@ -620,6 +659,32 @@ export default function App() {
                 hidePreviewWords={true}
                 onThresholdDragStart={pushThresholdHistory}
               />
+            )}
+
+            {trashedGlyphs.length > 0 && (
+              <div className="trash-bar">
+                <span className="trash-bar-label">Deleted</span>
+                {trashedGlyphs.map((item) => (
+                  <span
+                    key={`${item.glyph}-${item.variantIdx}`}
+                    className="zone-token trash-token"
+                    title={`Restore ${item.glyph} (${item.variantLabel})`}
+                    style={{
+                      fontVariationSettings: previewVarSettings(32, LANDING_ZONES.find(z => z.label === item.sourceZone)?.sampleGeom ?? 50),
+                      fontFeatureSettings: "'rclt' 1",
+                      color: item.color,
+                      '--zone-color': item.color,
+                    } as React.CSSProperties}
+                    onClick={() => {
+                      pushThresholdHistory()
+                      setGlyphThresholds(prev => ({ ...prev, [item.glyph]: item.savedThresholds }))
+                      setTrashedGlyphs(prev => prev.filter(t => t.glyph !== item.glyph || t.variantIdx !== item.variantIdx))
+                    }}
+                  >
+                    {item.glyph}
+                  </span>
+                ))}
+              </div>
             )}
 
           </section>
@@ -775,18 +840,25 @@ export default function App() {
       })()}
 
       {dragState && (
-        <span
-          className="zone-token drag-ghost"
-          style={{
-            left: dragState.x,
-            top: dragState.y,
-            fontVariationSettings: previewVarSettings(52, LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.sampleGeom ?? 50),
-            fontFeatureSettings: "'rclt' 1",
-            color: LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.color ?? '#e8e8e8',
-          } as React.CSSProperties}
+        <div
+          className="drag-ghost-wrap"
+          style={{ left: dragState.x, top: dragState.y } as React.CSSProperties}
         >
-          {dragState.tok.glyph}
-        </span>
+          <span
+            className="zone-token drag-ghost-token"
+            style={{
+              fontVariationSettings: previewVarSettings(52, LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.sampleGeom ?? 50),
+              fontFeatureSettings: "'rclt' 1",
+              color: LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.color ?? '#e8e8e8',
+              '--zone-color': LANDING_ZONES.find(z => z.label === dragState.sourceZone)?.color ?? '#e8e8e8',
+            } as React.CSSProperties}
+          >
+            {dragState.tok.glyph}
+          </span>
+          <div className="drag-ghost-label">
+            {dragState.tok.isDefault ? 'default' : dragState.tok.variantLabel} · ⌫ delete
+          </div>
+        </div>
       )}
     </div>
   )

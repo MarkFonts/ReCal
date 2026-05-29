@@ -110,6 +110,12 @@ def _do_preview():
                     key = (base, variant.rsplit('.', 1)[1])
                     if key not in var_lk:
                         var_lk[key] = i
+    # Normalize suffix aliases so both CalSansVariable2 (rcltText/rcltA11Y)
+    # and ReCalSans-Variable (rcltBase/rcltA11y) resolve correctly.
+    for (g, suf), lk_idx in list(var_lk.items()):
+        for old, new in [('rcltA11y','rcltA11Y'),('rcltBase','rcltText')]:
+            if suf == old and (g, new) not in var_lk:
+                var_lk[(g, new)] = lk_idx
     # Variant order per glyph — must match GROUP_DEFS in GlyphGroups.tsx
     GV = {
         'I': ['rcltA11Y', 'default'],
