@@ -116,6 +116,18 @@ def _do_preview():
         for old, new in [('rcltA11y','rcltA11Y'),('rcltBase','rcltText')]:
             if suf == old and (g, new) not in var_lk:
                 var_lk[(g, new)] = lk_idx
+    # Digit glyphs: font uses 'zero'/'one' as glyph names; we key on '0'/'1'.
+    digit_chars = {'zero': '0', 'one': '1'}
+    for i2, lk2 in enumerate(gsub.table.LookupList.Lookup):
+        for sub2 in lk2.SubTable:
+            if not hasattr(sub2, 'mapping'):
+                continue
+            for base2, variant2 in sub2.mapping.items():
+                char = digit_chars.get(base2)
+                if char and '.' in variant2:
+                    key2 = (char, variant2.rsplit('.', 1)[1])
+                    if key2 not in var_lk:
+                        var_lk[key2] = i2
     # Variant order per glyph — must match GROUP_DEFS in GlyphGroups.tsx
     GV = {
         'I': ['rcltA11Y', 'default'],
@@ -131,6 +143,8 @@ def _do_preview():
         'C': ['default', 'rcltGeo'],
         'c': ['default', 'rcltGeo'],
         'M': ['default', 'rcltGeo'],
+        '0': ['default', 'rcltGeo'],
+        '1': ['default', 'rcltGeo'],
     }
     def lks_at(geom):
         seen, result = set(), []

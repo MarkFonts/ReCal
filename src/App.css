@@ -68,8 +68,16 @@ header {
   margin-bottom: 10px;
 }
 
+/* Presets above zone columns — 2:1 ratio, compact */
+.presets-above {
+  display: grid;
+  grid-template-columns: repeat(3, 120px);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
 .preset-btn {
-  aspect-ratio: 1;
+  aspect-ratio: 2 / 1;
   background: #111;
   border: 1px solid #2e2e2e;
   border-radius: 10px;
@@ -1285,4 +1293,244 @@ button:disabled {
   content: attr(data-placeholder);
   color: #333;
   pointer-events: none;
+}
+
+/* ── Dialkit Slider overrides ─────────────────────────────────── */
+
+.dial-axis-row {
+  margin-bottom: 16px;
+}
+
+/* Hide tick marks — keep handle + fill only */
+.dialkit-slider-hashmarks {
+  display: none;
+}
+
+/* Slightly taller row to feel substantial */
+.controls.dialkit-root {
+  --dial-row-height: 40px;
+}
+
+/* ── Glyph palette column ──────────────────────────────────────── */
+
+.zone-area-wrap {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 16px;
+}
+
+.glyph-palette {
+  width: 88px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #1e1e1e;
+  padding-right: 8px;
+  margin-right: 0;
+}
+
+.glyph-palette-rows {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.palette-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 5px 0;
+  border-bottom: 1px solid #1a1a1a;
+}
+
+.palette-row:last-child {
+  border-bottom: none;
+}
+
+.palette-token {
+  font-size: 22px;
+  line-height: 1.15;
+  display: inline-block;
+  user-select: none;
+  border-radius: 4px;
+  padding: 1px 2px;
+  transition: background 0.1s, opacity 0.1s;
+  font-optical-sizing: none;
+}
+
+.palette-token--active {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+[style*="cursor: grab"].palette-token:hover {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+/* Trash zone at bottom of palette */
+.palette-trash {
+  border-top: 1px solid #1e1e1e;
+  padding: 6px 0 4px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  align-items: center;
+  min-height: 36px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.palette-trash--active {
+  background: rgba(220, 80, 60, 0.12);
+  outline: 1px dashed rgba(220, 80, 60, 0.4);
+  outline-offset: 2px;
+}
+
+.palette-trash-label {
+  font-size: 0.55rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #333;
+  width: 100%;
+  margin-bottom: 2px;
+}
+
+/* Zone grid no longer has standalone margin-bottom (handled by wrap) */
+.zone-area-wrap > .zone-grid {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+/* Zone drag target highlight still works */
+.zone-col--drag-target {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Preview size slider at bottom */
+.preview-size-row--bottom {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0 6px;
+  border-top: 1px solid #1a1a1a;
+  margin-top: 10px;
+}
+
+/* Palette row — more vertical breathing room */
+.palette-row {
+  padding: 6px 0 !important;
+}
+
+/* Inactive palette tokens dimmed */
+.palette-token:not(.palette-token--active) {
+  opacity: 0.32;
+}
+
+/* Presets + add button side by side */
+.presets-wrap {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.preset-add-btn {
+  width: 36px;
+  flex-shrink: 0;
+  align-self: stretch;
+  background: #111;
+  border: 1px dashed #333;
+  border-radius: 10px;
+  color: #555;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.preset-add-btn:not(:disabled):hover {
+  border-color: #666;
+  color: #aaa;
+}
+
+.preset-add-btn:disabled {
+  cursor: default;
+  opacity: 0.4;
+}
+
+/* Compact inline presets row */
+.presets-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.presets-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+
+.presets-row .preset-btn {
+  aspect-ratio: unset;
+  padding: 5px 12px;
+  font-size: 0.72rem;
+  border-radius: 6px;
+  height: 28px;
+  white-space: nowrap;
+}
+
+.preset-btn--see-all {
+  color: #666 !important;
+  border-color: #222 !important;
+}
+
+/* Zone column radio row */
+.zone-col-radio-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.zone-col-radio-row input[type="radio"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 2px solid #444;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s;
+}
+
+.zone-col-radio-row input[type="radio"]:checked {
+  border-color: #e8e8e8;
+}
+
+.zone-col-radio-row input[type="radio"]:checked::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: #e8e8e8;
+}
+
+.zone-col-radio-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Force CalSansVF on dialkit sidebar controls */
+.controls.dialkit-root,
+.controls.dialkit-root * {
+  font-family: 'CalSansVF', sans-serif !important;
+  font-optical-sizing: none;
 }

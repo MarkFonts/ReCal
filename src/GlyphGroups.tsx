@@ -18,11 +18,11 @@ const V: Record<VariantLabel, Variant> = {
 }
 
 export const GROUP_DEFS: GroupDef[] = [
-  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [11] },
+  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [5] },
   { glyph: 'l', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [11, 35] },
+  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [13, 35] },
   { glyph: 'G', variants: [V.UI, V.default], defaultThresholds: [41] },
-  { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [16] },
+  { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [11] },
   { glyph: 'f', variants: [V.default, V.Base], defaultThresholds: [40] },
   { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 74] },
   { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 74] },
@@ -31,6 +31,8 @@ export const GROUP_DEFS: GroupDef[] = [
   { glyph: 'C', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: 'c', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: 'M', variants: [V.default, V.Geo], defaultThresholds: [79] },
+  { glyph: '0', variants: [V.default, V.Geo], defaultThresholds: [79] },
+  { glyph: '1', variants: [V.default, V.Geo], defaultThresholds: [79] },
 ]
 
 export const LANDING_ZONES = [
