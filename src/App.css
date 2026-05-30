@@ -1295,7 +1295,15 @@ button:disabled {
   pointer-events: none;
 }
 
-<<<<<<< HEAD
+/* Canonical opsz preview (opszDynamic = false) */
+.preview-mode-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+  flex-wrap: nowrap;
+}
+
 /* ── Dialkit Slider overrides ─────────────────────────────────── */
 
 .dial-axis-row {
@@ -1398,6 +1406,20 @@ button:disabled {
 .zone-area-wrap > .zone-grid {
   flex: 1;
   margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.preview-size-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.preview-size-inline input[type="range"] {
+  flex: 1;
+  min-width: 60px;
 }
 
 /* Zone drag target highlight still works */

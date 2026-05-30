@@ -666,7 +666,7 @@ export default function App() {
                         <div className="zone-col-words">
                           {opszDynamic || !opszAxis ? (
                             PREVIEW_WORDS.map(word => (
-                              <p key={word} className="zone-col-word" style={{ fontSize: previewSize, fontVariationSettings: previewVarSettings(previewSize, z.mid), fontFeatureSettings: "'rclt' 1" }}>{word}</p>
+                              <p key={word} className="zone-col-word" style={{ fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, z.mid), fontFeatureSettings: "'rclt' 1" }}>{word}</p>
                             ))
                           ) : (() => {
                             const smallSz = Math.round(14 * opszMultiplier)
@@ -724,7 +724,7 @@ export default function App() {
                 </label>
               )}
               <span className={`preview-px-label${opszDynamic ? '' : ' preview-size-row--off'}`} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                <span>{previewSize}px</span>
+                <span>{previewSize}pt</span>
                 <input type="range" min={12} max={200} step={1} value={previewSize} disabled={!opszDynamic} onChange={(e) => setPreviewSize(parseInt(e.target.value))} style={{ flex: 1 }} />
               </span>
             </div>
@@ -929,7 +929,7 @@ export default function App() {
                 contentEditable
                 suppressContentEditableWarning
                 style={{
-                  fontSize: m.size,
+                  fontSize: `${m.size}pt`,
                   fontVariationSettings: modalVarSettings,
                   fontFeatureSettings: "'rclt' 1",
                   letterSpacing: `${m.spacing / 100}em`,
