@@ -477,7 +477,7 @@ export function GlyphGroups({ thresholds, geomDefault, defaults, opszDefault, on
               >
                 {PREVIEW_WORDS.map(word => (
                   <p key={word} className="gg-preview-word" style={{
-                    fontSize: previewSize,
+                    fontSize: `${previewSize}pt`,
                     fontVariationSettings: varSettingsForGeom(z.mid),
                   }}>
                     {word}

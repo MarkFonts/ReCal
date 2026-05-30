@@ -533,24 +533,24 @@ export default function App() {
                   <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
                   <span>Dynamic size Preview</span>
                 </label>
-              </div>
-              <div className={`preview-size-row${opszDynamic ? '' : ' preview-size-row--off'}`}>
                 {opszDynamic && (
-                  <label className="hoi-toggle" style={{ marginRight: 10, flexShrink: 0 }}>
+                  <label className="hoi-toggle" style={{ flexShrink: 0 }}>
                     <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
                     <span>Freeze on export</span>
                   </label>
                 )}
-                <span className="preview-px-label">{previewSize}px</span>
-                <input
-                  type="range"
-                  min={12}
-                  max={200}
-                  step={1}
-                  value={previewSize}
-                  disabled={!opszDynamic}
-                  onChange={(e) => setPreviewSize(parseInt(e.target.value))}
-                />
+                <span className={`preview-size-inline${opszDynamic ? '' : ' preview-size-row--off'}`}>
+                  <span className="preview-px-label">{previewSize}pt</span>
+                  <input
+                    type="range"
+                    min={12}
+                    max={200}
+                    step={1}
+                    value={previewSize}
+                    disabled={!opszDynamic}
+                    onChange={(e) => setPreviewSize(parseInt(e.target.value))}
+                  />
+                </span>
               </div>
             </div>
 
@@ -604,7 +604,7 @@ export default function App() {
                         {opszDynamic || !opszAxis ? (
                           PREVIEW_WORDS.map(word => (
                             <p key={word} className="zone-col-word" style={{
-                              fontSize: previewSize,
+                              fontSize: `${previewSize}pt`,
                               fontVariationSettings: previewVarSettings(previewSize, z.mid),
                               fontFeatureSettings: "'rclt' 1",
                             }}>{word}</p>
@@ -629,8 +629,8 @@ export default function App() {
                           }
                           const smallL1 = textWords.slice(0, splitIdx).join(' ')
                           const smallL2 = textWords.slice(splitIdx).join(' ')
-                          const smallStyle = { fontSize: smallSz, fontVariationSettings: previewVarSettings(smallSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
-                          const largeStyle = { fontSize: largeSz, fontVariationSettings: previewVarSettings(largeSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
+                          const smallStyle = { fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
+                          const largeStyle = { fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
                           return (
                             <>
                               <div className="zone-col-canonical-small">
@@ -886,7 +886,7 @@ export default function App() {
                 contentEditable
                 suppressContentEditableWarning
                 style={{
-                  fontSize: m.size,
+                  fontSize: `${m.size}pt`,
                   fontVariationSettings: modalVarSettings,
                   fontFeatureSettings: "'rclt' 1",
                   letterSpacing: `${m.spacing / 100}em`,
