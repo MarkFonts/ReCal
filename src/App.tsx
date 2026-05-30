@@ -603,7 +603,7 @@ export default function App() {
                             }}>{word}</p>
                           ))
                         ) : (() => {
-                          const smallSz = Math.max(8, Math.round(opszAxis.min * opszMultiplier))
+                          const smallSz = Math.round(14 * opszMultiplier)
                           const largeSz = Math.round(opszAxis.max * opszMultiplier)
                           // Balance the first 3 words across 2 lines using measurer
                           const ww = wordWidths?.widths[String(z.mid)]
