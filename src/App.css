@@ -1286,3 +1286,30 @@ button:disabled {
   color: #333;
   pointer-events: none;
 }
+
+/* Canonical opsz preview (opszDynamic = false) */
+.preview-mode-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.preview-mode-header h2 {
+  margin-bottom: 0;
+}
+
+.preview-size-row--off {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.zone-col-canonical-small {
+  margin-bottom: 10px;
+}
+
+.zone-col-canonical-large {
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 8px;
+}
