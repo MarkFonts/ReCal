@@ -38,6 +38,7 @@ export default function App() {
   const [useHoi, setUseHoi] = useState(false)
   const [freezeOpsz, setFreezeOpsz] = useState(false)
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
+  const [opszDynamic, setOpszDynamic] = useState(false)
   const [oflAgreed, setOflAgreed] = useState(false)
   const [oflAttempted, setOflAttempted] = useState(false)
   const [autoAscender, setAutoAscender] = useState(false)
@@ -111,7 +112,7 @@ export default function App() {
         worker.postMessage({
           type: 'measureWords',
           wordsJson: JSON.stringify([...PREVIEW_WORDS]),
-          geomValuesJson: JSON.stringify([initialDefaults['GEOM'] ?? 0]),
+          geomValuesJson: JSON.stringify([initialDefaults['GEOM'] ?? 0, ...LANDING_ZONES.map(z => z.mid)]),
           axisDefaultsJson: JSON.stringify(initialDefaults),
         })
       } else if (msg.type === 'measureWordsResult') {
@@ -297,7 +298,7 @@ export default function App() {
       workerRef.current!.postMessage({
         type: 'measureWords',
         wordsJson: JSON.stringify([...PREVIEW_WORDS]),
-        geomValuesJson: JSON.stringify([defaultsRef.current['GEOM'] ?? 0]),
+        geomValuesJson: JSON.stringify([defaultsRef.current['GEOM'] ?? 0, ...LANDING_ZONES.map(z => z.mid)]),
         axisDefaultsJson: JSON.stringify(defaultsRef.current),
       })
     }, 400)
@@ -515,7 +516,6 @@ export default function App() {
               <button className="preset-btn" onClick={() => {
                 pushThresholdHistory()
                 handleSliderChange('GEOM', 25)
-                // l.rcltA11Y active at GEOM 25: push l threshold above 25
                 setGlyphThresholds(prev => ({ ...prev, l: [26] }))
               }}>Mobile UI</button>
               <button className="preset-btn" onClick={() => {
@@ -664,11 +664,39 @@ export default function App() {
                           </label>
                         </div>
                         <div className="zone-col-words">
-                          {PREVIEW_WORDS.map(word => (
-                            <p key={word} className="zone-col-word" style={{ fontSize: previewSize, fontVariationSettings: previewVarSettings(previewSize, z.mid), fontFeatureSettings: "'rclt' 1" }}>
-                              {word}
-                            </p>
-                          ))}
+                          {opszDynamic || !opszAxis ? (
+                            PREVIEW_WORDS.map(word => (
+                              <p key={word} className="zone-col-word" style={{ fontSize: previewSize, fontVariationSettings: previewVarSettings(previewSize, z.mid), fontFeatureSettings: "'rclt' 1" }}>{word}</p>
+                            ))
+                          ) : (() => {
+                            const smallSz = Math.max(8, Math.round(opszAxis.min * opszMultiplier))
+                            const largeSz = Math.round(opszAxis.max * opszMultiplier)
+                            const ww = wordWidths?.widths[String(z.mid)]
+                            const textWords = PREVIEW_WORDS.slice(0, 3) as string[]
+                            let splitIdx = 1
+                            if (ww) {
+                              const ws = textWords.map(w => ww[w] ?? 0)
+                              let best = Infinity
+                              for (let i = 1; i < textWords.length; i++) {
+                                const diff = Math.abs(ws.slice(0,i).reduce((a,b)=>a+b,0) - ws.slice(i).reduce((a,b)=>a+b,0))
+                                if (diff < best) { best = diff; splitIdx = i }
+                              }
+                            }
+                            const smallStyle = { fontSize: smallSz, fontVariationSettings: previewVarSettings(smallSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
+                            const largeStyle = { fontSize: largeSz, fontVariationSettings: previewVarSettings(largeSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
+                            return (
+                              <>
+                                <div className="zone-col-canonical-small">
+                                  <p className="zone-col-word" style={smallStyle}>{textWords.slice(0,splitIdx).join(' ')}</p>
+                                  <p className="zone-col-word" style={smallStyle}>{textWords.slice(splitIdx).join(' ')}</p>
+                                  <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS[3]}</p>
+                                </div>
+                                <div className="zone-col-canonical-large">
+                                  {PREVIEW_WORDS.map(word => <p key={word} className="zone-col-word" style={largeStyle}>{word}</p>)}
+                                </div>
+                              </>
+                            )
+                          })()}
                         </div>
                         <div className="zone-swatch-row" onClick={() => handleSliderChange('GEOM', z.mid)}>
                           <div className="zone-swatch" />
@@ -685,9 +713,15 @@ export default function App() {
             })()}
 
             <div className="preview-size-row preview-size-row--bottom">
-              <span className="preview-px-label">{previewSize}px</span>
-              <input type="range" min={12} max={200} step={1} value={previewSize} onChange={(e) => setPreviewSize(parseInt(e.target.value))} />
-              <label className="hoi-toggle" style={{ marginLeft: 16 }}>
+              <label className="hoi-toggle" style={{ marginRight: 8 }}>
+                <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
+                <span>Dynamic opsz</span>
+              </label>
+              <span className={`preview-px-label${opszDynamic ? '' : ' preview-size-row--off'}`} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
+                <span>{previewSize}px</span>
+                <input type="range" min={12} max={200} step={1} value={previewSize} disabled={!opszDynamic} onChange={(e) => setPreviewSize(parseInt(e.target.value))} style={{ flex: 1 }} />
+              </span>
+              <label className="hoi-toggle" style={{ marginLeft: 8 }}>
                 <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
                 <span>Freeze opsz</span>
               </label>

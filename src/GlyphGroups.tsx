@@ -161,7 +161,7 @@ function GlyphRow({ def, thresholds, geomDefault, otherDefaults, opszDefault, on
   )
 }
 
-export const PREVIEW_WORDS = ["I\u2019ll jag", 'Guy', 'Mact', '2160'] as const
+export const PREVIEW_WORDS = ["I\u2019ll jag", 'My cat,', 'Guv', '2160'] as const
 
 export type ZoneToken = {
   glyph: string

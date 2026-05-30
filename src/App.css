@@ -1295,6 +1295,7 @@ button:disabled {
   pointer-events: none;
 }
 
+<<<<<<< HEAD
 /* ── Dialkit Slider overrides ─────────────────────────────────── */
 
 .dial-axis-row {
@@ -1533,4 +1534,19 @@ button:disabled {
 .controls.dialkit-root * {
   font-family: 'CalSansVF', sans-serif !important;
   font-optical-sizing: none;
+}
+
+/* Canonical opsz preview (opszDynamic = false) */
+.preview-size-row--off {
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.zone-col-canonical-small {
+  margin-bottom: 10px;
+}
+
+.zone-col-canonical-large {
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 8px;
 }
