@@ -528,13 +528,19 @@ export default function App() {
           <section className="preview">
             <div className="control-group">
               <div className="preview-mode-header">
-                <h2>Optical Size Map Preview</h2>
+                <h2>Size preview</h2>
                 <label className="hoi-toggle">
                   <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
-                  <span>Dynamic size</span>
+                  <span>Dynamic size Preview</span>
                 </label>
               </div>
               <div className={`preview-size-row${opszDynamic ? '' : ' preview-size-row--off'}`}>
+                {opszDynamic && (
+                  <label className="hoi-toggle" style={{ marginRight: 10, flexShrink: 0 }}>
+                    <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
+                    <span>Freeze on export</span>
+                  </label>
+                )}
                 <span className="preview-px-label">{previewSize}px</span>
                 <input
                   type="range"
@@ -546,14 +552,6 @@ export default function App() {
                   onChange={(e) => setPreviewSize(parseInt(e.target.value))}
                 />
               </div>
-              <label className="hoi-toggle" style={{ marginTop: 6 }}>
-                <input
-                  type="checkbox"
-                  checked={freezeOpsz}
-                  onChange={(e) => setFreezeOpsz(e.target.checked)}
-                />
-                <span>Freeze optical size on export</span>
-              </label>
             </div>
 
             {axes.length > 0 && (() => {
