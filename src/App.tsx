@@ -669,7 +669,7 @@ export default function App() {
                               <p key={word} className="zone-col-word" style={{ fontSize: previewSize, fontVariationSettings: previewVarSettings(previewSize, z.mid), fontFeatureSettings: "'rclt' 1" }}>{word}</p>
                             ))
                           ) : (() => {
-                            const smallSz = Math.max(8, Math.round(opszAxis.min * opszMultiplier))
+                            const smallSz = Math.round(14 * opszMultiplier)
                             const largeSz = Math.round(opszAxis.max * opszMultiplier)
                             const ww = wordWidths?.widths[String(z.mid)]
                             const textWords = PREVIEW_WORDS.slice(0, 3) as string[]
