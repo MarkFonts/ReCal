@@ -715,16 +715,18 @@ export default function App() {
             <div className="preview-size-row preview-size-row--bottom">
               <label className="hoi-toggle" style={{ marginRight: 8 }}>
                 <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
-                <span>Dynamic opsz</span>
+                <span>Dynamic size Preview</span>
               </label>
+              {opszDynamic && (
+                <label className="hoi-toggle" style={{ marginRight: 8, flexShrink: 0 }}>
+                  <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
+                  <span>Freeze on export</span>
+                </label>
+              )}
               <span className={`preview-px-label${opszDynamic ? '' : ' preview-size-row--off'}`} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
                 <span>{previewSize}px</span>
                 <input type="range" min={12} max={200} step={1} value={previewSize} disabled={!opszDynamic} onChange={(e) => setPreviewSize(parseInt(e.target.value))} style={{ flex: 1 }} />
               </span>
-              <label className="hoi-toggle" style={{ marginLeft: 8 }}>
-                <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
-                <span>Freeze opsz</span>
-              </label>
             </div>
 
             <div className="xray-toggle-row xray-toggle-row--left">
