@@ -428,9 +428,18 @@ export default function App() {
             <div className="control-group">
               <h2>Presets</h2>
               <div className="preset-buttons">
-                <button className="preset-btn" disabled>Mobile UI</button>
-                <button className="preset-btn" disabled>Display</button>
-                <button className="preset-btn" disabled>Wayfinding</button>
+                <button className="preset-btn" onClick={() => {
+                  pushThresholdHistory()
+                  handleSliderChange('GEOM', 25)
+                  setGlyphThresholds(prev => ({ ...prev, l: [26] }))
+                }}>Mobile UI</button>
+                <button className="preset-btn" onClick={() => {
+                  handleSliderChange('GEOM', 50)
+                }}>Display</button>
+                <button className="preset-btn" onClick={() => {
+                  handleSliderChange('GEOM', 5)
+                  setOpszMultiplier(6)
+                }}>Wayfinding</button>
               </div>
               <span className="presets-more">+ 6 more</span>
             </div>
