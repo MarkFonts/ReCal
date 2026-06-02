@@ -38,6 +38,7 @@ export default function App() {
   const [useHoi, setUseHoi] = useState(false)
   const [freezeOpsz, setFreezeOpsz] = useState(false)
   const [frozenOpszValue, setFrozenOpszValue] = useState<number | null>(null)
+  const [activePreset, setActivePreset] = useState<string | null>(null)
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
   const [opszDynamic, setOpszDynamic] = useState(false)
   const [oflAgreed, setOflAgreed] = useState(false)
@@ -516,20 +517,27 @@ export default function App() {
           <section className="preview">
             <div className="presets-row">
               <span className="presets-label">Presets</span>
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Mobile UI' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Mobile UI')
                 pushThresholdHistory()
+                setFrozenOpszValue(null)
                 handleSliderChange('GEOM', 25)
                 setGlyphThresholds(prev => ({ ...prev, l: [26] }))
               }}>Mobile UI</button>
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Display' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Display')
+                setFrozenOpszValue(null)
                 handleSliderChange('GEOM', 50)
               }}>Display</button>
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Wayfinding' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Wayfinding')
+                setFrozenOpszValue(null)
                 handleSliderChange('GEOM', 5)
                 setOpszMultiplier(6)
               }}>Wayfinding</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Futura' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Futura')
                 pushThresholdHistory()
                 setFrozenOpszValue(16)
                 handleSliderChange('GEOM', 100)
@@ -537,9 +545,10 @@ export default function App() {
                 handleSliderChange('SHRP', 100)
               }}>Futura</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Neutraface 2' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Neutraface 2')
                 pushThresholdHistory()
-                setFrozenOpszValue(12)
+                setFrozenOpszValue(null)
                 handleSliderChange('GEOM', 25)
                 handleSliderChange('YTAS', 800)
                 handleSliderChange('SHRP', 100)
@@ -548,41 +557,24 @@ export default function App() {
                   t = applyDrop('y', 2, 'UI', t)
                   return t
                 })
-              }}>Neutraface 2 Text</button>
+              }}>Neutraface 2</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Inter' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Inter')
+                pushThresholdHistory()
+                setFrozenOpszValue(null)
+                handleSliderChange('GEOM', 25)
+              }}>Inter</button>
+
+              <button className={`preset-btn${activePreset === 'Circular' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Circular')
                 pushThresholdHistory()
                 setFrozenOpszValue(20)
                 handleSliderChange('GEOM', 25)
-                handleSliderChange('YTAS', 800)
-                handleSliderChange('SHRP', 100)
-                setGlyphThresholds(prev => {
-                  let t = applyDelete('a', 0, 'A11Y', prev)
-                  t = applyDrop('y', 2, 'UI', t)
-                  return t
-                })
-              }}>Neutraface 2 Display</button>
-
-              <button className="preset-btn" onClick={() => {
-                pushThresholdHistory()
-                setFrozenOpszValue(14)
-                handleSliderChange('GEOM', 25)
-              }}>Inter UI</button>
-
-              <button className="preset-btn" onClick={() => {
-                pushThresholdHistory()
-                setFrozenOpszValue(20)
-                handleSliderChange('GEOM', 25)
-              }}>Inter Display</button>
-
-              <button className="preset-btn" onClick={() => {
-                pushThresholdHistory()
-                setFrozenOpszValue(20)
-                handleSliderChange('GEOM', 25)
-                setGlyphThresholds(prev => applyDrop('y', 2, 'UI', prev))
               }}>Circular</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Gotham')
                 pushThresholdHistory()
                 setFrozenOpszValue(8)
                 handleSliderChange('GEOM', 25)
@@ -594,21 +586,24 @@ export default function App() {
                 })
               }}>Gotham</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Geist' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Geist')
                 pushThresholdHistory()
                 setFrozenOpszValue(16)
                 handleSliderChange('GEOM', 50)
                 setGlyphThresholds(prev => applyDrop('a', 0, 'Base', prev))
               }}>Geist</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'Poppins' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('Poppins')
                 pushThresholdHistory()
                 setFrozenOpszValue(10)
                 handleSliderChange('GEOM', 50)
                 setGlyphThresholds(prev => applyDrop('y', 2, 'Base', prev))
               }}>Poppins</button>
 
-              <button className="preset-btn" onClick={() => {
+              <button className={`preset-btn${activePreset === 'GT America' ? ' preset-btn--active' : ''}`} onClick={() => {
+                setActivePreset('GT America')
                 pushThresholdHistory()
                 setFrozenOpszValue(8)
                 handleSliderChange('GEOM', 25)

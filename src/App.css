@@ -1510,6 +1510,12 @@ button:disabled {
   border-color: #222 !important;
 }
 
+.preset-btn--active {
+  border-color: #888;
+  background: #222;
+  color: #fff;
+}
+
 /* Zone column radio row */
 .zone-col-radio-row {
   display: flex;
