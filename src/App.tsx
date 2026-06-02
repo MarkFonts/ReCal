@@ -35,6 +35,11 @@ export default function App() {
   )
   const [useHoi, setUseHoi] = useState(false)
   const [freezeOpsz, setFreezeOpsz] = useState(false)
+  const [frozenOpszValue, setFrozenOpszValue] = useState<number | null>(null)
+  const [activePreset, setActivePreset] = useState<string | null>(null)
+  const [presetsExpanded, setPresetsExpanded] = useState(false)
+  const [scaledOpsz, setScaledOpsz] = useState(false)
+  const [typeTesterText, setTypeTesterText] = useState('Type something')
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
   const [opszDynamic, setOpszDynamic] = useState(false)
   const [oflAgreed, setOflAgreed] = useState(false)
@@ -319,7 +324,9 @@ export default function App() {
         return `'${a.tag}' ${val}`
       })
     if (opszAxis) {
-      const opsz = Math.min(Math.max(fontSize / opszMultiplier, opszAxis.min), opszAxis.max)
+      const opsz = frozenOpszValue !== null
+        ? Math.min(Math.max(frozenOpszValue, opszAxis.min), opszAxis.max)
+        : Math.min(Math.max(fontSize / opszMultiplier, opszAxis.min), opszAxis.max)
       parts.push(`'opsz' ${opsz.toFixed(1)}`)
     }
     return parts.join(', ') || 'normal'
@@ -428,20 +435,82 @@ export default function App() {
             <div className="control-group">
               <h2>Presets</h2>
               <div className="preset-buttons">
-                <button className="preset-btn" onClick={() => {
+                <button className={`preset-btn${activePreset === 'Mobile UI' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Mobile UI'); setScaledOpsz(false)
                   pushThresholdHistory()
+                  setFrozenOpszValue(null)
                   handleSliderChange('GEOM', 25)
                   setGlyphThresholds(prev => ({ ...prev, l: [26] }))
                 }}>Mobile UI</button>
-                <button className="preset-btn" onClick={() => {
+                <button className={`preset-btn${activePreset === 'Display' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Display'); setScaledOpsz(false)
+                  setFrozenOpszValue(null)
                   handleSliderChange('GEOM', 50)
                 }}>Display</button>
-                <button className="preset-btn" onClick={() => {
+                <button className={`preset-btn${activePreset === 'Wayfinding' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Wayfinding'); setScaledOpsz(false)
+                  setFrozenOpszValue(null)
                   handleSliderChange('GEOM', 5)
                   setOpszMultiplier(6)
                 }}>Wayfinding</button>
+                {!presetsExpanded && (
+                  <button className="preset-btn preset-btn--more" onClick={() => setPresetsExpanded(true)}>+ 8 more</button>
+                )}
+                {presetsExpanded && <><button className={`preset-btn${activePreset === 'Futura' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Futura'); setScaledOpsz(false)
+                  pushThresholdHistory(); setFrozenOpszValue(16)
+                  handleSliderChange('GEOM', 100); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
+                }}>Futura</button>
+                <button className={`preset-btn preset-btn--bifamily${activePreset === 'Neutra 2' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Neutra 2'); setScaledOpsz(true); setOpszMultiplier(0.625)
+                  pushThresholdHistory(); setFrozenOpszValue(null)
+                  handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
+                  setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('y', 2, 'UI', t); return t })
+                }}>
+                  <span>Neutra 2</span>
+                  <span className="preset-btn-subfamily">Text · Display</span>
+                </button>
+                <button className={`preset-btn preset-btn--bifamily${activePreset === 'Inter' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Inter'); setScaledOpsz(true); setOpszMultiplier(0.625)
+                  pushThresholdHistory(); setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
+                }}>
+                  <span>Inter</span>
+                  <span className="preset-btn-subfamily">UI · Display</span>
+                </button>
+                <button className={`preset-btn${activePreset === 'Circular' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Circular'); setScaledOpsz(false)
+                  pushThresholdHistory(); setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
+                }}>Circular</button>
+                <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Gotham'); setScaledOpsz(false)
+                  pushThresholdHistory(); setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
+                  setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('j', 1, 'UI', t); return t })
+                }}>Gotham</button>
+                <button className={`preset-btn${activePreset === 'Geist' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Geist'); setScaledOpsz(false)
+                  pushThresholdHistory(); setFrozenOpszValue(16); handleSliderChange('GEOM', 50)
+                  setGlyphThresholds(prev => applyDrop('a', 0, 'Base', prev))
+                }}>Geist</button>
+                <button className={`preset-btn${activePreset === 'Poppins' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('Poppins'); setScaledOpsz(false)
+                  pushThresholdHistory(); setFrozenOpszValue(10); handleSliderChange('GEOM', 50)
+                  setGlyphThresholds(prev => applyDrop('y', 2, 'Base', prev))
+                }}>Poppins</button>
+                <button className={`preset-btn${activePreset === 'GT America' ? ' preset-btn--active' : ''}`} onClick={() => {
+                  setActivePreset('GT America'); setScaledOpsz(false)
+                  pushThresholdHistory(); setFrozenOpszValue(8); handleSliderChange('GEOM', 25)
+                  setGlyphThresholds(prev => applyDelete('a', 0, 'A11Y', prev))
+                }}>GT America</button></>}
               </div>
-              <span className="presets-more">+ 6 more</span>
+              {(activePreset === 'Neutra 2' || activePreset === 'Inter') && (
+                <label className="preset-scaled-label">
+                  <input type="checkbox" checked={scaledOpsz} onChange={e => {
+                    setScaledOpsz(e.target.checked)
+                    setOpszMultiplier(e.target.checked ? 0.625 : 1)
+                  }} />
+                  scaled
+                </label>
+              )}
             </div>
 
             {opszAxis && (
@@ -526,34 +595,6 @@ export default function App() {
           </section>
 
           <section className="preview">
-            <div className="control-group">
-              <div className="preview-mode-header">
-                <h2>Size preview</h2>
-                <label className="hoi-toggle">
-                  <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
-                  <span>Dynamic size Preview</span>
-                </label>
-                {opszDynamic && (
-                  <label className="hoi-toggle" style={{ flexShrink: 0 }}>
-                    <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
-                    <span>Freeze on export</span>
-                  </label>
-                )}
-                <span className={`preview-size-inline${opszDynamic ? '' : ' preview-size-row--off'}`}>
-                  <span className="preview-px-label">{previewSize}pt</span>
-                  <input
-                    type="range"
-                    min={12}
-                    max={200}
-                    step={1}
-                    value={previewSize}
-                    disabled={!opszDynamic}
-                    onChange={(e) => setPreviewSize(parseInt(e.target.value))}
-                  />
-                </span>
-              </div>
-            </div>
-
             {axes.length > 0 && (() => {
               const zoneTokenMap = getZoneTokens(glyphThresholds)
               const dragTargetZone = dragState && zoneGridRef.current ? (() => {
@@ -564,7 +605,7 @@ export default function App() {
               })() : null
 
               return (
-              <div className={`zone-grid${previewRebuilding ? ' zone-grid--rebuilding' : ''}`} ref={zoneGridRef}>
+              <><div className={`zone-grid${previewRebuilding ? ' zone-grid--rebuilding' : ''}`} ref={zoneGridRef}>
                 {LANDING_ZONES.map((z) => {
                   const isActive = activeZoneName === z.label
                   const isDragTarget = dragTargetZone === z.label
@@ -572,117 +613,114 @@ export default function App() {
                     <div
                       key={z.label}
                       className={`zone-col${isActive ? ' zone-col--active' : ''}${isDragTarget ? ' zone-col--drag-target' : ''}`}
-                      style={{ '--zone-color': z.color } as React.CSSProperties}
+                      style={{ '--zone-color': z.label === 'UI' ? '#fff' : z.color, '--zone-active-bg': z.label === 'UI' ? '#fff' : z.color } as React.CSSProperties}
                     >
                       <div
                         className="zone-col-header"
                         onClick={() => handleSliderChange('GEOM', z.mid)}
                         style={{ cursor: 'pointer' }}
                       >
-                        <span
-                          className="zone-col-preview-word"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setPreviewModal({
-                              zone: z,
-                              size: previewSize,
-                              spacing: 0,
-                              axisValues: { ...defaults, GEOM: z.mid },
-                            })
-                          }}
-                        >Preview</span>
-                        {!isActive && <>{' '}Variable</>}
-                        <br />
-                        {isActive ? 'Default' : 'Alternate'} Configuration
-                        <div className="zone-col-geom-default">
-                          {isActive
-                            ? `Default GEOM: ${Math.round(defaults['GEOM'] ?? 0)}`
-                            : 'Variable font feature'}
+                        <div className="zone-col-topbar" />
+                        <div className="zone-col-header-inner">
+                          <span className="zone-col-icon">{isActive ? '◉' : '○'}</span>
+                          <div className="zone-col-header-text">
+                            <span className="zone-col-sublabel">{isActive ? 'STANDARD' : 'SECRET VARIATION ZONE'}</span>
+                            <span className="zone-col-name">{z.label === 'A11Y' ? 'A11y' : z.label}</span>
+                          </div>
                         </div>
-                      </div>
-                      <div className="zone-col-words">
-                        {opszDynamic || !opszAxis ? (
-                          PREVIEW_WORDS.map(word => (
-                            <p key={word} className="zone-col-word" style={{
-                              fontSize: `${previewSize}pt`,
-                              fontVariationSettings: previewVarSettings(previewSize, z.mid),
-                              fontFeatureSettings: "'rclt' 1",
-                            }}>{word}</p>
-                          ))
-                        ) : (() => {
-                          const smallSz = Math.round(14 * opszMultiplier)
-                          const largeSz = Math.round(opszAxis.max * opszMultiplier)
-                          // Balance the first 3 words across 2 lines using measurer
-                          const ww = wordWidths?.widths[String(z.mid)]
-                          const textWords = PREVIEW_WORDS.slice(0, 3) as string[]
-                          let splitIdx = 1
-                          if (ww) {
-                            const ws = textWords.map(w => ww[w] ?? 0)
-                            let best = Infinity
-                            for (let i = 1; i < textWords.length; i++) {
-                              const diff = Math.abs(
-                                ws.slice(0, i).reduce((a, b) => a + b, 0) -
-                                ws.slice(i).reduce((a, b) => a + b, 0)
-                              )
-                              if (diff < best) { best = diff; splitIdx = i }
-                            }
-                          }
-                          const smallL1 = textWords.slice(0, splitIdx).join(' ')
-                          const smallL2 = textWords.slice(splitIdx).join(' ')
-                          const smallStyle = { fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
-                          const largeStyle = { fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, z.mid), fontFeatureSettings: "'rclt' 1" as const }
-                          return (
-                            <>
-                              <div className="zone-col-canonical-small">
-                                <p className="zone-col-word" style={smallStyle}>{smallL1}</p>
-                                <p className="zone-col-word" style={smallStyle}>{smallL2}</p>
-                                <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS[3]}</p>
-                              </div>
-                              <div className="zone-col-canonical-large">
-                                {PREVIEW_WORDS.map(word => (
-                                  <p key={word} className="zone-col-word" style={largeStyle}>{word}</p>
-                                ))}
-                              </div>
-                            </>
-                          )
-                        })()}
-                      </div>
-                      <div
-                        className="zone-swatch-row"
-                        onClick={() => handleSliderChange('GEOM', z.mid)}
-                      >
-                        <div className="zone-swatch" />
-                        <span className="zone-range-label">
-                          GEOM: <span className="zone-range-nums">{z.start}–{z.end}</span> {z.label}
-                        </span>
-                      </div>
-                      <div className="zone-rosetta-bin">
-                        {(zoneTokenMap[z.label] ?? []).map(tok => {
-                          const isDraggingThis = dragState?.tok.glyph === tok.glyph && dragState.tok.variantIdx === tok.variantIdx
-                          return (
-                            <span
-                              key={`${tok.glyph}-${tok.variantIdx}`}
-                              className={`zone-token${tok.isDefault ? ' zone-token--default' : ''}${isDraggingThis ? ' zone-token--dragging' : ''}`}
-                              style={{
-                                fontVariationSettings: previewVarSettings(52, z.sampleGeom),
-                                fontFeatureSettings: "'rclt' 1",
-                              }}
-                              onPointerDown={(e) => {
-                                e.preventDefault()
-                                e.currentTarget.setPointerCapture(e.pointerId)
-                                if (!tok.isDefault) pushThresholdHistory()
-                                setDragState({ tok, sourceZone: z.label, x: e.clientX, y: e.clientY })
-                              }}
-                            >
-                              {tok.glyph}
-                            </span>
-                          )
-                        })}
+                        <div className="zone-col-bottombar" />
                       </div>
                     </div>
                   )
                 })}
               </div>
+
+              {/* ── Full-width preview + type tester ── */}
+              {(() => {
+                const az = LANDING_ZONES.find(z => z.label === activeZoneName)
+                if (!az) return null
+                const smallSz = opszAxis ? Math.round(opszAxis.min * opszMultiplier) : Math.round(14 * opszMultiplier)
+                const largeSz = opszAxis ? Math.round(opszAxis.max * opszMultiplier) : Math.round(32 * opszMultiplier)
+                const smallOpsz = opszAxis?.min ?? 14
+                const largeOpsz = opszAxis?.max ?? 32
+                const baseStyle = { fontFamily: "'CalSansPreview','CalSansVF',sans-serif", fontOpticalSizing: 'none' as const, fontFeatureSettings: "'rclt' 1" as const }
+                const smallStyle = { ...baseStyle, fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, az.mid) }
+                const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, az.mid) }
+                return (
+                  <div className="zone-full-preview" style={{ '--zone-color': az.color } as React.CSSProperties}>
+                    <div className="zone-preview-row">
+                      <div className="zone-preview-block">
+                        <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS.join(' ')}</p>
+                        <div className="zone-preview-label">Default · opsz {Math.round(smallOpsz)}pt</div>
+                      </div>
+                      <div className="zone-preview-block">
+                        {PREVIEW_WORDS.map(w => <p key={w} className="zone-col-word" style={largeStyle}>{w}</p>)}
+                        <div className="zone-preview-label">Max · opsz {Math.round(largeOpsz)}pt</div>
+                      </div>
+                    </div>
+                    <div className="zone-tester-separator" />
+                    <div
+                      className="zone-type-tester"
+                      contentEditable
+                      suppressContentEditableWarning
+                      style={{ ...largeStyle }}
+                      onInput={e => setTypeTesterText(e.currentTarget.textContent ?? '')}
+                    >{typeTesterText}</div>
+                  </div>
+                )
+              })()}</>
+            )
+            })()}
+
+            <div className="preview-mode-header preview-size-row--bottom">
+              <label className="hoi-toggle">
+                <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
+                <span>Dynamic size Preview</span>
+              </label>
+              {opszDynamic && (
+                <label className="hoi-toggle" style={{ flexShrink: 0 }}>
+                  <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
+                  <span>Freeze on export</span>
+                </label>
+              )}
+              <span className={`preview-size-inline${opszDynamic ? '' : ' preview-size-row--off'}`}>
+                <span className="preview-px-label">{previewSize}pt</span>
+                <input type="range" min={12} max={200} step={1} value={previewSize} disabled={!opszDynamic} onChange={(e) => setPreviewSize(parseInt(e.target.value))} />
+              </span>
+            </div>
+
+            {axes.length > 0 && (() => {
+              const gd = defaults['GEOM'] ?? geomAxis?.default ?? 25
+              const NATURAL_GEOM: Record<string, number> = { A11Y: 0, UI: 25, Base: 50, Geo: 100, default: 25 }
+              return (
+                <div className="glyph-strip">
+                  {GROUP_DEFS.map(def => {
+                    const t = glyphThresholds[def.glyph] ?? [...def.defaultThresholds]
+                    const activeVi = Math.min(t.reduce((acc, thresh) => (gd >= thresh ? acc + 1 : acc), 0), def.variants.length - 1)
+                    return (
+                      <div key={def.glyph} className="glyph-strip-col">
+                        {def.variants.map((v, vi) => {
+                          const sampleGeom = NATURAL_GEOM[v.label] ?? 25
+                          const isActive = vi === activeVi
+                          return (
+                            <span
+                              key={vi}
+                              className={`glyph-strip-token${isActive ? ' glyph-strip-token--active' : ''}`}
+                              style={{
+                                fontFamily: "'CalSansPreview','CalSansVF',sans-serif",
+                                fontVariationSettings: `'GEOM' ${sampleGeom}, 'opsz' 22`,
+                                fontFeatureSettings: v.label === 'default' ? "'rclt' 0" : "'rclt' 1",
+                                fontOpticalSizing: 'none',
+                                color: v.label === 'default' ? '#555' : (v.label === 'UI' ? '#fff' : v.color),
+                                opacity: isActive ? 1 : 0.3,
+                              } as React.CSSProperties}
+                            >{def.glyph}</span>
+                          )
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
               )
             })()}
 
