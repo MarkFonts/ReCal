@@ -5,8 +5,11 @@
 }
 
 body {
+  /* App UI chrome = the "Text UI" instance of CalSansVF (opsz 10, GEOM 25).
+     wght is omitted so font-weight still drives bold UI elements. */
   font-family: 'CalSansVF', sans-serif;
-  font-optical-sizing: auto;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
   background: #0f0f0f;
   color: #e8e8e8;
   min-height: 100vh;
@@ -223,8 +226,40 @@ h2 {
   .controls {
     position: static;
   }
+  /* Small + large previews stack to full width (type tester already does) */
+  .zone-preview-row {
+    grid-template-columns: 1fr;
+  }
+  .zone-preview-block:first-child,
+  .zone-preview-block:last-child {
+    grid-column: 1 / -1;
+  }
+  /* Tabs stay 4-across; stack the icon over narrower text inside each tab */
   .zone-grid {
-    overflow-x: auto;
+    overflow-x: visible;
+  }
+  .zone-col {
+    padding: 10px 6px 12px;
+  }
+  .zone-col-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 6px 8px 4px;
+  }
+  .zone-col-name {
+    font-size: 0.8rem;
+  }
+  .zone-col-sublabel {
+    font-size: 0.42rem;
+  }
+  /* Pills wrap rather than crush at narrow widths */
+  .pill-row {
+    flex-wrap: wrap;
+  }
+  .pill-slider {
+    flex: 1 1 28%;
+    min-width: 84px;
   }
   .download-gate {
     width: 100%;
@@ -254,6 +289,17 @@ h2 {
 }
 
 .zone-col--active {}
+
+/* Currently-previewing zone (preview GEOM differs from export default) */
+.zone-col--previewing .zone-col-topbar,
+.zone-col--previewing .zone-col-bottombar {
+  opacity: 0.9;
+}
+
+.zone-col--previewing .zone-col-header {
+  outline: 1px dashed var(--zone-color);
+  outline-offset: -1px;
+}
 
 .zone-col-header {
   margin-bottom: 10px;
@@ -396,24 +442,56 @@ h2 {
 }
 
 .zone-preview-row {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  /* Stretch so both blocks share a height → descriptor labels line up at the bottom */
+  align-items: stretch;
+  margin-bottom: 12px;
 }
 
 .zone-preview-block {
-  flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Small preview: first column. Large preview: left-aligned across cols 2–4. */
+.zone-preview-block:first-child {
+  grid-column: 1 / 2;
+}
+
+.zone-preview-block:last-child {
+  grid-column: 2 / 5;
+}
+
+/* Sample text: allow wrapping + full opacity, and trim leading above the cap so
+   the cap heights of the small and large samples align at the top. */
+.zone-preview-block .zone-col-word {
+  white-space: normal;
+  overflow: visible;
+  opacity: 1;
+  line-height: 1.08;
+  text-box-trim: trim-start;
+  text-box-edge: cap alphabetic;
 }
 
 .zone-preview-label {
+  display: flex;
+  flex-direction: column;
   font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #444;
-  margin-top: 8px;
+  /* Pin to the bottom of the (equal-height) block so both labels align */
+  margin-top: auto;
+  padding-top: 12px;
+  line-height: 1.5;
+}
+
+.zone-preview-label .zpl-kind {
+  color: #777;
 }
 
 .zone-type-tester {
@@ -457,13 +535,13 @@ h2 {
 }
 
 .zone-full-preview {
-  padding: 20px 0 0;
+  padding: 14px 0 0;
 }
 
 .zone-tester-separator {
   height: 2px;
   background: var(--zone-color);
-  margin: 20px 0 20px;
+  margin: 14px 0;
   opacity: 0.6;
 }
 
@@ -774,6 +852,15 @@ input[type='range'] {
 
 .control-group {
   margin-bottom: 24px;
+}
+
+/* Put sidebar section headers in the same 28px centered band as the preview's
+   PRESETS row so the two columns' headers (and the rows below) line up. */
+.control-group h2 {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  margin-bottom: 10px;
 }
 
 .control-note {
@@ -1457,6 +1544,135 @@ button:disabled {
   --dial-row-height: 40px;
 }
 
+/* ── Inline canvas pill-sliders (mockup) ───────────────────────── */
+.pill-slider-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 14px 0 18px;
+}
+
+.pill-rows-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: -2px;
+}
+
+.pill-rows-caption {
+  font-size: 0.62rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.pill-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.pill-reset-btn:hover {
+  color: #ddd;
+  border-color: #444;
+}
+
+.pill-reset-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pill-reset-btn--active {
+  color: #e8e8e8;
+  border-color: #5a5a5a;
+}
+
+.pill-reset-btn svg {
+  display: block;
+}
+
+.pill-reset-btn--spin svg {
+  animation: pill-reset-spin 0.5s ease;
+}
+
+@keyframes pill-reset-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.pill-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pill-slider {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Pill currently overriding its export default — accent ring + dot */
+.pill-slider--overridden .dialkit-slider {
+  box-shadow: 0 0 0 1.5px #4a7fd4;
+}
+
+.pill-slider--overridden .dialkit-slider-label::after {
+  content: '●';
+  font-size: 0.5em;
+  color: #4a7fd4;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+/* Pill-ify the dialkit slider: rounded light track, centered label, no handle */
+.pill-slider .dialkit-slider-wrapper {
+  height: 30px;
+}
+
+.pill-slider .dialkit-slider {
+  border-radius: 999px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.pill-slider .dialkit-slider-fill {
+  background: #9a9a9a;
+  border-radius: 999px;
+}
+
+.pill-slider .dialkit-slider-active .dialkit-slider-fill {
+  background: #8a8a8a;
+}
+
+.pill-slider .dialkit-slider-handle {
+  display: none;
+}
+
+.pill-slider .dialkit-slider-label {
+  left: 0;
+  right: 0;
+  padding: 0 14px;
+  text-align: left;
+  text-transform: lowercase;
+  color: #111;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.pill-slider .dialkit-slider-value,
+.pill-slider .dialkit-slider-input {
+  right: 12px;
+  color: #333;
+}
+
 /* ── Glyph palette column ──────────────────────────────────────── */
 
 .zone-area-wrap {
@@ -1623,12 +1839,13 @@ button:disabled {
   margin-bottom: 10px;
 }
 
+/* Match the sidebar section headers (h2) so PRESETS reads as a peer header */
 .presets-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
+  color: #666;
   flex-shrink: 0;
   margin-right: 4px;
 }
@@ -1752,11 +1969,15 @@ button:disabled {
   white-space: nowrap;
 }
 
-/* Force CalSansVF on dialkit sidebar controls */
+/* Force CalSansVF on dialkit sidebar controls + canvas pills (dialkit forces
+   system-ui on .dialkit-root; override so they render in the Text UI instance) */
 .controls.dialkit-root,
-.controls.dialkit-root * {
+.controls.dialkit-root *,
+.pill-slider-rows.dialkit-root,
+.pill-slider-rows.dialkit-root * {
   font-family: 'CalSansVF', sans-serif !important;
   font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
 }
 
 /* Canonical opsz preview (opszDynamic = false) */
