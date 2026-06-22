@@ -719,7 +719,6 @@ export default function App() {
                   // Top blocks = canonical EXPORT view (stable). Tester = live preview.
                   const exportAz = LANDING_ZONES.find(z => z.label === exportZoneName)!
                   const previewAz = LANDING_ZONES.find(z => z.label === previewZoneName)!
-                  const az = exportAz
                   const smallSz = opszAxis ? Math.round(opszAxis.default * opszMultiplier) : Math.round(14 * opszMultiplier)
                   const largeSz = opszAxis ? Math.round(opszAxis.max * opszMultiplier) : Math.round(32 * opszMultiplier)
                   const smallOpsz = opszAxis?.default ?? 14
@@ -728,7 +727,8 @@ export default function App() {
                   const smallStyle = { ...baseStyle, fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, exportAz.mid, undefined, 'export') }
                   const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, exportAz.mid, undefined, 'export') }
                   return (
-                    <div className="zone-full-preview" style={{ '--zone-color': az.color } as React.CSSProperties}>
+                    <>
+                      {/* Default/Max samples = export view — OUTSIDE the preview box */}
                       <div className="zone-preview-row">
                         <div className="zone-preview-block">
                           <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS.join(' ')}</p>
@@ -739,8 +739,8 @@ export default function App() {
                           <div className="zone-preview-label"><span className="zpl-kind">Max</span><span>opsz {Math.round(largeOpsz)}pt</span></div>
                         </div>
                       </div>
-                      <div className="zone-tester-separator" />
 
+                      <div className="zone-full-preview" style={{ '--zone-color': previewAz.color } as React.CSSProperties}>
                       <div className="pill-slider-rows dialkit-root" data-theme="dark">
                         <div className="pill-rows-header">
                           <span className="pill-rows-caption">Preview</span>
@@ -786,7 +786,8 @@ export default function App() {
                         style={{ ...largeStyle, fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, previewAz.mid, previewOverrides['opsz'], 'preview'), letterSpacing: `${tracking / 100}em` }}
                         onInput={e => setTypeTesterText(e.currentTarget.textContent ?? '')}
                       >{typeTesterText}</div>
-                    </div>
+                      </div>
+                    </>
                   )
                 })()}</>
               )
@@ -832,17 +833,19 @@ export default function App() {
               <button className="xray-toggle-btn" onClick={() => setShowXRay(v => !v)}>
                 {showXRay ? 'Hide Type Matrix' : 'Type Matrix'}
               </button>
-              <button
-                className="xray-toggle-btn"
-                style={{ marginLeft: 8 }}
-                onClick={() => {
-                  pushThresholdHistory()
-                  setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
-                  setTrashedGlyphs([])
-                }}
-              >
-                Reset
-              </button>
+              {showXRay && (
+                <button
+                  className="xray-toggle-btn"
+                  style={{ marginLeft: 8 }}
+                  onClick={() => {
+                    pushThresholdHistory()
+                    setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
+                    setTrashedGlyphs([])
+                  }}
+                >
+                  Reset
+                </button>
+              )}
             </div>
 
             {showXRay && geomAxis && (

@@ -447,7 +447,7 @@ h2 {
   gap: 16px;
   /* Stretch so both blocks share a height → descriptor labels line up at the bottom */
   align-items: stretch;
-  margin-bottom: 12px;
+  margin-bottom: 0;
 }
 
 .zone-preview-block {
@@ -486,7 +486,7 @@ h2 {
   color: #444;
   /* Pin to the bottom of the (equal-height) block so both labels align */
   margin-top: auto;
-  padding-top: 12px;
+  padding-top: 16px;
   line-height: 1.5;
 }
 
@@ -496,7 +496,8 @@ h2 {
 
 .zone-type-tester {
   border-top: 1px solid #1e1e1e;
-  padding-top: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
   color: #e8e8e8;
   outline: none;
   cursor: text;
@@ -509,7 +510,6 @@ h2 {
   flex-direction: row;
   gap: 4px;
   padding: 16px 0 12px;
-  border-top: 1px solid #1a1a1a;
   overflow-x: auto;
 }
 
@@ -535,14 +535,31 @@ h2 {
 }
 
 .zone-full-preview {
-  padding: 14px 0 0;
+  /* Inset, rounded "live preview" box holding the samples + pills + tester.
+     Groups them as a preview of the preset/defaults and separates the region
+     from the glyph strip + Type Matrix + Reset below. */
+  padding: 22px 24px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  /* Flexible top/bottom breathing room scaled to viewport height */
+  margin: clamp(16px, 4vh, 44px) 0;
+  animation: preview-throb 3.2s ease-in-out infinite;
 }
 
-.zone-tester-separator {
-  height: 2px;
-  background: var(--zone-color);
-  margin: 14px 0;
-  opacity: 0.6;
+/* Throbbing opacity on the rule (border + faint glow), not the content */
+@keyframes preview-throb {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 0 18px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone-full-preview { animation: none; }
 }
 
 .zone-swatch-row {
@@ -1549,7 +1566,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  margin: 14px 0 18px;
+  margin: 0;
 }
 
 .pill-rows-header {
