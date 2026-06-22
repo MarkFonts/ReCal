@@ -465,7 +465,7 @@ export default function App() {
           <a href="https://input.djr.com/download/" target="_blank" rel="noopener noreferrer">
             DJR's Input font download customizer
           </a>
-          , repurposed by WORDMARK to make the OFL mission more accessible.
+          , repurposed by WORDMARK to make the Cal Sans OFL mission more accessible.
         </p>
         <div className="download-gate">
           <label className={`ofl-checkbox${oflAttempted && !oflAgreed ? ' ofl-checkbox--required' : ''}`} id="ofl-label">

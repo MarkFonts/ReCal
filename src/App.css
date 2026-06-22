@@ -52,7 +52,9 @@ body {
 header {
   margin-bottom: 40px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  /* First column matches the sidebar width (main-layout: 280px 1fr, gap 48) so the
+     attribution lines up with the preview column — PRESETS + zone tabs. */
+  grid-template-columns: 280px 1fr auto;
   column-gap: 48px;
   align-items: start;
 }
@@ -85,7 +87,7 @@ header {
   border: 1px solid #2e2e2e;
   border-radius: 10px;
   color: #ccc;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -110,7 +112,7 @@ header {
 }
 
 .presets-more {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #444;
 }
 
@@ -127,7 +129,7 @@ h1 {
 }
 
 .attribution {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: #444;
   line-height: 1.5;
   max-width: 500px;
@@ -183,7 +185,7 @@ h2 {
 
 .loading-note {
   color: #444;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 /* Error */
@@ -248,10 +250,10 @@ h2 {
     padding: 6px 8px 4px;
   }
   .zone-col-name {
-    font-size: 0.8rem;
+    font-size: 0.75rem; /* 12px — snap to floor on mobile */
   }
   .zone-col-sublabel {
-    font-size: 0.42rem;
+    font-size: 0.5625rem; /* 9px — readable mobile eyebrow */
   }
   /* Pills wrap rather than crush at narrow widths */
   .pill-row {
@@ -278,11 +280,14 @@ h2 {
 .zone-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  /* Separation lives in the gap so each tab fills its cell edge-to-edge and the
+     outer tabs align to the grid edges (= same left/right as the rest of the column) */
+  column-gap: 24px;
   margin-bottom: 16px;
 }
 
 .zone-col {
-  padding: 14px 14px 16px;
+  padding: 14px 0 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -307,7 +312,7 @@ h2 {
 }
 
 .zone-col--active .zone-col-header {
-  margin: 0 -14px 10px;
+  margin: 0 0 10px;
   background: var(--zone-active-bg, var(--zone-color));
 }
 
@@ -352,7 +357,7 @@ h2 {
 }
 
 .zone-col-sublabel {
-  font-size: 0.52rem;
+  font-size: 0.625rem; /* 10px — eyebrow tier below the 12px floor */
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -382,7 +387,7 @@ h2 {
 
 .zone-col-preview-word {
   display: inline-block;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -408,7 +413,7 @@ h2 {
   margin-top: 4px;
   font-weight: 700;
   color: #e8e8e8;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .zone-col:not(.zone-col--active) .zone-col-geom-default {
@@ -479,7 +484,7 @@ h2 {
 .zone-preview-label {
   display: flex;
   flex-direction: column;
-  font-size: 0.58rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -585,7 +590,7 @@ h2 {
 }
 
 .zone-range-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #444;
   white-space: nowrap;
 }
@@ -685,7 +690,7 @@ h2 {
 }
 
 .drag-ghost-label {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
   letter-spacing: 0.06em;
   white-space: nowrap;
@@ -705,7 +710,7 @@ h2 {
 }
 
 .trash-bar-label {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: rgba(220, 80, 60, 0.55);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -741,7 +746,7 @@ h2 {
   background: #1e1e1e;
   border: 1px solid #333;
   color: #888;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   padding: 5px 14px;
   border-radius: 4px;
   cursor: pointer;
@@ -771,7 +776,7 @@ h2 {
 }
 
 .axis-tag {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-family: monospace;
   color: #555;
   background: #1a1a1a;
@@ -795,7 +800,7 @@ input[type='range'] {
 .axis-bounds {
   display: flex;
   justify-content: space-between;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #444;
   margin-top: 2px;
 }
@@ -830,7 +835,7 @@ input[type='range'] {
 
 .processing {
   color: #555;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
@@ -893,7 +898,7 @@ input[type='range'] {
   gap: 8px;
   cursor: pointer;
   margin-bottom: 8px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 .multiplier-buttons {
@@ -909,7 +914,7 @@ input[type='range'] {
   color: #888;
   border: 1px solid #2a2a2a;
   border-radius: 5px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -1005,7 +1010,7 @@ input[type='range'] {
 }
 
 .gg-geom-axis-label {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #444;
@@ -1032,7 +1037,7 @@ input[type='range'] {
   position: absolute;
   top: 2px;
   transform: translateX(-50%);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1043,8 +1048,11 @@ input[type='range'] {
   position: absolute;
   bottom: 2px;
   transform: translateX(-50%);
-  font-size: 0.55rem;
-  font-family: monospace;
+  font-size: 0.75rem;
+  font-family: 'CalSansVF', sans-serif;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 0;
+  font-feature-settings: 'zero' 1;
   color: #3a3a3a;
   pointer-events: none;
 }
@@ -1066,9 +1074,12 @@ input[type='range'] {
 .gg-geom-tooltip {
   background: #111;
   color: #e8e8e8;
-  font-size: 0.6rem;
-  font-family: monospace;
+  font-size: 0.75rem;
+  font-family: 'CalSansVF', sans-serif;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 0;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'zero' 1, 'tnum' 1;
   padding: 1px 5px;
   border-radius: 3px;
   line-height: 1.6;
@@ -1081,7 +1092,7 @@ input[type='range'] {
 }
 
 .gg-arrow {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: #666;
   line-height: 1;
 }
@@ -1227,7 +1238,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: #888;
   cursor: pointer;
   white-space: nowrap;
@@ -1343,13 +1354,13 @@ button:disabled {
 }
 
 .waterfall-opsz {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-family: monospace;
   color: #555;
 }
 
 .waterfall-ytas {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-family: monospace;
   color: #3a3a3a;
 }
@@ -1414,7 +1425,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   padding: 16px 22px 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1455,7 +1466,7 @@ button:disabled {
 }
 
 .pm-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #555;
   white-space: nowrap;
 }
@@ -1496,7 +1507,7 @@ button:disabled {
   background: none;
   border: none;
   color: #555;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 4px;
@@ -1577,7 +1588,7 @@ button:disabled {
 }
 
 .pill-rows-caption {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #666;
@@ -1764,7 +1775,7 @@ button:disabled {
 }
 
 .palette-trash-label {
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #333;
@@ -1870,7 +1881,7 @@ button:disabled {
 .presets-row .preset-btn {
   aspect-ratio: unset;
   padding: 5px 12px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   border-radius: 6px;
   height: 28px;
   white-space: nowrap;
@@ -1890,10 +1901,11 @@ button:disabled {
 .preset-btn--bifamily {
   flex-direction: column;
   gap: 2px;
+  line-height: 0.7;
 }
 
 .preset-btn-subfamily {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 500;
   opacity: 0.5;
   letter-spacing: 0.02em;
@@ -1921,7 +1933,7 @@ button:disabled {
   border: 1px solid #333;
   background: transparent;
   color: #555;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.12s, color 0.12s;
@@ -1934,7 +1946,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: #555;
   cursor: pointer;
   margin-left: 4px;
@@ -1981,7 +1993,7 @@ button:disabled {
 }
 
 .zone-col-radio-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -1995,6 +2007,16 @@ button:disabled {
   font-family: 'CalSansVF', sans-serif !important;
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 10, 'GEOM' 25;
+}
+
+/* Snap dialkit slider text (default 13px) onto the type scale */
+.controls.dialkit-root .dialkit-slider-label,
+.controls.dialkit-root .dialkit-slider-value,
+.controls.dialkit-root .dialkit-slider-input,
+.pill-slider .dialkit-slider-label,
+.pill-slider .dialkit-slider-value,
+.pill-slider .dialkit-slider-input {
+  font-size: 0.75rem;
 }
 
 /* Canonical opsz preview (opszDynamic = false) */
