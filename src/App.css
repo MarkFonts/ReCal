@@ -5,8 +5,11 @@
 }
 
 body {
+  /* App UI chrome = the "Text UI" instance of CalSansVF (opsz 10, GEOM 25).
+     wght is omitted so font-weight still drives bold UI elements. */
   font-family: 'CalSansVF', sans-serif;
-  font-optical-sizing: auto;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
   background: #0f0f0f;
   color: #e8e8e8;
   min-height: 100vh;
@@ -49,7 +52,9 @@ body {
 header {
   margin-bottom: 40px;
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  /* First column matches the sidebar width (main-layout: 280px 1fr, gap 48) so the
+     attribution lines up with the preview column — PRESETS + zone tabs. */
+  grid-template-columns: 280px 1fr auto;
   column-gap: 48px;
   align-items: start;
 }
@@ -82,7 +87,7 @@ header {
   border: 1px solid #2e2e2e;
   border-radius: 10px;
   color: #ccc;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -107,7 +112,7 @@ header {
 }
 
 .presets-more {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #444;
 }
 
@@ -124,7 +129,7 @@ h1 {
 }
 
 .attribution {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   color: #444;
   line-height: 1.5;
   max-width: 500px;
@@ -180,7 +185,7 @@ h2 {
 
 .loading-note {
   color: #444;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
 }
 
 /* Error */
@@ -223,8 +228,40 @@ h2 {
   .controls {
     position: static;
   }
+  /* Small + large previews stack to full width (type tester already does) */
+  .zone-preview-row {
+    grid-template-columns: 1fr;
+  }
+  .zone-preview-block:first-child,
+  .zone-preview-block:last-child {
+    grid-column: 1 / -1;
+  }
+  /* Tabs stay 4-across; stack the icon over narrower text inside each tab */
   .zone-grid {
-    overflow-x: auto;
+    overflow-x: visible;
+  }
+  .zone-col {
+    padding: 10px 6px 12px;
+  }
+  .zone-col-header-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    padding: 6px 8px 4px;
+  }
+  .zone-col-name {
+    font-size: 0.75rem; /* 12px — snap to floor on mobile */
+  }
+  .zone-col-sublabel {
+    font-size: 0.5625rem; /* 9px — readable mobile eyebrow */
+  }
+  /* Pills wrap rather than crush at narrow widths */
+  .pill-row {
+    flex-wrap: wrap;
+  }
+  .pill-slider {
+    flex: 1 1 28%;
+    min-width: 84px;
   }
   .download-gate {
     width: 100%;
@@ -243,11 +280,14 @@ h2 {
 .zone-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
+  /* Separation lives in the gap so each tab fills its cell edge-to-edge and the
+     outer tabs align to the grid edges (= same left/right as the rest of the column) */
+  column-gap: 24px;
   margin-bottom: 16px;
 }
 
 .zone-col {
-  padding: 14px 14px 16px;
+  padding: 14px 0 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -255,13 +295,24 @@ h2 {
 
 .zone-col--active {}
 
+/* Currently-previewing zone (preview GEOM differs from export default) */
+.zone-col--previewing .zone-col-topbar,
+.zone-col--previewing .zone-col-bottombar {
+  opacity: 0.9;
+}
+
+.zone-col--previewing .zone-col-header {
+  outline: 1px dashed var(--zone-color);
+  outline-offset: -1px;
+}
+
 .zone-col-header {
   margin-bottom: 10px;
   user-select: none;
 }
 
 .zone-col--active .zone-col-header {
-  margin: 0 -14px 10px;
+  margin: 0 0 10px;
   background: var(--zone-active-bg, var(--zone-color));
 }
 
@@ -306,7 +357,7 @@ h2 {
 }
 
 .zone-col-sublabel {
-  font-size: 0.52rem;
+  font-size: 0.625rem; /* 10px — eyebrow tier below the 12px floor */
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -336,7 +387,7 @@ h2 {
 
 .zone-col-preview-word {
   display: inline-block;
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.07em;
   text-transform: uppercase;
@@ -362,7 +413,7 @@ h2 {
   margin-top: 4px;
   font-weight: 700;
   color: #e8e8e8;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
 }
 
 .zone-col:not(.zone-col--active) .zone-col-geom-default {
@@ -396,34 +447,75 @@ h2 {
 }
 
 .zone-preview-row {
-  display: flex;
-  gap: 32px;
-  align-items: center;
-  margin-bottom: 20px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  /* Stretch so both blocks share a height → descriptor labels line up at the bottom */
+  align-items: stretch;
+  margin-bottom: 0;
 }
 
 .zone-preview-block {
-  flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Small preview: first column. Large preview: left-aligned across cols 2–4. */
+.zone-preview-block:first-child {
+  grid-column: 1 / 2;
+}
+
+.zone-preview-block:last-child {
+  grid-column: 2 / 5;
+}
+
+/* Sample text: allow wrapping + full opacity, and trim leading above the cap so
+   the cap heights of the small and large samples align at the top. */
+.zone-preview-block .zone-col-word {
+  white-space: normal;
+  overflow: visible;
+  opacity: 1;
+  line-height: 1.08;
+  text-box-trim: trim-start;
+  text-box-edge: cap alphabetic;
 }
 
 .zone-preview-label {
-  font-size: 0.58rem;
+  display: flex;
+  flex-direction: column;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #444;
-  margin-top: 8px;
+  /* Pin to the bottom of the (equal-height) block so both labels align */
+  margin-top: auto;
+  padding-top: 16px;
+  line-height: 1.5;
+}
+
+.zone-preview-label .zpl-kind {
+  color: #777;
 }
 
 .zone-type-tester {
+  /* controlled <textarea> — reset native chrome, grow via JS (auto height) */
+  display: block;
+  width: 100%;
+  border: none;
   border-top: 1px solid #1e1e1e;
-  padding-top: 16px;
+  margin-top: 24px;
+  padding: 24px 0 0;
+  background: transparent;
   color: #e8e8e8;
   outline: none;
   cursor: text;
+  resize: none;
+  overflow: hidden;
   min-height: 1em;
   line-height: 1.1;
+  font: inherit;
 }
 
 .glyph-strip {
@@ -431,7 +523,6 @@ h2 {
   flex-direction: row;
   gap: 4px;
   padding: 16px 0 12px;
-  border-top: 1px solid #1a1a1a;
   overflow-x: auto;
 }
 
@@ -457,14 +548,31 @@ h2 {
 }
 
 .zone-full-preview {
-  padding: 20px 0 0;
+  /* Inset, rounded "live preview" box holding the samples + pills + tester.
+     Groups them as a preview of the preset/defaults and separates the region
+     from the glyph strip + Type Matrix + Reset below. */
+  padding: 22px 24px 24px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+  /* Flexible top/bottom breathing room scaled to viewport height */
+  margin: clamp(16px, 4vh, 44px) 0;
+  animation: preview-throb 3.2s ease-in-out infinite;
 }
 
-.zone-tester-separator {
-  height: 2px;
-  background: var(--zone-color);
-  margin: 20px 0 20px;
-  opacity: 0.6;
+/* Throbbing opacity on the rule (border + faint glow), not the content */
+@keyframes preview-throb {
+  0%, 100% {
+    border-color: rgba(255, 255, 255, 0.06);
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    border-color: rgba(255, 255, 255, 0.16);
+    box-shadow: 0 0 18px 0 rgba(255, 255, 255, 0.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .zone-full-preview { animation: none; }
 }
 
 .zone-swatch-row {
@@ -490,7 +598,7 @@ h2 {
 }
 
 .zone-range-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   color: #444;
   white-space: nowrap;
 }
@@ -590,7 +698,7 @@ h2 {
 }
 
 .drag-ghost-label {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
   letter-spacing: 0.06em;
   white-space: nowrap;
@@ -610,7 +718,7 @@ h2 {
 }
 
 .trash-bar-label {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: rgba(220, 80, 60, 0.55);
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -646,7 +754,7 @@ h2 {
   background: #1e1e1e;
   border: 1px solid #333;
   color: #888;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   padding: 5px 14px;
   border-radius: 4px;
   cursor: pointer;
@@ -676,7 +784,7 @@ h2 {
 }
 
 .axis-tag {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-family: monospace;
   color: #555;
   background: #1a1a1a;
@@ -700,7 +808,7 @@ input[type='range'] {
 .axis-bounds {
   display: flex;
   justify-content: space-between;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #444;
   margin-top: 2px;
 }
@@ -735,7 +843,7 @@ input[type='range'] {
 
 .processing {
   color: #555;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
@@ -776,6 +884,15 @@ input[type='range'] {
   margin-bottom: 24px;
 }
 
+/* Put sidebar section headers in the same 28px centered band as the preview's
+   PRESETS row so the two columns' headers (and the rows below) line up. */
+.control-group h2 {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  margin-bottom: 10px;
+}
+
 .control-note {
   font-size: 0.75rem;
   color: #555;
@@ -789,7 +906,7 @@ input[type='range'] {
   gap: 8px;
   cursor: pointer;
   margin-bottom: 8px;
-  font-size: 0.85rem;
+  font-size: 0.875rem;
 }
 
 .multiplier-buttons {
@@ -805,7 +922,7 @@ input[type='range'] {
   color: #888;
   border: 1px solid #2a2a2a;
   border-radius: 5px;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
 }
@@ -901,7 +1018,7 @@ input[type='range'] {
 }
 
 .gg-geom-axis-label {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: #444;
@@ -928,7 +1045,7 @@ input[type='range'] {
   position: absolute;
   top: 2px;
   transform: translateX(-50%);
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -939,8 +1056,11 @@ input[type='range'] {
   position: absolute;
   bottom: 2px;
   transform: translateX(-50%);
-  font-size: 0.55rem;
-  font-family: monospace;
+  font-size: 0.75rem;
+  font-family: 'CalSansVF', sans-serif;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 0;
+  font-feature-settings: 'zero' 1;
   color: #3a3a3a;
   pointer-events: none;
 }
@@ -962,9 +1082,12 @@ input[type='range'] {
 .gg-geom-tooltip {
   background: #111;
   color: #e8e8e8;
-  font-size: 0.6rem;
-  font-family: monospace;
+  font-size: 0.75rem;
+  font-family: 'CalSansVF', sans-serif;
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 0;
   font-variant-numeric: tabular-nums;
+  font-feature-settings: 'zero' 1, 'tnum' 1;
   padding: 1px 5px;
   border-radius: 3px;
   line-height: 1.6;
@@ -977,7 +1100,7 @@ input[type='range'] {
 }
 
 .gg-arrow {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   color: #666;
   line-height: 1;
 }
@@ -1123,7 +1246,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   color: #888;
   cursor: pointer;
   white-space: nowrap;
@@ -1239,13 +1362,13 @@ button:disabled {
 }
 
 .waterfall-opsz {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-family: monospace;
   color: #555;
 }
 
 .waterfall-ytas {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-family: monospace;
   color: #3a3a3a;
 }
@@ -1310,7 +1433,7 @@ button:disabled {
   align-items: center;
   justify-content: space-between;
   padding: 16px 22px 0;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -1351,7 +1474,7 @@ button:disabled {
 }
 
 .pm-label {
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   color: #555;
   white-space: nowrap;
 }
@@ -1392,7 +1515,7 @@ button:disabled {
   background: none;
   border: none;
   color: #555;
-  font-size: 0.7rem;
+  font-size: 0.75rem;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 4px;
@@ -1455,6 +1578,135 @@ button:disabled {
 /* Slightly taller row to feel substantial */
 .controls.dialkit-root {
   --dial-row-height: 40px;
+}
+
+/* ── Inline canvas pill-sliders (mockup) ───────────────────────── */
+.pill-slider-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.pill-rows-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: -2px;
+}
+
+.pill-rows-caption {
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #666;
+}
+
+.pill-reset-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #2a2a2a;
+  color: #888;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: color 0.12s, border-color 0.12s;
+}
+
+.pill-reset-btn:hover {
+  color: #ddd;
+  border-color: #444;
+}
+
+.pill-reset-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.pill-reset-btn--active {
+  color: #e8e8e8;
+  border-color: #5a5a5a;
+}
+
+.pill-reset-btn svg {
+  display: block;
+}
+
+.pill-reset-btn--spin svg {
+  animation: pill-reset-spin 0.5s ease;
+}
+
+@keyframes pill-reset-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(-360deg); }
+}
+
+.pill-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pill-slider {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Pill currently overriding its export default — accent ring + dot */
+.pill-slider--overridden .dialkit-slider {
+  box-shadow: 0 0 0 1.5px #4a7fd4;
+}
+
+.pill-slider--overridden .dialkit-slider-label::after {
+  content: '●';
+  font-size: 0.5em;
+  color: #4a7fd4;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+
+/* Pill-ify the dialkit slider: rounded light track, centered label, no handle */
+.pill-slider .dialkit-slider-wrapper {
+  height: 30px;
+}
+
+.pill-slider .dialkit-slider {
+  border-radius: 999px;
+  background: #f0f0f0;
+  overflow: hidden;
+}
+
+.pill-slider .dialkit-slider-fill {
+  background: #9a9a9a;
+  border-radius: 999px;
+}
+
+.pill-slider .dialkit-slider-active .dialkit-slider-fill {
+  background: #8a8a8a;
+}
+
+.pill-slider .dialkit-slider-handle {
+  display: none;
+}
+
+.pill-slider .dialkit-slider-label {
+  left: 0;
+  right: 0;
+  padding: 0 14px;
+  text-align: left;
+  text-transform: lowercase;
+  color: #111;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+.pill-slider .dialkit-slider-value,
+.pill-slider .dialkit-slider-input {
+  right: 12px;
+  color: #333;
 }
 
 /* ── Glyph palette column ──────────────────────────────────────── */
@@ -1531,7 +1783,7 @@ button:disabled {
 }
 
 .palette-trash-label {
-  font-size: 0.55rem;
+  font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #333;
@@ -1623,12 +1875,13 @@ button:disabled {
   margin-bottom: 10px;
 }
 
+/* Match the sidebar section headers (h2) so PRESETS reads as a peer header */
 .presets-label {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #555;
+  color: #666;
   flex-shrink: 0;
   margin-right: 4px;
 }
@@ -1636,7 +1889,7 @@ button:disabled {
 .presets-row .preset-btn {
   aspect-ratio: unset;
   padding: 5px 12px;
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   border-radius: 6px;
   height: 28px;
   white-space: nowrap;
@@ -1656,10 +1909,11 @@ button:disabled {
 .preset-btn--bifamily {
   flex-direction: column;
   gap: 2px;
+  line-height: 0.7;
 }
 
 .preset-btn-subfamily {
-  font-size: 0.6rem;
+  font-size: 0.75rem;
   font-weight: 500;
   opacity: 0.5;
   letter-spacing: 0.02em;
@@ -1687,7 +1941,7 @@ button:disabled {
   border: 1px solid #333;
   background: transparent;
   color: #555;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: border-color 0.12s, color 0.12s;
@@ -1700,7 +1954,7 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.68rem;
+  font-size: 0.75rem;
   color: #555;
   cursor: pointer;
   margin-left: 4px;
@@ -1747,16 +2001,30 @@ button:disabled {
 }
 
 .zone-col-radio-label {
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 600;
   white-space: nowrap;
 }
 
-/* Force CalSansVF on dialkit sidebar controls */
+/* Force CalSansVF on dialkit sidebar controls + canvas pills (dialkit forces
+   system-ui on .dialkit-root; override so they render in the Text UI instance) */
 .controls.dialkit-root,
-.controls.dialkit-root * {
+.controls.dialkit-root *,
+.pill-slider-rows.dialkit-root,
+.pill-slider-rows.dialkit-root * {
   font-family: 'CalSansVF', sans-serif !important;
   font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
+}
+
+/* Snap dialkit slider text (default 13px) onto the type scale */
+.controls.dialkit-root .dialkit-slider-label,
+.controls.dialkit-root .dialkit-slider-value,
+.controls.dialkit-root .dialkit-slider-input,
+.pill-slider .dialkit-slider-label,
+.pill-slider .dialkit-slider-value,
+.pill-slider .dialkit-slider-input {
+  font-size: 0.75rem;
 }
 
 /* Canonical opsz preview (opszDynamic = false) */

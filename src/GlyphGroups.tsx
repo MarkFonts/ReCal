@@ -17,17 +17,22 @@ const V: Record<VariantLabel, Variant> = {
   Geo:     { label: 'Geo',     color: '#4aad5c' },
 }
 
+// Thresholds derived from CalSansVF.ttf FeatureVariations band edges (GEOM
+// userspace). The 8pt-only opsz-gated A11Y extension is intentionally not
+// modelled here. The master/default outlines are now the UI forms, so the
+// "default" lane is kept as the neutral master (the UI zone shows it unswapped).
 export const GROUP_DEFS: GroupDef[] = [
-  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [5] },
+  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [11] },
   { glyph: 'l', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [13, 35] },
-  { glyph: 'G', variants: [V.UI, V.default], defaultThresholds: [41] },
-  { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'f', variants: [V.default, V.Base], defaultThresholds: [40] },
-  { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 74] },
-  { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 74] },
-  { glyph: 'y', variants: [V.default, V.Base, V.Geo], defaultThresholds: [40, 60] },
-  { glyph: 'u', variants: [V.default, V.Geo], defaultThresholds: [60] },
+  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [13, 34] },
+  { glyph: 'G', variants: [V.default, V.Geo], defaultThresholds: [40] },
+  { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [16] },
+  // f's Base form reverts to the master above GEOM 76 (non-monotonic): default → Base → default
+  { glyph: 'f', variants: [V.default, V.Base, V.default], defaultThresholds: [39, 76] },
+  { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [39, 74] },
+  { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [39, 74] },
+  { glyph: 'y', variants: [V.default, V.Base, V.Geo], defaultThresholds: [39, 59] },
+  { glyph: 'u', variants: [V.default, V.Geo], defaultThresholds: [59] },
   { glyph: 'C', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: 'c', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: 'M', variants: [V.default, V.Geo], defaultThresholds: [79] },
@@ -125,7 +130,7 @@ function GlyphRow({ def, thresholds, geomDefault, otherDefaults, opszDefault, on
             `'opsz' ${opszDefault}`,
           ].join(', ')
           return (
-            <span key={v.label}
+            <span key={vi}
               className={`gg-label${vi === activeIdx ? ' active' : ''}`}
               style={{
                 color: v.color,
@@ -147,7 +152,7 @@ function GlyphRow({ def, thresholds, geomDefault, otherDefaults, opszDefault, on
           const segStart = vi === 0 ? 0 : thresholds[vi - 1]
           const segEnd = vi === def.variants.length - 1 ? 100 : thresholds[vi]
           return (
-            <div key={v.label}
+            <div key={vi}
               className={`gg-bar${vi === activeIdx ? ' active' : ''}`}
               style={{ top: vi * 20 + 8, left: `${segStart}%`, width: `${segEnd - segStart}%`, background: v.color }}
             />

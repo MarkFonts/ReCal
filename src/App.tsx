@@ -20,8 +20,18 @@ const OPSZ_CONTEXT = [
 ] as const
 
 const FONT_URLS = {
-  hoi: `${import.meta.env.BASE_URL}fonts/CalSansVariable2.ttf`,
-  standard: `${import.meta.env.BASE_URL}fonts/ReCalSans-Variable.ttf`,
+  hoi: `${import.meta.env.BASE_URL}fonts/CalSansFlexVF.ttf`,
+  standard: `${import.meta.env.BASE_URL}fonts/CalSansVF.ttf`,
+}
+
+// Reset glyph (circular arrow) lifted from font-proofer's ResetIcon
+function ResetIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M8,14.2909c-3.47461,0-6.30127-2.81629-6.30127-6.2909,0-2.57326,1.51851-3.90145,2.46222-4.67831.19366-.15897.47817-.12995.6365.06182.15865.19272.10866.45416-.06182.6365-.72266.77296-1.63651,1.99428-1.63651,3.97999,0,2.70215,2.19824,4.91247,4.90088,4.91247,2.70215,0,4.90039-2.21033,4.90039-4.91247,0-2.70264-2.19824-4.90088-4.90039-4.90088-.38672,0-.7002-.31348-.7002-.7002s.31348-.7002.7002-.7002c3.47461,0,6.30078,2.82666,6.30078,6.30127s-2.82617,6.2909-6.30078,6.2909Z"/>
+      <path d="M4.84717,6.89648c-.38672,0-.7002-.31348-.7002-.7002v-2.12169h-2.10645c-.38672,0-.7002-.31032-.7002-.69704s.31348-.68811.7002-.68811h2.80664c.38672,0,.7002.31348.7002.7002v2.80664c0,.38672-.31348.7002-.7002.7002Z"/>
+    </svg>
+  )
 }
 
 export default function App() {
@@ -42,8 +52,11 @@ export default function App() {
   const [presetsExpanded, setPresetsExpanded] = useState(false)
   const [scaledOpsz, setScaledOpsz] = useState(false)
   const [typeTesterText, setTypeTesterText] = useState('Type something')
+  const [tracking, setTracking] = useState(0)
+  const [resetSpin, setResetSpin] = useState(false)
+  // Sparse preview-only override layer for the canvas pills. Never affects export.
+  const [previewOverrides, setPreviewOverrides] = useState<Record<string, number>>({})
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
-  const [opszDynamic, setOpszDynamic] = useState(false)
   const [oflAgreed, setOflAgreed] = useState(false)
   const [oflAttempted, setOflAttempted] = useState(false)
   const [autoAscender, setAutoAscender] = useState(false)
@@ -65,6 +78,7 @@ export default function App() {
   }>>([])
   const zoneGridRef = useRef<HTMLDivElement | null>(null)
   const paletteTrashRef = useRef<HTMLDivElement | null>(null)
+  const typeTesterRef = useRef<HTMLTextAreaElement | null>(null)
 
   const workerRef = useRef<Worker | null>(null)
   const defaultsRef = useRef<Record<string, number>>({})
@@ -79,6 +93,15 @@ export default function App() {
   const thresholdFutureRef = useRef<Array<Record<string, number[]>>>([])
 
   useEffect(() => { useHoiRef.current = useHoi }, [useHoi])
+
+  // Type tester auto-grows to fit its content (textarea avoids the contentEditable
+  // cursor-reset bug where typing jumped to the start).
+  useEffect(() => {
+    const el = typeTesterRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [typeTesterText, previewSize, tracking])
 
   async function loadFont() {
     if (!workerRef.current) return
@@ -310,10 +333,38 @@ export default function App() {
     return () => { if (measureDebounceRef.current) clearTimeout(measureDebounceRef.current) }
   }, [defaults])
 
+  // Export-default change (sidebar dials, zone-tab clicks, presets, Type Matrix).
+  // Also clears any preview override for that axis so the preview reflects the
+  // new export default.
   function handleSliderChange(tag: string, value: number) {
     const next = { ...defaultsRef.current, [tag]: value }
     defaultsRef.current = next
     setDefaults(next)
+    setPreviewOverrides(prev => {
+      if (!(tag in prev)) return prev
+      const n = { ...prev }; delete n[tag]; return n
+    })
+  }
+
+  // Preview-only axis change (canvas pills). Does NOT touch export defaults.
+  function handlePreviewChange(tag: string, value: number) {
+    setPreviewOverrides(prev => ({ ...prev, [tag]: value }))
+  }
+
+  // Reset the PREVIEW pills back to the export defaults. Clears the preview
+  // override layer + size/tracking. Does NOT touch export defaults or thresholds.
+  function resetTypography() {
+    setPreviewOverrides({})
+    setPreviewSize(48)
+    setTracking(0)
+  }
+
+  // Reset all glyph conditions (thresholds + trash) to defaults. Run at the top
+  // of every preset so a previous preset's threshold edits don't carry over.
+  function resetConditions() {
+    pushThresholdHistory()
+    setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
+    setTrashedGlyphs([])
   }
 
   async function downloadTTF() {
@@ -329,7 +380,12 @@ export default function App() {
       downloadResolveRef.current = resolve
       workerRef.current!.postMessage({
         type: 'applyConfig',
-        configJson: JSON.stringify({ axisDefaults, opszMultiplier }),
+        configJson: JSON.stringify({
+          axisDefaults,
+          opszMultiplier,
+          freezeOpsz,
+          thresholds: glyphThresholdsRef.current,
+        }),
       })
     })
 
@@ -345,23 +401,32 @@ export default function App() {
 
   const isLoading = axes.length === 0 && !error
 
-  const designAxes = axes.filter((a) => a.tag !== 'opsz' && a.tag !== 'GEOM' && !PARAMETRIC_TAGS.has(a.tag))
+  const designAxes = axes.filter((a) => a.tag !== 'opsz' && a.tag !== 'GEOM' && a.tag !== 'ital' && !PARAMETRIC_TAGS.has(a.tag))
   const parametricAxes = axes.filter((a) => PARAMETRIC_TAGS.has(a.tag))
   const opszAxis = axes.find((a) => a.tag === 'opsz')
   const geomAxis = axes.find((a) => a.tag === 'GEOM')
 
-  function previewVarSettings(fontSize: number, geomOverride?: number) {
+  // Current preview value for an axis: pill override falls back to the export default.
+  const previewVal = (tag: string) =>
+    previewOverrides[tag] ?? defaults[tag] ?? (axes.find(a => a.tag === tag)?.default ?? 0)
+  const isOverridden = (tag: string) => tag in previewOverrides
+  const hasOverrides = Object.keys(previewOverrides).length > 0 || previewSize !== 48 || tracking !== 0
+
+  function previewVarSettings(fontSize: number, geomOverride?: number, opszOverride?: number, source: 'preview' | 'export' = 'preview') {
     const parts = axes
       .filter((a) => a.tag !== 'opsz')
       .map((a) => {
-        let val = (a.tag === 'GEOM' && geomOverride !== undefined) ? geomOverride : (defaults[a.tag] ?? a.default)
+        const axisVal = source === 'export' ? (defaults[a.tag] ?? a.default) : previewVal(a.tag)
+        let val = (a.tag === 'GEOM' && geomOverride !== undefined) ? geomOverride : axisVal
         if (a.tag === 'YTAS' && autoYtasValue !== null) val = autoYtasValue
         return `'${a.tag}' ${val}`
       })
     if (opszAxis) {
-      const opsz = frozenOpszValue !== null
-        ? Math.min(Math.max(frozenOpszValue, opszAxis.min), opszAxis.max)
-        : Math.min(Math.max(fontSize / opszMultiplier, opszAxis.min), opszAxis.max)
+      const opsz = opszOverride !== undefined
+        ? Math.min(Math.max(opszOverride, opszAxis.min), opszAxis.max)
+        : frozenOpszValue !== null
+          ? Math.min(Math.max(frozenOpszValue, opszAxis.min), opszAxis.max)
+          : Math.min(Math.max(fontSize / opszMultiplier, opszAxis.min), opszAxis.max)
       parts.push(`'opsz' ${opsz.toFixed(1)}`)
     }
     return parts.join(', ') || 'normal'
@@ -377,9 +442,22 @@ export default function App() {
     return Math.round(ytasAxis.min + t * (ytasAxis.max - ytasAxis.min))
   })() : null
 
-  const activeZoneName = LANDING_ZONES.find(
-    z => (defaults['GEOM'] ?? 0) >= z.start && (defaults['GEOM'] ?? 0) <= z.end
-  )?.label
+  // Active zone for the current GEOM. When GEOM sits in a transition gutter
+  // between named zones, fall back to the nearest zone so the preview never
+  // disappears.
+  const nearestZoneLabel = (geom: number) => {
+    const dist = (z: typeof LANDING_ZONES[0]) =>
+      geom < z.start ? z.start - geom : geom > z.end ? geom - z.end : 0
+    return (
+      LANDING_ZONES.find(z => geom >= z.start && geom <= z.end) ??
+      LANDING_ZONES.reduce((best, z) => (dist(z) < dist(best) ? z : best))
+    ).label
+  }
+  // STANDARD/filled tab tracks the EXPORT GEOM default; the preview content +
+  // outline track the (possibly overridden) preview GEOM.
+  const exportZoneName = nearestZoneLabel(defaults['GEOM'] ?? 0)
+  const previewZoneName = nearestZoneLabel(previewVal('GEOM'))
+  const activeZoneName = previewZoneName
 
   function renderSlider(axis: AxisInfo) {
     const isAuto = axis.tag === 'YTAS' && autoYtasValue !== null
@@ -410,7 +488,7 @@ export default function App() {
           <a href="https://input.djr.com/download/" target="_blank" rel="noopener noreferrer">
             DJR's Input font download customizer
           </a>
-          , repurposed by WORDMARK to make the OFL mission more accessible.
+          , repurposed by WORDMARK to make the Cal Sans OFL mission more accessible.
         </p>
         <div className="download-gate">
           <label className={`ofl-checkbox${oflAttempted && !oflAgreed ? ' ofl-checkbox--required' : ''}`} id="ofl-label">
@@ -464,14 +542,22 @@ export default function App() {
                 <h2>Optical Size Scale</h2>
                 <div className="dial-axis-row">
                   <Slider
-                    label={`Opsz ×${opszMultiplier} → ${Math.round(opszAxis.min * opszMultiplier)}–${Math.round(opszAxis.max * opszMultiplier)}pt`}
+                    label={`Opsz → ${Math.round(opszAxis.min * opszMultiplier)}–${Math.round(opszAxis.max * opszMultiplier)}pt`}
                     value={opszMultiplier}
                     onChange={(v) => setOpszMultiplier(Math.round(v))}
                     min={1}
                     max={6}
                     step={1}
+                    unit="×"
                   />
                 </div>
+                <label className="hoi-toggle" style={{ marginTop: 10 }}>
+                  <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
+                  <span>Freeze opsz</span>
+                </label>
+                <p className="control-note">
+                  Bakes a fixed optical size into the export.
+                </p>
               </div>
             )}
 
@@ -521,16 +607,16 @@ export default function App() {
             <div className="presets-row">
               <span className="presets-label">Presets</span>
               <button className={`preset-btn${activePreset === 'Mobile UI' ? ' preset-btn--active' : ''}`} onClick={() => {
-                setActivePreset('Mobile UI'); setScaledOpsz(false)
-                pushThresholdHistory(); setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
+                setActivePreset('Mobile UI'); resetConditions(); setScaledOpsz(false)
+                setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
                 setGlyphThresholds(prev => ({ ...prev, l: [26] }))
               }}>Mobile UI</button>
               <button className={`preset-btn${activePreset === 'Display' ? ' preset-btn--active' : ''}`} onClick={() => {
-                setActivePreset('Display'); setScaledOpsz(false)
+                setActivePreset('Display'); resetConditions(); setScaledOpsz(false)
                 setFrozenOpszValue(null); handleSliderChange('GEOM', 50)
               }}>Display</button>
               <button className={`preset-btn${activePreset === 'Wayfinding' ? ' preset-btn--active' : ''}`} onClick={() => {
-                setActivePreset('Wayfinding'); setScaledOpsz(false)
+                setActivePreset('Wayfinding'); resetConditions(); setScaledOpsz(false)
                 setFrozenOpszValue(null); handleSliderChange('GEOM', 5); setOpszMultiplier(6)
               }}>Wayfinding</button>
 
@@ -539,13 +625,13 @@ export default function App() {
               )}
               {presetsExpanded && <>
                 <button className={`preset-btn${activePreset === 'Futura' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Futura'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(16)
+                  setActivePreset('Futura'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(16)
                   handleSliderChange('GEOM', 100); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
                 }}>Futura</button>
                 <button className={`preset-btn preset-btn--bifamily${activePreset === 'Neutra 2' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Neutra 2'); setScaledOpsz(true); setOpszMultiplier(0.625)
-                  pushThresholdHistory(); setFrozenOpszValue(null)
+                  setActivePreset('Neutra 2'); resetConditions(); setScaledOpsz(true); setOpszMultiplier(0.625)
+                  setFrozenOpszValue(null)
                   handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('y', 2, 'UI', t); return t })
                 }}>
@@ -553,34 +639,34 @@ export default function App() {
                   <span className="preset-btn-subfamily">Text · Display</span>
                 </button>
                 <button className={`preset-btn preset-btn--bifamily${activePreset === 'Inter' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Inter'); setScaledOpsz(true); setOpszMultiplier(0.625)
-                  pushThresholdHistory(); setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
+                  setActivePreset('Inter'); resetConditions(); setScaledOpsz(true); setOpszMultiplier(0.625)
+                  setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
                 }}>
                   <span>Inter</span>
                   <span className="preset-btn-subfamily">UI · Display</span>
                 </button>
                 <button className={`preset-btn${activePreset === 'Circular' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Circular'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
+                  setActivePreset('Circular'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
                 }}>Circular</button>
                 <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Gotham'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
+                  setActivePreset('Gotham'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('j', 1, 'UI', t); return t })
                 }}>Gotham</button>
                 <button className={`preset-btn${activePreset === 'Geist' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Geist'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(16); handleSliderChange('GEOM', 50)
+                  setActivePreset('Geist'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(16); handleSliderChange('GEOM', 50)
                   setGlyphThresholds(prev => applyDrop('a', 0, 'Base', prev))
                 }}>Geist</button>
                 <button className={`preset-btn${activePreset === 'Poppins' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Poppins'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(10); handleSliderChange('GEOM', 50)
+                  setActivePreset('Poppins'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(10); handleSliderChange('GEOM', 50)
                   setGlyphThresholds(prev => applyDrop('y', 2, 'Base', prev))
                 }}>Poppins</button>
                 <button className={`preset-btn${activePreset === 'GT America' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('GT America'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(8); handleSliderChange('GEOM', 25)
+                  setActivePreset('GT America'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(8); handleSliderChange('GEOM', 25)
                   setGlyphThresholds(prev => applyDelete('a', 0, 'A11Y', prev))
                 }}>GT America</button>
               </>}
@@ -625,20 +711,21 @@ export default function App() {
                 {/* ── Zone columns ── */}
                 <div className={`zone-grid${previewRebuilding ? ' zone-grid--rebuilding' : ''}`} ref={zoneGridRef}>
                   {LANDING_ZONES.map((z) => {
-                    const isActive = activeZoneName === z.label
+                    const isStandard = exportZoneName === z.label   // export GEOM default
+                    const isPreviewing = previewZoneName === z.label // currently previewing
                     const isDragTarget = dragTargetZone === z.label
                     return (
                       <div
                         key={z.label}
-                        className={`zone-col${isActive ? ' zone-col--active' : ''}${isDragTarget ? ' zone-col--drag-target' : ''}`}
+                        className={`zone-col${isStandard ? ' zone-col--active' : ''}${isPreviewing && !isStandard ? ' zone-col--previewing' : ''}${isDragTarget ? ' zone-col--drag-target' : ''}`}
                         style={{ '--zone-color': z.label === 'UI' ? '#fff' : z.color, '--zone-active-bg': z.label === 'UI' ? '#fff' : z.color } as React.CSSProperties}
                       >
                         <div className="zone-col-header" onClick={() => handleSliderChange('GEOM', z.mid)} style={{ cursor: 'pointer' }}>
                           <div className="zone-col-topbar" />
                           <div className="zone-col-header-inner">
-                            <span className="zone-col-icon">{isActive ? '◉' : '○'}</span>
+                            <span className="zone-col-icon">{isStandard ? '◉' : '○'}</span>
                             <div className="zone-col-header-text">
-                              <span className="zone-col-sublabel">{isActive ? 'STANDARD' : 'SECRET VARIATION ZONE'}</span>
+                              <span className="zone-col-sublabel">{isStandard ? 'STANDARD' : isPreviewing ? 'PREVIEWING' : 'SECRET VARIATION ZONE'}</span>
                               <span className="zone-col-name">{z.label === 'A11Y' ? 'A11y' : z.label}</span>
                             </div>
                           </div>
@@ -652,57 +739,85 @@ export default function App() {
               </div>
                 {/* ── Full-width preview + type tester ── */}
                 {(() => {
-                  const az = LANDING_ZONES.find(z => z.label === activeZoneName)
-                  if (!az) return null
-                  const smallSz = opszAxis ? Math.round(opszAxis.min * opszMultiplier) : Math.round(14 * opszMultiplier)
+                  // Top blocks = canonical EXPORT view (stable). Tester = live preview.
+                  const exportAz = LANDING_ZONES.find(z => z.label === exportZoneName)!
+                  const previewAz = LANDING_ZONES.find(z => z.label === previewZoneName)!
+                  const smallSz = opszAxis ? Math.round(opszAxis.default * opszMultiplier) : Math.round(14 * opszMultiplier)
                   const largeSz = opszAxis ? Math.round(opszAxis.max * opszMultiplier) : Math.round(32 * opszMultiplier)
-                  const smallOpsz = opszAxis?.min ?? 14
+                  const smallOpsz = opszAxis?.default ?? 14
                   const largeOpsz = opszAxis?.max ?? 32
                   const baseStyle = { fontFamily: "'CalSansPreview','CalSansVF',sans-serif", fontOpticalSizing: 'none' as const, fontFeatureSettings: "'rclt' 1" as const }
-                  const smallStyle = { ...baseStyle, fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, az.mid) }
-                  const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, az.mid) }
+                  const smallStyle = { ...baseStyle, fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, exportAz.mid, undefined, 'export') }
+                  const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, exportAz.mid, undefined, 'export') }
                   return (
-                    <div className="zone-full-preview" style={{ '--zone-color': az.color } as React.CSSProperties}>
+                    <>
+                      {/* Default/Max samples = export view — OUTSIDE the preview box */}
                       <div className="zone-preview-row">
                         <div className="zone-preview-block">
                           <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS.join(' ')}</p>
-                          <div className="zone-preview-label">Default · opsz {Math.round(smallOpsz)}pt</div>
+                          <div className="zone-preview-label"><span className="zpl-kind">Default</span><span>opsz {Math.round(smallOpsz)}pt</span></div>
                         </div>
                         <div className="zone-preview-block">
-                          {PREVIEW_WORDS.map(w => <p key={w} className="zone-col-word" style={largeStyle}>{w}</p>)}
-                          <div className="zone-preview-label">Max · opsz {Math.round(largeOpsz)}pt</div>
+                          <p className="zone-col-word" style={largeStyle}>{PREVIEW_WORDS.join(' ')}</p>
+                          <div className="zone-preview-label"><span className="zpl-kind">Max</span><span>opsz {Math.round(largeOpsz)}pt</span></div>
                         </div>
                       </div>
-                      <div className="zone-tester-separator" />
-                      <div
+
+                      <div className="zone-full-preview" style={{ '--zone-color': previewAz.color } as React.CSSProperties}>
+                      <div className="pill-slider-rows dialkit-root" data-theme="dark">
+                        <div className="pill-rows-header">
+                          <span className="pill-rows-caption">Preview</span>
+                          <button
+                            className={`pill-reset-btn${hasOverrides ? ' pill-reset-btn--active' : ''}${resetSpin ? ' pill-reset-btn--spin' : ''}`}
+                            title="Reset preview to export defaults"
+                            disabled={!hasOverrides}
+                            onClick={() => { resetTypography(); setResetSpin(true) }}
+                            onAnimationEnd={() => setResetSpin(false)}
+                          ><ResetIcon /></button>
+                        </div>
+                        <div className="pill-row pill-row--wide">
+                          <div className={`pill-slider${previewSize !== 48 ? ' pill-slider--overridden' : ''}`}>
+                            <Slider label="size" value={previewSize} onChange={(v) => setPreviewSize(Math.round(v))} min={12} max={200} step={1} unit="pt" />
+                          </div>
+                          <div className={`pill-slider${tracking !== 0 ? ' pill-slider--overridden' : ''}`}>
+                            <Slider label="tracking" value={tracking} onChange={(v) => setTracking(Math.round(v))} min={-10} max={30} step={1} unit="%" />
+                          </div>
+                        </div>
+                        <div className="pill-row">
+                          {opszAxis && (
+                            <div className={`pill-slider${isOverridden('opsz') ? ' pill-slider--overridden' : ''}`}>
+                              <Slider label="opsz" value={previewVal('opsz')} onChange={(v) => handlePreviewChange('opsz', v)} min={opszAxis.min} max={opszAxis.max} step={1} />
+                            </div>
+                          )}
+                          {geomAxis && (
+                            <div className={`pill-slider${isOverridden('GEOM') ? ' pill-slider--overridden' : ''}`}>
+                              <Slider label="GEOM" value={previewVal('GEOM')} onChange={(v) => handlePreviewChange('GEOM', v)} min={geomAxis.min} max={geomAxis.max} step={1} />
+                            </div>
+                          )}
+                          {[...designAxes, ...parametricAxes].map((a) => (
+                            <div className={`pill-slider${isOverridden(a.tag) ? ' pill-slider--overridden' : ''}`} key={a.tag}>
+                              <Slider label={a.tag} value={previewVal(a.tag)} onChange={(v) => handlePreviewChange(a.tag, v)} min={a.min} max={a.max} step={1} />
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+
+                      <textarea
+                        ref={typeTesterRef}
                         className="zone-type-tester"
-                        contentEditable
-                        suppressContentEditableWarning
-                        style={{ ...largeStyle, fontSize: `${largeSz}pt` }}
-                        onInput={e => setTypeTesterText(e.currentTarget.textContent ?? '')}
-                      >{typeTesterText}</div>
-                    </div>
+                        value={typeTesterText}
+                        spellCheck={false}
+                        rows={1}
+                        onChange={e => setTypeTesterText(e.target.value)}
+                        style={{ ...largeStyle, fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, previewAz.mid, previewOverrides['opsz'], 'preview'), letterSpacing: `${tracking / 100}em` }}
+                      />
+                      </div>
+                    </>
                   )
                 })()}</>
               )
             })()}
 
-            <div className="preview-size-row preview-size-row--bottom">
-              <label className="hoi-toggle" style={{ marginRight: 8 }}>
-                <input type="checkbox" checked={opszDynamic} onChange={e => setOpszDynamic(e.target.checked)} />
-                <span>Dynamic size Preview</span>
-              </label>
-              {opszDynamic && (
-                <label className="hoi-toggle" style={{ marginRight: 8, flexShrink: 0 }}>
-                  <input type="checkbox" checked={freezeOpsz} onChange={(e) => setFreezeOpsz(e.target.checked)} />
-                  <span>Freeze on export</span>
-                </label>
-              )}
-              <span className={`preview-px-label${opszDynamic ? '' : ' preview-size-row--off'}`} style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1 }}>
-                <span>{previewSize}pt</span>
-                <input type="range" min={12} max={200} step={1} value={previewSize} disabled={!opszDynamic} onChange={(e) => setPreviewSize(parseInt(e.target.value))} style={{ flex: 1 }} />
-              </span>
-            </div>
 
             {axes.length > 0 && (() => {
               const gd = defaults['GEOM'] ?? geomAxis?.default ?? 25
@@ -743,17 +858,19 @@ export default function App() {
               <button className="xray-toggle-btn" onClick={() => setShowXRay(v => !v)}>
                 {showXRay ? 'Hide Type Matrix' : 'Type Matrix'}
               </button>
-              <button
-                className="xray-toggle-btn"
-                style={{ marginLeft: 8 }}
-                onClick={() => {
-                  pushThresholdHistory()
-                  setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
-                  setTrashedGlyphs([])
-                }}
-              >
-                Reset
-              </button>
+              {showXRay && (
+                <button
+                  className="xray-toggle-btn"
+                  style={{ marginLeft: 8 }}
+                  onClick={() => {
+                    pushThresholdHistory()
+                    setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
+                    setTrashedGlyphs([])
+                  }}
+                >
+                  Reset
+                </button>
+              )}
             </div>
 
             {showXRay && geomAxis && (
@@ -859,7 +976,7 @@ export default function App() {
 
               <div className="preview-modal-header">
                 <span>
-                  {activeZoneName === m.zone.label
+                  {exportZoneName === m.zone.label
                     ? 'Default font preview'
                     : <><span style={{ color: m.zone.color }}>{m.zone.label}</span> variable feature preview</>
                   }
