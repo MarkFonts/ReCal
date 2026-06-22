@@ -307,11 +307,10 @@ h2 {
   }
 }
 
-/* Axis controls */
-
+/* Axis controls — scroll with the page (not sticky) so they don't overlap the
+   preview when the layout is stacked. */
 .controls {
-  position: sticky;
-  top: 24px;
+  position: static;
 }
 
 /* Zone grid */
