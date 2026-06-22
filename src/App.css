@@ -21,6 +21,15 @@ body {
   padding: 40px 24px;
 }
 
+/* UI spring easing off → kill interface motion (not the font-axis spring) */
+.app--no-anim,
+.app--no-anim *,
+.app--no-anim *::before,
+.app--no-anim *::after {
+  animation: none !important;
+  transition: none !important;
+}
+
 @media (min-width: 1000px) {
   .app {
     max-width: 100%;
@@ -545,6 +554,11 @@ h2 {
 
 .glyph-strip-token--active {
   background: rgba(255,255,255,0.06);
+}
+
+/* Keeps the zone-row grid aligned where a glyph has no variant for that row */
+.glyph-strip-token--empty {
+  visibility: hidden;
 }
 
 .zone-full-preview {

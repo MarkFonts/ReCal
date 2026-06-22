@@ -38,6 +38,7 @@ export const GROUP_DEFS: GroupDef[] = [
   { glyph: 'M', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: '0', variants: [V.default, V.Geo], defaultThresholds: [79] },
   { glyph: '1', variants: [V.default, V.Geo], defaultThresholds: [79] },
+  { glyph: '5', variants: [V.default, V.Geo], defaultThresholds: [79] },
 ]
 
 export const LANDING_ZONES = [

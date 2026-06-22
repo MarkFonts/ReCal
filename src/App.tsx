@@ -54,6 +54,11 @@ export default function App() {
   const [typeTesterText, setTypeTesterText] = useState('Type something')
   const [tracking, setTracking] = useState(0)
   const [resetSpin, setResetSpin] = useState(false)
+  // "Easy ease": rendered axis values spring toward their targets so dragging a
+  // pill makes the glyphs swing/settle. opsz/wght/YTAS/SHRP always; GEOM under HOI.
+  const [animAxis, setAnimAxis] = useState<Record<string, number>>({})
+  const axisSprings = useRef<Record<string, { x: number; v: number; target: number; raf: number | null }>>({})
+  const [springEasing, setSpringEasing] = useState(true)  // off = no font-axis bounce AND no UI motion
   // Sparse preview-only override layer for the canvas pills. Never affects export.
   const [previewOverrides, setPreviewOverrides] = useState<Record<string, number>>({})
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
@@ -115,6 +120,15 @@ export default function App() {
     workerRef.current.postMessage({ type: 'loadFont', fontBytes: buffer }, [buffer])
   }
 
+  // Cache CalSansFlexVF's avar2 store in the worker so Auto Ascender can graft it
+  // onto any active font (works without HOI).
+  async function loadFlexAvar() {
+    if (!workerRef.current) return
+    const resp = await fetch(FONT_URLS.hoi)
+    const buffer = await resp.arrayBuffer()
+    workerRef.current.postMessage({ type: 'loadFlexAvar', fontBytes: buffer }, [buffer])
+  }
+
   useEffect(() => {
     if (axes.length > 0) loadFont()
   }, [useHoi])
@@ -129,6 +143,7 @@ export default function App() {
         setLoadMsg(msg.message)
       } else if (msg.type === 'ready') {
         await loadFont()
+        loadFlexAvar()
       } else if (msg.type === 'axisInfo') {
         const axisInfo: AxisInfo[] = JSON.parse(msg.axisInfoJson)
         const initialDefaults = Object.fromEntries(axisInfo.map((a) => [a.tag, a.default]))
@@ -311,12 +326,13 @@ export default function App() {
       workerRef.current!.postMessage({
         type: 'previewFont',
         thresholdsJson: JSON.stringify(glyphThresholds),
+        autoAscender,
       })
     }, 200)
     return () => {
       if (previewDebounceRef.current) clearTimeout(previewDebounceRef.current)
     }
-  }, [glyphThresholds])
+  }, [glyphThresholds, autoAscender])
 
   const measureDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   useEffect(() => {
@@ -351,6 +367,64 @@ export default function App() {
     setPreviewOverrides(prev => ({ ...prev, [tag]: value }))
   }
 
+  // Continuous under-damped spring per axis (k=90, c=7 → ~28% overshoot/bounce).
+  function kickAxisSpring(tag: string, target: number) {
+    let s = axisSprings.current[tag]
+    if (!s) { s = { x: target, v: 0, target, raf: null }; axisSprings.current[tag] = s }
+    s.target = target
+    if (s.raf != null) return  // already chasing this axis
+    let last = performance.now()
+    const step = (now: number) => {
+      let dt = Math.min((now - last) / 1000, 1 / 30); last = now
+      const sub = 4, h = dt / sub, k = 90, c = 10
+      for (let i = 0; i < sub; i++) {
+        const a = -k * (s.x - s.target) - c * s.v
+        s.v += a * h; s.x += s.v * h
+      }
+      if (Math.abs(s.x - s.target) < 0.05 && Math.abs(s.v) < 0.3) {
+        s.x = s.target; s.v = 0; s.raf = null
+        setAnimAxis(p => ({ ...p, [tag]: s.target })); return
+      }
+      setAnimAxis(p => ({ ...p, [tag]: s.x }))
+      s.raf = requestAnimationFrame(step)
+    }
+    s.raf = requestAnimationFrame(step)
+  }
+
+  // Drive each damped axis toward its current target. GEOM only damped under HOI.
+  // When easing is off, snap to targets instantly (no spring/bounce).
+  useEffect(() => {
+    const damped = ['opsz', 'wght', 'YTAS', 'SHRP', 'ital']
+    if (!springEasing) {
+      for (const s of Object.values(axisSprings.current)) if (s.raf != null) { cancelAnimationFrame(s.raf); s.raf = null }
+      const next: Record<string, number> = {}
+      for (const tag of damped) {
+        const ax = axes.find(a => a.tag === tag)
+        if (ax) next[tag] = previewOverrides[tag] ?? defaults[tag] ?? ax.default
+      }
+      if (useHoi) next['GEOM'] = previewOverrides['GEOM'] ?? defaults['GEOM'] ?? geomAxis?.default ?? 25
+      setAnimAxis(next)
+      return
+    }
+    for (const tag of damped) {
+      const ax = axes.find(a => a.tag === tag)
+      if (ax) kickAxisSpring(tag, previewOverrides[tag] ?? defaults[tag] ?? ax.default)
+    }
+    const gTarget = previewOverrides['GEOM'] ?? defaults['GEOM'] ?? geomAxis?.default ?? 25
+    if (useHoi) {
+      kickAxisSpring('GEOM', gTarget)
+    } else {
+      const s = axisSprings.current['GEOM']
+      if (s?.raf != null) { cancelAnimationFrame(s.raf); s.raf = null }
+      setAnimAxis(p => { const n = { ...p }; delete n['GEOM']; return n })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [previewOverrides, defaults, useHoi, axes, springEasing])
+
+  useEffect(() => () => {
+    for (const s of Object.values(axisSprings.current)) if (s.raf != null) cancelAnimationFrame(s.raf)
+  }, [])
+
   // Reset the PREVIEW pills back to the export defaults. Clears the preview
   // override layer + size/tracking. Does NOT touch export defaults or thresholds.
   function resetTypography() {
@@ -384,6 +458,7 @@ export default function App() {
           axisDefaults,
           opszMultiplier,
           freezeOpsz,
+          autoAscender,
           thresholds: glyphThresholdsRef.current,
         }),
       })
@@ -401,8 +476,15 @@ export default function App() {
 
   const isLoading = axes.length === 0 && !error
 
+  // Auto Ascender grafts Flex's avar2 onto whatever font is active (no HOI needed).
+  const autoAscActive = autoAscender
+  // ital is a PREVIEW pill only — not an export Axis Default (nobody wants an italic default).
   const designAxes = axes.filter((a) => a.tag !== 'opsz' && a.tag !== 'GEOM' && a.tag !== 'ital' && !PARAMETRIC_TAGS.has(a.tag))
-  const parametricAxes = axes.filter((a) => PARAMETRIC_TAGS.has(a.tag))
+  const italAxis = axes.find((a) => a.tag === 'ital')
+  // Fine step for narrow-range axes (e.g. ital 0–1) so they slide smoothly.
+  const axisStep = (a: AxisInfo) => (a.max - a.min <= 2 ? 0.01 : 1)
+  // When auto-ascender is active, YTAS is driven by the font's avar2 → hide it.
+  const parametricAxes = axes.filter((a) => PARAMETRIC_TAGS.has(a.tag) && !(autoAscActive && a.tag === 'YTAS'))
   const opszAxis = axes.find((a) => a.tag === 'opsz')
   const geomAxis = axes.find((a) => a.tag === 'GEOM')
 
@@ -411,14 +493,17 @@ export default function App() {
     previewOverrides[tag] ?? defaults[tag] ?? (axes.find(a => a.tag === tag)?.default ?? 0)
   const isOverridden = (tag: string) => tag in previewOverrides
   const hasOverrides = Object.keys(previewOverrides).length > 0 || previewSize !== 48 || tracking !== 0
+  // Spring-eased value used for rendering (falls back to the instant target).
+  const displayVal = (tag: string) => animAxis[tag] ?? previewVal(tag)
 
   function previewVarSettings(fontSize: number, geomOverride?: number, opszOverride?: number, source: 'preview' | 'export' = 'preview') {
     const parts = axes
       .filter((a) => a.tag !== 'opsz')
+      // Auto-ascender active → let the font's avar2 derive YTAS from opsz (don't emit it)
+      .filter((a) => !(autoAscActive && a.tag === 'YTAS'))
       .map((a) => {
-        const axisVal = source === 'export' ? (defaults[a.tag] ?? a.default) : previewVal(a.tag)
-        let val = (a.tag === 'GEOM' && geomOverride !== undefined) ? geomOverride : axisVal
-        if (a.tag === 'YTAS' && autoYtasValue !== null) val = autoYtasValue
+        const axisVal = source === 'export' ? (defaults[a.tag] ?? a.default) : displayVal(a.tag)
+        const val = (a.tag === 'GEOM' && geomOverride !== undefined) ? geomOverride : axisVal
         return `'${a.tag}' ${val}`
       })
     if (opszAxis) {
@@ -433,7 +518,7 @@ export default function App() {
   }
 
 
-  const ytasAxis = parametricAxes.find(a => a.tag === 'YTAS')
+  const ytasAxis = axes.find(a => a.tag === 'YTAS')
   const autoYtasValue = (ytasAxis && autoAscender && opszAxis) ? (() => {
     const effectiveOpsz = (defaults['opsz'] ?? opszAxis.default) * opszMultiplier
     const minOpsz = opszAxis.min * opszMultiplier
@@ -470,14 +555,14 @@ export default function App() {
           onChange={(v) => handleSliderChange(axis.tag, v)}
           min={axis.min}
           max={axis.max}
-          step={1}
+          step={axisStep(axis)}
         />
       </div>
     )
   }
 
   return (
-    <div className="app">
+    <div className={`app${springEasing ? '' : ' app--no-anim'}`}>
       <header>
         <div>
           <h1>ReCal Sans</h1>
@@ -576,13 +661,24 @@ export default function App() {
             )}
 
             <div className="control-group">
+              <h2>Customizer Performance</h2>
+              <label className="hoi-toggle">
+                <input type="checkbox" checked={springEasing} onChange={(e) => setSpringEasing(e.target.checked)} />
+                <span>Spring easing</span>
+              </label>
+              <p className="control-note">
+                Damped “bounce” on the font axes + interface motion. Off = everything instant.
+              </p>
+            </div>
+
+            <div className="control-group">
               <h2>Experimental</h2>
               <label className="hoi-toggle">
                 <input type="checkbox" checked={useHoi} onChange={(e) => setUseHoi(e.target.checked)} />
                 <span>HOI interpolation</span>
               </label>
               <p className="control-note">
-                Higher-order (parabolic) interpolation along GEOM — only <em>y</em> is affected.
+                Higher-order (parabolic) interpolation along GEOM — affects all parts, not just <em>y</em>.
               </p>
               {ytasAxis && (
                 <>
@@ -591,7 +687,7 @@ export default function App() {
                     <span>Auto Ascender Height</span>
                   </label>
                   <p className="control-note">
-                    Locks YTAS to an opsz-driven value parametrically.
+                    Grafts the avar2 block so YTAS tracks opsz; the axis is hidden. Works with or without HOI.
                   </p>
                   {autoAscender && (
                     <button className="auto-ascender-preview-btn" onClick={() => setShowAscenderModal(true)}>
@@ -746,9 +842,12 @@ export default function App() {
                   const largeSz = opszAxis ? Math.round(opszAxis.max * opszMultiplier) : Math.round(32 * opszMultiplier)
                   const smallOpsz = opszAxis?.default ?? 14
                   const largeOpsz = opszAxis?.max ?? 32
+                  // Spring-eased GEOM drives the morph (HOI only; null otherwise).
+                  const topGeom = animAxis['GEOM'] ?? exportAz.mid
+                  const testerGeom = animAxis['GEOM'] ?? previewAz.mid
                   const baseStyle = { fontFamily: "'CalSansPreview','CalSansVF',sans-serif", fontOpticalSizing: 'none' as const, fontFeatureSettings: "'rclt' 1" as const }
-                  const smallStyle = { ...baseStyle, fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, exportAz.mid, undefined, 'export') }
-                  const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, exportAz.mid, undefined, 'export') }
+                  const smallStyle = { ...baseStyle, fontSize: `${smallSz}pt`, fontVariationSettings: previewVarSettings(smallSz, topGeom, undefined, 'export') }
+                  const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, topGeom, undefined, 'export') }
                   return (
                     <>
                       {/* Default/Max samples = export view — OUTSIDE the preview box */}
@@ -794,9 +893,9 @@ export default function App() {
                               <Slider label="GEOM" value={previewVal('GEOM')} onChange={(v) => handlePreviewChange('GEOM', v)} min={geomAxis.min} max={geomAxis.max} step={1} />
                             </div>
                           )}
-                          {[...designAxes, ...parametricAxes].map((a) => (
+                          {[...designAxes, ...(italAxis ? [italAxis] : []), ...parametricAxes].map((a) => (
                             <div className={`pill-slider${isOverridden(a.tag) ? ' pill-slider--overridden' : ''}`} key={a.tag}>
-                              <Slider label={a.tag} value={previewVal(a.tag)} onChange={(v) => handlePreviewChange(a.tag, v)} min={a.min} max={a.max} step={1} />
+                              <Slider label={a.tag} value={previewVal(a.tag)} onChange={(v) => handlePreviewChange(a.tag, v)} min={a.min} max={a.max} step={axisStep(a)} />
                             </div>
                           ))}
                         </div>
@@ -809,7 +908,7 @@ export default function App() {
                         spellCheck={false}
                         rows={1}
                         onChange={e => setTypeTesterText(e.target.value)}
-                        style={{ ...largeStyle, fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, previewAz.mid, previewOverrides['opsz'], 'preview'), letterSpacing: `${tracking / 100}em` }}
+                        style={{ ...largeStyle, fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, testerGeom, previewOverrides['opsz'] !== undefined ? displayVal('opsz') : undefined, 'preview'), letterSpacing: `${tracking / 100}em` }}
                       />
                       </div>
                     </>
@@ -821,27 +920,35 @@ export default function App() {
 
             {axes.length > 0 && (() => {
               const gd = defaults['GEOM'] ?? geomAxis?.default ?? 25
+              // Fixed zone rows: A11y (orange) top, Base (blue) middle, Geo (green) bottom.
+              // Each glyph fills the rows for variants it has; defaults aren't shown.
+              const ZONE_ROWS: { label: VariantLabel; color: string; geom: number }[] = [
+                { label: 'A11Y', color: '#c97050', geom: 0 },
+                { label: 'Base', color: '#4a7fd4', geom: 50 },
+                { label: 'Geo', color: '#4aad5c', geom: 100 },
+              ]
               return (
                 <div className="glyph-strip">
                   {GROUP_DEFS.map(def => {
                     const t = glyphThresholds[def.glyph] ?? [...def.defaultThresholds]
                     const activeVi = Math.min(t.reduce((acc, thresh) => (gd >= thresh ? acc + 1 : acc), 0), def.variants.length - 1)
-                    const NATURAL_GEOM: Record<string, number> = { A11Y: 0, UI: 25, Base: 50, Geo: 100, default: 25 }
+                    const activeLabel = def.variants[activeVi]?.label
                     return (
                       <div key={def.glyph} className="glyph-strip-col">
-                        {def.variants.map((v, vi) => {
-                          const sampleGeom = NATURAL_GEOM[v.label] ?? 25
-                          const isActive = vi === activeVi
+                        {ZONE_ROWS.map(zr => {
+                          const hasZone = def.variants.some(v => v.label === zr.label)
+                          const masterActive = activeLabel === 'default' || activeLabel === 'UI'
+                          const isActive = hasZone ? activeLabel === zr.label : masterActive
                           return (
                             <span
-                              key={vi}
+                              key={zr.label}
                               className={`glyph-strip-token${isActive ? ' glyph-strip-token--active' : ''}`}
                               style={{
                                 fontFamily: "'CalSansPreview','CalSansVF',sans-serif",
-                                fontVariationSettings: `'GEOM' ${sampleGeom}, 'opsz' 22`,
-                                fontFeatureSettings: v.label === 'default' ? "'rclt' 0" : "'rclt' 1",
+                                fontVariationSettings: hasZone ? `'GEOM' ${zr.geom}, 'opsz' 22` : "'GEOM' 25, 'opsz' 22",
+                                fontFeatureSettings: hasZone ? "'rclt' 1" : "'rclt' 0",
                                 fontOpticalSizing: 'none',
-                                color: v.label === 'default' ? '#555' : (v.label === 'UI' ? '#fff' : v.color),
+                                color: hasZone ? zr.color : '#555',
                                 opacity: isActive ? 1 : 0.3,
                               } as React.CSSProperties}
                             >{def.glyph}</span>
