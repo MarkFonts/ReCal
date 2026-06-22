@@ -34,6 +34,43 @@ function ResetIcon() {
   )
 }
 
+// Vertical 100px axis slider — custom track/fill/thumb (native vertical range is ugly)
+function VAxisSlider({ label, value, min, max, step, onChange, overridden }: {
+  label: string; value: number; min: number; max: number; step: number
+  onChange: (v: number) => void; overridden?: boolean
+}) {
+  const trackRef = useRef<HTMLDivElement>(null)
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100))
+  function setFromY(clientY: number) {
+    const t = trackRef.current; if (!t) return
+    const r = t.getBoundingClientRect()
+    let p = 1 - (clientY - r.top) / r.height  // 1 at top, 0 at bottom
+    p = Math.max(0, Math.min(1, p))
+    let v = min + p * (max - min)
+    v = Math.round(v / step) * step
+    onChange(Math.max(min, Math.min(max, v)))
+  }
+  function onPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    e.preventDefault()
+    const el = e.currentTarget
+    el.setPointerCapture(e.pointerId)
+    setFromY(e.clientY)
+    const move = (ev: PointerEvent) => setFromY(ev.clientY)
+    el.addEventListener('pointermove', move)
+    el.addEventListener('pointerup', () => el.removeEventListener('pointermove', move), { once: true })
+  }
+  return (
+    <div className={`vslider${overridden ? ' vslider--overridden' : ''}`}>
+      <span className="vslider-value">{step < 1 ? value.toFixed(2) : Math.round(value)}</span>
+      <div className="vslider-track" ref={trackRef} onPointerDown={onPointerDown}>
+        <div className="vslider-fill" style={{ height: `${pct}%` }} />
+        <div className="vslider-thumb" style={{ bottom: `calc(${pct}% - 7px)` }} />
+      </div>
+      <span className="vslider-label">{label}</span>
+    </div>
+  )
+}
+
 export default function App() {
   const [loadMsg, setLoadMsg] = useState('Starting...')
   const [axes, setAxes] = useState<AxisInfo[]>([])
@@ -41,7 +78,7 @@ export default function App() {
   const [opszMultiplier, setOpszMultiplier] = useState(1)
   const [isDownloading, setIsDownloading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [previewSize, setPreviewSize] = useState(48)
+  const [previewSize, setPreviewSize] = useState(36)
   const [glyphThresholds, setGlyphThresholds] = useState<Record<string, number[]>>(
     () => Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
   )
@@ -59,6 +96,7 @@ export default function App() {
   const [animAxis, setAnimAxis] = useState<Record<string, number>>({})
   const axisSprings = useRef<Record<string, { x: number; v: number; target: number; raf: number | null }>>({})
   const [springEasing, setSpringEasing] = useState(true)  // off = no font-axis bounce AND no UI motion
+  const [menuOpen, setMenuOpen] = useState(false)  // mobile: controls collapsed behind a hamburger
   // Sparse preview-only override layer for the canvas pills. Never affects export.
   const [previewOverrides, setPreviewOverrides] = useState<Record<string, number>>({})
   const [wordWidths, setWordWidths] = useState<{ upm: number; widths: Record<string, Record<string, number>> } | null>(null)
@@ -429,16 +467,20 @@ export default function App() {
   // override layer + size/tracking. Does NOT touch export defaults or thresholds.
   function resetTypography() {
     setPreviewOverrides({})
-    setPreviewSize(48)
+    setPreviewSize(36)
     setTracking(0)
   }
 
-  // Reset all glyph conditions (thresholds + trash) to defaults. Run at the top
-  // of every preset so a previous preset's threshold edits don't carry over.
+  // Reset all glyph conditions (thresholds + trash) AND the opsz mapping to
+  // defaults. Run at the top of every preset so a previous preset's edits don't
+  // carry over (presets that need a non-default override these afterwards).
   function resetConditions() {
     pushThresholdHistory()
     setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
     setTrashedGlyphs([])
+    setOpszMultiplier(1)
+    setFrozenOpszValue(null)
+    setScaledOpsz(false)
   }
 
   async function downloadTTF() {
@@ -492,7 +534,7 @@ export default function App() {
   const previewVal = (tag: string) =>
     previewOverrides[tag] ?? defaults[tag] ?? (axes.find(a => a.tag === tag)?.default ?? 0)
   const isOverridden = (tag: string) => tag in previewOverrides
-  const hasOverrides = Object.keys(previewOverrides).length > 0 || previewSize !== 48 || tracking !== 0
+  const hasOverrides = Object.keys(previewOverrides).length > 0 || previewSize !== 36 || tracking !== 0
   // Spring-eased value used for rendering (falls back to the instant target).
   const displayVal = (tag: string) => animAxis[tag] ?? previewVal(tag)
 
@@ -620,7 +662,15 @@ export default function App() {
 
       {!isLoading && !error && (
         <div className="main-layout">
-          <section className="controls dialkit-root" data-theme="dark">
+          <button
+            className="controls-toggle"
+            onClick={() => setMenuOpen(o => !o)}
+            aria-expanded={menuOpen}
+          >
+            <span className="controls-toggle-icon">{menuOpen ? '✕' : '☰'}</span>
+            {menuOpen ? 'Hide controls' : 'Controls & export'}
+          </button>
+          <section className={`controls dialkit-root${menuOpen ? ' controls--open' : ''}`} data-theme="dark">
 
             {opszAxis && (
               <div className="control-group">
@@ -875,30 +925,42 @@ export default function App() {
                           ><ResetIcon /></button>
                         </div>
                         <div className="pill-row pill-row--wide">
-                          <div className={`pill-slider${previewSize !== 48 ? ' pill-slider--overridden' : ''}`}>
+                          <div className={`pill-slider${previewSize !== 36 ? ' pill-slider--overridden' : ''}`}>
                             <Slider label="size" value={previewSize} onChange={(v) => setPreviewSize(Math.round(v))} min={12} max={200} step={1} unit="pt" />
                           </div>
                           <div className={`pill-slider${tracking !== 0 ? ' pill-slider--overridden' : ''}`}>
                             <Slider label="tracking" value={tracking} onChange={(v) => setTracking(Math.round(v))} min={-10} max={30} step={1} unit="%" />
                           </div>
                         </div>
-                        <div className="pill-row">
-                          {opszAxis && (
-                            <div className={`pill-slider${isOverridden('opsz') ? ' pill-slider--overridden' : ''}`}>
-                              <Slider label="opsz" value={previewVal('opsz')} onChange={(v) => handlePreviewChange('opsz', v)} min={opszAxis.min} max={opszAxis.max} step={1} />
-                            </div>
-                          )}
-                          {geomAxis && (
-                            <div className={`pill-slider${isOverridden('GEOM') ? ' pill-slider--overridden' : ''}`}>
-                              <Slider label="GEOM" value={previewVal('GEOM')} onChange={(v) => handlePreviewChange('GEOM', v)} min={geomAxis.min} max={geomAxis.max} step={1} />
-                            </div>
-                          )}
-                          {[...designAxes, ...(italAxis ? [italAxis] : []), ...parametricAxes].map((a) => (
-                            <div className={`pill-slider${isOverridden(a.tag) ? ' pill-slider--overridden' : ''}`} key={a.tag}>
-                              <Slider label={a.tag} value={previewVal(a.tag)} onChange={(v) => handlePreviewChange(a.tag, v)} min={a.min} max={a.max} step={axisStep(a)} />
-                            </div>
-                          ))}
-                        </div>
+                        {(() => {
+                          const axisList = [opszAxis, geomAxis, ...designAxes, ...(italAxis ? [italAxis] : []), ...parametricAxes]
+                            .filter((a): a is AxisInfo => !!a)
+                          return (
+                            <>
+                              {/* Horizontal pills above 400px */}
+                              <div className="pill-row pill-row--axes-h">
+                                {axisList.map((a) => (
+                                  <div className={`pill-slider${isOverridden(a.tag) ? ' pill-slider--overridden' : ''}`} key={a.tag}>
+                                    <Slider label={a.tag} value={previewVal(a.tag)} onChange={(v) => handlePreviewChange(a.tag, v)} min={a.min} max={a.max} step={axisStep(a)} />
+                                  </div>
+                                ))}
+                              </div>
+                              {/* Vertical 100px sliders under 400px */}
+                              <div className="pill-row pill-row--axes-v">
+                                {axisList.map((a) => (
+                                  <VAxisSlider
+                                    key={a.tag}
+                                    label={a.tag}
+                                    value={previewVal(a.tag)}
+                                    min={a.min} max={a.max} step={axisStep(a)}
+                                    overridden={isOverridden(a.tag)}
+                                    onChange={(v) => handlePreviewChange(a.tag, v)}
+                                  />
+                                ))}
+                              </div>
+                            </>
+                          )
+                        })()}
                       </div>
 
                       <textarea
