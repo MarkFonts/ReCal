@@ -500,14 +500,22 @@ h2 {
 }
 
 .zone-type-tester {
+  /* controlled <textarea> — reset native chrome, grow via JS (auto height) */
+  display: block;
+  width: 100%;
+  border: none;
   border-top: 1px solid #1e1e1e;
   margin-top: 24px;
-  padding-top: 24px;
+  padding: 24px 0 0;
+  background: transparent;
   color: #e8e8e8;
   outline: none;
   cursor: text;
+  resize: none;
+  overflow: hidden;
   min-height: 1em;
   line-height: 1.1;
+  font: inherit;
 }
 
 .glyph-strip {

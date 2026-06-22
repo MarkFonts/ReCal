@@ -78,6 +78,7 @@ export default function App() {
   }>>([])
   const zoneGridRef = useRef<HTMLDivElement | null>(null)
   const paletteTrashRef = useRef<HTMLDivElement | null>(null)
+  const typeTesterRef = useRef<HTMLTextAreaElement | null>(null)
 
   const workerRef = useRef<Worker | null>(null)
   const defaultsRef = useRef<Record<string, number>>({})
@@ -92,6 +93,15 @@ export default function App() {
   const thresholdFutureRef = useRef<Array<Record<string, number[]>>>([])
 
   useEffect(() => { useHoiRef.current = useHoi }, [useHoi])
+
+  // Type tester auto-grows to fit its content (textarea avoids the contentEditable
+  // cursor-reset bug where typing jumped to the start).
+  useEffect(() => {
+    const el = typeTesterRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [typeTesterText, previewSize, tracking])
 
   async function loadFont() {
     if (!workerRef.current) return
@@ -349,6 +359,14 @@ export default function App() {
     setTracking(0)
   }
 
+  // Reset all glyph conditions (thresholds + trash) to defaults. Run at the top
+  // of every preset so a previous preset's threshold edits don't carry over.
+  function resetConditions() {
+    pushThresholdHistory()
+    setGlyphThresholds(Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]])))
+    setTrashedGlyphs([])
+  }
+
   async function downloadTTF() {
     if (!workerRef.current || isDownloading) return
     setIsDownloading(true)
@@ -362,7 +380,12 @@ export default function App() {
       downloadResolveRef.current = resolve
       workerRef.current!.postMessage({
         type: 'applyConfig',
-        configJson: JSON.stringify({ axisDefaults, opszMultiplier }),
+        configJson: JSON.stringify({
+          axisDefaults,
+          opszMultiplier,
+          freezeOpsz,
+          thresholds: glyphThresholdsRef.current,
+        }),
       })
     })
 
@@ -584,16 +607,16 @@ export default function App() {
             <div className="presets-row">
               <span className="presets-label">Presets</span>
               <button className={`preset-btn${activePreset === 'Mobile UI' ? ' preset-btn--active' : ''}`} onClick={() => {
-                setActivePreset('Mobile UI'); setScaledOpsz(false)
-                pushThresholdHistory(); setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
+                setActivePreset('Mobile UI'); resetConditions(); setScaledOpsz(false)
+                setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
                 setGlyphThresholds(prev => ({ ...prev, l: [26] }))
               }}>Mobile UI</button>
               <button className={`preset-btn${activePreset === 'Display' ? ' preset-btn--active' : ''}`} onClick={() => {
-                setActivePreset('Display'); setScaledOpsz(false)
+                setActivePreset('Display'); resetConditions(); setScaledOpsz(false)
                 setFrozenOpszValue(null); handleSliderChange('GEOM', 50)
               }}>Display</button>
               <button className={`preset-btn${activePreset === 'Wayfinding' ? ' preset-btn--active' : ''}`} onClick={() => {
-                setActivePreset('Wayfinding'); setScaledOpsz(false)
+                setActivePreset('Wayfinding'); resetConditions(); setScaledOpsz(false)
                 setFrozenOpszValue(null); handleSliderChange('GEOM', 5); setOpszMultiplier(6)
               }}>Wayfinding</button>
 
@@ -602,13 +625,13 @@ export default function App() {
               )}
               {presetsExpanded && <>
                 <button className={`preset-btn${activePreset === 'Futura' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Futura'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(16)
+                  setActivePreset('Futura'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(16)
                   handleSliderChange('GEOM', 100); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
                 }}>Futura</button>
                 <button className={`preset-btn preset-btn--bifamily${activePreset === 'Neutra 2' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Neutra 2'); setScaledOpsz(true); setOpszMultiplier(0.625)
-                  pushThresholdHistory(); setFrozenOpszValue(null)
+                  setActivePreset('Neutra 2'); resetConditions(); setScaledOpsz(true); setOpszMultiplier(0.625)
+                  setFrozenOpszValue(null)
                   handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('y', 2, 'UI', t); return t })
                 }}>
@@ -616,34 +639,34 @@ export default function App() {
                   <span className="preset-btn-subfamily">Text · Display</span>
                 </button>
                 <button className={`preset-btn preset-btn--bifamily${activePreset === 'Inter' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Inter'); setScaledOpsz(true); setOpszMultiplier(0.625)
-                  pushThresholdHistory(); setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
+                  setActivePreset('Inter'); resetConditions(); setScaledOpsz(true); setOpszMultiplier(0.625)
+                  setFrozenOpszValue(null); handleSliderChange('GEOM', 25)
                 }}>
                   <span>Inter</span>
                   <span className="preset-btn-subfamily">UI · Display</span>
                 </button>
                 <button className={`preset-btn${activePreset === 'Circular' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Circular'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
+                  setActivePreset('Circular'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
                 }}>Circular</button>
                 <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Gotham'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
+                  setActivePreset('Gotham'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('j', 1, 'UI', t); return t })
                 }}>Gotham</button>
                 <button className={`preset-btn${activePreset === 'Geist' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Geist'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(16); handleSliderChange('GEOM', 50)
+                  setActivePreset('Geist'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(16); handleSliderChange('GEOM', 50)
                   setGlyphThresholds(prev => applyDrop('a', 0, 'Base', prev))
                 }}>Geist</button>
                 <button className={`preset-btn${activePreset === 'Poppins' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('Poppins'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(10); handleSliderChange('GEOM', 50)
+                  setActivePreset('Poppins'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(10); handleSliderChange('GEOM', 50)
                   setGlyphThresholds(prev => applyDrop('y', 2, 'Base', prev))
                 }}>Poppins</button>
                 <button className={`preset-btn${activePreset === 'GT America' ? ' preset-btn--active' : ''}`} onClick={() => {
-                  setActivePreset('GT America'); setScaledOpsz(false)
-                  pushThresholdHistory(); setFrozenOpszValue(8); handleSliderChange('GEOM', 25)
+                  setActivePreset('GT America'); resetConditions(); setScaledOpsz(false)
+                  setFrozenOpszValue(8); handleSliderChange('GEOM', 25)
                   setGlyphThresholds(prev => applyDelete('a', 0, 'A11Y', prev))
                 }}>GT America</button>
               </>}
@@ -779,13 +802,15 @@ export default function App() {
                         </div>
                       </div>
 
-                      <div
+                      <textarea
+                        ref={typeTesterRef}
                         className="zone-type-tester"
-                        contentEditable
-                        suppressContentEditableWarning
+                        value={typeTesterText}
+                        spellCheck={false}
+                        rows={1}
+                        onChange={e => setTypeTesterText(e.target.value)}
                         style={{ ...largeStyle, fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, previewAz.mid, previewOverrides['opsz'], 'preview'), letterSpacing: `${tracking / 100}em` }}
-                        onInput={e => setTypeTesterText(e.currentTarget.textContent ?? '')}
-                      >{typeTesterText}</div>
+                      />
                       </div>
                     </>
                   )
