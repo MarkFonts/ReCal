@@ -348,12 +348,15 @@ h2 {
 .zone-col-header {
   margin-bottom: 10px;
   user-select: none;
+  /* All tabs the same height regardless of how the eyebrow wraps */
+  display: flex;
+  flex-direction: column;
+  min-height: 92px;
 }
 
 .zone-col--active .zone-col-header {
   margin: 0 0 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 8px;
+  background: var(--zone-active-bg, var(--zone-color));
 }
 
 .zone-col-topbar,
@@ -366,6 +369,11 @@ h2 {
 .zone-col--active .zone-col-topbar,
 .zone-col--active .zone-col-bottombar {
   opacity: 1;
+}
+
+/* Pin the bottom rule to the base of the (min-height) header so all align */
+.zone-col-bottombar {
+  margin-top: auto;
 }
 
 .zone-col-header-inner {
@@ -383,7 +391,7 @@ h2 {
 }
 
 .zone-col--active .zone-col-icon {
-  color: var(--zone-color);
+  color: #000;
 }
 
 .zone-col--active .zone-col-header-inner {
@@ -406,7 +414,7 @@ h2 {
 }
 
 .zone-col--active .zone-col-sublabel {
-  color: #888;
+  color: #000;
 }
 
 .zone-col-name {
@@ -418,7 +426,7 @@ h2 {
 }
 
 .zone-col--active .zone-col-name {
-  color: var(--zone-color);
+  color: #000;
 }
 
 .zone-swatch-row {
