@@ -900,18 +900,6 @@ export default function App() {
                   const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, topGeom, undefined, 'export') }
                   return (
                     <>
-                      {/* Default/Max samples = export view — OUTSIDE the preview box */}
-                      <div className="zone-preview-row">
-                        <div className="zone-preview-block">
-                          <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS.join(' ')}</p>
-                          <div className="zone-preview-label"><span className="zpl-kind">Default</span><span>opsz {Math.round(smallOpsz)}pt</span></div>
-                        </div>
-                        <div className="zone-preview-block">
-                          <p className="zone-col-word" style={largeStyle}>{PREVIEW_WORDS.join(' ')}</p>
-                          <div className="zone-preview-label"><span className="zpl-kind">Max</span><span>opsz {Math.round(largeOpsz)}pt</span></div>
-                        </div>
-                      </div>
-
                       <div className="zone-full-preview" style={{ '--zone-color': previewAz.color } as React.CSSProperties}>
                       <div className="pill-slider-rows dialkit-root" data-theme="dark">
                         <div className="pill-rows-header">
@@ -972,6 +960,18 @@ export default function App() {
                         onChange={e => setTypeTesterText(e.target.value)}
                         style={{ ...largeStyle, fontSize: `${previewSize}pt`, fontVariationSettings: previewVarSettings(previewSize, testerGeom, previewOverrides['opsz'] !== undefined ? displayVal('opsz') : undefined, 'preview'), letterSpacing: `${tracking / 100}em` }}
                       />
+                      </div>
+
+                      {/* Default/Max samples = export view — BELOW the preview box */}
+                      <div className="zone-preview-row">
+                        <div className="zone-preview-block">
+                          <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS.join(' ')}</p>
+                          <div className="zone-preview-label"><span className="zpl-kind">Default</span><span>opsz {Math.round(smallOpsz)}pt</span></div>
+                        </div>
+                        <div className="zone-preview-block">
+                          <p className="zone-col-word" style={largeStyle}>{PREVIEW_WORDS.join(' ')}</p>
+                          <div className="zone-preview-label"><span className="zpl-kind">Max</span><span>opsz {Math.round(largeOpsz)}pt</span></div>
+                        </div>
                       </div>
                     </>
                   )
