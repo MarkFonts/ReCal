@@ -88,7 +88,7 @@ export default function App() {
   const [activePreset, setActivePreset] = useState<string | null>(null)
   const [presetsExpanded, setPresetsExpanded] = useState(false)
   const [scaledOpsz, setScaledOpsz] = useState(false)
-  const [typeTesterText, setTypeTesterText] = useState('Type something')
+  const [typeTesterText, setTypeTesterText] = useState('type words… civil flay 1905')
   const [tracking, setTracking] = useState(0)
   const [resetSpin, setResetSpin] = useState(false)
   // "Easy ease": rendered axis values spring toward their targets so dragging a
@@ -608,7 +608,7 @@ export default function App() {
       <header>
         <div>
           <h1>ReCal Sans</h1>
-          <p className="subtitle">Cal Sans Customizer</p>
+          <p className="subtitle">ReBuild Cal Sans VF, no tools needed</p>
         </div>
         <p className="attribution">
           This tool has been wholly inspired by the <span className="emoji">🐐</span>{' '}
@@ -728,7 +728,7 @@ export default function App() {
                 <span>HOI interpolation</span>
               </label>
               <p className="control-note">
-                Higher-order (parabolic) interpolation along GEOM — affects all parts, not just <em>y</em>.
+                Higher-order (parabolic) interpolation along GEOM, animating hundreds of transitions between compatible glyphs.
               </p>
               {ytasAxis && (
                 <>
@@ -737,7 +737,7 @@ export default function App() {
                     <span>Auto Ascender Height</span>
                   </label>
                   <p className="control-note">
-                    Grafts the avar2 block so YTAS tracks opsz; the axis is hidden. Works with or without HOI.
+                    Grafts the avar2 block so YTAS tracks opsz; the axis is hidden.
                   </p>
                   {autoAscender && (
                     <button className="auto-ascender-preview-btn" onClick={() => setShowAscenderModal(true)}>
@@ -1097,7 +1097,7 @@ export default function App() {
               <button className="modal-close" onClick={() => setShowAscenderModal(false)}>✕</button>
             </div>
             <p className="control-note">
-              How YTAS varies across the opsz range at ×{opszMultiplier} scale. The auto mode maps this linearly — avar2 integration pending.
+              How YTAS varies across the opsz range at ×{opszMultiplier} scale. avar2 support across desktop software is pending, but is supported in most 2026 browser builds and operating system-level variable font stacks.
             </p>
             <div className="waterfall">
               {Array.from({ length: 7 }, (_, i) => {
