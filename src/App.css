@@ -500,6 +500,7 @@ h2 {
   /* Stretch so both blocks share a height → descriptor labels line up at the bottom */
   align-items: stretch;
   /* Sits below the preview box now → give breathing room before the glyph strip */
+  margin-top: 20px;
   margin-bottom: clamp(16px, 4vh, 44px);
 }
 
@@ -607,8 +608,8 @@ h2 {
   padding: 22px 24px 24px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
-  /* Flexible top/bottom breathing room scaled to viewport height */
-  margin: clamp(16px, 4vh, 44px) 0;
+  /* Flexible top/bottom breathing room scaled to viewport height; top pulled up 20px */
+  margin: calc(clamp(16px, 4vh, 44px) - 20px) 0 clamp(16px, 4vh, 44px);
   animation: preview-throb 3.2s ease-in-out infinite;
 }
 
