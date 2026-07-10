@@ -3,6 +3,7 @@ import './App.css'
 import { Slider } from 'dialkit'
 import 'dialkit/styles.css'
 import { GlyphGroups, GROUP_DEFS, LANDING_ZONES, PREVIEW_WORDS, getZoneTokens, applyDrop, applyDelete, applyDefaultDrop, type ZoneToken, type VariantLabel } from './GlyphGroups'
+import { Letterbox } from './Letterbox'
 
 export type AxisInfo = { tag: string; name: string; min: number; default: number; max: number }
 
@@ -1088,6 +1089,20 @@ export default function App() {
           </section>
         </div>
       )}
+
+      {!isLoading && !error && (
+        <footer className="site-footer">
+          <nav className="site-footer-links" aria-label="Contact links">
+            <a href="https://www.instagram.com/wordmark.nyc/" target="_blank" rel="noopener">ig</a>
+            <a href="https://twitter.com/MarkFonts" target="_blank" rel="noopener">tw</a>
+            <a href="https://www.linkedin.com/in/markfonts/" target="_blank" rel="noopener">in</a>
+            <a href="mailto:mark@wordmark.nyc">mark@wordmark.nyc</a>
+          </nav>
+          <p className="site-footer-credit">© 2026 Mark Davis and WORDMARK. Letterbox footer pretext effect was created by <a href="https://charlieclark.co/" target="_blank" rel="noopener">Charlie Clark</a>.</p>
+        </footer>
+      )}
+
+      {!isLoading && !error && <Letterbox />}
 
       {showAscenderModal && ytasAxis && opszAxis && (
         <div className="modal-overlay" onClick={() => setShowAscenderModal(false)}>

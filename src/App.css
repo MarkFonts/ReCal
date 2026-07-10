@@ -13,6 +13,7 @@ body {
   background: #0f0f0f;
   color: #e8e8e8;
   min-height: 100vh;
+  overflow-x: hidden; /* absorb the 100vw full-bleed footer's scrollbar-width overflow */
 }
 
 .app {
@@ -757,6 +758,69 @@ h2 {
   letter-spacing: 0.06em;
   white-space: nowrap;
   font-family: ui-monospace, monospace;
+}
+
+/* Canvas letterbox footer (ported from the wordmark site). Static full-bleed
+   band at the bottom of the page, rendered BEHIND the page content (z-index:-1)
+   so the mouse-push can fly up behind the UI without clipping or covering it.
+   100vw breakout escapes the centered .app box; negative margin-top overlaps the
+   content above (hidden behind it); negative margin-bottom cancels .app's bottom
+   padding so WORDMARK sits flush to the page bottom. pointer-events:none. */
+.footer-letterbox {
+  position: relative;
+  z-index: -1;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  margin-top: -280px;
+  margin-bottom: -40px;
+  pointer-events: none;
+}
+
+.footer-letterbox canvas {
+  display: block;
+  margin: 0 auto;
+}
+
+@media (max-width: 700px) {
+  .footer-letterbox {
+    margin-bottom: -24px; /* match .app's smaller bottom padding */
+  }
+}
+
+/* Site footer (contact links + credit), sits above the WORDMARK band */
+.site-footer {
+  margin-top: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.site-footer-links {
+  display: flex;
+  gap: 20px;
+  font-size: 0.875rem;
+}
+
+.site-footer-links a {
+  color: #9a9a9a;
+  text-decoration: none;
+}
+
+.site-footer-links a:hover {
+  color: #e8e8e8;
+}
+
+.site-footer-credit {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.site-footer-credit a {
+  color: #9a9a9a;
+}
+
+.site-footer-credit a:hover {
+  color: #e8e8e8;
 }
 
 .trash-bar {
