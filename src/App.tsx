@@ -482,6 +482,14 @@ export default function App() {
     setOpszMultiplier(1)
     setFrozenOpszValue(null)
     setScaledOpsz(false)
+    // Reset export axis defaults (YTAS, SHRP, GEOM, wght…) and the opsz freeze /
+    // auto-ascender toggles so a previous preset's changes don't carry over. Each
+    // preset re-applies its own axis defaults immediately after this runs.
+    const axisDefaults = Object.fromEntries(axes.map(a => [a.tag, a.default]))
+    defaultsRef.current = axisDefaults
+    setDefaults(axisDefaults)
+    setFreezeOpsz(false)
+    setAutoAscender(false)
   }
 
   async function downloadTTF() {
@@ -856,7 +864,7 @@ export default function App() {
               return (
               <><div className="zone-area-wrap">
                 {/* ── Zone columns ── */}
-                <div className={`zone-grid${previewRebuilding ? ' zone-grid--rebuilding' : ''}`} ref={zoneGridRef}>
+                <div className="zone-grid" ref={zoneGridRef}>
                   {LANDING_ZONES.map((z) => {
                     const isStandard = exportZoneName === z.label   // export GEOM default
                     const isPreviewing = previewZoneName === z.label // currently previewing
@@ -901,7 +909,7 @@ export default function App() {
                   const largeStyle = { ...baseStyle, fontSize: `${largeSz}pt`, fontVariationSettings: previewVarSettings(largeSz, topGeom, undefined, 'export') }
                   return (
                     <>
-                      <div className="zone-full-preview" style={{ '--zone-color': previewAz.color } as React.CSSProperties}>
+                      <div className={`zone-full-preview${previewRebuilding ? ' zone-full-preview--rebuilding' : ''}`} style={{ '--zone-color': previewAz.color } as React.CSSProperties}>
                       <div className="pill-slider-rows dialkit-root" data-theme="dark">
                         <div className="pill-rows-header">
                           <span className="pill-rows-caption">Preview</span>

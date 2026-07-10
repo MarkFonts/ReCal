@@ -687,12 +687,13 @@ h2 {
   background: rgba(255, 255, 255, 0.22);
 }
 
-.zone-grid--rebuilding {
+/* Dim the live preview box (not the zone-picker header) while the font rebuilds */
+.zone-full-preview--rebuilding {
   opacity: 0.2;
   transition: opacity 0.1s ease;
 }
 
-.zone-grid:not(.zone-grid--rebuilding) {
+.zone-full-preview:not(.zone-full-preview--rebuilding) {
   opacity: 1;
   transition: opacity 0.25s ease;
 }
