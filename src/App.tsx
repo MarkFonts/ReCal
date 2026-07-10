@@ -776,7 +776,7 @@ export default function App() {
               }}>Wayfinding</button>
 
               {!presetsExpanded && (
-                <button className="preset-btn preset-btn--more" onClick={() => setPresetsExpanded(true)}>+ 8 more</button>
+                <button className="preset-btn preset-btn--more" onClick={() => setPresetsExpanded(true)}>+ 7 more</button>
               )}
               {presetsExpanded && <>
                 <button className={`preset-btn${activePreset === 'Futura' ? ' preset-btn--active' : ''}`} onClick={() => {
@@ -804,11 +804,13 @@ export default function App() {
                   setActivePreset('Circular'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
                 }}>Circular</button>
+                {/* Gotham preset temporarily disabled
                 <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
                   setActivePreset('Gotham'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('j', 1, 'UI', t); return t })
                 }}>Gotham</button>
+                */}
                 <button className={`preset-btn${activePreset === 'Geist' ? ' preset-btn--active' : ''}`} onClick={() => {
                   setActivePreset('Geist'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(16); handleSliderChange('GEOM', 50)
@@ -971,7 +973,9 @@ export default function App() {
                       />
                       </div>
 
-                      {/* Default/Max samples = export view — BELOW the preview box */}
+                      {/* Default/Max samples + glyph grid. Stacked (samples above
+                          grid) at tablet widths; grid-left / samples-right wider. */}
+                      <div className="samples-glyphs-wrap">
                       <div className="zone-preview-row">
                         <div className="zone-preview-block">
                           <p className="zone-col-word" style={smallStyle}>{PREVIEW_WORDS.join(' ')}</p>
@@ -982,53 +986,64 @@ export default function App() {
                           <div className="zone-preview-label"><span className="zpl-kind">Max</span><span>opsz {Math.round(largeOpsz)}pt</span></div>
                         </div>
                       </div>
+                      {axes.length > 0 && (() => {
+                        const gd = defaults['GEOM'] ?? geomAxis?.default ?? 25
+                        // Palette column order: by case (caps, lowercase, digits), then
+                        // shape — independent of the Type Matrix progression (GROUP_DEFS).
+                        const paletteOrder = ['I', 'C', 'G', 'M', 'l', 'c', 'a', 'g', 'u', 'f', 't', 'j', 'y', '1', '0', '5']
+                        const paletteDefs = paletteOrder.map(g => GROUP_DEFS.find(d => d.glyph === g)!)
+                        // Four zone rows in GEOM order: A11y, Default, Base, Geo. Each
+                        // glyph only appears in a row for a variant it actually has — its
+                        // default form lives once, in the Default row, rather than being
+                        // duplicated (greyed) across every row it lacks a variant for.
+                        const ZONE_ROWS: { label: VariantLabel; color: string; geom: number; rclt: boolean }[] = [
+                          { label: 'A11Y',    color: '#c97050', geom: 0,   rclt: true },
+                          { label: 'default', color: '#9a9a9a', geom: 25,  rclt: false },
+                          { label: 'Base',    color: '#4a7fd4', geom: 50,  rclt: true },
+                          { label: 'Geo',     color: '#4aad5c', geom: 100, rclt: true },
+                        ]
+                        return (
+                          <div className="glyph-strip">
+                            {paletteDefs.map(def => {
+                              const t = glyphThresholds[def.glyph] ?? [...def.defaultThresholds]
+                              const activeVi = Math.min(t.reduce((acc, thresh) => (gd >= thresh ? acc + 1 : acc), 0), def.variants.length - 1)
+                              const activeLabel = def.variants[activeVi]?.label
+                              return (
+                                <div key={def.glyph} className="glyph-strip-col">
+                                  {ZONE_ROWS.map(zr => {
+                                    const hasVariant = def.variants.some(v => v.label === zr.label)
+                                    if (!hasVariant) {
+                                      // Blank slot (keeps the column aligned) — no duplicated default.
+                                      return (
+                                        <span key={zr.label} className="glyph-strip-token glyph-strip-token--empty" aria-hidden="true">{def.glyph}</span>
+                                      )
+                                    }
+                                    const isActive = activeLabel === zr.label
+                                    return (
+                                      <span
+                                        key={zr.label}
+                                        className={`glyph-strip-token${isActive ? ' glyph-strip-token--active' : ''}`}
+                                        style={{
+                                          fontFamily: "'CalSansPreview','CalSansVF',sans-serif",
+                                          fontVariationSettings: `'GEOM' ${zr.geom}, 'opsz' 22`,
+                                          fontFeatureSettings: zr.rclt ? "'rclt' 1" : "'rclt' 0",
+                                          fontOpticalSizing: 'none',
+                                          color: zr.color,
+                                          opacity: isActive ? 1 : 0.3,
+                                        } as React.CSSProperties}
+                                      >{def.glyph}</span>
+                                    )
+                                  })}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        )
+                      })()}
+                      </div>
                     </>
                   )
                 })()}</>
-              )
-            })()}
-
-
-            {axes.length > 0 && (() => {
-              const gd = defaults['GEOM'] ?? geomAxis?.default ?? 25
-              // Fixed zone rows: A11y (orange) top, Base (blue) middle, Geo (green) bottom.
-              // Each glyph fills the rows for variants it has; defaults aren't shown.
-              const ZONE_ROWS: { label: VariantLabel; color: string; geom: number }[] = [
-                { label: 'A11Y', color: '#c97050', geom: 0 },
-                { label: 'Base', color: '#4a7fd4', geom: 50 },
-                { label: 'Geo', color: '#4aad5c', geom: 100 },
-              ]
-              return (
-                <div className="glyph-strip">
-                  {GROUP_DEFS.map(def => {
-                    const t = glyphThresholds[def.glyph] ?? [...def.defaultThresholds]
-                    const activeVi = Math.min(t.reduce((acc, thresh) => (gd >= thresh ? acc + 1 : acc), 0), def.variants.length - 1)
-                    const activeLabel = def.variants[activeVi]?.label
-                    return (
-                      <div key={def.glyph} className="glyph-strip-col">
-                        {ZONE_ROWS.map(zr => {
-                          const hasZone = def.variants.some(v => v.label === zr.label)
-                          const masterActive = activeLabel === 'default' || activeLabel === 'UI'
-                          const isActive = hasZone ? activeLabel === zr.label : masterActive
-                          return (
-                            <span
-                              key={zr.label}
-                              className={`glyph-strip-token${isActive ? ' glyph-strip-token--active' : ''}`}
-                              style={{
-                                fontFamily: "'CalSansPreview','CalSansVF',sans-serif",
-                                fontVariationSettings: hasZone ? `'GEOM' ${zr.geom}, 'opsz' 22` : "'GEOM' 25, 'opsz' 22",
-                                fontFeatureSettings: hasZone ? "'rclt' 1" : "'rclt' 0",
-                                fontOpticalSizing: 'none',
-                                color: hasZone ? zr.color : '#555',
-                                opacity: isActive ? 1 : 0.3,
-                              } as React.CSSProperties}
-                            >{def.glyph}</span>
-                          )
-                        })}
-                      </div>
-                    )
-                  })}
-                </div>
               )
             })()}
 

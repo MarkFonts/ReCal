@@ -25,7 +25,7 @@ export const GROUP_DEFS: GroupDef[] = [
   { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [11] },
   { glyph: 'l', variants: [V.A11Y, V.default], defaultThresholds: [11] },
   { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [13, 34] },
-  { glyph: 'G', variants: [V.default, V.Geo], defaultThresholds: [40] },
+  { glyph: 'G', variants: [V.default, V.Base], defaultThresholds: [40] },
   { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [16] },
   // f's Base form reverts to the master above GEOM 76 (non-monotonic): default → Base → default
   { glyph: 'f', variants: [V.default, V.Base, V.default], defaultThresholds: [39, 76] },

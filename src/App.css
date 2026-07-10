@@ -568,6 +568,28 @@ h2 {
   font: inherit;
 }
 
+/* Default/Max samples + glyph grid: stacked (samples above grid) at tablet
+   widths; grid-left / samples-right once there's room. */
+.samples-glyphs-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+@media (min-width: 1000px) {
+  .samples-glyphs-wrap {
+    flex-direction: row-reverse; /* glyph-strip (2nd child) left, samples right */
+    align-items: flex-start;
+    gap: clamp(24px, 3vw, 48px);
+  }
+  .samples-glyphs-wrap .zone-preview-row {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+  .samples-glyphs-wrap .glyph-strip {
+    flex: 0 1 auto;
+  }
+}
+
 .glyph-strip {
   display: flex;
   flex-direction: row;
