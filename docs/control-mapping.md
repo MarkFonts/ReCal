@@ -2,8 +2,13 @@
 
 Phase 0 deliverable (per `ref/recal-instrument-spec.md`). Maps every control and every
 piece of state in the current `App.tsx` onto the three-layer store and the four control
-homes. **Nothing is built from this yet.** This is the review artifact that must be signed
-off before Phase 2 (Shell).
+homes. This is the reference-of-record for the branch.
+
+**Status:** the three-layer store is built — `src/instrument/store.ts` (SHIPPED / defaults ◆ /
+preview ● + `merged()`/`effective()` selectors + reducer), `src/instrument/InstrumentProvider.tsx`
+(context + hook), and a Phase-0 harness `src/instrument/InstrumentApp.tsx` reachable at
+`?ui=instrument`. The classic app stays the default; both build side by side. Selectors verified
+by 23 unit checks. Phases 1+ (tokens, shell, scenes) build on this.
 
 The four homes, from the spec:
 
@@ -239,7 +244,7 @@ state (`App.jsx:705`, hash-routed at `:67`) maps straight across:
 | `scale` (Type Scale) | **SCALE** | Tailwind scale, §7.3 |
 | `glyphs` (Glyphs) | **GLYPHS** | charset grid |
 | `calcom` (Cal.com mock) | **UI** | booking-flow mock, baked defaults |
-| `coss` | — | drop (font-proofer-specific) |
+| `coss` | **(deferred)** | font-proofer has a `coss` mode; owner wants a COSS UI panel — docs/particles from https://coss.com/ui — as its own scene tab that **lazy-loads on click**. Backlog, not this phase. |
 | *(none)* | **INFO** | new; no font-proofer analogue |
 
 ### 7.2 PARAGRAPH — the "semi-custom markdown paragraph distinguisher"
