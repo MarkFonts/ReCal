@@ -2,17 +2,14 @@
 // Live font via CalSansVF + effective(); GEOM glyph swaps render through the font's
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
-import { useState } from 'react'
-import { LANDING_ZONES, PREVIEW_WORDS } from '../GlyphGroups'
+import { useState, useRef } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
 } from './store'
 import { renderVarSettings } from './render'
 import Info from './Info'
-
-const PARA =
-  'Typography is the art and technique of arranging type to make written language legible, readable, and appealing when displayed. Illicit jaguars, 10 guv, 015 — a gauge of clarity.'
+import { Modebar, Scene, SceneControls, FEATURE_CHIPS, type SceneMode } from './scenes'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -32,12 +29,15 @@ function ResetIcon() {
   )
 }
 
-const nearestZone = (geom: number) =>
-  LANDING_ZONES.find(z => geom >= z.start && geom <= z.end) ??
-  LANDING_ZONES.reduce((best, z) => {
-    const d = (x: typeof z) => (geom < x.start ? x.start - geom : geom > x.end ? geom - x.end : 0)
-    return d(z) < d(best) ? z : best
-  })
+// Instrument zone anchors — each chip pins GEOM to one exact value (owner spec).
+const ZONES = [
+  { label: 'A11y', geom: 0, color: '#c97050' },
+  { label: 'UI', geom: 25, color: '#999' },
+  { label: 'Base', geom: 50, color: '#4a7fd4' },
+  { label: 'Geo', geom: 100, color: '#4aad5c' },
+]
+const nearestZoneLabel = (geom: number) =>
+  ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
 
 // ── Rail: the font mutator (◆) ────────────────────────────────────────────────
 function Pin({ tag, label }: { tag: string; label: string }) {
@@ -58,6 +58,8 @@ function Pin({ tag, label }: { tag: string; label: string }) {
 
 function Rail() {
   const { state, dispatch } = useInstrument()
+  const tag = TAG_TEXT[stateTag(state)]
+  const vs = renderVarSettings(effectiveAxes(state))
   return (
     <div className="rail">
       <div className="rail-header">
@@ -110,25 +112,31 @@ function Rail() {
           Auto ascender (YTAS tracks opsz)
         </label>
       </div>
+
+      <div className="rail-footer">
+        <span className="state-tag" style={{ color: tag.color }}>{tag.label}</span>
+        <div className="rail-readout tnum">{vs}</div>
+      </div>
     </div>
   )
 }
 
 // ── Canvas: the stage (baked ◆ at rest) ───────────────────────────────────────
-function Canvas({ size, tracking }: { size: number; tracking: number }) {
+function Canvas({ size, tracking, leading, featStr }: { size: number; tracking: number; leading: number; featStr: string }) {
   const { state, dispatch } = useInstrument()
-  const [showInfo, setShowInfo] = useState(true)
-  const eff = effectiveAxes(state)
-  const tag = TAG_TEXT[stateTag(state)]
-  const vs = renderVarSettings(eff)
+  const [showInfo, setShowInfo] = useState(false)
+  const [mode, setMode] = useState<SceneMode>('words')
+  const [source, setSource] = useState('Sample')
+  const [measure, setMeasure] = useState(34)
+  const [pairs, setPairs] = useState<Set<string>>(new Set())
+  const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const ls = `${tracking / 100}em`
   const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
   const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
   return (
     <div className="canvas">
-      <div className="canvas-topbar">
-        <span className="state-tag" style={{ color: tag.color }}>{tag.label}</span>
-        <span className="topbar-readout tnum">{vs}</span>
+      <div className="canvas-bar">
+        <Modebar mode={mode} setMode={setMode} />
         <span className="floor-spacer" />
         <button className={`info-toggle${showInfo ? ' on' : ''}`}
           aria-pressed={showInfo}
@@ -144,12 +152,11 @@ function Canvas({ size, tracking }: { size: number; tracking: number }) {
           hold: original Cal Sans
         </button>
       </div>
+      <SceneControls mode={mode} source={source} setSource={setSource}
+        measure={measure} setMeasure={setMeasure} pairs={pairs} togglePair={togglePair} />
       <div className="stage">
-        <p className="specimen-cap">Specimen · Cal Sans VF</p>
-        <p className="specimen" style={{ fontSize: size, fontVariationSettings: vs, letterSpacing: ls }}>
-          {PREVIEW_WORDS.join(' ')}
-        </p>
-        <p className="para" style={{ fontSize: 18, fontVariationSettings: vs, letterSpacing: ls }}>{PARA}</p>
+        <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
+          source={source} measure={measure} pairs={pairs} />
         {showInfo && <Info />}
       </div>
     </div>
@@ -159,22 +166,38 @@ function Canvas({ size, tracking }: { size: number; tracking: number }) {
 // ── Bottom preview-control surface (●) ────────────────────────────────────────
 const DOCK_AXES = ['wght', 'GEOM', 'opsz', 'YTAS', 'SHRP', 'ital'] as const
 
-function PreviewSurface({ size, setSize, tracking, setTracking }: {
+function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
+  leading: number; setLeading: (n: number) => void
+  feats: Set<string>; toggleFeat: (t: string) => void
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
-  const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0
+  const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1
+  // Bloom on pointer entry; fold ~350ms after leave; stay open while a child has focus.
+  const [open, setOpen] = useState(false)
+  const surfRef = useRef<HTMLDivElement>(null)
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>()
+  const stayOpen = () => { clearTimeout(closeTimer.current); setOpen(true) }
+  const scheduleClose = () => {
+    clearTimeout(closeTimer.current)
+    closeTimer.current = setTimeout(() => {
+      if (!surfRef.current?.contains(document.activeElement)) setOpen(false)
+    }, 350)
+  }
   return (
-    <div className="preview-surface">
+    <div ref={surfRef} className={`preview-surface${open ? ' open' : ''}`}
+      onMouseEnter={stayOpen} onMouseLeave={scheduleClose}
+      onFocusCapture={stayOpen} onBlurCapture={scheduleClose}>
       <div className="preview-surface-head">
-        <span className="preview-surface-cap">Play — preview only, nothing bakes</span>
+        <span className="preview-surface-cap">Play — preview only, nothing bakes{open ? '' : ' · hover'}</span>
         <button className="preview-reset" disabled={!canReset} title="Reset preview"
-          onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0) }}>
+          onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1) }}>
           <ResetIcon />
         </button>
       </div>
+      <div className="preview-body">
       <div className="preview-rows">
         <div className="prow">
           <div className="prow-head"><span className="prow-label">size</span>
@@ -187,6 +210,12 @@ function PreviewSurface({ size, setSize, tracking, setTracking }: {
             <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
           <input type="range" min={-10} max={30} step={1} value={tracking}
             onChange={e => setTracking(+e.target.value)} />
+        </div>
+        <div className="prow">
+          <div className="prow-head"><span className="prow-label">leading</span>
+            <span className="prow-val tnum">{leading.toFixed(1)}</span></div>
+          <input type="range" min={0.8} max={2.5} step={0.1} value={leading}
+            onChange={e => setLeading(+e.target.value)} />
         </div>
         {DOCK_AXES.map(tag => {
           const { min, max } = AXIS_RANGES[tag]
@@ -202,6 +231,16 @@ function PreviewSurface({ size, setSize, tracking, setTracking }: {
           )
         })}
       </div>
+      <div className="feature-row">
+        <span className="feature-row-label">OpenType</span>
+        <div className="feature-chips">
+          {FEATURE_CHIPS.map(f => (
+            <button key={f.tag} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
+              onClick={() => toggleFeat(f.tag)}>{f.label}</button>
+          ))}
+        </div>
+      </div>
+      </div>
     </div>
   )
 }
@@ -209,22 +248,23 @@ function PreviewSurface({ size, setSize, tracking, setTracking }: {
 // ── Floor: the transaction ────────────────────────────────────────────────────
 function Floor() {
   const { state, dispatch } = useInstrument()
-  const active = nearestZone(state.defaults.axes.GEOM).label
+  const [oflAgreed, setOflAgreed] = useState(false)
+  const active = nearestZoneLabel(state.defaults.axes.GEOM)
   return (
     <div className="floor">
       <span className="floor-label">Zone</span>
       <div className="zone-chips">
-        {LANDING_ZONES.map(z => {
+        {ZONES.map(z => {
           const on = active === z.label
           return (
             <button key={z.label}
               className={`zone-chip${on ? ' on' : ''}`}
               style={on ? { background: z.color } : { color: z.color }}
               onClick={() => {
-                dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.mid })
+                dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
                 dispatch({ type: 'clearPreview' })
               }}>
-              {z.label === 'A11Y' ? 'A11y' : z.label}
+              {z.label}
             </button>
           )
         })}
@@ -235,7 +275,14 @@ function Floor() {
           onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
         Freeze opsz
       </label>
-      <button className="floor-btn floor-btn--primary" disabled title="Export lands in a later phase">
+      <label className="ofl-check">
+        <input type="checkbox" checked={oflAgreed} onChange={e => setOflAgreed(e.target.checked)} />
+        I accept the{' '}
+        <a href="https://openfontlicense.org/open-font-license-official-text/"
+          target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
+      </label>
+      <button className="floor-btn floor-btn--primary" disabled={!oflAgreed}
+        title={oflAgreed ? 'Export lands in a later phase' : 'Accept the OFL to enable download'}>
         Download — Phase 6
       </button>
     </div>
@@ -245,11 +292,21 @@ function Floor() {
 export default function Shell() {
   const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
+  const [leading, setLeading] = useState(1)
+  // OpenType feature chips are global preview controls — they live in the play bar
+  // and apply to every scene's text.
+  const [feats, setFeats] = useState<Set<string>>(new Set(['liga']))
+  const featStr = ["'rclt' 1", ...[...feats].map(t => `'${t}' 1`)].join(', ')
+  const toggleFeat = (t: string) => setFeats(s => { const n = new Set(s); n.has(t) ? n.delete(t) : n.add(t); return n })
   return (
     <div className="shell">
       <Rail />
-      <Canvas size={size} tracking={tracking} />
-      <PreviewSurface size={size} setSize={setSize} tracking={tracking} setTracking={setTracking} />
+      <Canvas size={size} tracking={tracking} leading={leading} featStr={featStr} />
+      <PreviewSurface
+        size={size} setSize={setSize}
+        tracking={tracking} setTracking={setTracking}
+        leading={leading} setLeading={setLeading}
+        feats={feats} toggleFeat={toggleFeat} />
       <Floor />
     </div>
   )

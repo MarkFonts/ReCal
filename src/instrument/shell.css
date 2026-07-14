@@ -19,6 +19,7 @@
   background: var(--surface-1);
   padding: 20px 16px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
   gap: 22px;
@@ -100,18 +101,37 @@
 .rail-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
 .rail-toggle input { accent-color: var(--accent); }
 
+/* Bottom of the rail: state tag + CSS readout (moved out of the canvas bar) */
+.rail-footer {
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+.rail-footer .state-tag { align-self: flex-start; }
+.rail-readout {
+  font-size: 11px;
+  line-height: 1.6;
+  color: var(--text-dim);
+  word-break: break-word;
+}
+
 /* ── Canvas — the dominant stage (shows the baked ◆ default at rest) ── */
 .canvas {
   grid-area: canvas;
   display: flex;
   flex-direction: column;
   min-width: 0;
+  min-height: 0;        /* let the 1fr row shrink so the stage scrolls, not the floor */
 }
-.canvas-topbar {
+/* One row: scene buttons + Font info + hold-to-compare */
+.canvas-bar {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 24px;
+  gap: 8px;
+  padding: 10px 24px;
   border-bottom: 1px solid var(--border-subtle);
 }
 .state-tag {
@@ -147,7 +167,10 @@
 .stage {
   position: relative;
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overflow-x: hidden;    /* Scale bleed clips at the canvas edge — no h-scrollbar */
+  scrollbar-gutter: stable;   /* reserve gutter so content doesn't shift per mode */
   padding: 40px 48px 64px;
 }
 .specimen {
@@ -172,21 +195,21 @@
 /* ── Font info — persistent right panel. Uniform UI-size rows, one translucent
    A11y colour (owner spec). Right-aligned, like the reference. ── */
 .info-panel {
-  position: absolute;              /* overlays the specimen — no canvas reflow */
+  position: absolute;              /* overlays the canvas — no reflow */
   top: 0;
   right: 0;
   bottom: 0;
   width: 300px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
   padding: 16px 20px 24px;
   text-align: right;
   --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
   font-size: 13px;                          /* UI font size — every piece the same */
   line-height: 1.5;
-  pointer-events: none;            /* clicks pass through to the specimen… */
+  background: var(--bg);           /* opaque — masks whatever is behind it in the canvas */
 }
-.info-panel input, .info-panel a { pointer-events: auto; }  /* …except the editable bits */
 .info-sec { margin-bottom: 16px; }
 .info-h { font-weight: 700; color: rgba(201, 112, 80, .85); margin-bottom: 3px; }
 .info-row {
@@ -251,7 +274,16 @@
 .preview-reset:disabled { opacity: .35; cursor: default; }
 .preview-reset:not(:disabled):hover { color: var(--text); border-color: var(--marker-preview); }
 .preview-reset:not(:disabled):active { transform: rotate(-320deg); }
-.preview-rows { display: flex; gap: 18px; flex-wrap: wrap; }
+/* Bloom: collapsed shows only the handle; expands on pointer entry / focus. */
+.preview-body {
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height var(--dur) var(--spring), opacity var(--dur-fast) ease;
+}
+.preview-surface.open .preview-body { max-height: 42vh; opacity: 1; overflow-y: auto; scrollbar-gutter: stable; }
+@media (prefers-reduced-motion: reduce) { .preview-body { transition: none; } }
+.preview-rows { display: flex; gap: 18px; flex-wrap: wrap; padding-top: 8px; }
 .prow { display: flex; flex-direction: column; gap: 3px; min-width: 128px; }
 .prow-head { display: flex; justify-content: space-between; font-size: 11px; }
 .prow-label { color: var(--text-muted); }
@@ -294,6 +326,17 @@
 }
 .floor-btn:disabled { opacity: .45; cursor: default; }
 .floor-btn--primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+
+.ofl-check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.ofl-check input { accent-color: var(--accent); }
+.ofl-check a { color: var(--text); text-decoration: underline; }
 
 /* Shared slider look (native range on tokens) */
 .shell input[type="range"] { width: 100%; accent-color: var(--accent); }
