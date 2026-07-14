@@ -71,6 +71,11 @@ export function SceneControls({ mode, source, setSource, measure, setMeasure, pa
           ))}
         </div>
       </div>
+      <div className="drawer-row">
+        <span className="drawer-label">measure</span>
+        <input type="range" min={16} max={52} step={1} value={measure} onChange={e => setMeasure(+e.target.value)} />
+        <span className="drawer-val tnum">{measure}em</span>
+      </div>
     </div>
   )
   return null
@@ -192,7 +197,7 @@ function Paragraph({ ls, featStr, source, measure }: SceneProps) {
   )
 }
 
-function Scale({ featStr, pairs }: SceneProps) {
+function Scale({ featStr, pairs, measure }: SceneProps) {
   const { state } = useInstrument()
   const eff = effectiveAxes(state)
   const mult = state.defaults.opszMultiplier
@@ -210,7 +215,7 @@ function Scale({ featStr, pairs }: SceneProps) {
           </div>
           <div className="tier-head" style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }}>{HEAD_WORD}</div>
           {use.map(b => (
-            <p key={b.key} className="tier-body" style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{PAIR_BODY}</p>
+            <p key={b.key} className="tier-body" style={{ fontSize: b.px, maxWidth: `${measure}em`, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{PAIR_BODY}</p>
           ))}
         </div>
       ))}
