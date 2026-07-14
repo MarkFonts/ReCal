@@ -44,6 +44,7 @@ export interface InstrumentState {
   preview: PreviewLayer
   stockHold: boolean                            // hold-to-compare: effective() → SHIPPED
   activePreset: string | null                   // engaged "start from…" entry (§3.3)
+  useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
 }
 
 const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> =>
@@ -69,6 +70,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES): InstrumentS
     preview: {},
     stockHold: false,
     activePreset: null,
+    useHoi: false,
   }
 }
 
@@ -98,6 +100,7 @@ export type Action =
   | { type: 'setFrozenOpszValue'; value: number | null }
   | { type: 'setAutoAscender'; value: boolean }
   | { type: 'setActivePreset'; name: string | null }
+  | { type: 'setUseHoi'; value: boolean }
   | { type: 'resetDefaults' }                                 // rail reset: ◆ → SHIPPED + clear preset
 
 export function reducer(s: InstrumentState, a: Action): InstrumentState {
@@ -129,11 +132,14 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return { ...s, defaults: { ...s.defaults, autoAscender: a.value } }
     case 'setActivePreset':
       return { ...s, activePreset: a.name }
+    case 'setUseHoi':
+      return { ...s, useHoi: a.value }
     case 'resetDefaults': {
       // Reset every ◆ adjustment back toward SHIPPED and clear the engaged preset.
-      // Preview (●) is the Return pill's job, so leave it untouched here (§3.3).
+      // Preview (●) is the Return pill's job; HOI is a rendering mode, not a bake
+      // target — both are preserved here (§3.3).
       const fresh = createInitialState(s.shipped)
-      return { ...fresh, preview: { ...s.preview } }
+      return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi }
     }
     default:
       return s
