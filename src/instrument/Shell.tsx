@@ -150,11 +150,6 @@ function Canvas({ size, tracking }: { size: number; tracking: number }) {
           {PREVIEW_WORDS.join(' ')}
         </p>
         <p className="para" style={{ fontSize: 18, fontVariationSettings: vs, letterSpacing: ls }}>{PARA}</p>
-        {previewDrifted(state) && (
-          <button className="return-pill" onClick={() => dispatch({ type: 'clearPreview' })}>
-            Return to your defaults
-          </button>
-        )}
         {showInfo && <Info />}
       </div>
     </div>

@@ -169,30 +169,6 @@
   margin: 32px 0 0;
 }
 
-/* Return pill — springs in bottom-right only when preview has drifted (§Origin).
-   Full sentence, real size (abstraction & prominence move together). */
-.return-pill {
-  position: absolute;
-  right: 28px;
-  bottom: 24px;
-  padding: 10px 18px;
-  border-radius: var(--radius-pill);
-  background: var(--accent);
-  color: var(--bg);
-  border: none;
-  font-family: var(--ui-font);
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-  box-shadow: 0 6px 24px rgba(0,0,0,.4);
-  animation: return-in var(--dur) var(--spring);
-}
-@keyframes return-in {
-  from { transform: translateY(14px) scale(.94); opacity: 0; }
-  to   { transform: none; opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) { .return-pill { animation: none; } }
-
 /* ── Font info — persistent right panel. Uniform UI-size rows, one translucent
    A11y colour (owner spec). Right-aligned, like the reference. ── */
 .info-panel {
