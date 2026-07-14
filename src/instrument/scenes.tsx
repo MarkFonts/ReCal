@@ -242,16 +242,16 @@ function Glyphs({ featStr, glyphSet }: SceneProps) {
     <div className="stage-pad">
       <p className="specimen-cap">Glyphs · {cells.length} in {glyphSet}, at your effective values</p>
       <div className="glyph-grid">
-        {cells.map((c, i) => (
-          <span key={i} className="glyph-cell"
-            style={{
-              fontVariationSettings: vs,
-              // mark/mkmk position the combining marks on the ◌ base.
-              fontFeatureSettings: `${c.aalt ? `'aalt' ${c.aalt}` : featStr}, 'mark' 1, 'mkmk' 1`,
-            }}>
-            {c.ch}
-          </span>
-        ))}
+        {cells.map((c, i) => {
+          // mark/mkmk position marks on ◌; `case` shows the capital-positioned combs.
+          const base = c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}` : featStr
+          return (
+            <span key={i} className="glyph-cell"
+              style={{ fontVariationSettings: vs, fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1` }}>
+              {c.ch}
+            </span>
+          )
+        })}
       </div>
     </div>
   )

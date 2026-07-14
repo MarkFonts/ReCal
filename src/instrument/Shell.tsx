@@ -209,13 +209,16 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
       if (!surf) return
       const rect = surf.getBoundingClientRect()
       const focused = surf.contains(document.activeElement)
-      if (focused || e.clientY >= rect.top - BAND) {
+      // Open ONLY when actually over the bar (no preemptive proximity bloom — the
+      // glyph-set tabs sit right above it). Once open, the BAND is just hysteresis.
+      if (focused || e.clientY >= rect.top) {
         clearTimeout(timer)
         if (!openRef.current) setOpen(true)
         return
       }
       if (!openRef.current) return
-      const dist = rect.top - e.clientY                       // > BAND here
+      const dist = rect.top - e.clientY
+      if (dist <= BAND) { clearTimeout(timer); return }       // stay open within band
       const t = Math.min(1, (dist - BAND) / (FAR - BAND))
       const delay = Math.round(MAX_DELAY * (1 - t))           // farther → shorter
       clearTimeout(timer)

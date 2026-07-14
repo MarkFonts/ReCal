@@ -115,16 +115,25 @@ export function isSupported(glyph: string, ranges: CmapRanges | null): boolean {
   return false
 }
 
-// A glyph cell: a base char plus which aalt alternate to show (0 = the base itself).
-export type GlyphCell = { ch: string; aalt: number }
+// A glyph cell: a base char, which aalt alternate (0 = base), and whether to force
+// the `case` feature (capital-positioned combining marks).
+export type GlyphCell = { ch: string; aalt: number; caps?: boolean }
 
 const DOTTED_CIRCLE = '◌' // ◌ — base to hang combining/modifier marks on
 
-// Combining diacriticals + spacing modifier letters render as floating/overlapping
-// marks in isolation; hang them on a dotted circle so they read cleanly.
+// Combining marks that have capital-positioned `.case` variants in CalSansVF.
+const CASE_COMB_CPS = new Set([
+  0x0300, 0x0301, 0x0302, 0x0303, 0x0304, 0x0306, 0x0307, 0x0308,
+  0x0309, 0x030B, 0x030C, 0x0311, 0x031B, 0x0338,
+])
+
+// TRUE combining marks (category Mn) render as floating marks in isolation; hang
+// them on a dotted circle so they read cleanly. Spacing modifier letters
+// (U+02B0–02FF) are NOT combining — they have their own width and can't attach, so
+// they render standalone (no ◌).
 function needsDottedCircle(cp: number): boolean {
-  return (cp >= 0x02B0 && cp <= 0x02FF)   // spacing modifier letters
-    || (cp >= 0x0300 && cp <= 0x036F)     // combining diacritical marks
+  return (cp >= 0x0300 && cp <= 0x036F)   // combining diacritical marks
+    || (cp >= 0x0483 && cp <= 0x0489)     // combining Cyrillic
     || (cp >= 0x1AB0 && cp <= 0x1AFF)     // combining diacriticals extended
     || (cp >= 0x1DC0 && cp <= 0x1DFF)     // combining diacriticals supplement
     || (cp >= 0x20D0 && cp <= 0x20FF)     // combining marks for symbols
@@ -143,6 +152,7 @@ export function allGlyphsWithAlternates(ranges: CmapRanges | null): GlyphCell[] 
       const raw = String.fromCodePoint(cp)
       const ch = needsDottedCircle(cp) ? DOTTED_CIRCLE + raw : raw
       out.push({ ch, aalt: 0 })
+      if (CASE_COMB_CPS.has(cp)) out.push({ ch, aalt: 0, caps: true })  // capital-positioned
       const n = ALT_COUNTS[cp] ?? 0
       for (let i = 1; i <= n; i++) out.push({ ch, aalt: i })
     }
