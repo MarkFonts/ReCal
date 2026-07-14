@@ -20,6 +20,18 @@ const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: stri
   STOCK: { label: 'STOCK — original Cal Sans', color: 'var(--state-stock)' },
 }
 
+const SIZE_DEFAULT = 88
+
+// Circular-arrow reset glyph, ported from the classic app / font-proofer.
+function ResetIcon() {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="14" height="14" fill="currentColor" aria-hidden="true">
+      <path d="M8,14.2909c-3.47461,0-6.30127-2.81629-6.30127-6.2909,0-2.57326,1.51851-3.90145,2.46222-4.67831.19366-.15897.47817-.12995.6365.06182.15865.19272.10866.45416-.06182.6365-.72266.77296-1.63651,1.99428-1.63651,3.97999,0,2.70215,2.19824,4.91247,4.90088,4.91247,2.70215,0,4.90039-2.21033,4.90039-4.91247,0-2.70264-2.19824-4.90088-4.90039-4.90088-.38672,0-.7002-.31348-.7002-.7002s.31348-.7002.7002-.7002c3.47461,0,6.30078,2.82666,6.30078,6.30127s-2.82617,6.2909-6.30078,6.2909Z"/>
+      <path d="M4.84717,6.89648c-.38672,0-.7002-.31348-.7002-.7002v-2.12169h-2.10645c-.38672,0-.7002-.31032-.7002-.69704s.31348-.68811.7002-.68811h2.80664c.38672,0,.7002.31348.7002.7002v2.80664c0,.38672-.31348.7002-.7002.7002Z"/>
+    </svg>
+  )
+}
+
 const nearestZone = (geom: number) =>
   LANDING_ZONES.find(z => geom >= z.start && geom <= z.end) ??
   LANDING_ZONES.reduce((best, z) => {
@@ -158,10 +170,15 @@ function PreviewSurface({ size, setSize, tracking, setTracking }: {
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
+  const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0
   return (
     <div className="preview-surface">
       <div className="preview-surface-head">
         <span className="preview-surface-cap">Play — preview only, nothing bakes</span>
+        <button className="preview-reset" disabled={!canReset} title="Reset preview"
+          onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0) }}>
+          <ResetIcon />
+        </button>
       </div>
       <div className="preview-rows">
         <div className="prow">
@@ -231,7 +248,7 @@ function Floor() {
 }
 
 export default function Shell() {
-  const [size, setSize] = useState(88)
+  const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
   return (
     <div className="shell">

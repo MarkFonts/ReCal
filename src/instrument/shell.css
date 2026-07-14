@@ -249,8 +249,32 @@
   flex-direction: column;
   gap: 8px;
 }
-.preview-surface-head { display: flex; align-items: center; gap: 10px; }
+.preview-surface-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .preview-surface-cap { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
+.preview-reset {
+  box-sizing: border-box;
+  width: 30px;
+  min-width: 30px;
+  max-width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;                 /* override global button padding (App.css) → stays circular */
+  flex: 0 0 30px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--marker-preview);
+  cursor: pointer;
+  line-height: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform var(--dur) var(--spring), color var(--dur-fast) ease, border-color var(--dur-fast) ease;
+}
+.preview-reset:disabled { opacity: .35; cursor: default; }
+.preview-reset:not(:disabled):hover { color: var(--text); border-color: var(--marker-preview); }
+.preview-reset:not(:disabled):active { transform: rotate(-320deg); }
 .preview-rows { display: flex; gap: 18px; flex-wrap: wrap; }
 .prow { display: flex; flex-direction: column; gap: 3px; min-width: 128px; }
 .prow-head { display: flex; justify-content: space-between; font-size: 11px; }
