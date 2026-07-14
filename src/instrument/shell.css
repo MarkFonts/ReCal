@@ -41,31 +41,49 @@
   font-size: 12px;
   cursor: pointer;
 }
-.rail-reset:hover { color: var(--text); border-color: var(--text-dim); }
+/* :not(:disabled) bumps specificity above App.css's global button:hover so the
+   fill doesn't go light-on-light — keep dark text on any light fill. */
+.rail-reset:hover:not(:disabled) { background: var(--surface-3); color: var(--text); border-color: var(--text-dim); }
 
-.info-toggle {
-  padding: 6px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+/* hold-to-compare — text in the floor beside Download; held = STOCK-hue bold+underline. */
+.hold-text {
+  padding: 8px 8px;
+  border: none;
+  background: none;
   color: var(--text-muted);
   font-family: var(--ui-font);
-  font-size: 12px;
+  font-weight: 400;
+  font-size: 13px;
   cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
 }
-.info-toggle.on { color: rgba(201, 112, 80, .9); border-color: rgba(201, 112, 80, .5); }
-
-.hold-btn {
-  padding: 6px 14px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+.hold-text::after {
+  content: attr(data-label);
+  font-weight: 700;
+  height: 0; overflow: hidden; visibility: hidden; pointer-events: none;
+}
+.hold-text:hover { color: var(--text); }
+.hold-text.held {
+  color: var(--state-stock);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.hold-text:focus-visible {
+  outline: none;
   color: var(--text);
-  font-family: var(--ui-font);
-  font-size: 12px;
-  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 2.5px;
+  text-underline-offset: 4px;
 }
-.hold-btn:active { background: var(--surface-3); border-color: var(--state-stock); color: var(--state-stock); }
+
+.floor-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.floor-toggle input { accent-color: var(--accent); }
+.floor-toggle a { color: var(--text); text-decoration: underline; }
 .rail-group { display: flex; flex-direction: column; gap: 12px; }
 .rail-group-label {
   font-size: 10px;
@@ -136,13 +154,11 @@
   flex-direction: column;
   overflow: hidden;
 }
-/* One row: scene buttons + Font info + hold-to-compare */
+/* Scene tabs only; no border, no fill (grouping by space). */
 .canvas-bar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 24px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 24px;
 }
 .state-tag {
   padding: 3px 12px;
@@ -150,29 +166,6 @@
   background: var(--surface-2);
   font-size: 12px;
   font-weight: 700;
-}
-
-/* Specimen / Info view toggle (proto-modebar; Phase 4 expands to full scenes) */
-.view-toggle { display: flex; gap: 2px; background: var(--surface-2); border-radius: var(--radius); padding: 2px; }
-.view-toggle button {
-  padding: 4px 12px;
-  border: none;
-  background: transparent;
-  color: var(--text-muted);
-  font-family: var(--ui-font);
-  font-size: 12px;
-  border-radius: 6px;
-  cursor: pointer;
-}
-.view-toggle button.on { background: var(--surface-3); color: var(--text); font-weight: 700; }
-
-.topbar-readout {
-  font-size: 11px;
-  color: var(--text-dim);
-  max-width: 40%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 .stage {
   position: relative;    /* anchor for the Font info overlay — this box does NOT scroll */
@@ -342,18 +335,21 @@
   background: var(--surface-2);
 }
 .floor-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
-.zone-chips { display: flex; gap: 6px; }
+.zone-chips { display: flex; gap: 4px; }
+/* Text-only; ACTIVE zone keeps a small fill (zone colour IS information). Inactive =
+   zone colour, muted (inline). No weight change → no wiggle. */
 .zone-chip {
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: var(--radius-pill);
-  border: 1px solid var(--border);
+  border: none;
   background: transparent;
-  color: var(--text-muted);
   font-family: var(--ui-font);
   font-size: 13px;
   cursor: pointer;
 }
-.zone-chip.on { color: var(--bg); font-weight: 700; border-color: transparent; }
+.zone-chip.on { color: var(--bg); }
+.zone-chip:not(.on):hover:not(:disabled) { background: none; box-shadow: inset 0 0 0 1px currentColor; }
+.zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
 .floor-spacer { flex: 1; }
 .floor-btn {
   padding: 8px 16px;

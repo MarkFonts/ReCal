@@ -8,8 +8,8 @@ import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
 } from './store'
 import { renderVarSettings } from './render'
-import Info from './Info'
 import { Modebar, Scene, SceneControls, FEATURE_CHIPS, type SceneMode } from './scenes'
+import Info from './Info'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -130,35 +130,18 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   feats: Set<string>; toggleFeat: (t: string) => void
   featStr: string
 }) {
-  const { state, dispatch } = useInstrument()
-  const [showInfo, setShowInfo] = useState(false)
   const [mode, setMode] = useState<SceneMode>('words')
   const [source, setSource] = useState('Sample')
   const [measure, setMeasure] = useState(34)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const [glyphSet, setGlyphSet] = useState('All')
+  const [showInfo, setShowInfo] = useState(false)
   const ls = `${tracking / 100}em`
-  const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
-  const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
   return (
     <div className="canvas">
       <div className="canvas-bar">
-        <Modebar mode={mode} setMode={setMode} />
-        <span className="floor-spacer" />
-        <button className={`info-toggle${showInfo ? ' on' : ''}`}
-          aria-pressed={showInfo}
-          onClick={() => setShowInfo(v => !v)}>
-          Font info
-        </button>
-        <button className="hold-btn"
-          onPointerDown={holdDown}
-          onPointerUp={holdUp}
-          onPointerLeave={holdUp}
-          onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdDown() } }}
-          onKeyUp={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); holdUp() } }}>
-          hold: original Cal Sans
-        </button>
+        <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
       </div>
       <div className="canvas-body">
         <div className="stage">
@@ -278,7 +261,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
         <span className="feature-row-label">OpenType</span>
         <div className="feature-chips">
           {FEATURE_CHIPS.map(f => (
-            <button key={f.tag} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
+            <button key={f.tag} data-label={f.label} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
               onClick={() => toggleFeat(f.tag)}>{f.label}</button>
           ))}
         </div>
@@ -293,6 +276,8 @@ function Floor() {
   const { state, dispatch } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
   const active = nearestZoneLabel(state.defaults.axes.GEOM)
+  const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
+  const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
   return (
     <div className="floor">
       <span className="floor-label">Zone</span>
@@ -302,7 +287,7 @@ function Floor() {
           return (
             <button key={z.label}
               className={`zone-chip${on ? ' on' : ''}`}
-              style={on ? { background: z.color } : { color: z.color }}
+              style={on ? { background: z.color } : { color: z.color, opacity: .6 }}
               onClick={() => {
                 dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
                 dispatch({ type: 'clearPreview' })
@@ -313,12 +298,18 @@ function Floor() {
         })}
       </div>
       <div className="floor-spacer" />
-      <label className="rail-toggle">
+      <label className="floor-toggle">
         <input type="checkbox" checked={state.defaults.freezeOpsz}
           onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
         Freeze opsz
       </label>
-      <label className="ofl-check">
+      <button data-label="hold: original Cal Sans" className={`hold-text${state.stockHold ? ' held' : ''}`}
+        onPointerDown={holdDown} onPointerUp={holdUp} onPointerLeave={holdUp}
+        onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdDown() } }}
+        onKeyUp={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); holdUp() } }}>
+        hold: original Cal Sans
+      </button>
+      <label className="floor-toggle">
         <input type="checkbox" checked={oflAgreed} onChange={e => setOflAgreed(e.target.checked)} />
         I accept the{' '}
         <a href="https://openfontlicense.org/open-font-license-official-text/"

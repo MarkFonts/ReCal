@@ -18,13 +18,20 @@ export const SCENES: { mode: SceneMode; label: string }[] = [
   { mode: 'ui', label: 'UI' },
 ]
 
-export function Modebar({ mode, setMode }: { mode: SceneMode; setMode: (m: SceneMode) => void }) {
+// INFO sits in the tab row (content type), but toggles the right-side opaque overlay
+// rather than replacing the content scene.
+export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
+  mode: SceneMode; setMode: (m: SceneMode) => void
+  showInfo: boolean; toggleInfo: () => void
+}) {
   return (
     <div className="modebar">
       {SCENES.map(s => (
-        <button key={s.mode} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
+        <button key={s.mode} data-label={s.label} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
           onClick={() => setMode(s.mode)}>{s.label}</button>
       ))}
+      <button data-label="Info" className={`mode-btn${showInfo ? ' on' : ''}`}
+        aria-pressed={showInfo} onClick={toggleInfo}>Info</button>
     </div>
   )
 }
@@ -42,7 +49,7 @@ export function SceneControls({ mode, source, setSource, measure, setMeasure, pa
     <div className="scene-bar">
       <div className="text-tabs">
         {GLYPH_SET_KEYS.map(k => (
-          <button key={k} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
+          <button key={k} data-label={k} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
         ))}
       </div>
     </div>
@@ -51,7 +58,7 @@ export function SceneControls({ mode, source, setSource, measure, setMeasure, pa
     <div className="scene-bar">
       <div className="text-tabs">
         {TEXT_SOURCES.map(k => (
-          <button key={k} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>
+          <button key={k} data-label={k} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>
         ))}
       </div>
       <div className="drawer-row">
@@ -67,7 +74,7 @@ export function SceneControls({ mode, source, setSource, measure, setMeasure, pa
         <span className="drawer-label">Body pairing</span>
         <div className="feature-chips">
           {BODY_TIERS.map(t => (
-            <button key={t.key} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}>{t.key}</button>
+            <button key={t.key} data-label={t.key} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}>{t.key}</button>
           ))}
         </div>
       </div>
@@ -164,10 +171,9 @@ function Words({ size, ls, leading, featStr }: SceneProps) {
   const vs = renderVarSettings(effectiveAxes(state))
   const [text, setText] = useState('Iʼll jag My cat, Guv 2160')
   return (
-    <div className="stage-pad">
-      <p className="specimen-cap">Words · double-click to edit</p>
+    <div className="stage-pad words-scene">
       <div className="words-edit specimen" contentEditable suppressContentEditableWarning
-        style={{ fontSize: size, lineHeight: leading, fontVariationSettings: vs, fontFeatureSettings: featStr, letterSpacing: ls }}
+        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontFeatureSettings: featStr, letterSpacing: ls }}
         onInput={e => setText(e.currentTarget.textContent ?? '')}>
         {text}
       </div>
@@ -206,7 +212,7 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
   return (
     <div className="stage-pad">
       {DISPLAY_TIERS.map(d => (
-        <div key={d.key} className="tier-block">
+        <div key={d.key} className="tier-block" style={{ width: `${measure}em` }}>
           <div className="tier-label">
             <span className="tier-token tnum">{d.key}<span className="tier-px">{d.px}px</span></span>
             {use.length > 0 && (
@@ -215,7 +221,7 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
           </div>
           <div className="tier-head" style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }}>{HEAD_WORD}</div>
           {use.map(b => (
-            <p key={b.key} className="tier-body" style={{ fontSize: b.px, maxWidth: `${measure}em`, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{PAIR_BODY}</p>
+            <p key={b.key} className="tier-body" style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{PAIR_BODY}</p>
           ))}
         </div>
       ))}
@@ -245,7 +251,6 @@ function Glyphs({ featStr, glyphSet }: SceneProps) {
     : (GLYPH_SETS[glyphSet] ?? []).filter(g => isSupported(g, ranges)).map(ch => ({ ch, aalt: 0 }))
   return (
     <div className="stage-pad">
-      <p className="specimen-cap">Glyphs · {cells.length} in {glyphSet}, at your effective values</p>
       <div className="glyph-grid">
         {cells.map((c, i) => {
           // mark/mkmk position marks on ◌; `case` shows the capital-positioned combs.
@@ -271,7 +276,6 @@ function UI({ featStr }: SceneProps) {
   const times = ['9:00', '9:30', '10:00', '11:15', '1:00', '2:30']
   return (
     <div className="stage-pad">
-      <p className="specimen-cap">UI · your ◆ defaults, as shipped</p>
       <div className="ui-card" style={{ fontVariationSettings: vs, fontFeatureSettings: featStr }}>
         <div className="ui-h1">Book a call</div>
         <div className="ui-sub">30 min · Illustration review — Il1 lIeg0</div>
