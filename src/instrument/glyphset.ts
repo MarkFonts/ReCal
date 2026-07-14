@@ -118,6 +118,18 @@ export function isSupported(glyph: string, ranges: CmapRanges | null): boolean {
 // A glyph cell: a base char plus which aalt alternate to show (0 = the base itself).
 export type GlyphCell = { ch: string; aalt: number }
 
+const DOTTED_CIRCLE = '◌' // ◌ — base to hang combining/modifier marks on
+
+// Combining diacriticals + spacing modifier letters render as floating/overlapping
+// marks in isolation; hang them on a dotted circle so they read cleanly.
+function needsDottedCircle(cp: number): boolean {
+  return (cp >= 0x02B0 && cp <= 0x02FF)   // spacing modifier letters
+    || (cp >= 0x0300 && cp <= 0x036F)     // combining diacritical marks
+    || (cp >= 0x1AB0 && cp <= 0x1AFF)     // combining diacriticals extended
+    || (cp >= 0x1DC0 && cp <= 0x1DFF)     // combining diacriticals supplement
+    || (cp >= 0x20D0 && cp <= 0x20FF)     // combining marks for symbols
+}
+
 // The full inventory: every cmap codepoint AND its alternate glyphs (via the font's
 // aalt feature). Alternates render with font-feature-settings 'aalt' i, so they still
 // interpolate across the axes — reaching the ~850 unencoded stylistic variants.
@@ -128,7 +140,8 @@ export function allGlyphsWithAlternates(ranges: CmapRanges | null): GlyphCell[] 
     for (let cp = s; cp <= e; cp++) {
       if (cp < 0x21) continue                     // control chars + space
       if (cp >= 0x7F && cp <= 0xA0) continue       // C1 controls + NBSP
-      const ch = String.fromCodePoint(cp)
+      const raw = String.fromCodePoint(cp)
+      const ch = needsDottedCircle(cp) ? DOTTED_CIRCLE + raw : raw
       out.push({ ch, aalt: 0 })
       const n = ALT_COUNTS[cp] ?? 0
       for (let i = 1; i <= n; i++) out.push({ ch, aalt: i })

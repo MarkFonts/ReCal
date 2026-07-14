@@ -244,7 +244,11 @@ function Glyphs({ featStr, glyphSet }: SceneProps) {
       <div className="glyph-grid">
         {cells.map((c, i) => (
           <span key={i} className="glyph-cell"
-            style={{ fontVariationSettings: vs, fontFeatureSettings: c.aalt ? `'aalt' ${c.aalt}` : featStr }}>
+            style={{
+              fontVariationSettings: vs,
+              // mark/mkmk position the combining marks on the ◌ base.
+              fontFeatureSettings: `${c.aalt ? `'aalt' ${c.aalt}` : featStr}, 'mark' 1, 'mkmk' 1`,
+            }}>
             {c.ch}
           </span>
         ))}

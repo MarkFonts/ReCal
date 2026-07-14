@@ -2,7 +2,7 @@
 // Live font via CalSansVF + effective(); GEOM glyph swaps render through the font's
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
@@ -193,21 +193,43 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
   const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1
-  // Bloom on pointer entry; fold ~350ms after leave; stay open while a child has focus.
+  // Bloom on pointer proximity; collapse with a fuzzy threshold — the farther the
+  // cursor is above the bar, the faster it folds. Stays open while a child has focus.
   const [open, setOpen] = useState(false)
   const surfRef = useRef<HTMLDivElement>(null)
-  const closeTimer = useRef<ReturnType<typeof setTimeout>>()
-  const stayOpen = () => { clearTimeout(closeTimer.current); setOpen(true) }
-  const scheduleClose = () => {
-    clearTimeout(closeTimer.current)
-    closeTimer.current = setTimeout(() => {
-      if (!surfRef.current?.contains(document.activeElement)) setOpen(false)
-    }, 350)
-  }
+  const openRef = useRef(open)
+  openRef.current = open
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | undefined
+    const BAND = 90     // px above the bar that counts as "at" the bar → open / stay open
+    const FAR = 520     // px above where collapse is immediate
+    const MAX_DELAY = 650
+    const onMove = (e: PointerEvent) => {
+      const surf = surfRef.current
+      if (!surf) return
+      const rect = surf.getBoundingClientRect()
+      const focused = surf.contains(document.activeElement)
+      if (focused || e.clientY >= rect.top - BAND) {
+        clearTimeout(timer)
+        if (!openRef.current) setOpen(true)
+        return
+      }
+      if (!openRef.current) return
+      const dist = rect.top - e.clientY                       // > BAND here
+      const t = Math.min(1, (dist - BAND) / (FAR - BAND))
+      const delay = Math.round(MAX_DELAY * (1 - t))           // farther → shorter
+      clearTimeout(timer)
+      timer = setTimeout(() => {
+        const s = surfRef.current
+        if (s && !s.contains(document.activeElement)) setOpen(false)
+      }, delay)
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => { window.removeEventListener('pointermove', onMove); clearTimeout(timer) }
+  }, [])
   return (
     <div ref={surfRef} className={`preview-surface${open ? ' open' : ''}`}
-      onMouseEnter={stayOpen} onMouseLeave={scheduleClose}
-      onFocusCapture={stayOpen} onBlurCapture={scheduleClose}>
+      onFocusCapture={() => setOpen(true)}>
       <div className="preview-surface-head">
         <span className="preview-surface-cap">Play — preview only, nothing bakes{open ? '' : ' · hover'}</span>
         <button className="preview-reset" disabled={!canReset} title="Reset preview"

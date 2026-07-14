@@ -187,6 +187,32 @@
   scrollbar-gutter: stable;
   padding: 40px 48px 64px;
 }
+
+/* Always-visible scrollbars (macOS hides overlay ones by default). */
+.stage-scroll, .rail, .info-panel, .preview-body {
+  scrollbar-width: thin;
+  scrollbar-color: var(--surface-3) transparent;
+}
+.stage-scroll::-webkit-scrollbar,
+.rail::-webkit-scrollbar,
+.info-panel::-webkit-scrollbar,
+.preview-body::-webkit-scrollbar { width: 10px; height: 10px; }
+.stage-scroll::-webkit-scrollbar-thumb,
+.rail::-webkit-scrollbar-thumb,
+.info-panel::-webkit-scrollbar-thumb,
+.preview-body::-webkit-scrollbar-thumb {
+  background: var(--surface-3);
+  border-radius: 5px;
+  border: 2px solid var(--bg);
+}
+.stage-scroll::-webkit-scrollbar-thumb:hover,
+.rail::-webkit-scrollbar-thumb:hover,
+.info-panel::-webkit-scrollbar-thumb:hover,
+.preview-body::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
+.stage-scroll::-webkit-scrollbar-track,
+.rail::-webkit-scrollbar-track,
+.info-panel::-webkit-scrollbar-track,
+.preview-body::-webkit-scrollbar-track { background: transparent; }
 .specimen {
   font-family: var(--ui-font);
   font-optical-sizing: none;
