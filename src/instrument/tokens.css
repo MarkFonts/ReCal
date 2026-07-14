@@ -1,0 +1,79 @@
+/* Instrument-model design tokens.
+   Every value is extracted from the existing ReCal / wordmark.nyc palette
+   (docs/control-mapping.md §5, spec directive 2) — no new hues invented, and no
+   terracotta/orange accent. Zone colours reuse the existing four exactly. */
+
+:root {
+  /* ── Surfaces (existing dark scale) ── */
+  --bg:        #0f0f0f;
+  --surface-1: #111;
+  --surface-2: #1a1a1a;
+  --surface-3: #252525;
+
+  /* ── Text (existing scale) ── */
+  --text:       #e8e8e8;
+  --text-muted: #999;
+  --text-dim:   #666;
+  --text-faint: #444;
+
+  /* ── Lines ── */
+  --border:        #333;
+  --border-subtle: #222;
+
+  /* ── Accent & origin markers ──
+     ◆ baked-default marker takes the site accent; ● preview marker a neutral —
+     two different visual species (control-mapping §5, spec directive 3). */
+  --accent:         #e8e8e8;        /* primary action + ◆ */
+  --marker-default: var(--accent);  /* ◆ YOUR default */
+  --marker-preview: #999;           /* ● PREVIEWING */
+  --state-stock:    #c97050;        /* STOCK narrator only (= the A11Y zone hue) */
+
+  /* ── Zones (reuse existing exactly) ── */
+  --zone-a11y:       #c97050;
+  --zone-ui:         #999;
+  --zone-ui-on-grid: #fff;   /* UI renders white inside the zone grid */
+  --zone-base:       #4a7fd4;
+  --zone-geo:        #4aad5c;
+
+  /* ── Motion (house spring, spec directive 4) ── */
+  --spring:   cubic-bezier(.34, 1.45, .64, 1);
+  --dur-fast: 140ms;
+  --dur:      240ms;
+
+  /* ── Shape ── */
+  --radius:      8px;
+  --radius-pill: 999px;
+
+  /* ── Type: Cal Sans is the UI typeface for everything ── */
+  --ui-font: 'CalSansVF', sans-serif;
+}
+
+/* The UI-type recipe = the existing chrome instance (opsz 10, GEOM 25); wght is
+   omitted so font-weight still drives bold UI elements. Scoped to the instrument
+   tree so it never collides with the classic App.css `body` rule — both
+   stylesheets are bundled together and always load. */
+.instrument-root {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui-font);
+  font-optical-sizing: none;
+  font-variation-settings: 'opsz' 10, 'GEOM' 25;
+}
+
+/* Numeric readouts / value columns: Cal Sans + tabular figures, never a mono
+   (spec directive 1). Apply to any aligned number column. */
+.tnum {
+  font-feature-settings: 'tnum' 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .instrument-root *,
+  .instrument-root *::before,
+  .instrument-root *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+  }
+}

@@ -4,11 +4,17 @@ Phase 0 deliverable (per `ref/recal-instrument-spec.md`). Maps every control and
 piece of state in the current `App.tsx` onto the three-layer store and the four control
 homes. This is the reference-of-record for the branch.
 
-**Status:** the three-layer store is built — `src/instrument/store.ts` (SHIPPED / defaults ◆ /
-preview ● + `merged()`/`effective()` selectors + reducer), `src/instrument/InstrumentProvider.tsx`
-(context + hook), and a Phase-0 harness `src/instrument/InstrumentApp.tsx` reachable at
-`?ui=instrument`. The classic app stays the default; both build side by side. Selectors verified
-by 23 unit checks. Phases 1+ (tokens, shell, scenes) build on this.
+**Status:**
+- **Phase 0 ✅** — three-layer store `src/instrument/store.ts` (SHIPPED / defaults ◆ / preview ● +
+  `merged()`/`effective()` selectors + reducer), `InstrumentProvider.tsx` (context + hook), and a
+  harness `InstrumentApp.tsx` at `?ui=instrument`. Classic app stays the default; both build side
+  by side. Selectors verified by 23 unit checks.
+- **Phase 1 ✅** — `src/instrument/tokens.css`: palette/text/border/accent/zone/motion/shape/type
+  tokens extracted from the existing palette (no new hues). Cal Sans is the UI type via `--ui-font`
+  + the `.instrument-root` chrome recipe; `.tnum` for numeric columns. Marker decision applied as
+  the working default: ◆ `--marker-default` = `--accent` (#e8e8e8), ● `--marker-preview` = #999,
+  STOCK narrator = #c97050 (the A11Y hue) — all single-token swaps if we revisit.
+- Next: Phase 2 (shell — rail/canvas/floor grid) builds on these.
 
 The four homes, from the spec:
 
