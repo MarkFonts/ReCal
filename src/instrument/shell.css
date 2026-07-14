@@ -43,6 +43,18 @@
 }
 .rail-reset:hover { color: var(--text); border-color: var(--text-dim); }
 
+.info-toggle {
+  padding: 6px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-muted);
+  font-family: var(--ui-font);
+  font-size: 12px;
+  cursor: pointer;
+}
+.info-toggle.on { color: rgba(201, 112, 80, .9); border-color: rgba(201, 112, 80, .5); }
+
 .hold-btn {
   padding: 6px 14px;
   border-radius: var(--radius);
@@ -109,6 +121,29 @@
   font-size: 12px;
   font-weight: 700;
 }
+
+/* Specimen / Info view toggle (proto-modebar; Phase 4 expands to full scenes) */
+.view-toggle { display: flex; gap: 2px; background: var(--surface-2); border-radius: var(--radius); padding: 2px; }
+.view-toggle button {
+  padding: 4px 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  font-family: var(--ui-font);
+  font-size: 12px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.view-toggle button.on { background: var(--surface-3); color: var(--text); font-weight: 700; }
+
+.topbar-readout {
+  font-size: 11px;
+  color: var(--text-dim);
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .stage {
   position: relative;
   flex: 1;
@@ -134,7 +169,8 @@
   margin: 32px 0 0;
 }
 
-/* Return pill — appears only when preview has drifted (§Origin) */
+/* Return pill — springs in bottom-right only when preview has drifted (§Origin).
+   Full sentence, real size (abstraction & prominence move together). */
 .return-pill {
   position: absolute;
   right: 28px;
@@ -149,8 +185,59 @@
   font-size: 13px;
   cursor: pointer;
   box-shadow: 0 6px 24px rgba(0,0,0,.4);
-  transition: transform var(--dur) var(--spring), opacity var(--dur-fast) ease;
+  animation: return-in var(--dur) var(--spring);
 }
+@keyframes return-in {
+  from { transform: translateY(14px) scale(.94); opacity: 0; }
+  to   { transform: none; opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) { .return-pill { animation: none; } }
+
+/* ── Font info — persistent right panel. Uniform UI-size rows, one translucent
+   A11y colour (owner spec). Right-aligned, like the reference. ── */
+.info-panel {
+  position: absolute;              /* overlays the specimen — no canvas reflow */
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 300px;
+  overflow-y: auto;
+  padding: 16px 20px 24px;
+  text-align: right;
+  --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
+  color: var(--info-color);
+  font-size: 13px;                          /* UI font size — every piece the same */
+  line-height: 1.5;
+  pointer-events: none;            /* clicks pass through to the specimen… */
+}
+.info-panel input, .info-panel a { pointer-events: auto; }  /* …except the editable bits */
+.info-sec { margin-bottom: 16px; }
+.info-h { font-weight: 700; color: rgba(201, 112, 80, .85); margin-bottom: 3px; }
+.info-row {
+  display: flex;
+  justify-content: flex-end;
+  align-items: baseline;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.info-k { color: rgba(201, 112, 80, .5); }
+.info-arrow { color: rgba(201, 112, 80, .4); }
+.info-v { color: var(--info-color); }
+.info-yours { color: var(--marker-default); font-weight: 700; }
+.info-block { color: var(--info-color); }
+.info-nameinput {
+  font-family: var(--ui-font);
+  font-size: 13px;
+  text-align: right;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(201, 112, 80, .35);
+  color: var(--marker-default);
+  padding: 1px 0;
+  min-width: 90px;
+  max-width: 150px;
+}
+.info-nameinput:focus { outline: none; border-bottom-color: var(--accent); }
 
 /* ── Bottom preview-control surface (● play / Previewer) ── */
 .preview-surface {

@@ -9,6 +9,7 @@ import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
 } from './store'
 import { renderVarSettings } from './render'
+import Info from './Info'
 
 const PARA =
   'Typography is the art and technique of arranging type to make written language legible, readable, and appealing when displayed. Illicit jaguars, 10 guv, 015 — a gauge of clarity.'
@@ -104,22 +105,32 @@ function Rail() {
 // ── Canvas: the stage (baked ◆ at rest) ───────────────────────────────────────
 function Canvas({ size, tracking }: { size: number; tracking: number }) {
   const { state, dispatch } = useInstrument()
+  const [showInfo, setShowInfo] = useState(true)
   const eff = effectiveAxes(state)
   const tag = TAG_TEXT[stateTag(state)]
   const vs = renderVarSettings(eff)
   const ls = `${tracking / 100}em`
+  const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
+  const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
   return (
     <div className="canvas">
       <div className="canvas-topbar">
         <span className="state-tag" style={{ color: tag.color }}>{tag.label}</span>
+        <span className="topbar-readout tnum">{vs}</span>
+        <span className="floor-spacer" />
+        <button className={`info-toggle${showInfo ? ' on' : ''}`}
+          aria-pressed={showInfo}
+          onClick={() => setShowInfo(v => !v)}>
+          Font info
+        </button>
         <button className="hold-btn"
-          onPointerDown={() => dispatch({ type: 'setStockHold', held: true })}
-          onPointerUp={() => dispatch({ type: 'setStockHold', held: false })}
-          onPointerLeave={() => state.stockHold && dispatch({ type: 'setStockHold', held: false })}>
+          onPointerDown={holdDown}
+          onPointerUp={holdUp}
+          onPointerLeave={holdUp}
+          onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdDown() } }}
+          onKeyUp={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); holdUp() } }}>
           hold: original Cal Sans
         </button>
-        <span className="floor-spacer" />
-        <span className="rail-sub tnum" style={{ marginTop: 0 }}>{vs}</span>
       </div>
       <div className="stage">
         <p className="specimen-cap">Specimen · Cal Sans VF</p>
@@ -132,6 +143,7 @@ function Canvas({ size, tracking }: { size: number; tracking: number }) {
             Return to your defaults
           </button>
         )}
+        {showInfo && <Info />}
       </div>
     </div>
   )
@@ -160,7 +172,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking }: {
         </div>
         <div className="prow">
           <div className="prow-head"><span className="prow-label">tracking</span>
-            <span className="prow-val tnum">{tracking > 0 ? '+' : ''}{tracking}%</span></div>
+            <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
           <input type="range" min={-10} max={30} step={1} value={tracking}
             onChange={e => setTracking(+e.target.value)} />
         </div>
@@ -200,7 +212,7 @@ function Floor() {
                 dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.mid })
                 dispatch({ type: 'clearPreview' })
               }}>
-              {z.label}
+              {z.label === 'A11Y' ? 'A11y' : z.label}
             </button>
           )
         })}
