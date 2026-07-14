@@ -121,8 +121,15 @@ function Rail() {
   )
 }
 
-// ── Canvas: the stage (baked ◆ at rest) ───────────────────────────────────────
-function Canvas({ size, tracking, leading, featStr }: { size: number; tracking: number; leading: number; featStr: string }) {
+// ── Canvas: top bar + (stage / scene controls / play), with the Font info overlay
+// covering everything below the top bar. ─────────────────────────────────────────
+function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, featStr }: {
+  size: number; setSize: (n: number) => void
+  tracking: number; setTracking: (n: number) => void
+  leading: number; setLeading: (n: number) => void
+  feats: Set<string>; toggleFeat: (t: string) => void
+  featStr: string
+}) {
   const { state, dispatch } = useInstrument()
   const [showInfo, setShowInfo] = useState(false)
   const [mode, setMode] = useState<SceneMode>('words')
@@ -130,6 +137,7 @@ function Canvas({ size, tracking, leading, featStr }: { size: number; tracking: 
   const [measure, setMeasure] = useState(34)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
+  const [glyphSet, setGlyphSet] = useState('All')
   const ls = `${tracking / 100}em`
   const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
   const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
@@ -152,11 +160,21 @@ function Canvas({ size, tracking, leading, featStr }: { size: number; tracking: 
           hold: original Cal Sans
         </button>
       </div>
-      <SceneControls mode={mode} source={source} setSource={setSource}
-        measure={measure} setMeasure={setMeasure} pairs={pairs} togglePair={togglePair} />
-      <div className="stage">
-        <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-          source={source} measure={measure} pairs={pairs} />
+      <div className="canvas-body">
+        <div className="stage">
+          <div className="stage-scroll">
+            <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
+              source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} />
+          </div>
+        </div>
+        <SceneControls mode={mode} source={source} setSource={setSource}
+          measure={measure} setMeasure={setMeasure} pairs={pairs} togglePair={togglePair}
+          glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+        <PreviewSurface
+          size={size} setSize={setSize}
+          tracking={tracking} setTracking={setTracking}
+          leading={leading} setLeading={setLeading}
+          feats={feats} toggleFeat={toggleFeat} />
         {showInfo && <Info />}
       </div>
     </div>
@@ -301,12 +319,11 @@ export default function Shell() {
   return (
     <div className="shell">
       <Rail />
-      <Canvas size={size} tracking={tracking} leading={leading} featStr={featStr} />
-      <PreviewSurface
+      <Canvas
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}
         leading={leading} setLeading={setLeading}
-        feats={feats} toggleFeat={toggleFeat} />
+        feats={feats} toggleFeat={toggleFeat} featStr={featStr} />
       <Floor />
     </div>
   )

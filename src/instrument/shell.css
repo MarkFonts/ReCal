@@ -3,10 +3,9 @@
 .shell {
   display: grid;
   grid-template-columns: 264px 1fr;
-  grid-template-rows: 1fr auto auto;
+  grid-template-rows: 1fr auto;
   grid-template-areas:
     "rail canvas"
-    "rail preview"
     "floor floor";
   height: 100vh;
   overflow: hidden;
@@ -126,6 +125,17 @@
   min-width: 0;
   min-height: 0;        /* let the 1fr row shrink so the stage scrolls, not the floor */
 }
+/* Everything below the top bar; anchors the Font info overlay (this box doesn't
+   scroll — the stage inside it does), so the overlay stays put vertically and
+   covers the scene controls + play bar. */
+.canvas-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
 /* One row: scene buttons + Font info + hold-to-compare */
 .canvas-bar {
   display: flex;
@@ -165,12 +175,16 @@
   white-space: nowrap;
 }
 .stage {
-  position: relative;
+  position: relative;    /* anchor for the Font info overlay — this box does NOT scroll */
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
+}
+.stage-scroll {
+  height: 100%;
+  overflow-y: auto;      /* the scene content scrolls here; the overlay stays put */
   overflow-x: hidden;    /* Scale bleed clips at the canvas edge — no h-scrollbar */
-  scrollbar-gutter: stable;   /* reserve gutter so content doesn't shift per mode */
+  scrollbar-gutter: stable;
   padding: 40px 48px 64px;
 }
 .specimen {
@@ -195,11 +209,12 @@
 /* ── Font info — persistent right panel. Uniform UI-size rows, one translucent
    A11y colour (owner spec). Right-aligned, like the reference. ── */
 .info-panel {
-  position: absolute;              /* overlays the canvas — no reflow */
+  position: absolute;              /* overlays canvas-body — stays put, covers play */
   top: 0;
   right: 0;
   bottom: 0;
   width: 300px;
+  z-index: 4;
   overflow-y: auto;
   scrollbar-gutter: stable;
   padding: 16px 20px 24px;
@@ -240,7 +255,7 @@
 
 /* ── Bottom preview-control surface (● play / Previewer) ── */
 .preview-surface {
-  grid-area: preview;
+  flex-shrink: 0;
   border-top: 1px solid var(--border);
   background: var(--surface-1);
   padding: 12px 24px 14px;

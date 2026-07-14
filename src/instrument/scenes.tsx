@@ -3,10 +3,11 @@
 // are passed in as props; scenes here only read them. Everything renders through
 // effective() (renderVarSettings) — one engine. Models ported from font-proofer.
 import './scenes.css'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings, opszForSize } from './render'
+import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -30,12 +31,22 @@ export function Modebar({ mode, setMode }: { mode: SceneMode; setMode: (m: Scene
 
 // Persistent per-scene control bar — lives in the canvas above the stage (not in
 // the scroll area, so it never covers scene content). Only some scenes have controls.
-export function SceneControls({ mode, source, setSource, measure, setMeasure, pairs, togglePair }: {
+export function SceneControls({ mode, source, setSource, measure, setMeasure, pairs, togglePair, glyphSet, setGlyphSet }: {
   mode: SceneMode
   source: string; setSource: (s: string) => void
   measure: number; setMeasure: (n: number) => void
   pairs: Set<string>; togglePair: (k: string) => void
+  glyphSet: string; setGlyphSet: (k: string) => void
 }) {
+  if (mode === 'glyphs') return (
+    <div className="scene-bar">
+      <div className="text-tabs">
+        {GLYPH_SET_KEYS.map(k => (
+          <button key={k} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
+        ))}
+      </div>
+    </div>
+  )
   if (mode === 'paragraph') return (
     <div className="scene-bar">
       <div className="text-tabs">
@@ -135,17 +146,12 @@ export const FEATURE_CHIPS: { tag: string; label: string }[] = [
   { tag: 'ss03', label: 'ss03 (alt — GEOM manual)' },
 ]
 
-const UPPER = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-const LOWER = 'abcdefghijklmnopqrstuvwxyz'
-const DIGITS = '0123456789'
-const PUNCT = '.,;:!?‘’“”\'"()[]{}&@#%/\\—–-'
-
 // ── Scenes ──────────────────────────────────────────────────────────────────────
 export const TEXT_SOURCES = Object.keys(TEXT_PRESETS)
 
 type SceneProps = {
   size: number; ls: string; leading: number; featStr: string
-  source: string; measure: number; pairs: Set<string>
+  source: string; measure: number; pairs: Set<string>; glyphSet: string
 }
 
 function Words({ size, ls, leading, featStr }: SceneProps) {
@@ -212,23 +218,37 @@ function Scale({ featStr, pairs }: SceneProps) {
   )
 }
 
-function Glyphs({ featStr }: SceneProps) {
+// Cmap the cmap once — CalSansVF is already the loaded UI font.
+let cmapPromise: Promise<CmapRanges | null> | null = null
+function loadCmap(): Promise<CmapRanges | null> {
+  if (!cmapPromise) {
+    cmapPromise = fetch(`${import.meta.env.BASE_URL}fonts/CalSansVF.ttf`)
+      .then(r => r.arrayBuffer()).then(parseCmapRanges).catch(() => null)
+  }
+  return cmapPromise
+}
+
+function Glyphs({ featStr, glyphSet }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state))
-  const rows: [string, string][] = [['Caps', UPPER], ['Lower', LOWER], ['Digits', DIGITS], ['Punct', PUNCT]]
+  const [ranges, setRanges] = useState<CmapRanges | null>(null)
+  useEffect(() => { let alive = true; loadCmap().then(r => { if (alive) setRanges(r) }); return () => { alive = false } }, [])
+  // "All" = every cmap codepoint + its aalt alternates (the unencoded variants);
+  // the named sets are curated base-character subsets.
+  const cells: GlyphCell[] = glyphSet === 'All'
+    ? allGlyphsWithAlternates(ranges)
+    : (GLYPH_SETS[glyphSet] ?? []).filter(g => isSupported(g, ranges)).map(ch => ({ ch, aalt: 0 }))
   return (
     <div className="stage-pad">
-      <p className="specimen-cap">Glyphs · at your effective values</p>
-      {rows.map(([label, chars]) => (
-        <div key={label} className="glyph-block">
-          <span className="glyph-block-label">{label}</span>
-          <div className="glyph-grid">
-            {[...chars].map((c, i) => (
-              <span key={i} className="glyph-cell" style={{ fontVariationSettings: vs, fontFeatureSettings: featStr }}>{c}</span>
-            ))}
-          </div>
-        </div>
-      ))}
+      <p className="specimen-cap">Glyphs · {cells.length} in {glyphSet}, at your effective values</p>
+      <div className="glyph-grid">
+        {cells.map((c, i) => (
+          <span key={i} className="glyph-cell"
+            style={{ fontVariationSettings: vs, fontFeatureSettings: c.aalt ? `'aalt' ${c.aalt}` : featStr }}>
+            {c.ch}
+          </span>
+        ))}
+      </div>
     </div>
   )
 }
