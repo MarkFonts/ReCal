@@ -32,6 +32,9 @@
   pointer-events: none;
 }
 .canvas .mode-btn { font-size: 14px; }
+/* OpenType/body chips: one step smaller (secondary tier), tighter side padding.
+   Vertical padding keeps the ≥32px tap height; the horizontal gutter is free. */
+.canvas .chip { font-size: 12px; padding: 9px 6px; }
 .canvas .mode-btn:hover, .canvas .text-tab:hover, .canvas .chip:hover {
   background: none;
   color: var(--text);
@@ -87,7 +90,11 @@
 /* Section labels (not controls) — bold so they read as headers above the chips. */
 .drawer-label { font-size: 12px; font-weight: 700; color: var(--text-muted); width: 90px; }
 .drawer-val { font-size: 12px; color: var(--text-dim); width: 44px; text-align: right; }
-.feature-chips { display: flex; flex-wrap: wrap; gap: 14px; }
+.feature-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+/* Stylistic-set tokens: 1px gutter (they only surface on the bloomed play bar).
+   32px tap height stays via vertical padding; only the horizontal gutter goes tight. */
+.ss-chips { gap: 1px; }
+.canvas .ss-chips .chip { padding: 9px 5px; }
 
 /* Persistent per-scene control bar — lives in the canvas above the stage, so it
    never covers scrolling scene content (fixes the hidden first eyebrow). */

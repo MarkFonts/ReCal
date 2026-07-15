@@ -153,9 +153,32 @@ export const FEATURE_CHIPS: { tag: string; label: string }[] = [
   { tag: 'zero', label: 'Slashed zero' },
   { tag: 'frac', label: 'Fractions' },
   { tag: 'ordn', label: 'Ordinals' },
-  { tag: 'ss01', label: 'ss01 (alt — GEOM manual)' },
-  { tag: 'ss02', label: 'ss02 (alt — GEOM manual)' },
-  { tag: 'ss03', label: 'ss03 (alt — GEOM manual)' },
+]
+
+// Real stylistic-set names from CalSansVF's GSUB FeatureParams. Shown as compact
+// ssNN tokens; the full name lives in title + aria-label. The ss family is the
+// manual override for the same variants GEOM drives automatically.
+export const SS_FEATURES: { tag: string; name: string }[] = [
+  { tag: 'ss01', name: 'Geometric a' },
+  { tag: 'ss02', name: 'Humanist a' },
+  { tag: 'ss03', name: 'Tailed a' },
+  { tag: 'ss04', name: 'Geometric g' },
+  { tag: 'ss05', name: 'Gothic g' },
+  { tag: 'ss06', name: 'Geometric G' },
+  { tag: 'ss07', name: 'Humanist G' },
+  { tag: 'ss08', name: 'Constructed j and y' },
+  { tag: 'ss09', name: 'Humanist j and y' },
+  { tag: 'ss10', name: 'Futura alternatives' },
+  { tag: 'ss11', name: 'Futura alternatives and ligations' },
+  { tag: 'ss12', name: 'Angular M' },
+  { tag: 'ss13', name: 'Square M' },
+  { tag: 'ss14', name: 'Constructed f and t' },
+  { tag: 'ss15', name: 'Humanist f and t' },
+  { tag: 'ss16', name: 'Humanist/Grotesk 6 and 9' },
+  { tag: 'ss17', name: 'Geometric/legible 6 and 9' },
+  { tag: 'ss18', name: 'A11Y I l a' },
+  { tag: 'ss19', name: 'Constructed l' },
+  { tag: 'ss20', name: 'Horizontal Sharps' },
 ]
 
 // ── Scenes ──────────────────────────────────────────────────────────────────────

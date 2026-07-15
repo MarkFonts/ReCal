@@ -8,7 +8,7 @@ import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
 } from './store'
 import { renderVarSettings } from './render'
-import { Modebar, Scene, SceneControls, FEATURE_CHIPS, type SceneMode } from './scenes'
+import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
 import Info from './Info'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
@@ -224,48 +224,70 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
         </button>
       </div>
       <div className="preview-body">
-      <div className="preview-rows">
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">size</span>
-            <span className="prow-val tnum">{size}px</span></div>
-          <input type="range" min={16} max={200} step={1} value={size}
-            onChange={e => setSize(+e.target.value)} />
-        </div>
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">tracking</span>
-            <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
-          <input type="range" min={-10} max={30} step={1} value={tracking}
-            onChange={e => setTracking(+e.target.value)} />
-        </div>
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">leading</span>
-            <span className="prow-val tnum">{leading.toFixed(1)}</span></div>
-          <input type="range" min={0.8} max={2.5} step={0.1} value={leading}
-            onChange={e => setLeading(+e.target.value)} />
-        </div>
-        {DOCK_AXES.map(tag => {
-          const { min, max } = AXIS_RANGES[tag]
-          const on = tag in state.preview
-          const v = merged[tag]
-          return (
-            <div className={`prow${on ? ' on' : ''}`} key={tag}>
-              <div className="prow-head"><span className="prow-label">{tag}</span>
-                <span className="prow-val tnum">{tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span></div>
-              <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v}
-                onChange={e => dispatch({ type: 'setPreview', tag, value: +e.target.value })} />
+        <div className="play-group">
+          <span className="play-group-label">Type</span>
+          <div className="preview-rows">
+            <div className="prow">
+              <div className="prow-head"><span className="prow-label">size</span>
+                <span className="prow-val tnum">{size}px</span></div>
+              <input type="range" min={16} max={200} step={1} value={size}
+                onChange={e => setSize(+e.target.value)} />
             </div>
-          )
-        })}
-      </div>
-      <div className="feature-row">
-        <span className="feature-row-label">OpenType</span>
-        <div className="feature-chips">
-          {FEATURE_CHIPS.map(f => (
-            <button key={f.tag} data-label={f.label} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
-              onClick={() => toggleFeat(f.tag)}>{f.label}</button>
-          ))}
+            <div className="prow">
+              <div className="prow-head"><span className="prow-label">tracking</span>
+                <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
+              <input type="range" min={-10} max={30} step={1} value={tracking}
+                onChange={e => setTracking(+e.target.value)} />
+            </div>
+            <div className="prow">
+              <div className="prow-head"><span className="prow-label">leading</span>
+                <span className="prow-val tnum">{leading.toFixed(1)}</span></div>
+              <input type="range" min={0.8} max={2.5} step={0.1} value={leading}
+                onChange={e => setLeading(+e.target.value)} />
+            </div>
+          </div>
         </div>
-      </div>
+
+        <div className="play-group">
+          <span className="play-group-label">Axes</span>
+          <div className="preview-rows">
+            {DOCK_AXES.map(tag => {
+              const { min, max } = AXIS_RANGES[tag]
+              const on = tag in state.preview
+              const v = merged[tag]
+              return (
+                <div className={`prow${on ? ' on' : ''}`} key={tag}>
+                  <div className="prow-head"><span className="prow-label">{tag}</span>
+                    <span className="prow-val tnum">{tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span></div>
+                  <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v}
+                    onChange={e => dispatch({ type: 'setPreview', tag, value: +e.target.value })} />
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        <div className="play-opentype">
+          <div className="play-group">
+            <span className="play-group-label">Features</span>
+            <div className="feature-chips">
+              {FEATURE_CHIPS.map(f => (
+                <button key={f.tag} data-label={f.label} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
+                  onClick={() => toggleFeat(f.tag)}>{f.label}</button>
+              ))}
+            </div>
+          </div>
+          <div className="play-group">
+            <span className="play-group-label">Sets</span>
+            <div className="feature-chips ss-chips">
+              {SS_FEATURES.map(f => (
+                <button key={f.tag} data-label={f.tag} className={`chip${feats.has(f.tag) ? ' on' : ''}`}
+                  title={`${f.tag} · ${f.name}`} aria-label={`${f.tag} ${f.name}`}
+                  onClick={() => toggleFeat(f.tag)}>{f.tag}</button>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )
