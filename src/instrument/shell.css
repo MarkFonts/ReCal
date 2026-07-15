@@ -351,6 +351,18 @@
 .prow-label { color: var(--text-muted); }
 .prow-val { color: var(--marker-preview); }
 .prow.on .prow-val::before { content: "● "; font-size: 8px; vertical-align: 1px; }
+/* opsz-auto: tiny "auto" label + native checkbox at .7 opacity, inline with the label */
+.opsz-auto {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  margin-left: 6px;
+  font-size: 10px;
+  color: var(--text-dim);
+  opacity: .7;
+  cursor: pointer;
+}
+.opsz-auto input { width: 11px; height: 11px; margin: 0; accent-color: var(--marker-preview); }
 
 /* ── Floor — the transaction ── */
 .floor {

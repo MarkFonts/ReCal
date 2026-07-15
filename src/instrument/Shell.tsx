@@ -7,7 +7,7 @@ import { useInstrument } from './InstrumentProvider'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
 } from './store'
-import { renderVarSettings } from './render'
+import { renderVarSettings, opszForSize } from './render'
 import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
 import Info from './Info'
 
@@ -137,6 +137,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const [glyphSet, setGlyphSet] = useState('All')
   const [showInfo, setShowInfo] = useState(false)
+  const [opszAuto, setOpszAuto] = useState(true)
   const ls = `${tracking / 100}em`
   return (
     <div className="canvas">
@@ -147,7 +148,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         <div className="stage">
           <div className="stage-scroll">
             <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-              source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} />
+              source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto} />
           </div>
         </div>
         <SceneControls mode={mode} source={source} setSource={setSource}
@@ -157,7 +158,8 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
           size={size} setSize={setSize}
           tracking={tracking} setTracking={setTracking}
           leading={leading} setLeading={setLeading}
-          feats={feats} toggleFeat={toggleFeat} />
+          feats={feats} toggleFeat={toggleFeat}
+          opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
         {showInfo && <Info />}
       </div>
     </div>
@@ -167,14 +169,16 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
 // ── Bottom preview-control surface (●) ────────────────────────────────────────
 const DOCK_AXES = ['wght', 'GEOM', 'opsz', 'YTAS', 'SHRP', 'ital'] as const
 
-function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat }: {
+function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, opszAuto, setOpszAuto }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
   feats: Set<string>; toggleFeat: (t: string) => void
+  opszAuto: boolean; setOpszAuto: (v: boolean) => void
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
+  const autoOpsz = opszForSize(size, state.defaults.opszMultiplier)   // handle position when auto
   const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1
   // Bloom on pointer proximity; collapse with a fuzzy threshold — the farther the
   // cursor is above the bar, the faster it folds. Stays open while a child has focus.
@@ -255,6 +259,23 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
               const { min, max } = AXIS_RANGES[tag]
               const on = tag in state.preview
               const v = merged[tag]
+              if (tag === 'opsz') {
+                // opsz-auto: handle tracks the sample size; value reads "auto".
+                // Moving the handle disengages auto and reports the number.
+                return (
+                  <div className={`prow${on && !opszAuto ? ' on' : ''}`} key={tag}>
+                    <div className="prow-head">
+                      <span className="prow-label">opsz
+                        <label className="opsz-auto">auto
+                          <input type="checkbox" checked={opszAuto} onChange={e => setOpszAuto(e.target.checked)} /></label>
+                      </span>
+                      <span className="prow-val tnum">{opszAuto ? 'auto' : Math.round(v)}</span>
+                    </div>
+                    <input type="range" min={min} max={max} step={1} value={opszAuto ? autoOpsz : v}
+                      onChange={e => { setOpszAuto(false); dispatch({ type: 'setPreview', tag: 'opsz', value: +e.target.value }) }} />
+                  </div>
+                )
+              }
               return (
                 <div className={`prow${on ? ' on' : ''}`} key={tag}>
                   <div className="prow-head"><span className="prow-label">{tag}</span>

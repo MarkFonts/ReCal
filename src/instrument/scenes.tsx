@@ -186,17 +186,21 @@ export const TEXT_SOURCES = Object.keys(TEXT_PRESETS)
 
 type SceneProps = {
   size: number; ls: string; leading: number; featStr: string
-  source: string; measure: number; pairs: Set<string>; glyphSet: string
+  source: string; measure: number; pairs: Set<string>; glyphSet: string; opszAuto: boolean
 }
 
-function Words({ size, ls, leading, featStr }: SceneProps) {
+// When opsz-auto is on, omit opsz from the settings and set font-optical-sizing:auto
+// so the browser tracks opsz to each element's rendered size (per font-proofer).
+const optical = (auto: boolean): 'auto' | 'none' => (auto ? 'auto' : 'none')
+
+function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(effectiveAxes(state))
+  const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
   const [text, setText] = useState('Iʼll jag My cat, Guv 2160')
   return (
     <div className="stage-pad words-scene">
       <div className="words-edit specimen" contentEditable suppressContentEditableWarning
-        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontFeatureSettings: featStr, letterSpacing: ls }}
+        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}
         onInput={e => setText(e.currentTarget.textContent ?? '')}>
         {text}
       </div>
@@ -204,9 +208,9 @@ function Words({ size, ls, leading, featStr }: SceneProps) {
   )
 }
 
-function Paragraph({ ls, featStr, source, measure }: SceneProps) {
+function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(effectiveAxes(state))
+  const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
   const blocks = TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample
   return (
     <div className="stage-pad">
@@ -216,7 +220,7 @@ function Paragraph({ ls, featStr, source, measure }: SceneProps) {
           const Tag = b.type === 'p' ? 'p' : b.type
           return (
             <Tag key={i} className="para-block"
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: vs, fontFeatureSettings: featStr, letterSpacing: ls }}>
+              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}>
               {b.text}
             </Tag>
           )
@@ -230,7 +234,7 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
   const { state } = useInstrument()
   const eff = effectiveAxes(state)
   const mult = state.defaults.opszMultiplier
-  const vsFor = (px: number) => renderVarSettings(eff, opszForSize(px, mult))
+  const vsFor = (px: number) => renderVarSettings(eff, { opszOverride: opszForSize(px, mult) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   return (
     <div className="stage-pad">
@@ -262,9 +266,9 @@ function loadCmap(): Promise<CmapRanges | null> {
   return cmapPromise
 }
 
-function Glyphs({ featStr, glyphSet }: SceneProps) {
+function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(effectiveAxes(state))
+  const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
   const [ranges, setRanges] = useState<CmapRanges | null>(null)
   useEffect(() => { let alive = true; loadCmap().then(r => { if (alive) setRanges(r) }); return () => { alive = false } }, [])
   // "All" = every cmap codepoint + its aalt alternates (the unencoded variants);
@@ -280,7 +284,7 @@ function Glyphs({ featStr, glyphSet }: SceneProps) {
           const base = c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}` : featStr
           return (
             <span key={i} className="glyph-cell"
-              style={{ fontVariationSettings: vs, fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1` }}>
+              style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1` }}>
               {c.ch}
             </span>
           )
@@ -292,14 +296,14 @@ function Glyphs({ featStr, glyphSet }: SceneProps) {
 
 // UI: booking mock set with the baked ◆ defaults (ignores ● play) — "what shipping
 // your ◆ looks like." Includes an Il1 stress line.
-function UI({ featStr }: SceneProps) {
+function UI({ featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(state.defaults.axes)
+  const vs = renderVarSettings(state.defaults.axes, { skipOpsz: opszAuto })
   const days = ['Mon 14', 'Tue 15', 'Wed 16', 'Thu 17']
   const times = ['9:00', '9:30', '10:00', '11:15', '1:00', '2:30']
   return (
     <div className="stage-pad">
-      <div className="ui-card" style={{ fontVariationSettings: vs, fontFeatureSettings: featStr }}>
+      <div className="ui-card" style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr }}>
         <div className="ui-h1">Book a call</div>
         <div className="ui-sub">30 min · Illustration review — Il1 lIeg0</div>
         <div className="ui-days">{days.map(d => <button key={d} className="ui-day">{d}</button>)}</div>
