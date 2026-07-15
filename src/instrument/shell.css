@@ -23,13 +23,18 @@
   flex-direction: column;
   gap: 22px;
 }
-.rail-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+.rail-header { display: flex; flex-direction: column; gap: 3px; }
+/* Title + Reset share the top row (aligned); subtitle gets its own full-width row
+   below, so it stays one line and never collides with the button. */
+.rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .rail-title {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: .01em;
 }
-.rail-sub { font-size: 11px; color: var(--text-dim); margin-top: 3px; }
+/* One line always — otherwise it re-wraps (and jiggles) as the Reset button
+   appears/disappears and squeezes this column's width. */
+.rail-sub { font-size: 11px; color: var(--text-dim); margin-top: 3px; white-space: nowrap; }
 .rail-reset {
   flex-shrink: 0;
   padding: 5px 12px;
@@ -44,6 +49,7 @@
 /* :not(:disabled) bumps specificity above App.css's global button:hover so the
    fill doesn't go light-on-light — keep dark text on any light fill. */
 .rail-reset:hover:not(:disabled) { background: var(--surface-3); color: var(--text); border-color: var(--text-dim); }
+.rail-reset:disabled { cursor: default; }
 
 /* hold-to-compare — text in the floor beside Download; held = STOCK-hue bold+underline. */
 .hold-text {
@@ -206,7 +212,7 @@
 
 /* DEMO mode: the rail stays full width; its controls just fade to .2 (still
    clickable — clicking one enters EDIT). "ReCal Builder" stays 1; no Reset button. */
-.rail--demo .rail-reset { display: none; }
+.rail--demo .rail-reset,
 .rail--demo .rail-sub,
 .rail--demo .rail-group,
 .rail--demo .rail-footer { opacity: .2; transition: opacity var(--dur) ease; }
@@ -340,9 +346,28 @@
   flex-direction: column;
   gap: 8px;
 }
-.preview-surface-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.preview-surface-cap { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); }
-.preview-dot { color: var(--marker-preview); font-size: 9px; vertical-align: 1px; }
+/* Caption far-left; it holds exactly the group-label column (64px + 16px gap) so
+   the Reset button's left edge lines up with the "size" control below it. */
+/* min-height reserves the Reset button's row height even when it's unmounted
+   (collapsed), so the caption doesn't drop toward the edge on collapse. */
+.preview-surface-head { display: flex; align-items: center; gap: 0; min-height: 26px; }
+.preview-surface-head .preview-surface-cap { flex: 0 0 80px; }
+.preview-surface-cap {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim);
+  /* real ital axis (never a synthesized slant); animates 0→1 on collapse */
+  font-variation-settings: 'ital' 0; font-synthesis: none; font-style: normal;
+  transition: font-variation-settings var(--dur) ease;
+}
+.preview-surface-cap--collapsed { font-variation-settings: 'ital' 1; }
+/* Dot: the ring is always there; the fill fades in as the tray expands. */
+.preview-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  border: 1.5px solid var(--marker-preview);
+  background-color: var(--marker-preview);
+  transition: background-color var(--dur) ease;
+}
+.preview-surface-cap--collapsed .preview-dot { background-color: transparent; }
 .preview-reset {
   display: inline-flex;
   align-items: center;

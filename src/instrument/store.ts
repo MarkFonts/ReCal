@@ -104,6 +104,16 @@ export const glyphsEditedCount = (s: InstrumentState): number =>
     g => JSON.stringify(s.defaults.glyphThresholds[g]) !== JSON.stringify(s.shippedThresholds[g]),
   ).length
 
+// Does the ◆ layer differ from SHIPPED at all? Drives whether "Reset" has anything to do.
+export const defaultsDirty = (s: InstrumentState): boolean =>
+  changedAxisTags(s).length > 0 ||
+  glyphsEditedCount(s) > 0 ||
+  s.defaults.opszMultiplier !== 1 ||
+  s.defaults.freezeOpsz ||
+  s.defaults.frozenOpszValue !== null ||
+  s.defaults.autoAscender ||
+  s.activePreset !== null
+
 // ── Actions / reducer ───────────────────────────────────────────────────────────
 export type Action =
   | { type: 'init'; shipped: AxisMap }                        // re-seed from live axisInfo

@@ -5,7 +5,7 @@ import './shell.css'
 import { useState, useRef, useEffect } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import {
-  AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag,
+  AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty,
 } from './store'
 import { renderVarSettings, opszForSize } from './render'
 import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
@@ -64,12 +64,13 @@ function Rail() {
     <div className={`rail${state.recalMode === 'demo' ? ' rail--demo' : ''}`}
       onPointerDown={() => state.recalMode !== 'edit' && dispatch({ type: 'setRecalMode', mode: 'edit' })}>
       <div className="rail-header">
-        <div>
+        <div className="rail-header-top">
           <div className="rail-title">ReCal Builder</div>
-          <div className="rail-sub">◆ your defaults — baked into the export</div>
+          <button className="rail-reset" title="Reset all defaults to original Cal Sans"
+            disabled={!defaultsDirty(state)}
+            onClick={() => dispatch({ type: 'resetDefaults' })}>Reset</button>
         </div>
-        <button className="rail-reset" title="Reset all defaults to original Cal Sans"
-          onClick={() => dispatch({ type: 'resetDefaults' })}>Reset</button>
+        <div className="rail-sub">◆ your defaults — baked into the export</div>
       </div>
 
       <div className="rail-group">
@@ -278,11 +279,15 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
       onFocusCapture={() => setOpen(true)}
       onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
       <div className="preview-surface-head">
-        <span className="preview-surface-cap"><span className="preview-dot">{open ? '●' : '○'}</span>{open ? ' Preview' : ''}</span>
-        <button className="preview-reset" disabled={!canReset} title="Reset preview"
-          onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true) }}>
-          <ResetIcon /><span className="preview-reset-text">Reset Preview</span>
-        </button>
+        <span className={`preview-surface-cap${open ? '' : ' preview-surface-cap--collapsed'}`}>
+          <span className="preview-dot" aria-hidden="true" />Preview
+        </span>
+        {open && (
+          <button className="preview-reset" disabled={!canReset} title="Reset preview"
+            onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true) }}>
+            <ResetIcon /><span className="preview-reset-text">Reset Preview</span>
+          </button>
+        )}
       </div>
       <div className="preview-body">
         <div className="play-group">
@@ -375,8 +380,8 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
 function Floor() {
   const { state, dispatch } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
-  const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
-  const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
+  // const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
+  // const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
   return (
     <div className="floor">
       <div className="floor-spacer" />
@@ -385,12 +390,13 @@ function Floor() {
           onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
         Freeze opsz
       </label>
+      {/* Commented out for now — "hold: original Cal Sans" (hold-to-compare).
       <button data-label="hold: original Cal Sans" className={`hold-text${state.stockHold ? ' held' : ''}`}
         onPointerDown={holdDown} onPointerUp={holdUp} onPointerLeave={holdUp}
         onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdDown() } }}
         onKeyUp={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); holdUp() } }}>
         hold: original Cal Sans
-      </button>
+      </button> */}
       <label className="floor-toggle">
         <input type="checkbox" checked={oflAgreed} onChange={e => setOflAgreed(e.target.checked)} />
         I accept the{' '}
