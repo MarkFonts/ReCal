@@ -10,6 +10,7 @@ import {
 import { renderVarSettings, opszForSize } from './render'
 import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
 import Info from './Info'
+import { PRESETS, applyPreset } from './presets'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -59,9 +60,9 @@ function Pin({ tag, label }: { tag: string; label: string }) {
 function Rail() {
   const { state, dispatch } = useInstrument()
   const tag = TAG_TEXT[stateTag(state)]
-  const vs = renderVarSettings(effectiveAxes(state))
   return (
-    <div className="rail">
+    <div className={`rail${state.recalMode === 'demo' ? ' rail--demo' : ''}`}
+      onPointerDown={() => state.recalMode !== 'edit' && dispatch({ type: 'setRecalMode', mode: 'edit' })}>
       <div className="rail-header">
         <div>
           <div className="rail-title">ReCal Builder</div>
@@ -72,7 +73,36 @@ function Rail() {
       </div>
 
       <div className="rail-group">
+        <div className="rail-group-label">Start from</div>
+        <select className="rail-preset" value={state.activePreset ?? ''}
+          onChange={e => {
+            const p = PRESETS.find(x => x.name === e.target.value)
+            if (p) applyPreset(dispatch, p)
+            else dispatch({ type: 'resetDefaults' })
+          }}>
+          <option value="">Cal Sans (default)</option>
+          {PRESETS.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+        </select>
+      </div>
+
+      <div className="rail-group">
         <div className="rail-group-label">Geometric form</div>
+        <div className="zone-chips">
+          {ZONES.map(z => {
+            const on = nearestZoneLabel(state.defaults.axes.GEOM) === z.label
+            return (
+              <button key={z.label}
+                className={`zone-chip${on ? ' on' : ''}`}
+                style={on ? { background: z.color } : { color: z.color, opacity: .6 }}
+                onClick={() => {
+                  dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
+                  dispatch({ type: 'clearPreview' })
+                }}>
+                {z.label}
+              </button>
+            )
+          })}
+        </div>
         <Pin tag="GEOM" label="GEOM" />
       </div>
 
@@ -115,18 +145,44 @@ function Rail() {
 
       <div className="rail-footer">
         <span className="state-tag" style={{ color: tag.color }}>{tag.label}</span>
-        <div className="rail-readout tnum">{vs}</div>
       </div>
+    </div>
+  )
+}
+
+// Mode label, below the scene tabs (left). Reads the CURRENT mode; throbs in EDIT.
+// Modes switch by touching the trays (rail → EDIT, play → DEMO); leaving EDIT plays
+// a save animation (spinning throbber → green check).
+function ModeLabel() {
+  const { state } = useInstrument()
+  const prev = useRef(state.recalMode)
+  const [saving, setSaving] = useState<'spin' | 'check' | null>(null)
+  useEffect(() => {
+    const leaving = prev.current === 'edit' && state.recalMode === 'demo'
+    prev.current = state.recalMode
+    if (!leaving) return
+    setSaving('spin')
+    const t1 = setTimeout(() => setSaving('check'), 650)
+    const t2 = setTimeout(() => setSaving(null), 1400)
+    return () => { clearTimeout(t1); clearTimeout(t2) }
+  }, [state.recalMode])
+  const editing = state.recalMode === 'edit'
+  return (
+    <div className={`mode-label${saving ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
+      {saving === 'spin' ? <><span className="mode-throb" aria-hidden /> Saving your ReCal…</>
+        : saving === 'check' ? <><span className="mode-check">✓</span> Saved</>
+          : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
     </div>
   )
 }
 
 // ── Canvas: top bar + (stage / scene controls / play), with the Font info overlay
 // covering everything below the top bar. ─────────────────────────────────────────
-function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, featStr }: {
+function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
+  opszAuto: boolean; setOpszAuto: (v: boolean) => void
   feats: Set<string>; toggleFeat: (t: string) => void
   featStr: string
 }) {
@@ -137,13 +193,13 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const [glyphSet, setGlyphSet] = useState('All')
   const [showInfo, setShowInfo] = useState(false)
-  const [opszAuto, setOpszAuto] = useState(true)
   const ls = `${tracking / 100}em`
   return (
     <div className="canvas">
       <div className="canvas-bar">
         <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
       </div>
+      <ModeLabel />
       <div className="canvas-body">
         <div className="stage">
           <div className="stage-scroll">
@@ -218,13 +274,14 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
     return () => { window.removeEventListener('pointermove', onMove); clearTimeout(timer) }
   }, [])
   return (
-    <div ref={surfRef} className={`preview-surface${open ? ' open' : ''}`}
-      onFocusCapture={() => setOpen(true)}>
+    <div ref={surfRef} className={`preview-surface${open ? ' open' : ''}${state.recalMode === 'edit' ? ' preview-surface--dim' : ''}`}
+      onFocusCapture={() => setOpen(true)}
+      onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
       <div className="preview-surface-head">
-        <span className="preview-surface-cap">Play — preview only, nothing bakes{open ? '' : ' · hover'}</span>
+        <span className="preview-surface-cap"><span className="preview-dot">{open ? '●' : '○'}</span>{open ? ' Preview' : ''}</span>
         <button className="preview-reset" disabled={!canReset} title="Reset preview"
-          onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1) }}>
-          <ResetIcon />
+          onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true) }}>
+          <ResetIcon /><span className="preview-reset-text">Reset Preview</span>
         </button>
       </div>
       <div className="preview-body">
@@ -318,28 +375,10 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
 function Floor() {
   const { state, dispatch } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
-  const active = nearestZoneLabel(state.defaults.axes.GEOM)
   const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
   const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
   return (
     <div className="floor">
-      <span className="floor-label">Zone</span>
-      <div className="zone-chips">
-        {ZONES.map(z => {
-          const on = active === z.label
-          return (
-            <button key={z.label}
-              className={`zone-chip${on ? ' on' : ''}`}
-              style={on ? { background: z.color } : { color: z.color, opacity: .6 }}
-              onClick={() => {
-                dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
-                dispatch({ type: 'clearPreview' })
-              }}>
-              {z.label}
-            </button>
-          )
-        })}
-      </div>
       <div className="floor-spacer" />
       <label className="floor-toggle">
         <input type="checkbox" checked={state.defaults.freezeOpsz}
@@ -367,21 +406,35 @@ function Floor() {
 }
 
 export default function Shell() {
+  const { state } = useInstrument()
   const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
   const [leading, setLeading] = useState(1)
+  const [opszAuto, setOpszAuto] = useState(true)
   // OpenType feature chips are global preview controls — they live in the play bar
   // and apply to every scene's text.
   const [feats, setFeats] = useState<Set<string>>(new Set(['liga']))
   const featStr = ["'rclt' 1", ...[...feats].map(t => `'${t}' 1`)].join(', ')
   const toggleFeat = (t: string) => setFeats(s => { const n = new Set(s); n.has(t) ? n.delete(t) : n.add(t); return n })
+
+  // Entering EDIT resets all preview view-state to the ◆ default look (the store
+  // clears the ● axis preview; here we reset the local size/tracking/leading/opsz).
+  const prevMode = useRef(state.recalMode)
+  useEffect(() => {
+    if (state.recalMode === 'edit' && prevMode.current !== 'edit') {
+      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true)
+    }
+    prevMode.current = state.recalMode
+  }, [state.recalMode])
+
   return (
-    <div className="shell">
+    <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}`}>
       <Rail />
       <Canvas
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}
         leading={leading} setLeading={setLeading}
+        opszAuto={opszAuto} setOpszAuto={setOpszAuto}
         feats={feats} toggleFeat={toggleFeat} featStr={featStr} />
       <Floor />
     </div>

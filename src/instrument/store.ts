@@ -46,6 +46,7 @@ export interface InstrumentState {
   activePreset: string | null                   // engaged "start from…" entry (§3.3)
   useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
   buildName: string                             // editable export family name (INFO receipt)
+  recalMode: 'edit' | 'demo'                    // EDIT = build the ◆ (play dimmed); DEMO = preview (rail dimmed)
 }
 
 const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> =>
@@ -73,6 +74,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES): InstrumentS
     activePreset: null,
     useHoi: false,
     buildName: 'ReCal Sans',
+    recalMode: 'edit',   // open in EDIT (building the ◆); DEMO is the preview mode you switch to
   }
 }
 
@@ -117,6 +119,7 @@ export type Action =
   | { type: 'setActivePreset'; name: string | null }
   | { type: 'setUseHoi'; value: boolean }
   | { type: 'setBuildName'; name: string }
+  | { type: 'setRecalMode'; mode: 'edit' | 'demo' }           // entering 'edit' clears preview
   | { type: 'resetDefaults' }                                 // rail reset: ◆ → SHIPPED + clear preset
 
 export function reducer(s: InstrumentState, a: Action): InstrumentState {
@@ -152,12 +155,15 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return { ...s, useHoi: a.value }
     case 'setBuildName':
       return { ...s, buildName: a.name }
+    case 'setRecalMode':
+      // Entering EDIT resets the ● preview (back to the ◆ default look).
+      return { ...s, recalMode: a.mode, preview: a.mode === 'edit' ? {} : s.preview }
     case 'resetDefaults': {
       // Reset every ◆ adjustment back toward SHIPPED and clear the engaged preset.
       // Preview (●) is the Return pill's job; HOI (rendering mode) and buildName
       // (naming choice) aren't bake-target adjustments — all preserved (§3.3).
       const fresh = createInitialState(s.shipped)
-      return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName }
+      return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName, recalMode: s.recalMode }
     }
     default:
       return s
