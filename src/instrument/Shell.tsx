@@ -184,8 +184,8 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
   openRef.current = open
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | undefined
-    const BAND = 90     // px above the bar that counts as "at" the bar → open / stay open
-    const FAR = 520     // px above where collapse is immediate
+    const BAND = 20     // px above the bar that counts as "at" the bar → stay open (t=0 here)
+    const FAR = 200     // px above where collapse is immediate (t=1 here)
     const MAX_DELAY = 650
     const onMove = (e: PointerEvent) => {
       const surf = surfRef.current
@@ -203,7 +203,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
       const dist = rect.top - e.clientY
       if (dist <= BAND) { clearTimeout(timer); return }       // stay open within band
       const t = Math.min(1, (dist - BAND) / (FAR - BAND))
-      const delay = Math.round(MAX_DELAY * (1 - t))           // farther → shorter
+      const delay = Math.round(MAX_DELAY * Math.exp(-t / 0.2))  // exponential falloff (e-fold 0.2)
       clearTimeout(timer)
       timer = setTimeout(() => {
         const s = surfRef.current
