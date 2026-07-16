@@ -1,8 +1,8 @@
-name: Deploy to wordmark/recalsans
+name: Deploy to wordmark/recalsans-legacy
 
 on:
   push:
-    branches: [main]
+    branches: [recalsans-legacy]
   workflow_dispatch:
 
 jobs:
@@ -24,11 +24,11 @@ jobs:
           TOKEN: ${{ secrets.WORDMARK_DEPLOY_TOKEN3 }}
         run: |
           GIT_TERMINAL_PROMPT=0 git clone https://x-access-token:${TOKEN}@github.com/MarkFonts/wordmark.git wordmark-repo
-          rm -rf wordmark-repo/recalsans
-          cp -r dist/ wordmark-repo/recalsans
+          rm -rf wordmark-repo/recalsans-legacy
+          cp -r dist/ wordmark-repo/recalsans-legacy
           cd wordmark-repo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git diff --cached --quiet || git commit -m "deploy: update recalsans"
+          git diff --cached --quiet || git commit -m "deploy: freeze recalsans-legacy"
           git push
