@@ -3,11 +3,12 @@
 // are passed in as props; scenes here only read them. Everything renders through
 // effective() (renderVarSettings) — one engine. Models ported from font-proofer.
 import './scenes.css'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, Fragment, type CSSProperties, type ReactNode } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings, opszForSize } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
+import { GROUP_DEFS } from '../GlyphGroups'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -193,16 +194,80 @@ type SceneProps = {
 // so the browser tracks opsz to each element's rendered size (per font-proofer).
 const optical = (auto: boolean): 'auto' | 'none' => (auto ? 'auto' : 'none')
 
+// Which variant a glyph shows at a given GEOM = how many of its swap thresholds
+// GEOM has passed (matches the non-HOI font's rclt band edges in GROUP_DEFS).
+const variantIndex = (geom: number, thresholds: number[]): number =>
+  thresholds.reduce((n, t) => n + (geom >= t ? 1 : 0), 0)
+
+const SWAP_GLYPHS = new Set(GROUP_DEFS.map(d => d.glyph))
+type Flashes = Record<string, { color: string; nonce: number }>
+
+// Shared GEOM-crossing detector: as GEOM crosses a swapping glyph's threshold
+// (EDIT mode only), the newly-introduced form is flagged with its zone color.
+// Only the active scene mounts, so exactly one detector runs. `clear` drops an
+// entry when its flash animation ends (so text glyphs un-wrap, restoring ligatures).
+function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void } {
+  const { state } = useInstrument()
+  const geom = effectiveAxes(state).GEOM
+  const editing = state.recalMode === 'edit'
+  const [flashes, setFlashes] = useState<Flashes>({})
+  const prevGeom = useRef(geom)
+  const prevEditing = useRef(editing)
+  const nonce = useRef(0)
+  useEffect(() => {
+    const from = prevGeom.current, wasEditing = prevEditing.current
+    prevGeom.current = geom
+    prevEditing.current = editing
+    if (!editing || !wasEditing || from === geom) return   // real drags only, while editing
+    const hits: Flashes = {}
+    for (const def of GROUP_DEFS) {
+      const after = variantIndex(geom, def.defaultThresholds)
+      if (after !== variantIndex(from, def.defaultThresholds))
+        hits[def.glyph] = { color: def.variants[after].color, nonce: ++nonce.current }
+    }
+    if (Object.keys(hits).length) setFlashes(f => ({ ...f, ...hits }))
+  }, [geom, editing])
+  const clear = (ch: string) => setFlashes(f => (ch in f ? (({ [ch]: _, ...rest }) => rest)(f) : f))
+  return { flashes, clear }
+}
+
+// Render a string, wrapping a glyph in its own span ONLY while it's flashing — so
+// normal text keeps its kerning/ligatures and only the flashing glyph (briefly)
+// splits out to pulse its zone accent. Non-flashing runs stay plain (Fragment, no DOM).
+function flashText(text: string, flashes: Flashes, clear: (ch: string) => void): ReactNode {
+  if (![...text].some(ch => flashes[ch])) return text   // fast path: nothing flashing here
+  const out: ReactNode[] = []
+  let buf = '', runStart = 0
+  const flush = () => { if (buf) { out.push(<Fragment key={`t${runStart}`}>{buf}</Fragment>); buf = '' } }
+  ;[...text].forEach((ch, i) => {
+    const fl = flashes[ch]
+    if (fl) {
+      flush()
+      out.push(
+        <span key={`g${i}-${fl.nonce}`} className="geom-flash" onAnimationEnd={() => clear(ch)}
+          style={{ ['--flash-color' as string]: fl.color } as CSSProperties}>{ch}</span>,
+      )
+    } else { if (!buf) runStart = i; buf += ch }
+  })
+  flush()
+  return out
+}
+
 function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
+  const { flashes, clear } = useGeomFlash()
   const [text, setText] = useState('Iʼll jag My cat, Guv 2160')
+  const [focused, setFocused] = useState(false)
   return (
     <div className="stage-pad words-scene">
       <div className="words-edit specimen" contentEditable suppressContentEditableWarning
         style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}
-        onInput={e => setText(e.currentTarget.textContent ?? '')}>
-        {text}
+        onFocus={() => setFocused(true)}
+        onBlur={e => { setText(e.currentTarget.textContent ?? ''); setFocused(false) }}>
+        {/* Uncontrolled while focused: no onInput→setState, so typing never re-renders
+            and never resets the caret. Text is captured on blur, then flash-wrapped. */}
+        {focused ? text : flashText(text, flashes, clear)}
       </div>
     </div>
   )
@@ -211,6 +276,7 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
 function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
+  const { flashes, clear } = useGeomFlash()
   const blocks = TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample
   return (
     <div className="stage-pad">
@@ -221,7 +287,7 @@ function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
           return (
             <Tag key={i} className="para-block"
               style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}>
-              {b.text}
+              {flashText(b.text, flashes, clear)}
             </Tag>
           )
         })}
@@ -234,6 +300,7 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
   const { state } = useInstrument()
   const eff = effectiveAxes(state)
   const mult = state.defaults.opszMultiplier
+  const { flashes, clear } = useGeomFlash()
   const vsFor = (px: number) => renderVarSettings(eff, { opszOverride: opszForSize(px, mult) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   return (
@@ -246,9 +313,9 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
               <span className="tier-with tnum">paired with {use.map(b => `${b.key} ${b.px}px`).join(', ')}</span>
             )}
           </div>
-          <div className="tier-head" style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }}>{HEAD_WORD}</div>
+          <div className="tier-head" style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }}>{flashText(HEAD_WORD, flashes, clear)}</div>
           {use.map(b => (
-            <p key={b.key} className="tier-body" style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{PAIR_BODY}</p>
+            <p key={b.key} className="tier-body" style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{flashText(PAIR_BODY, flashes, clear)}</p>
           ))}
         </div>
       ))}
@@ -269,8 +336,10 @@ function loadCmap(): Promise<CmapRanges | null> {
 function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
+  const { flashes, clear } = useGeomFlash()
   const [ranges, setRanges] = useState<CmapRanges | null>(null)
   useEffect(() => { let alive = true; loadCmap().then(r => { if (alive) setRanges(r) }); return () => { alive = false } }, [])
+
   // "All" = every cmap codepoint + its aalt alternates (the unencoded variants);
   // the named sets are curated base-character subsets.
   const cells: GlyphCell[] = glyphSet === 'All'
@@ -282,9 +351,12 @@ function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
         {cells.map((c, i) => {
           // mark/mkmk position marks on ◌; `case` shows the capital-positioned combs.
           const base = c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}` : featStr
+          // Only the GEOM-driven base cell flashes (aalt/case cells are manual forms).
+          const fl = (!c.aalt && !c.caps) ? flashes[c.ch] : undefined
           return (
-            <span key={i} className="glyph-cell"
-              style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1` }}>
+            <span key={`${i}-${fl?.nonce ?? 0}`} className={`glyph-cell${fl ? ' geom-flash' : ''}`}
+              onAnimationEnd={fl ? () => clear(c.ch) : undefined}
+              style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1`, ...(fl && { ['--flash-color' as string]: fl.color }) }}>
               {c.ch}
             </span>
           )

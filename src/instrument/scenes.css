@@ -166,6 +166,14 @@
   background: var(--surface-1);
   border-radius: var(--radius);
 }
+/* GEOM swap flash (grid cells + inline text glyphs) — the newly-introduced form
+   appears at 100% of its zone accent (--flash-color, set inline), then eases out
+   to the resting color over 1s. Instant-on; time-based so it resolves even if idle. */
+.geom-flash { animation: glyph-flash .5s ease-out; }
+@keyframes glyph-flash {
+  0%, 40% { color: var(--flash-color); }   /* hold at 100% ~0.2s, then ease out */
+  100%    { color: var(--text); }
+}
 
 /* ── UI mock ── */
 .ui-card {

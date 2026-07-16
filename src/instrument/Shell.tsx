@@ -19,6 +19,9 @@ const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: stri
 }
 
 const SIZE_DEFAULT = 88
+const FEATS_DEFAULT = ['liga']   // default-on OpenType features (ligatures)
+const featsDrifted = (feats: Set<string>): boolean =>
+  feats.size !== FEATS_DEFAULT.length || !FEATS_DEFAULT.every(t => feats.has(t))
 
 // Circular-arrow reset glyph, ported from the classic app / font-proofer.
 function ResetIcon() {
@@ -179,12 +182,12 @@ function ModeLabel() {
 
 // ── Canvas: top bar + (stage / scene controls / play), with the Font info overlay
 // covering everything below the top bar. ─────────────────────────────────────────
-function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, featStr }: {
+function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
   opszAuto: boolean; setOpszAuto: (v: boolean) => void
-  feats: Set<string>; toggleFeat: (t: string) => void
+  feats: Set<string>; toggleFeat: (t: string) => void; resetFeats: () => void
   featStr: string
 }) {
   const [mode, setMode] = useState<SceneMode>('words')
@@ -215,7 +218,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
           size={size} setSize={setSize}
           tracking={tracking} setTracking={setTracking}
           leading={leading} setLeading={setLeading}
-          feats={feats} toggleFeat={toggleFeat}
+          feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
           opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
         {showInfo && <Info />}
       </div>
@@ -226,17 +229,17 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
 // ── Bottom preview-control surface (●) ────────────────────────────────────────
 const DOCK_AXES = ['wght', 'GEOM', 'opsz', 'YTAS', 'SHRP', 'ital'] as const
 
-function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, opszAuto, setOpszAuto }: {
+function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, opszAuto, setOpszAuto }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
-  feats: Set<string>; toggleFeat: (t: string) => void
+  feats: Set<string>; toggleFeat: (t: string) => void; resetFeats: () => void
   opszAuto: boolean; setOpszAuto: (v: boolean) => void
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
   const autoOpsz = opszForSize(size, state.defaults.opszMultiplier)   // handle position when auto
-  const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1
+  const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)
   // Bloom on pointer proximity; collapse with a fuzzy threshold — the farther the
   // cursor is above the bar, the faster it folds. Stays open while a child has focus.
   const [open, setOpen] = useState(false)
@@ -284,7 +287,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
         </span>
         {open && (
           <button className="preview-reset" disabled={!canReset} title="Reset preview"
-            onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true) }}>
+            onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true); resetFeats() }}>
             <ResetIcon /><span className="preview-reset-text">Reset Preview</span>
           </button>
         )}
@@ -419,16 +422,17 @@ export default function Shell() {
   const [opszAuto, setOpszAuto] = useState(true)
   // OpenType feature chips are global preview controls — they live in the play bar
   // and apply to every scene's text.
-  const [feats, setFeats] = useState<Set<string>>(new Set(['liga']))
+  const [feats, setFeats] = useState<Set<string>>(new Set(FEATS_DEFAULT))
   const featStr = ["'rclt' 1", ...[...feats].map(t => `'${t}' 1`)].join(', ')
   const toggleFeat = (t: string) => setFeats(s => { const n = new Set(s); n.has(t) ? n.delete(t) : n.add(t); return n })
+  const resetFeats = () => setFeats(new Set(FEATS_DEFAULT))
 
   // Entering EDIT resets all preview view-state to the ◆ default look (the store
-  // clears the ● axis preview; here we reset the local size/tracking/leading/opsz).
+  // clears the ● axis preview; here we reset the local size/tracking/leading/opsz/feats).
   const prevMode = useRef(state.recalMode)
   useEffect(() => {
     if (state.recalMode === 'edit' && prevMode.current !== 'edit') {
-      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true)
+      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true); resetFeats()
     }
     prevMode.current = state.recalMode
   }, [state.recalMode])
@@ -441,7 +445,7 @@ export default function Shell() {
         tracking={tracking} setTracking={setTracking}
         leading={leading} setLeading={setLeading}
         opszAuto={opszAuto} setOpszAuto={setOpszAuto}
-        feats={feats} toggleFeat={toggleFeat} featStr={featStr} />
+        feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats} featStr={featStr} />
       <Floor />
     </div>
   )
