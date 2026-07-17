@@ -118,7 +118,7 @@ Phases are NOT strictly linear in the current build: scene polish (phase 4) race
 | 3 — Origin system | ⚠️ partial | state tag (rail footer), zone chips re-anchor + clear preview, INFO receipt (`Info.tsx`) | **Return pill absent**; **hold-to-compare commented out** (`Shell.tsx` Floor) |
 | 4 — Scenes | ✅ done (drawer partial) | modebar + all 6 scenes | paragraph drawer only `measure`; **OT feature chips hardcoded, not generated from GSUB** |
 | 5 — Play dock + gestures | ⚠️ partial | play dock (bloom, preview-only), reduced-motion | **word-drag GEOM scrub absent**; **attract loop absent** |
-| 6 — Matrix-in-rail | ❌ missing | — | no rail matrix; **Download is a disabled `Download — Phase 6` stub** (`Shell.tsx` Floor) |
+| 6 — Matrix-in-rail | ⚠️ partial | **Download now real** — `useFontEngine.ts` owns the legacy Pyodide worker; Floor bakes ◆ defaults via `applyConfig` (verified: valid TTF, name-table rename, opsz×6 baked through) | no rail matrix editor yet; no live `CalSansPreview` rebuild for edited thresholds (export path is correct regardless) |
 
 **Export today lives in the LEGACY app** (`App.tsx`, `?ui=classic`), which still owns the
 Pyodide/fontTools rebuild + OFL download. The instrument UI is a tuning/preview surface until

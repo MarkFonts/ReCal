@@ -11,6 +11,7 @@ import { renderVarSettings, opszForSize } from './render'
 import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
+import { useFontEngine } from './useFontEngine'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -266,6 +267,15 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
     const onMove = (e: PointerEvent) => {
       const surf = surfRef.current
       if (!surf) return
+      // Hovering the floor transaction row (freeze-opsz / OFL / Download, which sits
+      // directly below the bar) collapses the preview so it's out of the way. Guard the
+      // WHOLE floor, not just the controls — else the empty gaps between controls would
+      // still satisfy the `clientY >= rect.top` open-rule and flicker it back open.
+      if (e.target instanceof Element && e.target.closest('.floor')) {
+        clearTimeout(timer)
+        if (openRef.current) setOpen(false)
+        return
+      }
       const rect = surf.getBoundingClientRect()
       const focused = surf.contains(document.activeElement)
       // Open ONLY when actually over the bar (no preemptive proximity bloom — the
@@ -395,8 +405,31 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
 function Floor() {
   const { state, dispatch } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
-  // const holdDown = () => !state.stockHold && dispatch({ type: 'setStockHold', held: true })
-  // const holdUp = () => state.stockHold && dispatch({ type: 'setStockHold', held: false })
+  const engine = useFontEngine(state.useHoi)
+
+  // Bake the ◆ defaults into a TTF via the (legacy) worker and trigger the download.
+  const doDownload = async () => {
+    const d = state.defaults
+    const axisDefaults = Object.fromEntries(Object.entries(d.axes).filter(([t]) => t !== 'opsz'))
+    const ttf = await engine.download({
+      axisDefaults,
+      opszMultiplier: d.opszMultiplier,
+      freezeOpsz: d.freezeOpsz,
+      autoAscender: d.autoAscender,
+      thresholds: d.glyphThresholds,
+    })
+    const url = URL.createObjectURL(new Blob([new Uint8Array(ttf)], { type: 'font/ttf' }))
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `${(state.buildName || 'ReCal Sans').trim() || 'ReCal Sans'}.ttf`
+    a.click()
+    URL.revokeObjectURL(url)
+  }
+
+  const label = engine.building ? 'Building…'
+    : (engine.started && !engine.ready) ? 'Preparing engine…'
+    : 'Download'
+
   return (
     <div className="floor">
       <div className="floor-spacer" />
@@ -405,22 +438,25 @@ function Floor() {
           onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
         Freeze opsz
       </label>
-      {/* Commented out for now — "hold: original Cal Sans" (hold-to-compare).
-      <button data-label="hold: original Cal Sans" className={`hold-text${state.stockHold ? ' held' : ''}`}
-        onPointerDown={holdDown} onPointerUp={holdUp} onPointerLeave={holdUp}
-        onKeyDown={e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); holdDown() } }}
-        onKeyUp={e => { if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); holdUp() } }}>
-        hold: original Cal Sans
-      </button> */}
+      {engine.error && (
+        <span className="floor-toggle" style={{ color: 'var(--text-muted)' }} title={engine.error}>
+          export failed — see console
+        </span>
+      )}
       <label className="floor-toggle">
-        <input type="checkbox" checked={oflAgreed} onChange={e => setOflAgreed(e.target.checked)} />
+        <input type="checkbox" checked={oflAgreed}
+          onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) engine.init() }} />
         I accept the{' '}
         <a href="https://openfontlicense.org/open-font-license-official-text/"
           target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
       </label>
-      <button className="floor-btn floor-btn--primary" disabled={!oflAgreed}
-        title={oflAgreed ? 'Export lands in a later phase' : 'Accept the OFL to enable download'}>
-        Download — Phase 6
+      <button className="floor-btn floor-btn--primary"
+        disabled={!oflAgreed || !engine.ready || engine.building}
+        onPointerEnter={engine.init}
+        onClick={doDownload}
+        title={!oflAgreed ? 'Accept the OFL to enable download'
+          : !engine.ready ? 'Loading the font engine (first time ~10–20s)…' : 'Download your ReCal Sans TTF'}>
+        {label}
       </button>
     </div>
   )
