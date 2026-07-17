@@ -43,6 +43,7 @@ export interface InstrumentState {
   defaults: DefaultsLayer
   preview: PreviewLayer
   stockHold: boolean                            // hold-to-compare: effective() → SHIPPED
+  geomDragging: boolean                         // rail GEOM slider held: flash holds colour, fades on release
   activePreset: string | null                   // engaged "start from…" entry (§3.3)
   useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
   buildName: string                             // editable export family name (INFO receipt)
@@ -71,6 +72,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES): InstrumentS
     },
     preview: {},
     stockHold: false,
+    geomDragging: false,
     activePreset: null,
     useHoi: false,
     buildName: 'ReCal Sans',
@@ -121,6 +123,7 @@ export type Action =
   | { type: 'setPreview'; tag: string; value: number }        // dock / Previewer ●
   | { type: 'clearPreview' }                                  // Return pill
   | { type: 'setStockHold'; held: boolean }                   // hold-to-compare
+  | { type: 'setGeomDragging'; value: boolean }               // rail GEOM slider pointer down/up
   | { type: 'setThresholds'; thresholds: Record<string, number[]> }
   | { type: 'setOpszMultiplier'; value: number }
   | { type: 'setFreezeOpsz'; value: boolean }
@@ -149,6 +152,8 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return previewDrifted(s) ? { ...s, preview: {} } : s
     case 'setStockHold':
       return { ...s, stockHold: a.held }
+    case 'setGeomDragging':
+      return s.geomDragging === a.value ? s : { ...s, geomDragging: a.value }
     case 'setThresholds':
       return { ...s, defaults: { ...s.defaults, glyphThresholds: a.thresholds } }
     case 'setOpszMultiplier':

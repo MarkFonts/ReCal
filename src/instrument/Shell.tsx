@@ -44,10 +44,20 @@ const nearestZoneLabel = (geom: number) =>
   ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
 
 // ── Rail: the font mutator (◆) ────────────────────────────────────────────────
-function Pin({ tag, label }: { tag: string; label: string }) {
+function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSignal?: boolean }) {
   const { state, dispatch } = useInstrument()
   const { min, max } = AXIS_RANGES[tag]
   const v = state.defaults.axes[tag]
+  // While this slider is held, GEOM-swap flashes hold their zone colour (live map)
+  // and only fade on release. Window-level pointerup ends it even if released
+  // outside the thumb; keyboard changes don't set it (they read as instant jumps).
+  const onPointerDown = dragSignal
+    ? () => {
+        dispatch({ type: 'setGeomDragging', value: true })
+        const up = () => { dispatch({ type: 'setGeomDragging', value: false }); window.removeEventListener('pointerup', up) }
+        window.addEventListener('pointerup', up)
+      }
+    : undefined
   return (
     <div className="pin">
       <div className="pin-head">
@@ -55,6 +65,7 @@ function Pin({ tag, label }: { tag: string; label: string }) {
         <span className="pin-val tnum">{tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span>
       </div>
       <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v}
+        onPointerDown={onPointerDown}
         onChange={e => dispatch({ type: 'setDefaultAxis', tag, value: +e.target.value })} />
     </div>
   )
@@ -107,7 +118,7 @@ function Rail() {
             )
           })}
         </div>
-        <Pin tag="GEOM" label="GEOM" />
+        <Pin tag="GEOM" label="GEOM" dragSignal />
       </div>
 
       <div className="rail-group">

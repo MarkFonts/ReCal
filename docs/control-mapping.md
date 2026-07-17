@@ -14,7 +14,10 @@ homes. This is the reference-of-record for the branch.
   + the `.instrument-root` chrome recipe; `.tnum` for numeric columns. Marker decision applied as
   the working default: ◆ `--marker-default` = `--accent` (#e8e8e8), ● `--marker-preview` = #999,
   STOCK narrator = #c97050 (the A11Y hue) — all single-token swaps if we revisit.
-- Next: Phase 2 (shell — rail/canvas/floor grid) builds on these.
+- **Phases 2–6 — partial (verified 2026-07-17).** Shell/scenes/play-dock landed; origin system,
+  matrix-in-rail, and instrument-side export are still open. Export currently lives in the legacy
+  app (`?ui=classic`). See the per-phase status table in `ref/recal-instrument-spec.md` (§Status)
+  for the authoritative breakdown — don't duplicate it here.
 
 The four homes, from the spec:
 

@@ -104,3 +104,40 @@ Zones (chips, existing zone colors) · reference-font presets collapsed to one "
 6. **Matrix-in-rail** — port the existing matrix editor into rail mode; wire rebuild-state to Download.
 
 Before phase 2, post the control-mapping doc for review. If any control can't be assigned to exactly one home (rail = file, drawer = scene, dock = preview, gesture = transient), stop and flag it — that ambiguity is the original ReCal problem trying to return.
+
+### Status — verified against code 2026-07-17
+
+Phases are NOT strictly linear in the current build: scene polish (phase 4) raced ahead while
+3/5/6 were left partial. Verdicts below are from a code audit, not the commit log.
+
+| Phase | Verdict | Landed | Remaining gap |
+|---|---|---|---|
+| 0 — State refactor | ✅ done | 3-layer store + `merged()`/`effective()` (`store.ts`), provider/hook, legacy at `?ui=classic`/`#classic` | — (legacy flag is `classic`, not a `/recalsans-legacy` route — see deploy note) |
+| 1 — Tokens & type | ✅ done | `tokens.css` palette/zones, `--ui-font` Cal Sans, `.tnum` | — |
+| 2 — Shell | ⚠️ partial | rail/canvas/floor grid, ◆ pins | no **TUNE \| MATRIX** toggle; no snap-scroll / chevron rail headers |
+| 3 — Origin system | ⚠️ partial | state tag (rail footer), zone chips re-anchor + clear preview, INFO receipt (`Info.tsx`) | **Return pill absent**; **hold-to-compare commented out** (`Shell.tsx` Floor) |
+| 4 — Scenes | ✅ done (drawer partial) | modebar + all 6 scenes | paragraph drawer only `measure`; **OT feature chips hardcoded, not generated from GSUB** |
+| 5 — Play dock + gestures | ⚠️ partial | play dock (bloom, preview-only), reduced-motion | **word-drag GEOM scrub absent**; **attract loop absent** |
+| 6 — Matrix-in-rail | ❌ missing | — | no rail matrix; **Download is a disabled `Download — Phase 6` stub** (`Shell.tsx` Floor) |
+
+**Export today lives in the LEGACY app** (`App.tsx`, `?ui=classic`), which still owns the
+Pyodide/fontTools rebuild + OFL download. The instrument UI is a tuning/preview surface until
+phase 6 ports export across. This is by design, not a regression.
+
+**GEOM flash** — v2 (held-while-dragging, fade-on-release) is now built: `geomDragging` in the store,
+persistent per-glyph zone color, `.geom-flash-hold` vs `.geom-flash`. A post-phase refinement, not a
+numbered phase. Follow-ons in flight: flash reads live `effectiveThresholds` (so colors adapt to matrix
+edits), diacritic composites color with their base group, and flash extended to Paragraph/Scale.
+
+**Stylistic-set freezer + shape-source color language** (see VISION.md → What's deferred) is the
+instrument-model home of the **original customizer's Phase 4** ("freeze stylistic sets"). It bakes via
+the same Pyodide export path, so it lands with **Phase 6** (export). Deferred until then; the GEOM-swap
+color language is being built first, with the ss/gold override layer designed to slot on top.
+
+**Deploy topology (confirmed 2026-07-17):** Two homes on the `MarkFonts/wordmark` site repo —
+`/recalsans` (current build, base `/recalsans/`) and `/recalsans-legacy` (a separate FROZEN build,
+base `/recalsans-legacy/`, bundle `index-BXS2gmEZ.js`). `.github/workflows/deploy.yml` rebuilds this
+repo and `rm -rf`s **only** `wordmark/recalsans` (no glob) then copies `dist/` in, so `/recalsans-legacy`
+is never touched. Separately, `/recalsans?ui=classic` reaches the *current* bundle's `App.tsx` (tracks
+`main`), which is NOT the same snapshot as the frozen `/recalsans-legacy`. ⚠️ Never broaden that
+`rm -rf` to `recalsans*` — it would delete the frozen legacy archive.
