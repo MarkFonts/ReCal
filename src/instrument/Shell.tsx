@@ -220,8 +220,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
           leading={leading} setLeading={setLeading}
           feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
           opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
-        {showInfo && <Info />}
       </div>
+      {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
+      {showInfo && <Info />}
     </div>
   )
 }
