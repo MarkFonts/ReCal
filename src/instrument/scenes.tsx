@@ -3,7 +3,7 @@
 // are passed in as props; scenes here only read them. Everything renders through
 // effective() (renderVarSettings) — one engine. Models ported from font-proofer.
 import './scenes.css'
-import { useState, useEffect, useRef, Fragment, type CSSProperties, type ReactNode } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings, opszForSize } from './render'
@@ -253,6 +253,84 @@ function flashText(text: string, flashes: Flashes, clear: (ch: string) => void):
   return out
 }
 
+// ── Editable-markdown plumbing (ported/extended from font-proofer) ───────────────
+// Caret utilities.
+function placeCaretAtStart(el: HTMLElement) {
+  const r = document.createRange(), s = window.getSelection()
+  r.setStart(el, 0); r.collapse(true); s?.removeAllRanges(); s?.addRange(r)
+}
+function placeCaretAtEnd(el: HTMLElement) {
+  const r = document.createRange(), s = window.getSelection()
+  r.selectNodeContents(el); r.collapse(false); s?.removeAllRanges(); s?.addRange(r)
+}
+function placeCaretAtOffset(el: HTMLElement, offset: number) {
+  const tn = el.firstChild, len = tn?.textContent?.length ?? 0
+  const r = document.createRange(), s = window.getSelection()
+  r.setStart(tn ?? el, Math.min(Math.max(offset, 0), len)); r.collapse(true)
+  s?.removeAllRanges(); s?.addRange(r)
+}
+// Character offset within el at a viewport point (so a click into a styled block
+// lands the caret where you clicked, not at the start).
+function caretCharOffset(el: HTMLElement, x: number, y: number): number {
+  const doc = el.ownerDocument as Document & {
+    caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null
+    caretRangeFromPoint?: (x: number, y: number) => Range | null
+  }
+  let node: Node | null = null, offset = 0
+  if (doc.caretPositionFromPoint) { const p = doc.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; offset = p.offset } }
+  else if (doc.caretRangeFromPoint) { const rr = doc.caretRangeFromPoint(x, y); if (rr) { node = rr.startContainer; offset = rr.startOffset } }
+  if (!node || !el.contains(node)) return el.textContent?.length ?? 0
+  const r = document.createRange(); r.selectNodeContents(el); r.setEnd(node, offset)
+  return r.toString().length
+}
+
+// Inline markdown → styled nodes: **bold** (wght axis), *italic* (ital axis),
+// __underline__. Matched delimiters, non-greedy; nesting is not handled.
+const INLINE_RE = /(\*\*|__|\*)(.+?)\1/g
+function renderInline(text: string, boldVs: string, italVs: string): ReactNode {
+  if (!/[*_]/.test(text)) return text
+  const out: ReactNode[] = []
+  let last = 0, k = 0, m: RegExpExecArray | null
+  const re = new RegExp(INLINE_RE)
+  while ((m = re.exec(text))) {
+    if (m.index > last) out.push(text.slice(last, m.index))
+    const delim = m[1], inner = m[2]
+    if (delim === '**') out.push(<strong key={k++} style={{ fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{inner}</strong>)
+    else if (delim === '*') out.push(<em key={k++} style={{ fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{inner}</em>)
+    else out.push(<u key={k++}>{inner}</u>)
+    last = m.index + m[0].length
+  }
+  if (last < text.length) out.push(text.slice(last))
+  return out
+}
+
+// A single contentEditable region: raw markdown while focused (browser owns the DOM,
+// caret stable), styled preview when not. `onCommit` fires live (input) + on blur.
+function EditableText({ value, onCommit, className, style, boldVs, italVs }: {
+  value: string; onCommit: (t: string) => void
+  className?: string; style?: CSSProperties; boldVs: string; italVs: string
+}) {
+  const [focused, setFocused] = useState(false)
+  const elRef = useRef<HTMLElement | null>(null)
+  const pending = useRef<number | null>(null)
+  useLayoutEffect(() => {
+    if (focused && pending.current != null && elRef.current) placeCaretAtOffset(elRef.current, pending.current)
+    pending.current = null
+  }, [focused])
+  return (
+    <div
+      ref={el => { elRef.current = el; if (el && !el.textContent) el.textContent = value }}
+      contentEditable suppressContentEditableWarning spellCheck={false}
+      className={className} style={style}
+      onMouseDown={e => { if (!focused) pending.current = caretCharOffset(e.currentTarget, e.clientX, e.clientY) }}
+      onFocus={() => setFocused(true)}
+      onBlur={e => { const t = e.currentTarget.textContent ?? ''; e.currentTarget.textContent = ''; onCommit(t); setFocused(false) }}
+      onInput={e => { if (focused) onCommit(e.currentTarget.textContent ?? '') }}>
+      {focused ? null : renderInline(value, boldVs, italVs)}
+    </div>
+  )
+}
+
 function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
@@ -273,22 +351,100 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   )
 }
 
+type EBlock = { id: string; type: Block['type']; text: string }
+const presetBlocks = (source: string): EBlock[] =>
+  (TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample).map((b, i) => ({ id: `${source}-${i}`, type: b.type, text: b.text }))
+
 function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
-  const { flashes, clear } = useGeomFlash()
-  const blocks = TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample
+  const axes = effectiveAxes(state)
+  const vs = renderVarSettings(axes, { skipOpsz: opszAuto })
+  const boldVs = renderVarSettings({ ...axes, wght: 700 }, { skipOpsz: opszAuto })
+  const italVs = renderVarSettings({ ...axes, ital: 1 }, { skipOpsz: opszAuto })
+
+  const [blocks, setBlocks] = useState<EBlock[]>(() => presetBlocks(source))
+  const [focusedId, setFocusedId] = useState<string | null>(null)
+  const refs = useRef<Record<string, HTMLElement>>({})
+  const pending = useRef<{ id: string; offset: number } | null>(null)
+  const seq = useRef(0)
+  // Tracks the truly-active block synchronously so a stray blur (e.g. after Enter
+  // re-renders the old block styled) doesn't commit stripped text over the raw markdown.
+  const activeId = useRef<string | null>(null)
+  const focus = (id: string | null) => { activeId.current = id; setFocusedId(id) }
+
+  // Reload blocks when the source preset changes.
+  const prevSource = useRef(source)
+  useEffect(() => {
+    if (prevSource.current !== source) { prevSource.current = source; setBlocks(presetBlocks(source)); focus(null) }
+  }, [source])
+
+  // Restore caret to the click point after a block swaps to raw markdown on focus.
+  useLayoutEffect(() => {
+    if (focusedId && pending.current?.id === focusedId) {
+      const el = refs.current[focusedId]; if (el) placeCaretAtOffset(el, pending.current.offset)
+    }
+    pending.current = null
+  }, [focusedId])
+
+  const onKeyDown = (id: string, e: KeyboardEvent<HTMLElement>) => {
+    const el = refs.current[id]; if (!el) return
+    const text = el.textContent ?? ''
+    if (e.key === ' ') {
+      const md = text === '#' ? 'h1' : text === '##' ? 'h2' : text === '###' ? 'h3' : null
+      if (md) {
+        e.preventDefault(); el.textContent = ''
+        setBlocks(prev => prev.map(b => b.id === id ? { ...b, type: md, text: '' } : b))
+        requestAnimationFrame(() => { const n = refs.current[id]; if (n) { n.focus(); placeCaretAtStart(n) } })
+      }
+    } else if (e.key === 'Enter') {
+      e.preventDefault()
+      el.textContent = ''   // clear before the block re-renders styled (avoids duplicate)
+      const newId = `n${seq.current++}`
+      setBlocks(prev => {
+        const idx = prev.findIndex(b => b.id === id); if (idx < 0) return prev
+        const next = [...prev]
+        next[idx] = { ...next[idx], text }
+        next.splice(idx + 1, 0, { id: newId, type: 'p', text: '' })
+        return next
+      })
+      focus(newId)
+      requestAnimationFrame(() => { const n = refs.current[newId]; if (n) { n.focus(); placeCaretAtStart(n) } })
+    } else if (e.key === 'Backspace' && text === '') {
+      e.preventDefault()
+      setBlocks(prev => {
+        if (prev.length <= 1) return prev
+        const idx = prev.findIndex(b => b.id === id)
+        const target = prev[Math.max(0, idx - 1)]
+        if (target) { focus(target.id); requestAnimationFrame(() => { const n = refs.current[target.id]; if (n) { n.focus(); placeCaretAtEnd(n) } }) }
+        return prev.filter(b => b.id !== id)
+      })
+    }
+  }
+
   return (
     <div className="stage-pad">
       <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
-        {blocks.map((b, i) => {
+        {blocks.map(b => {
           const st = PARA_STYLES[b.type]
-          const Tag = b.type === 'p' ? 'p' : b.type
+          const focused = focusedId === b.id
           return (
-            <Tag key={i} className="para-block"
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}>
-              {flashText(b.text, flashes, clear)}
-            </Tag>
+            <div key={b.id}
+              ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
+              contentEditable suppressContentEditableWarning spellCheck={false}
+              className={`para-block para-block--${b.type}`}
+              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}
+              onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
+              onFocus={() => focus(b.id)}
+              onBlur={e => {
+                if (activeId.current !== b.id) return   // stale blur (Enter moved focus) — keep raw text
+                const t = e.currentTarget.textContent ?? ''
+                e.currentTarget.textContent = ''
+                setBlocks(prev => prev.map(x => x.id === b.id ? { ...x, text: t } : x))
+                focus(null)
+              }}
+              onKeyDown={e => onKeyDown(b.id, e)}>
+              {focused ? null : renderInline(b.text, boldVs, italVs)}
+            </div>
           )
         })}
       </div>
@@ -298,11 +454,14 @@ function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
 
 function Scale({ featStr, pairs, measure }: SceneProps) {
   const { state } = useInstrument()
-  const eff = effectiveAxes(state)
+  const axes = effectiveAxes(state)
   const mult = state.defaults.opszMultiplier
-  const { flashes, clear } = useGeomFlash()
-  const vsFor = (px: number) => renderVarSettings(eff, { opszOverride: opszForSize(px, mult) })
+  const boldVs = renderVarSettings({ ...axes, wght: 700 }, {})
+  const italVs = renderVarSettings({ ...axes, ital: 1 }, {})
+  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: opszForSize(px, mult) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
+  const [head, setHead] = useState(HEAD_WORD)
+  const [body, setBody] = useState(PAIR_BODY)
   return (
     <div className="stage-pad">
       {DISPLAY_TIERS.map(d => (
@@ -313,9 +472,12 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
               <span className="tier-with tnum">paired with {use.map(b => `${b.key} ${b.px}px`).join(', ')}</span>
             )}
           </div>
-          <div className="tier-head" style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }}>{flashText(HEAD_WORD, flashes, clear)}</div>
+          {/* Headline + body are editable and synced live across every size tier. */}
+          <EditableText value={head} onCommit={setHead} className="tier-head" boldVs={boldVs} italVs={italVs}
+            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }} />
           {use.map(b => (
-            <p key={b.key} className="tier-body" style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }}>{flashText(PAIR_BODY, flashes, clear)}</p>
+            <EditableText key={b.key} value={body} onCommit={setBody} className="tier-body" boldVs={boldVs} italVs={italVs}
+              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }} />
           ))}
         </div>
       ))}
