@@ -9,6 +9,7 @@ import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
+import { GRID_SWAPS } from './rcltSwaps'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -206,6 +207,16 @@ const SWAP_GLYPHS = new Set(GROUP_DEFS.map(d => d.glyph))
 // share their base's `rclt` condition, so they inherit its thresholds/zone/colour.
 // NFKD handles diacritics + compatibility forms (ª→a); EXTRA_MEMBERS covers
 // non-decomposing look-alikes. Returns undefined for non-swap glyphs.
+// Font-derived swap zone → colour (matches the GROUP_DEFS zone palette). '-'/'U' → none.
+const ZONE_COLOR: Record<string, string> = { A: '#c97050', B: '#4a7fd4', G: '#4aad5c' }
+// Codepoint behind a grid cell's char (skip the ◌ U+25CC carrier on combining marks).
+const cpOf = (ch: string): number => (ch.charCodeAt(0) === 0x25CC ? ch.codePointAt(1)! : ch.codePointAt(0)!)
+// Grid flash entries: every rclt-swap cell (base + aalt compounds) with its thresholds
+// and per-band colour, precomputed from the font-derived GRID_SWAPS.
+const GRID_ENTRIES = Object.entries(GRID_SWAPS).map(([key, s]) => ({
+  key, t: s.t, colors: [...s.z].map(z => ZONE_COLOR[z] ?? null),
+}))
+
 const EXTRA_MEMBERS: Record<string, string> = { 'ɑ': 'a' }
 const groupKeyOf = (ch: string): string | undefined => {
   if (SWAP_GLYPHS.has(ch)) return ch
@@ -277,6 +288,50 @@ function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void; draggi
     }
   }, [dragging])
   const clear = (ch: string) => setFlashes(f => (ch in f ? (({ [ch]: _, ...rest }) => rest)(f) : f))
+  return { flashes, clear, dragging }
+}
+
+// Glyphs-grid flash: same hold-while-dragging / fade-on-release model as useGeomFlash,
+// but detects crossings over the FULL font-derived swap set (GRID_ENTRIES, keyed by
+// "cp:aaltIndex") — so base glyphs AND every rclt alternate/compound flash, not just
+// the 16 GROUP_DEFS groups. Static font thresholds (grid is a specimen of the font).
+function useGridFlash(): { flashes: Flashes; clear: (k: string) => void; dragging: boolean } {
+  const { state } = useInstrument()
+  const geom = effectiveAxes(state).GEOM
+  const editing = state.recalMode === 'edit'
+  const dragging = state.geomDragging
+  const [flashes, setFlashes] = useState<Flashes>({})
+  const prevGeom = useRef(geom)
+  const prevEditing = useRef(editing)
+  const nonce = useRef(0)
+  useEffect(() => {
+    const from = prevGeom.current, wasEditing = prevEditing.current
+    prevGeom.current = geom
+    prevEditing.current = editing
+    if (!editing || !wasEditing || from === geom) return
+    setFlashes(prev => {
+      const next = { ...prev }
+      let changed = false
+      for (const e of GRID_ENTRIES) {
+        const after = variantIndex(geom, e.t)
+        if (after === variantIndex(from, e.t)) continue
+        const color = e.colors[after]
+        if (!color) { if (e.key in next) { delete next[e.key]; changed = true } }
+        else { next[e.key] = { color, nonce: ++nonce.current }; changed = true }
+      }
+      return changed ? next : prev
+    })
+  }, [geom, editing])
+  const wasDragging = useRef(dragging)
+  useEffect(() => {
+    const was = wasDragging.current
+    wasDragging.current = dragging
+    if (was && !dragging) {
+      const t = setTimeout(() => setFlashes({}), 520)
+      return () => clearTimeout(t)
+    }
+  }, [dragging])
+  const clear = (k: string) => setFlashes(f => (k in f ? (({ [k]: _, ...rest }) => rest)(f) : f))
   return { flashes, clear, dragging }
 }
 
@@ -580,7 +635,7 @@ function loadCmap(): Promise<CmapRanges | null> {
 function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
-  const { flashes, clear, dragging } = useGeomFlash()
+  const { flashes, clear, dragging } = useGridFlash()
   const [ranges, setRanges] = useState<CmapRanges | null>(null)
   useEffect(() => { let alive = true; loadCmap().then(r => { if (alive) setRanges(r) }); return () => { alive = false } }, [])
 
@@ -593,16 +648,15 @@ function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
     <div className="stage-pad">
       <div className="glyph-grid">
         {cells.map((c, i) => {
-          // mark/mkmk position marks on ◌; `case` shows the capital-positioned combs.
-          const base = c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}` : featStr
-          // Only the GEOM-driven base cell flashes (aalt/case cells are manual forms);
-          // composites (à/ç…) resolve to their base group via groupKeyOf.
-          const gk = (!c.aalt && !c.caps) ? groupKeyOf(c.ch) : undefined
-          const fl = gk ? flashes[gk] : undefined
+          // aalt/case cells now enable 'rclt' too, so their GEOM swap actually renders.
+          const base = c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}, 'rclt' 1` : featStr
+          // Flash (hold-while-dragging / fade-on-release) any cell whose glyph rclt-swaps —
+          // base OR alternate/compound (five.numr.rcltGeo…) — via the font-derived map.
+          const fl = c.caps ? undefined : flashes[`${cpOf(c.ch)}:${c.aalt}`]
           return (
             <span key={`${i}-${fl?.nonce ?? 0}`}
               className={`glyph-cell${fl ? (dragging ? ' geom-flash-hold' : ' geom-flash') : ''}`}
-              onAnimationEnd={fl && !dragging ? () => clear(gk!) : undefined}
+              onAnimationEnd={fl && !dragging ? () => clear(`${cpOf(c.ch)}:${c.aalt}`) : undefined}
               style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1`, ...(fl && { ['--flash-color' as string]: fl.color }) }}>
               {c.ch}
             </span>
