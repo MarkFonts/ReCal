@@ -540,6 +540,40 @@
 .type-panel-title:active { cursor: grabbing; }
 .type-panel .prow { min-width: 0; }
 
+/* Paragraph style menu (which style the TYPE controls target) */
+.style-menu { position: relative; }
+.style-menu-btn {
+  width: 100%; display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 9px; border-radius: var(--radius);
+  background: var(--surface-3); border: 1px solid var(--border);
+  color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer;
+}
+/* App.css's global button:hover paints buttons white; keep it, but flip the text to
+   black so it stays readable (:not(:disabled) beats the global rule's specificity). */
+.style-menu-btn:hover:not(:disabled) { background: var(--text); color: var(--bg); border-color: var(--text); }
+.style-menu-btn:hover:not(:disabled) .style-menu-caret { color: var(--bg); }
+.style-menu-caret { color: var(--text-dim); font-size: 10px; }
+.style-menu-list {
+  position: absolute; top: calc(100% + 4px); left: 0; min-width: 212px; z-index: 60;
+  display: flex; flex-direction: column; padding: 4px;
+  border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--border);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
+}
+.style-menu-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  padding: 6px 8px; border: none; border-radius: 6px; background: none;
+  color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer; text-align: left;
+}
+.style-menu-item.on { background: var(--surface-3); }
+.style-menu-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
+.style-menu-item:hover .style-badge { color: var(--bg); border-color: rgba(0, 0, 0, .35); }
+.style-menu-name { white-space: nowrap; }
+.style-menu-badges { display: flex; gap: 4px; flex-shrink: 0; }
+.style-badge {
+  font-size: 10px; color: var(--text-dim); white-space: nowrap;
+  padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border);
+}
+
 .ofl-check {
   display: flex;
   align-items: center;

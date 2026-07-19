@@ -9,7 +9,11 @@ import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
 import { renderVarSettings, opszForSize } from './render'
-import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
+import {
+  Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode,
+  DEFAULT_PARA_STYLES, PARA_STYLE_ORDER, PARA_STYLE_LABEL,
+  type ParaStyleKey, type ParaStyle, type ParaStyles,
+} from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { useFontEngine } from './useFontEngine'
@@ -226,16 +230,56 @@ function ModeLabel() {
 // their own HUD rather than the ● play bar. Each scene shows only the rows it uses.
 const TYPE_ROWS: Record<string, string[]> = {
   words: ['size', 'tracking', 'leading'],
-  paragraph: ['tracking', 'measure'],
-  scale: ['measure'],
+  paragraph: ['size', 'tracking', 'leading', 'measure'],
+  scale: ['tracking', 'leading', 'measure'],
 }
 const TYPE_PANEL_POS_KEY = 'recal-type-panel-pos'
-function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure }: {
+
+// Paragraph style menu — pick which style (H1/H2/H3/P) the controls target.
+function StyleMenu({ active, setActive, paraStyles }: {
+  active: ParaStyleKey; setActive: (k: ParaStyleKey) => void; paraStyles: ParaStyles
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('pointerdown', onDoc)
+    return () => document.removeEventListener('pointerdown', onDoc)
+  }, [open])
+  return (
+    <div className="style-menu" ref={ref}>
+      <button className="style-menu-btn" onClick={() => setOpen(o => !o)}>
+        {PARA_STYLE_LABEL[active]}<span className="style-menu-caret">▾</span>
+      </button>
+      {open && (
+        <div className="style-menu-list">
+          {PARA_STYLE_ORDER.map(k => {
+            const s = paraStyles[k]
+            return (
+              <button key={k} className={`style-menu-item${k === active ? ' on' : ''}`}
+                onClick={() => { setActive(k); setOpen(false) }}>
+                <span className="style-menu-name">{PARA_STYLE_LABEL[k]}</span>
+                <span className="style-menu-badges tnum">
+                  <span className="style-badge">{Math.round(s.size)}px</span>
+                  <span className="style-badge">wght {s.wght}</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles }: {
   mode: SceneMode
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
   measure: number; setMeasure: (n: number) => void
+  activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
 }) {
   const rows = TYPE_ROWS[mode] ?? []
   // Draggable by the header. Position persists across sessions; free-drag against the
@@ -271,11 +315,20 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
     try { localStorage.setItem(TYPE_PANEL_POS_KEY, JSON.stringify(next)) } catch { /* ignore */ }
   }
 
+  // Clamp the persisted position into the viewport every render, so a position saved on
+  // a wider window can never leave the panel stranded off-screen on a narrower one.
+  const clamped = pos ? {
+    x: Math.min(Math.max(pos.x, 8), Math.max(8, window.innerWidth - 186)),
+    y: Math.min(Math.max(pos.y, 8), Math.max(8, window.innerHeight - 60)),
+  } : null
   return (
     <div ref={panelRef} className="type-panel"
-      style={pos ? { left: pos.x, top: pos.y, right: 'auto' } : undefined}>
+      style={clamped ? { left: clamped.x, top: clamped.y, right: 'auto' } : undefined}>
       <div className="type-panel-title" onPointerDown={onDown} onPointerMove={onMove}
         onPointerUp={onUp} onPointerCancel={onUp}>Type</div>
+      {mode === 'paragraph' && (
+        <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
+      )}
       {has('size') && (
         <div className="prow">
           <div className="prow-head"><span className="prow-label">size</span>
@@ -324,6 +377,23 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const [glyphSet, setGlyphSet] = useState('All')
   const [showInfo, setShowInfo] = useState(false)
   const ls = `${tracking / 100}em`
+
+  // Editable per-block paragraph styles + which one the TYPE controls target.
+  const [paraStyles, setParaStyles] = useState<ParaStyles>(DEFAULT_PARA_STYLES)
+  const [activeParaStyle, setActiveParaStyle] = useState<ParaStyleKey>('p')
+  const patchPara = (p: Partial<ParaStyle>) =>
+    setParaStyles(s => ({ ...s, [activeParaStyle]: { ...s[activeParaStyle], ...p } }))
+  // In Paragraph mode the size/tracking/leading controls target the selected style;
+  // elsewhere they drive the global view state.
+  const isPara = mode === 'paragraph'
+  const ps = paraStyles[activeParaStyle]
+  const tSize = isPara ? ps.size : size
+  const tSetSize = isPara ? (v: number) => patchPara({ size: v }) : setSize
+  const tTracking = isPara ? ps.tracking : tracking
+  const tSetTracking = isPara ? (v: number) => patchPara({ tracking: v }) : setTracking
+  const tLeading = isPara ? ps.leading : leading
+  const tSetLeading = isPara ? (v: number) => patchPara({ leading: v }) : setLeading
+
   return (
     <div className="canvas">
       <div className="canvas-bar">
@@ -334,7 +404,8 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
         <div className="stage">
           <div className="stage-scroll">
             <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-              source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto} />
+              source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
+              paraStyles={paraStyles} />
           </div>
         </div>
         <SceneControls mode={mode} source={source} setSource={setSource}
@@ -347,8 +418,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
           feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
           opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
       </div>
-      <TypePanel mode={mode} size={size} setSize={setSize} tracking={tracking} setTracking={setTracking}
-        leading={leading} setLeading={setLeading} measure={measure} setMeasure={setMeasure} />
+      <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
+        leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
+        activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles} />
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>

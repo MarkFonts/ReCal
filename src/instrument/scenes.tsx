@@ -82,14 +82,22 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
 // TEXT_SOURCES is declared after TEXT_PRESETS below; forward use is fine (const hoist
 // at module eval — SceneControls only reads it at render time).
 // ── Ported data ────────────────────────────────────────────────────────────────
-const PARA_STYLES: Record<'h1' | 'h2' | 'h3' | 'p', { size: number; leading: number }> = {
-  h1: { size: 57, leading: 1.1 },
-  h2: { size: 32, leading: 1.2 },
-  h3: { size: 22, leading: 1.3 },
-  p: { size: 18, leading: 1.6 },
+// Editable per-block styles (ported from font-proofer's DEFAULT_PARA_STYLES). Each
+// style carries size/leading/tracking + a weight (so H1 renders bold). opsz is auto
+// per block (font-optical-sizing tracks the block's size).
+export type ParaStyleKey = 'h1' | 'h2' | 'h3' | 'p'
+export type ParaStyle = { size: number; leading: number; tracking: number; wght: number }
+export type ParaStyles = Record<ParaStyleKey, ParaStyle>
+export const PARA_STYLE_ORDER: ParaStyleKey[] = ['h1', 'h2', 'h3', 'p']
+export const PARA_STYLE_LABEL: Record<ParaStyleKey, string> = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph' }
+export const DEFAULT_PARA_STYLES: ParaStyles = {
+  h1: { size: 57, leading: 1.1, tracking: 0, wght: 700 },
+  h2: { size: 32, leading: 1.2, tracking: 0, wght: 400 },
+  h3: { size: 22, leading: 1.3, tracking: 0, wght: 400 },
+  p: { size: 18, leading: 1.6, tracking: 0, wght: 400 },
 }
 
-type Block = { type: 'h1' | 'h2' | 'h3' | 'p'; text: string }
+type Block = { type: ParaStyleKey; text: string }
 // Full text ported from font-proofer's TEXT_PRESETS.
 const TEXT_PRESETS: Record<string, Block[]> = {
   Sample: [
@@ -178,6 +186,7 @@ export const TEXT_SOURCES = Object.keys(TEXT_PRESETS)
 type SceneProps = {
   size: number; ls: string; leading: number; featStr: string
   source: string; measure: number; pairs: Set<string>; glyphSet: string; opszAuto: boolean
+  paraStyles: ParaStyles
 }
 
 // When opsz-auto is on, omit opsz from the settings and set font-optical-sizing:auto
@@ -479,10 +488,9 @@ type EBlock = { id: string; type: Block['type']; text: string }
 const presetBlocks = (source: string): EBlock[] =>
   (TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample).map((b, i) => ({ id: `${source}-${i}`, type: b.type, text: b.text }))
 
-function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
+function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
-  const vs = renderVarSettings(axes, { skipOpsz: opszAuto })
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, { skipOpsz: opszAuto })
   const italVs = renderVarSettings({ ...axes, ital: 1 }, { skipOpsz: opszAuto })
   const flash = useGeomFlash()
@@ -550,14 +558,15 @@ function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
     <div className="stage-pad">
       <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
         {blocks.map(b => {
-          const st = PARA_STYLES[b.type]
+          const st = paraStyles[b.type]
+          const blockVs = renderVarSettings({ ...axes, wght: st.wght }, { skipOpsz: opszAuto })
           const focused = focusedId === b.id
           return (
             <div key={b.id}
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type}`}
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}
+              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em` }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
@@ -577,7 +586,7 @@ function Paragraph({ ls, featStr, source, measure, opszAuto }: SceneProps) {
   )
 }
 
-function Scale({ featStr, pairs, measure }: SceneProps) {
+function Scale({ featStr, pairs, measure, ls, leading }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
   const mult = state.defaults.opszMultiplier
@@ -600,10 +609,10 @@ function Scale({ featStr, pairs, measure }: SceneProps) {
           </div>
           {/* Headline + body are editable and synced live across every size tier. */}
           <EditableText value={head} onCommit={setHead} className="tier-head" boldVs={boldVs} italVs={italVs} flash={flash}
-            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr }} />
+            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr, letterSpacing: ls, lineHeight: leading }} />
           {use.map(b => (
             <EditableText key={b.key} value={body} onCommit={setBody} className="tier-body" boldVs={boldVs} italVs={italVs} flash={flash}
-              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr }} />
+              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr, letterSpacing: ls, lineHeight: leading }} />
           ))}
         </div>
       ))}
