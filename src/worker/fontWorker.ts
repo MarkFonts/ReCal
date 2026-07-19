@@ -6,7 +6,7 @@ type MainToWorker =
   | { type: 'loadFont'; fontBytes: ArrayBuffer }
   | { type: 'loadFlexAvar'; fontBytes: ArrayBuffer }
   | { type: 'applyConfig'; configJson: string }
-  | { type: 'previewFont'; thresholdsJson: string; autoAscender?: boolean }
+  | { type: 'previewFont'; thresholdsJson: string; autoAscender?: boolean; opszMultiplier?: number; freezeOpsz?: boolean; frozenOpszValue?: number | null }
   | { type: 'measureWords'; wordsJson: string; geomValuesJson: string; axisDefaultsJson: string }
 
 type WorkerToMain =
@@ -259,18 +259,38 @@ if _fav is not None and getattr(_fav, 'majorVersion', 1) >= 2:
     } else if (msg.type === 'previewFont') {
       pyodide.globals.set('_thresholds_json', msg.thresholdsJson)
       pyodide.globals.set('_auto_ascender', !!msg.autoAscender)
+      pyodide.globals.set('_opsz_mult', Number(msg.opszMultiplier ?? 1))
+      pyodide.globals.set('_freeze_opsz', !!msg.freezeOpsz)
+      pyodide.globals.set('_frozen_opsz', msg.frozenOpszValue == null ? null : Number(msg.frozenOpszValue))
       const ttfPy = await pyodide.runPythonAsync(`
 import io, json
 from fontTools.ttLib import TTFont
+from fontTools.varLib.instancer import instantiateVariableFont
 
 def _do_preview():
     thresh = json.loads(_thresholds_json)
     fnt = TTFont(io.BytesIO(_font_data))
     _rebuild_fv(fnt, thresh)
+    _strip_avar2(fnt)   # instancer can't partial-instance avar2; re-graft below if needed
+    # opsz: rescale the axis by the multiplier so font-optical-sizing:auto remaps to
+    # point size in the preview EXACTLY as the export does (axis defaults stay stock —
+    # the instrument applies those live via CSS font-variation-settings).
+    opsz_m = float(_opsz_mult)
+    if _freeze_opsz and not _auto_ascender:
+        oa = next((a for a in fnt['fvar'].axes if a.axisTag == 'opsz'), None)
+        if oa is not None:
+            fv = oa.defaultValue if _frozen_opsz is None else float(_frozen_opsz)
+            fv = min(max(fv, oa.minValue), oa.maxValue)
+            instantiateVariableFont(fnt, {'opsz': fv}, inplace=True)
+    elif opsz_m != 1:
+        for axis in fnt['fvar'].axes:
+            if axis.axisTag == 'opsz':
+                axis.minValue *= opsz_m; axis.defaultValue *= opsz_m; axis.maxValue *= opsz_m
+        for inst in fnt['fvar'].instances:
+            if 'opsz' in inst.coordinates:
+                inst.coordinates['opsz'] *= opsz_m
     if _auto_ascender:
         _graft_avar2(fnt)   # opsz->YTAS auto-ascender (works on VF or Flex)
-    else:
-        _strip_avar2(fnt)
     out = io.BytesIO(); fnt.save(out); return out.getvalue()
 
 _do_preview()
@@ -383,6 +403,7 @@ config = json.loads(_config_json)
 new_defaults = config['axisDefaults']      # excludes opsz
 opsz_m = float(config.get('opszMultiplier', 1))
 freeze_opsz = bool(config.get('freezeOpsz', False))
+frozen_opsz = config.get('frozenOpszValue', None)   # opsz to pin to when frozen
 auto_ascender = bool(config.get('autoAscender', False))
 thresh = config.get('thresholds', {})
 
@@ -418,7 +439,9 @@ result = instantiateVariableFont(font, axis_limits, inplace=True) if axis_limits
 if freeze_opsz and not auto_ascender:
     oa = next((a for a in result['fvar'].axes if a.axisTag == 'opsz'), None)
     if oa is not None:
-        instantiateVariableFont(result, {'opsz': oa.defaultValue}, inplace=True)
+        fv = oa.defaultValue if frozen_opsz is None else float(frozen_opsz)
+        fv = min(max(fv, oa.minValue), oa.maxValue)
+        instantiateVariableFont(result, {'opsz': fv}, inplace=True)
 elif opsz_m != 1:
     for axis in result['fvar'].axes:
         if axis.axisTag == 'opsz':

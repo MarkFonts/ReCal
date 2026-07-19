@@ -12,13 +12,36 @@ export interface ExportConfig {
   axisDefaults: Record<string, number>   // ◆ axis defaults, EXCLUDING opsz
   opszMultiplier: number
   freezeOpsz: boolean
+  frozenOpszValue: number | null          // opsz to pin to when frozen (null → axis default)
   autoAscender: boolean
   thresholds: Record<string, number[]>   // ◆ GEOM swap map → FeatureVariations
+}
+
+// Preview rebuild config — the rebuild-only edits CSS can't show (opsz-axis rescale/pin +
+// FeatureVariations threshold rewrite). Axis DEFAULTS stay stock here (the instrument
+// applies those live via font-variation-settings), so this is a subset of ExportConfig.
+export interface PreviewConfig {
+  thresholds: Record<string, number[]>
+  opszMultiplier: number
+  freezeOpsz: boolean
+  frozenOpszValue: number | null
+  autoAscender: boolean
 }
 
 const fontUrl = (hoi: boolean) =>
   `${import.meta.env.BASE_URL}fonts/${hoi ? 'CalSansFlexVF' : 'CalSansVF'}.ttf`
 const flexUrl = `${import.meta.env.BASE_URL}fonts/CalSansFlexVF.ttf`
+
+function postPreview(w: Worker, cfg: PreviewConfig) {
+  w.postMessage({
+    type: 'previewFont',
+    thresholdsJson: JSON.stringify(cfg.thresholds),
+    autoAscender: cfg.autoAscender,
+    opszMultiplier: cfg.opszMultiplier,
+    freezeOpsz: cfg.freezeOpsz,
+    frozenOpszValue: cfg.frozenOpszValue,
+  })
+}
 
 export function useFontEngine(useHoi: boolean) {
   const workerRef = useRef<Worker | null>(null)
@@ -31,8 +54,23 @@ export function useFontEngine(useHoi: boolean) {
   const [building, setBuilding] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Preview @font-face plumbing: the latest requested config (re-fired once the worker
+  // is ready / after a HOI font reload), plus the injected CalSansPreview style element.
+  const readyRef = useRef(false)
+  const previewCfgRef = useRef<PreviewConfig | null>(null)
+  const faceStyleRef = useRef<HTMLStyleElement | null>(null)
+  const faceUrlRef = useRef<string | null>(null)
+
+  const injectPreviewFace = useCallback((buf: ArrayBuffer) => {
+    const url = URL.createObjectURL(new Blob([new Uint8Array(buf)], { type: 'font/ttf' }))
+    if (faceUrlRef.current) URL.revokeObjectURL(faceUrlRef.current)
+    faceUrlRef.current = url
+    if (!faceStyleRef.current) { faceStyleRef.current = document.createElement('style'); document.head.appendChild(faceStyleRef.current) }
+    faceStyleRef.current.textContent = `@font-face { font-family: 'CalSansPreview'; src: url('${url}') format('truetype'); font-display: swap; }`
+  }, [])
+
   const loadMain = useCallback((worker: Worker) => {
-    setReady(false)
+    setReady(false); readyRef.current = false
     fetch(fontUrl(useHoiRef.current)).then(r => r.arrayBuffer())
       .then(buf => worker.postMessage({ type: 'loadFont', fontBytes: buf }, [buf]))
   }, [])
@@ -51,11 +89,14 @@ export function useFontEngine(useHoi: boolean) {
         fetch(flexUrl).then(r => r.arrayBuffer())
           .then(buf => worker.postMessage({ type: 'loadFlexAvar', fontBytes: buf }, [buf]))
       } else if (msg.type === 'axisInfo') {
-        setReady(true)                                  // font loaded + axes parsed
+        setReady(true); readyRef.current = true          // font loaded + axes parsed
+        if (previewCfgRef.current) postPreview(worker, previewCfgRef.current)   // re-fire pending
       } else if (msg.type === 'fontResult') {
         resolveRef.current?.(msg.ttf as ArrayBuffer)
         resolveRef.current = null
         setBuilding(false)
+      } else if (msg.type === 'previewFontResult') {
+        injectPreviewFace(msg.ttf as ArrayBuffer)
       } else if (msg.type === 'error') {
         console.error('[fontEngine]', msg.message)
         setError(String(msg.message))
@@ -63,14 +104,18 @@ export function useFontEngine(useHoi: boolean) {
         resolveRef.current = null
       }
     }
-  }, [loadMain])
+  }, [loadMain, injectPreviewFace])
 
   // HOI toggle swaps the source font — reload it (only once the worker exists).
   useEffect(() => {
     if (workerRef.current) loadMain(workerRef.current)
   }, [useHoi, loadMain])
 
-  useEffect(() => () => { workerRef.current?.terminate() }, [])
+  useEffect(() => () => {
+    workerRef.current?.terminate()
+    if (faceUrlRef.current) URL.revokeObjectURL(faceUrlRef.current)
+    faceStyleRef.current?.remove()
+  }, [])
 
   const download = useCallback((config: ExportConfig) =>
     new Promise<ArrayBuffer>((resolve) => {
@@ -80,5 +125,19 @@ export function useFontEngine(useHoi: boolean) {
       workerRef.current!.postMessage({ type: 'applyConfig', configJson: JSON.stringify(config) })
     }), [])
 
-  return { started, ready, building, error, init, download }
+  // Rebuild the CalSansPreview face for the current ◆ (inits the worker if needed).
+  const rebuildPreview = useCallback((cfg: PreviewConfig) => {
+    init()
+    previewCfgRef.current = cfg
+    if (workerRef.current && readyRef.current) postPreview(workerRef.current, cfg)
+  }, [init])
+
+  // Drop the preview face → scenes fall back to raw CalSansVF (◆ is back at stock).
+  const clearPreviewFont = useCallback(() => {
+    previewCfgRef.current = null
+    if (faceStyleRef.current) faceStyleRef.current.textContent = ''
+    if (faceUrlRef.current) { URL.revokeObjectURL(faceUrlRef.current); faceUrlRef.current = null }
+  }, [])
+
+  return { started, ready, building, error, init, download, rebuildPreview, clearPreviewFont }
 }

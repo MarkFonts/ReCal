@@ -112,9 +112,13 @@
   text-transform: uppercase;
   color: var(--text-dim);
 }
+/* group header row: label on the left, an inline toggle on the right */
+.rail-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 
 /* ◆ pin row: label + value + track */
 .pin { display: flex; flex-direction: column; gap: 5px; }
+.pin--off { opacity: .38; }                          /* grayed until Freeze opsz is on */
+.pin--off input[type="range"] { cursor: default; }
 .pin-head { display: flex; justify-content: space-between; align-items: baseline; }
 .pin-label { font-size: 13px; }
 .pin-tag { font-size: 10px; color: var(--text-dim); }
@@ -246,6 +250,10 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  /* Specimens render the REBUILT preview font when ◆ differs from stock (opsz-axis
+     rescale + FeatureVariations), falling back to raw CalSansVF otherwise. Chrome
+     outside the stage keeps --ui-font (CalSansVF). */
+  font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
 }
 .stage-scroll {
   height: 100%;
@@ -281,7 +289,7 @@
 .info-panel::-webkit-scrollbar-track,
 .preview-body::-webkit-scrollbar-track { background: transparent; }
 .specimen {
-  font-family: var(--ui-font);
+  font-family: 'CalSansPreview', 'CalSansVF', sans-serif;   /* rebuilt preview font, falls back to raw VF */
   font-optical-sizing: none;
   font-feature-settings: 'rclt' 1;
   color: var(--text);
@@ -505,6 +513,32 @@
   box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
 }
 .dock-error { font-size: 12px; color: var(--text-muted); }
+
+/* Floating TYPE panel — viewport/render controls; draggable by its header. */
+.type-panel {
+  position: fixed;
+  top: 56px; right: 20px;
+  z-index: 40;
+  width: 178px;
+  display: flex; flex-direction: column; gap: 13px;
+  padding: 10px 14px 14px;
+  border-radius: calc(var(--radius) + 2px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .4);
+}
+.type-panel-title {
+  font-family: var(--ui-font);
+  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-dim);
+  margin: -4px -8px 2px;   /* widen the grab target a touch */
+  padding: 6px 8px;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.type-panel-title:active { cursor: grabbing; }
+.type-panel .prow { min-width: 0; }
 
 .ofl-check {
   display: flex;

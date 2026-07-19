@@ -3,9 +3,10 @@
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
 import { useState, useRef, useEffect } from 'react'
+import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import {
-  AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty,
+  AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
 import { renderVarSettings, opszForSize } from './render'
 import { Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode } from './scenes'
@@ -127,20 +128,36 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       </div>
 
       <div className="rail-group">
-        <div className="rail-group-label">Optical</div>
-        <div className="pin-head"><span className="pin-label">Opsz scale</span>
-          <span className="pin-val tnum">{state.defaults.opszMultiplier}×</span></div>
-        <div className="stepper">
-          {[1, 2, 3, 4, 5, 6].map(n => (
-            <button key={n} className={state.defaults.opszMultiplier === n ? 'on' : ''}
-              onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
-          ))}
+        <div className="rail-group-head">
+          <span className="rail-group-label">Optical</span>
+          <label className="rail-toggle">
+            <input type="checkbox" checked={state.defaults.freezeOpsz}
+              onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
+            Freeze opsz
+          </label>
         </div>
-        <label className="rail-toggle">
-          <input type="checkbox" checked={state.defaults.freezeOpsz}
-            onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
-          Freeze opsz
-        </label>
+        {/* Optical size — only meaningful when frozen: off = the browser scales opsz to
+            size (auto); on = pin the opsz axis to this value for a fixed display size. */}
+        <div className={`pin${state.defaults.freezeOpsz ? '' : ' pin--off'}`}>
+          <div className="pin-head">
+            <span className="pin-label">Optical size <span className="pin-tag">opsz</span></span>
+            <span className="pin-val tnum">{state.defaults.freezeOpsz ? Math.round(state.defaults.frozenOpszValue ?? 14) : 'auto'}</span>
+          </div>
+          <input type="range" min={AXIS_RANGES.opsz.min} max={AXIS_RANGES.opsz.max} step={1}
+            value={state.defaults.frozenOpszValue ?? 14}
+            disabled={!state.defaults.freezeOpsz}
+            onChange={e => dispatch({ type: 'setFrozenOpszValue', value: +e.target.value })} />
+        </div>
+        <div className="pin">
+          <div className="pin-head"><span className="pin-label">Optical scale</span>
+            <span className="pin-val tnum">{state.defaults.opszMultiplier}×</span></div>
+          <div className="stepper">
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <button key={n} className={state.defaults.opszMultiplier === n ? 'on' : ''}
+                onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="rail-group">
@@ -205,6 +222,92 @@ function ModeLabel() {
 
 // ── Canvas: top bar + (stage / scene controls / play), with the Font info overlay
 // covering everything below the top bar. ─────────────────────────────────────────
+// Floating TYPE panel — viewport/render controls (not baked axes), so they live in
+// their own HUD rather than the ● play bar. Each scene shows only the rows it uses.
+const TYPE_ROWS: Record<string, string[]> = {
+  words: ['size', 'tracking', 'leading'],
+  paragraph: ['tracking', 'measure'],
+  scale: ['measure'],
+}
+const TYPE_PANEL_POS_KEY = 'recal-type-panel-pos'
+function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure }: {
+  mode: SceneMode
+  size: number; setSize: (n: number) => void
+  tracking: number; setTracking: (n: number) => void
+  leading: number; setLeading: (n: number) => void
+  measure: number; setMeasure: (n: number) => void
+}) {
+  const rows = TYPE_ROWS[mode] ?? []
+  // Draggable by the header. Position persists across sessions; free-drag against the
+  // ref + commit on release (per the spec's drag rules — no re-render mid-drag).
+  const panelRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<{ dx: number; dy: number } | null>(null)
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
+    try { const s = JSON.parse(localStorage.getItem(TYPE_PANEL_POS_KEY) || 'null'); return (s && typeof s.x === 'number') ? s : null } catch { return null }
+  })
+  if (!rows.length) return null
+  const has = (k: string) => rows.includes(k)
+
+  const clamp = (v: number, max: number) => Math.min(Math.max(v, 8), Math.max(8, max - 8))
+  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const r = panelRef.current!.getBoundingClientRect()
+    dragRef.current = { dx: e.clientX - r.left, dy: e.clientY - r.top }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = panelRef.current, drag = dragRef.current
+    if (!el || !drag) return
+    el.style.left = `${clamp(e.clientX - drag.dx, window.innerWidth - el.offsetWidth)}px`
+    el.style.top = `${clamp(e.clientY - drag.dy, window.innerHeight - el.offsetHeight)}px`
+    el.style.right = 'auto'
+  }
+  const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
+    const el = panelRef.current
+    if (!dragRef.current || !el) return
+    dragRef.current = null
+    e.currentTarget.releasePointerCapture(e.pointerId)
+    const next = { x: parseFloat(el.style.left) || 0, y: parseFloat(el.style.top) || 0 }
+    setPos(next)
+    try { localStorage.setItem(TYPE_PANEL_POS_KEY, JSON.stringify(next)) } catch { /* ignore */ }
+  }
+
+  return (
+    <div ref={panelRef} className="type-panel"
+      style={pos ? { left: pos.x, top: pos.y, right: 'auto' } : undefined}>
+      <div className="type-panel-title" onPointerDown={onDown} onPointerMove={onMove}
+        onPointerUp={onUp} onPointerCancel={onUp}>Type</div>
+      {has('size') && (
+        <div className="prow">
+          <div className="prow-head"><span className="prow-label">size</span>
+            <span className="prow-val tnum">{size}px</span></div>
+          <input type="range" min={16} max={200} step={1} value={size} onChange={e => setSize(+e.target.value)} />
+        </div>
+      )}
+      {has('tracking') && (
+        <div className="prow">
+          <div className="prow-head"><span className="prow-label">tracking</span>
+            <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
+          <input type="range" min={-10} max={30} step={1} value={tracking} onChange={e => setTracking(+e.target.value)} />
+        </div>
+      )}
+      {has('leading') && (
+        <div className="prow">
+          <div className="prow-head"><span className="prow-label">leading</span>
+            <span className="prow-val tnum">{leading.toFixed(1)}</span></div>
+          <input type="range" min={0.8} max={2.5} step={0.1} value={leading} onChange={e => setLeading(+e.target.value)} />
+        </div>
+      )}
+      {has('measure') && (
+        <div className="prow">
+          <div className="prow-head"><span className="prow-label">measure</span>
+            <span className="prow-val tnum">{measure}em</span></div>
+          <input type="range" min={16} max={52} step={1} value={measure} onChange={e => setMeasure(+e.target.value)} />
+        </div>
+      )}
+    </div>
+  )
+}
+
 function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
@@ -235,7 +338,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
           </div>
         </div>
         <SceneControls mode={mode} source={source} setSource={setSource}
-          measure={measure} setMeasure={setMeasure} pairs={pairs} togglePair={togglePair}
+          pairs={pairs} togglePair={togglePair}
           glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
         <PreviewSurface
           size={size} setSize={setSize}
@@ -244,6 +347,8 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
           feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
           opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
       </div>
+      <TypePanel mode={mode} size={size} setSize={setSize} tracking={tracking} setTracking={setTracking}
+        leading={leading} setLeading={setLeading} measure={measure} setMeasure={setMeasure} />
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
@@ -325,30 +430,6 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
       </div>
       <div className="preview-body">
         <div className="play-group">
-          <span className="play-group-label">Type</span>
-          <div className="preview-rows">
-            <div className="prow">
-              <div className="prow-head"><span className="prow-label">size</span>
-                <span className="prow-val tnum">{size}px</span></div>
-              <input type="range" min={16} max={200} step={1} value={size}
-                onChange={e => setSize(+e.target.value)} />
-            </div>
-            <div className="prow">
-              <div className="prow-head"><span className="prow-label">tracking</span>
-                <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
-              <input type="range" min={-10} max={30} step={1} value={tracking}
-                onChange={e => setTracking(+e.target.value)} />
-            </div>
-            <div className="prow">
-              <div className="prow-head"><span className="prow-label">leading</span>
-                <span className="prow-val tnum">{leading.toFixed(1)}</span></div>
-              <input type="range" min={0.8} max={2.5} step={0.1} value={leading}
-                onChange={e => setLeading(+e.target.value)} />
-            </div>
-          </div>
-        </div>
-
-        <div className="play-group">
           <span className="play-group-label">Axes</span>
           <div className="preview-rows">
             {DOCK_AXES.map(tag => {
@@ -411,10 +492,9 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
 }
 
 // ── Download dock — a floating OFL + Download pill (no full-width floor). ─────────
-function DownloadDock() {
+function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) {
   const { state } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
-  const engine = useFontEngine(state.useHoi)
 
   // Bake the ◆ defaults into a TTF via the (legacy) worker and trigger the download.
   const doDownload = async () => {
@@ -424,6 +504,7 @@ function DownloadDock() {
       axisDefaults,
       opszMultiplier: d.opszMultiplier,
       freezeOpsz: d.freezeOpsz,
+      frozenOpszValue: d.frozenOpszValue,
       autoAscender: d.autoAscender,
       thresholds: d.glyphThresholds,
     })
@@ -498,6 +579,23 @@ export default function Shell() {
     prevMode.current = state.recalMode
   }, [state.recalMode])
 
+  // ── Live CalSansPreview rebuild ──────────────────────────────────────────────
+  // The rebuild-only ◆ edits (opsz-axis rescale, FeatureVariations thresholds) can't
+  // be shown by CSS on the raw font, so rebuild a CalSansPreview face and point the
+  // specimens at it. Only fires when ◆ actually differs from stock, so pure-viewing
+  // at defaults never loads Pyodide.
+  const engine = useFontEngine(state.useHoi)
+  const { rebuildPreview, clearPreviewFont } = engine
+  const d = state.defaults
+  const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.freezeOpsz || d.autoAscender
+  useEffect(() => {
+    const t = setTimeout(() => {
+      if (needsRebuild) rebuildPreview({ thresholds: d.glyphThresholds, opszMultiplier: d.opszMultiplier, freezeOpsz: d.freezeOpsz, frozenOpszValue: d.frozenOpszValue, autoAscender: d.autoAscender })
+      else clearPreviewFont()
+    }, 250)
+    return () => clearTimeout(t)
+  }, [needsRebuild, d.opszMultiplier, d.glyphThresholds, d.freezeOpsz, d.frozenOpszValue, d.autoAscender, state.useHoi, rebuildPreview, clearPreviewFont])
+
   return (
     <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
       <Rail collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
@@ -507,7 +605,7 @@ export default function Shell() {
         leading={leading} setLeading={setLeading}
         opszAuto={opszAuto} setOpszAuto={setOpszAuto}
         feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats} featStr={featStr} />
-      <DownloadDock />
+      <DownloadDock engine={engine} />
     </div>
   )
 }

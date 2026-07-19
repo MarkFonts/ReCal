@@ -40,10 +40,9 @@ export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
 
 // Persistent per-scene control bar — lives in the canvas above the stage (not in
 // the scroll area, so it never covers scene content). Only some scenes have controls.
-export function SceneControls({ mode, source, setSource, measure, setMeasure, pairs, togglePair, glyphSet, setGlyphSet }: {
+export function SceneControls({ mode, source, setSource, pairs, togglePair, glyphSet, setGlyphSet }: {
   mode: SceneMode
   source: string; setSource: (s: string) => void
-  measure: number; setMeasure: (n: number) => void
   pairs: Set<string>; togglePair: (k: string) => void
   glyphSet: string; setGlyphSet: (k: string) => void
 }) {
@@ -63,11 +62,6 @@ export function SceneControls({ mode, source, setSource, measure, setMeasure, pa
           <button key={k} data-label={k} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>
         ))}
       </div>
-      <div className="drawer-row">
-        <span className="drawer-label">measure</span>
-        <input type="range" min={16} max={52} step={1} value={measure} onChange={e => setMeasure(+e.target.value)} />
-        <span className="drawer-val tnum">{measure}em</span>
-      </div>
     </div>
   )
   if (mode === 'scale') return (
@@ -79,11 +73,6 @@ export function SceneControls({ mode, source, setSource, measure, setMeasure, pa
             <button key={t.key} data-label={t.key} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}>{t.key}</button>
           ))}
         </div>
-      </div>
-      <div className="drawer-row">
-        <span className="drawer-label">measure</span>
-        <input type="range" min={16} max={52} step={1} value={measure} onChange={e => setMeasure(+e.target.value)} />
-        <span className="drawer-val tnum">{measure}em</span>
       </div>
     </div>
   )
