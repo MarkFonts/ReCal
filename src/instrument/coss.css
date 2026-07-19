@@ -1,0 +1,364 @@
+/* COSS — a pannable catalog of real UI "particles" (coss.com/ui-style), each rendered in
+   the user's ◆ Cal Sans so it's a working specimen of the font in UI micro-typography.
+   Imported HERE (not in Shell) so this CSS ships in the lazy chunk.
+
+   WEIGHT MODEL: all text inherits --w-default (the user's default weight); elements marked
+   .coss-b use --w-bold (default + a bump). Raising the default raises both. Optical sizing
+   is auto so headings pick up the display cut and body the text cut. */
+
+/* 2D board: the strip is the scroll viewport (both axes, full-bleed); the board packs
+   tiles top→bottom into tall columns that WRAP horizontally, so you pan right through the
+   catalog and down through each long column. */
+.coss-strip {
+  height: 100%;
+  margin: 0 -48px;
+  padding: 4px 48px 24px;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+.coss-board {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+  width: max-content;
+  font-weight: var(--w-default, 400);
+}
+/* Each column is one masonry stack; its width is set by whether it holds a wide tile, so
+   every card in the column matches (cards fill 100% of the column). */
+.coss-col { display: flex; flex-direction: column; gap: 16px; width: 270px; }
+.coss-col--wide { width: 420px; }
+.coss-strip::-webkit-scrollbar { width: 9px; height: 9px; }
+.coss-strip::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 5px; }
+.coss-strip::-webkit-scrollbar-thumb:hover { background: var(--border); }
+.coss-b { font-weight: var(--w-bold, 640); }
+/* Real axes only — never faux bold/italic. Italic text maps to the ital axis (ital 1) on
+   top of the current GEOM/YTAS/SHRP (--vs), so it stays a true italic, not a slant. */
+.coss-strip { font-synthesis: none; }
+.coss-strip i, .coss-strip em, .coss-strip [style*="italic"] {
+  font-style: normal;
+  font-variation-settings: var(--vs, normal), 'ital' 1;
+}
+
+/* ── Card chrome (matches coss.com: name → description → divider → live preview) ── */
+.coss-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--surface-2);
+  overflow: hidden;
+}
+.coss-card-head { padding: 15px 17px 13px; }
+.coss-card-name { font-size: 18px; line-height: 1.1; font-weight: var(--w-bold, 640); }
+.coss-card-desc { font-size: 12.5px; line-height: 1.35; color: var(--text-muted); margin-top: 5px; }
+.coss-card-body {
+  flex: 1;
+  padding: 18px 17px;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-height: 96px;
+}
+
+/* ── Neutral UI primitives (composed by the particles) ── */
+.ui-row { display: flex; align-items: center; gap: 8px; }
+.ui-col { display: flex; flex-direction: column; gap: 8px; }
+.ui-between { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ui-wrap { flex-wrap: wrap; }
+.ui-muted { color: var(--text-muted); }
+.ui-dim { color: var(--text-dim); }
+.ui-num { font-feature-settings: 'tnum' 1; }
+
+.ui-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 13px; border-radius: 8px; border: 1px solid var(--border);
+  background: transparent; color: var(--text); font-family: inherit; font-size: 13px; cursor: default;
+}
+.ui-btn--primary { background: var(--text); color: var(--bg); border-color: var(--text); }
+.ui-btn--ghost { border-color: transparent; }
+.ui-btn--sm { padding: 6px 10px; font-size: 12.5px; }
+
+.ui-label { display: block; font-size: 12px; margin-bottom: 6px; }
+.ui-field {
+  border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px;
+  font-size: 13px; color: var(--text); background: var(--surface-1);
+}
+.ui-field .ph { color: var(--text-dim); }
+.ui-help { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; }
+/* contentEditable field — text caret (not the pointer .ui-field would give), min height.
+   .ui-field.ui-editable beats the later `.ui-field { cursor: pointer }` interactive rule. */
+.ui-field.ui-editable { cursor: text; outline: none; min-height: 62px; line-height: 1.5; }
+.ui-field.ui-editable:focus { border-color: var(--text-muted); }
+
+.ui-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 3px 9px; border-radius: 999px; font-size: 11.5px;
+  border: 1px solid var(--border); color: var(--text-muted);
+}
+.ui-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
+.dot-ok { color: #46c07a; } .dot-warn { color: #e0a23a; } .dot-err { color: #e0603a; }
+
+.ui-list { display: flex; flex-direction: column; }
+.ui-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 7px 9px; border-radius: 7px; font-size: 13px;
+}
+.ui-item.on { background: var(--surface-3); }
+.ui-kbd {
+  font-size: 11px; padding: 1px 5px; border: 1px solid var(--border); border-radius: 4px;
+  color: var(--text-muted); font-feature-settings: 'tnum' 1;
+}
+
+.ui-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 10px; }
+.ui-tab { padding: 6px 10px; font-size: 13px; color: var(--text-muted); }
+.ui-tab.on { color: var(--text); border-bottom: 2px solid var(--text); margin-bottom: -1px; }
+
+.ui-acc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 9px 0; border-bottom: 1px solid var(--border-subtle); font-size: 13.5px;
+  cursor: pointer; transition: color .12s ease;
+}
+.ui-acc-row:hover { color: var(--text); }
+.ui-acc-ans { font-size: 12.5px; color: var(--text-muted); padding: 8px 0 2px; line-height: 1.45; }
+.ui-chev { color: var(--text-dim); font-size: 11px; }
+
+.ui-alert { display: flex; gap: 10px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; }
+.ui-alert-ic {
+  width: 18px; height: 18px; border-radius: 50%; flex: 0 0 auto; margin-top: 1px;
+  display: grid; place-items: center; font-size: 12px; color: var(--bg); background: #e0603a;
+}
+.ui-alert-title { font-size: 13px; }
+.ui-alert-msg { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+
+.ui-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.ui-table th { text-align: left; color: var(--text-muted); font-weight: inherit; padding: 5px 6px; border-bottom: 1px solid var(--border); }
+.ui-table td { padding: 6px 6px; border-bottom: 1px solid var(--border-subtle); }
+.ui-table td:last-child, .ui-table th:last-child { text-align: right; }
+
+.ui-avatars { display: flex; }
+.ui-avatar {
+  width: 30px; height: 30px; border-radius: 50%; margin-left: -8px;
+  display: grid; place-items: center; font-size: 11.5px;
+  background: var(--surface-3); color: var(--text); border: 1.5px solid var(--surface-2);
+}
+.ui-avatar:first-child { margin-left: 0; }
+
+.ui-switch { width: 34px; height: 20px; border-radius: 999px; background: var(--text); position: relative; flex: 0 0 auto; }
+.ui-switch::after { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: var(--bg); top: 2.5px; right: 2.5px; }
+.ui-switch--off { background: var(--surface-3); }
+.ui-switch--off::after { left: 2.5px; right: auto; background: var(--text-muted); }
+
+.ui-track { width: 100%; height: 5px; border-radius: 3px; background: var(--surface-3); position: relative; }
+.ui-track-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 2px; background: var(--text); }
+.ui-thumb { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: var(--text); transform: translate(-50%, -50%); }
+.ui-track--drag { cursor: grab; touch-action: none; }
+.ui-track--drag:active { cursor: grabbing; }
+/* transparent hit area above/below the 5px bar so it's easy to grab, without resizing it */
+.ui-track--drag::before { content: ''; position: absolute; left: 0; right: 0; top: -9px; bottom: -9px; }
+
+.ui-tooltip { align-self: center; position: relative; }
+.ui-bubble {
+  position: absolute; bottom: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  padding: 5px 9px; border-radius: 7px; background: var(--text); color: var(--bg);
+  font-size: 11.5px; white-space: nowrap;
+}
+.ui-bubble::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: var(--text); }
+
+.ui-pages { display: flex; gap: 4px; }
+.ui-page {
+  min-width: 27px; height: 27px; padding: 0 6px; border-radius: 7px; border: 1px solid var(--border);
+  display: grid; place-items: center; font-size: 12.5px; color: var(--text-muted); font-feature-settings: 'tnum' 1;
+}
+.ui-page.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.ui-crumbs { font-size: 13px; color: var(--text-dim); display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+.ui-crumbs .on { color: var(--text); }
+
+.ui-stat-label { font-size: 12.5px; color: var(--text-muted); }
+.ui-stat-num { font-size: 32px; line-height: 1; font-feature-settings: 'tnum' 1; margin: 4px 0; }
+.ui-delta { font-size: 12px; color: #46c07a; }
+
+.ui-cap { font-size: 11.5px; color: var(--text-dim); text-align: center; margin-top: 8px; }
+.ui-table tr.total td { border-bottom: none; background: var(--surface-3); }
+
+.ui-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); display: grid; place-items: center; font-size: 11px; color: var(--bg); flex: 0 0 auto; }
+.ui-check.on { background: var(--text); border-color: var(--text); }
+.ui-radio { width: 16px; height: 16px; border-radius: 50%; border: 1px solid var(--border); position: relative; flex: 0 0 auto; }
+.ui-radio.on::after { content: ''; position: absolute; inset: 4px; border-radius: 50%; background: var(--text); }
+.ui-opt { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 4px 0; }
+
+.ui-toast, .ui-dialog {
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; background: var(--surface-1);
+}
+.ui-toast { box-shadow: 0 6px 20px rgba(0, 0, 0, .35); }
+.ui-toast-title, .ui-dialog-title { font-size: 13.5px; }
+.ui-toast-sub, .ui-dialog-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.ui-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+.ui-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+.ui-seg > span { padding: 6px 13px; font-size: 12.5px; color: var(--text-muted); border-left: 1px solid var(--border); }
+.ui-seg > span:first-child { border-left: none; }
+.ui-seg > span.on { background: var(--text); color: var(--bg); }
+
+.ui-nav { display: flex; flex-direction: column; gap: 1px; }
+.ui-nav-item { padding: 8px 10px; border-radius: 8px; font-size: 13px; color: var(--text-muted); }
+.ui-nav-item.on { background: var(--surface-3); color: var(--text); }
+.ui-nav-sec { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); padding: 6px 10px 2px; }
+
+.ui-empty { text-align: center; padding: 6px 4px; }
+.ui-empty-h { font-size: 15px; }
+.ui-empty-p { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 12px; line-height: 1.45; }
+
+.ui-sep { height: 1px; background: var(--border-subtle); margin: 5px 0; }
+
+/* Skeleton — the one particle that IS grey bars (a loading placeholder). */
+.ui-sk { background: var(--surface-3); border-radius: 6px; position: relative; overflow: hidden; }
+.ui-sk::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .07), transparent); animation: coss-sk 1.4s infinite; }
+.ui-sk--circle { border-radius: 50%; flex: 0 0 auto; }
+@keyframes coss-sk { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .ui-sk::after { animation: none; } }
+.ui-fade-in { animation: coss-fade .35s ease; }
+@keyframes coss-fade { from { opacity: .25; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .ui-fade-in { animation: none; } }
+
+/* Spinner particle + the infinite-scroll throbber that sits under the board. */
+.ui-spinner {
+  width: 18px; height: 18px; border-radius: 50%; flex: 0 0 auto;
+  border: 2px solid var(--border); border-top-color: var(--text);
+  animation: coss-spin .7s linear infinite;
+}
+@keyframes coss-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .ui-spinner { animation-duration: 2s; } }
+/* Loading pill — FIXED to the viewport; its left/top are computed from the preview panel's
+   box (see pillStyle) so it centres on the PREVIEW, not the window. */
+.coss-loading {
+  position: fixed; z-index: 60; width: max-content;
+  display: flex; align-items: center; gap: 9px;
+  padding: 8px 14px; border-radius: 999px;
+  background: var(--surface-2); border: 1px solid var(--border); box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+  color: var(--text-muted); font-size: 12.5px;
+}
+
+/* Group — controls visually attached into one unit (input + button). */
+.ui-group { display: flex; }
+.ui-group > .ui-field { flex: 1; border-radius: 8px 0 0 8px; border-right: none; }
+.ui-group > .ui-btn { border-radius: 0 8px 8px 0; }
+
+/* Fieldset — related controls under a shared legend. */
+.ui-fieldset { border: 1px solid var(--border); border-radius: 9px; padding: 12px 13px; }
+.ui-legend { font-size: 12px; margin-bottom: 9px; }
+
+/* ── Make particles LOOK interactive: pointer + hover/active states (visual only). ── */
+.ui-btn, .ui-item, .ui-tab, .ui-page, .ui-nav-item, .ui-opt, .ui-seg > span,
+.ui-switch, .ui-chip, .ui-crumbs .on, .ui-field, .ui-radio, .ui-check {
+  cursor: pointer;
+  transition: background .12s ease, border-color .12s ease, color .12s ease, opacity .12s ease;
+}
+.ui-btn:hover { border-color: var(--text); }
+.ui-btn--ghost:hover { background: var(--surface-3); border-color: transparent; }
+.ui-btn--primary:hover { opacity: .88; }
+.ui-btn:active { transform: translateY(0.5px); }
+.ui-item:hover:not(.on) { background: var(--surface-3); }
+.ui-nav-item:hover:not(.on) { background: var(--surface-3); color: var(--text); }
+.ui-tab:hover:not(.on) { color: var(--text); }
+.ui-page:hover:not(.on) { border-color: var(--text); color: var(--text); }
+.ui-opt:hover { color: var(--text); }
+.ui-field:hover { border-color: var(--text-muted); }
+.ui-seg > span:hover:not(.on) { background: var(--surface-3); color: var(--text); }
+
+/* Paginated list panel — a whole column that reads as a real UI surface. */
+.ui-rec { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: background .12s ease; }
+.ui-rec:hover { background: var(--surface-3); }
+.ui-rec-sub { font-size: 11.5px; color: var(--text-dim); }
+
+/* ── More particles ── */
+/* Card */
+.ui-card2 { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--surface-1); }
+.ui-card2-h { font-size: 14px; }
+.ui-card2-p { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+
+/* Calendar */
+.ui-cal-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+.ui-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.ui-cal-w { font-size: 10.5px; color: var(--text-dim); text-align: center; padding: 2px 0; }
+.ui-cal-d { font-size: 12px; text-align: center; padding: 5px 0; border-radius: 6px; font-feature-settings: 'tnum' 1; color: var(--text-muted); cursor: pointer; transition: background .12s ease; }
+.ui-cal-d:hover { background: var(--surface-3); color: var(--text); }
+.ui-cal-d.on { background: var(--text); color: var(--bg); }
+.ui-cal-d.dim { color: var(--text-faint); }
+
+/* Chart (bars) */
+.ui-chart { display: flex; align-items: flex-end; gap: 7px; height: 88px; }
+.ui-bar { flex: 1; background: var(--surface-3); border-radius: 4px 4px 0 0; }
+.ui-bar.hi { background: var(--text); }
+.ui-chart-x { display: flex; gap: 7px; margin-top: 6px; }
+.ui-chart-x span { flex: 1; text-align: center; font-size: 10px; color: var(--text-dim); }
+
+/* Code block */
+.ui-code { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.6; color: var(--text-muted); font-feature-settings: 'tnum' 1; overflow: hidden; }
+.ui-code .k { color: var(--text); }
+
+/* Kbd shortcut row */
+.ui-kbdrow { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-muted); }
+
+/* Timeline */
+.ui-tl { display: flex; flex-direction: column; gap: 0; }
+.ui-tl-row { display: flex; gap: 10px; }
+.ui-tl-rail { display: flex; flex-direction: column; align-items: center; }
+.ui-tl-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--text); margin-top: 4px; }
+.ui-tl-dot.o { background: transparent; border: 1.5px solid var(--border); }
+.ui-tl-line { width: 1.5px; flex: 1; background: var(--border-subtle); margin: 3px 0; }
+.ui-tl-body { padding-bottom: 12px; }
+.ui-tl-t { font-size: 13px; }
+.ui-tl-s { font-size: 11.5px; color: var(--text-dim); margin-top: 1px; }
+
+/* Toolbar */
+.ui-toolbar { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
+.ui-tool { padding: 7px 11px; font-size: 13px; color: var(--text-muted); border-left: 1px solid var(--border); cursor: pointer; transition: background .12s ease, color .12s ease; }
+.ui-tool:first-child { border-left: none; }
+.ui-tool:hover, .ui-tool.on { background: var(--surface-3); color: var(--text); }
+
+/* Login / Popover / Hover card panels */
+.ui-panel { border: 1px solid var(--border); border-radius: 10px; padding: 13px; background: var(--surface-1); }
+.ui-panel-h { font-size: 14px; margin-bottom: 10px; }
+
+/* Stepper */
+.ui-steps { display: flex; align-items: center; gap: 0; }
+.ui-step { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--text-muted); }
+.ui-step-n { width: 22px; height: 22px; border-radius: 50%; border: 1px solid var(--border); display: grid; place-items: center; font-size: 11.5px; font-feature-settings: 'tnum' 1; }
+.ui-step.on .ui-step-n { background: var(--text); color: var(--bg); border-color: var(--text); }
+.ui-step-bar { flex: 1; height: 1.5px; background: var(--border-subtle); margin: 0 8px; min-width: 14px; }
+
+/* Rating */
+.ui-stars { font-size: 17px; letter-spacing: 2px; }
+.ui-stars .on { color: var(--text); }
+.ui-stars .off { color: var(--border); }
+
+/* Dropdown menu (functioning) — floats out of its card, so that card allows overflow. */
+.coss-card--pop { overflow: visible; position: relative; z-index: 3; }
+.ui-menu-wrap { position: relative; align-self: center; }
+.ui-menu {
+  position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+  min-width: 216px; z-index: 60; padding: 5px; border-radius: 11px;
+  background: var(--surface-2); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .55);
+}
+.ui-menu-sec { font-size: 11.5px; color: var(--text-dim); padding: 6px 9px 3px; }
+.ui-menu-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 7px 9px; border-radius: 7px; font-size: 13.5px; cursor: pointer; white-space: nowrap;
+  transition: background .12s ease;
+}
+.ui-menu-item:hover { background: var(--surface-3); }
+.ui-menu-del { color: #e0603a; }
+.ui-menu .ui-switch { width: 30px; height: 18px; }
+.ui-menu .ui-switch::after { width: 13px; height: 13px; }
+
+/* Suspense fallback while the chunk loads on first click. */
+.scene-loading {
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; height: 60vh; color: var(--text-muted); font-size: 15px;
+}

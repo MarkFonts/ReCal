@@ -464,20 +464,24 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
           pairs={pairs} togglePair={togglePair}
           glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
       </div>
-      <div className="canvas-body">
+      {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
+          bottom ● preview/DEMO dock and drops the reserved play-bar padding → full height. */}
+      <div className={`canvas-body${mode === 'ui' ? ' canvas-body--full' : ''}`}>
         <div className="stage">
-          <div className="stage-scroll">
+          <div className={`stage-scroll${mode === 'ui' ? ' stage-scroll--flush' : ''}`}>
             <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
               source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
               paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers} />
           </div>
         </div>
-        <PreviewSurface
-          size={size} setSize={setSize}
-          tracking={tracking} setTracking={setTracking}
-          leading={leading} setLeading={setLeading}
-          feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
-          opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
+        {mode !== 'ui' && (
+          <PreviewSurface
+            size={size} setSize={setSize}
+            tracking={tracking} setTracking={setTracking}
+            leading={leading} setLeading={setLeading}
+            feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
+            opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
+        )}
       </div>
       <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
         leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}

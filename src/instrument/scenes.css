@@ -108,6 +108,10 @@
   padding: 2px 24px 10px 32px;   /* 32px left → aligns chips/tabs under "Words" */
 }
 .body-pairing { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+/* 8px inset so the plain text aligns to the tab-text column (buttons get it from padding). */
+.ui-credit { font-size: 13px; color: var(--text-muted); padding-left: 8px; }
+.ui-credit-link { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
+.ui-credit-link:hover { color: var(--accent); }
 
 /* Hairline slider (measure / per-scene): 2px track, small round thumb. */
 .scene-bar input[type="range"] {
@@ -187,28 +191,3 @@
   100%    { color: var(--text); }
 }
 
-/* ── UI mock ── */
-.ui-card {
-  max-width: 380px;
-  background: var(--surface-1);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 24px;
-  color: var(--text);
-}
-.ui-h1 { font-size: 26px; font-weight: 700; }
-.ui-sub { font-size: 14px; color: var(--text-muted); margin: 4px 0 20px; }
-.ui-days { display: flex; gap: 8px; margin-bottom: 16px; }
-.ui-day {
-  flex: 1; padding: 10px 0; border: 1px solid var(--border); background: var(--surface-2);
-  color: var(--text); border-radius: var(--radius); font-family: var(--ui-font); font-size: 13px; cursor: pointer;
-}
-.ui-times { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 20px; }
-.ui-time {
-  padding: 10px 0; border: 1px solid var(--border); background: transparent;
-  color: var(--text); border-radius: var(--radius); font-family: var(--ui-font); font-size: 14px; cursor: pointer;
-}
-.ui-confirm {
-  width: 100%; padding: 12px 0; border: none; background: var(--accent); color: var(--bg);
-  border-radius: var(--radius); font-family: var(--ui-font); font-size: 15px; font-weight: 700; cursor: pointer;
-}

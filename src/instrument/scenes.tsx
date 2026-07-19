@@ -3,7 +3,7 @@
 // are passed in as props; scenes here only read them. Everything renders through
 // effective() (renderVarSettings) — one engine. Models ported from font-proofer.
 import './scenes.css'
-import { useState, useEffect, useLayoutEffect, useRef, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize } from './render'
@@ -74,6 +74,14 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
           ))}
         </div>
       </div>
+    </div>
+  )
+  if (mode === 'ui') return (
+    <div className="scene-bar">
+      <span className="ui-credit">
+        These are <a className="ui-credit-link" href="https://coss.com/ui" target="_blank" rel="noreferrer">COSS ui</a>
+        {' '}— accessible React components on Base UI + Tailwind by <a className="ui-credit-link" href="https://github.com/pasqualevitiello" target="_blank" rel="noreferrer">Pasquale Vitiello</a>, adopted across Cal.com — rendered here in Cal Sans
+      </span>
     </div>
   )
   return null
@@ -191,7 +199,7 @@ export const SS_FEATURES: { tag: string; name: string }[] = [
 // ── Scenes ──────────────────────────────────────────────────────────────────────
 export const TEXT_SOURCES = Object.keys(TEXT_PRESETS)
 
-type SceneProps = {
+export type SceneProps = {
   size: number; ls: string; leading: number; featStr: string
   source: string; measure: number; pairs: Set<string>; glyphSet: string; opszAuto: boolean
   paraStyles: ParaStyles
@@ -679,25 +687,9 @@ function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
   )
 }
 
-// UI: booking mock set with the baked ◆ defaults (ignores ● play) — "what shipping
-// your ◆ looks like." Includes an Il1 stress line.
-function UI({ featStr, opszAuto }: SceneProps) {
-  const { state } = useInstrument()
-  const vs = renderVarSettings(state.defaults.axes, { skipOpsz: opszAuto })
-  const days = ['Mon 14', 'Tue 15', 'Wed 16', 'Thu 17']
-  const times = ['9:00', '9:30', '10:00', '11:15', '1:00', '2:30']
-  return (
-    <div className="stage-pad">
-      <div className="ui-card" style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr }}>
-        <div className="ui-h1">Book a call</div>
-        <div className="ui-sub">30 min · Illustration review — Il1 lIeg0</div>
-        <div className="ui-days">{days.map(d => <button key={d} className="ui-day">{d}</button>)}</div>
-        <div className="ui-times">{times.map(t => <button key={t} className="ui-time">{t}</button>)}</div>
-        <button className="ui-confirm">Confirm booking</button>
-      </div>
-    </div>
-  )
-}
+// COSS module gallery — lazy-loaded so its component + coss.css + markup ship in a
+// SEPARATE chunk fetched only when the tab is first opened (replaces the old UI mock).
+const CossScene = lazy(() => import('./CossScene'))
 
 export function Scene({ mode, ...props }: { mode: SceneMode } & SceneProps) {
   switch (mode) {
@@ -705,6 +697,10 @@ export function Scene({ mode, ...props }: { mode: SceneMode } & SceneProps) {
     case 'paragraph': return <Paragraph {...props} />
     case 'scale': return <Scale {...props} />
     case 'glyphs': return <Glyphs {...props} />
-    case 'ui': return <UI {...props} />
+    case 'ui': return (
+      <Suspense fallback={<div className="scene-loading"><span className="mode-throb" aria-hidden /> Loading…</div>}>
+        <CossScene {...props} />
+      </Suspense>
+    )
   }
 }

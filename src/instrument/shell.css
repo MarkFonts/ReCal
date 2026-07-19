@@ -197,6 +197,11 @@
      stage height stays constant whether the play bloom is open or closed */
   padding-bottom: 54px;
 }
+/* UI (COSS) has no bottom ● dock, so it reclaims that reserved height (no bottom crop). */
+.canvas-body--full { padding-bottom: 0; }
+/* …and the COSS board manages its own inset, so drop the scroll box's big bottom padding
+   (the 64px blank band under the board). */
+.stage-scroll.stage-scroll--flush { padding: 28px 48px 0; }
 .canvas-bar {
   display: flex;
   align-items: center;
