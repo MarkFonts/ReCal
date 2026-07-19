@@ -72,12 +72,16 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
   )
 }
 
-function Rail() {
+function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
   const tag = TAG_TEXT[stateTag(state)]
+  // Collapsed (narrow window): a strip showing just the label; clicking it expands.
+  // Otherwise it's the normal rail; touching it enters EDIT as before.
   return (
-    <div className={`rail${state.recalMode === 'demo' ? ' rail--demo' : ''}`}
-      onPointerDown={() => state.recalMode !== 'edit' && dispatch({ type: 'setRecalMode', mode: 'edit' })}>
+    <div className={`rail${state.recalMode === 'demo' ? ' rail--demo' : ''}${collapsed ? ' rail--collapsed' : ''}`}
+      onPointerDown={() => { if (!collapsed && state.recalMode !== 'edit') dispatch({ type: 'setRecalMode', mode: 'edit' }) }}
+      onClick={collapsed ? onToggle : undefined}>
+      <div className="rail-collapsed-label">ReCal Builder</div>
       <div className="rail-header">
         <div className="rail-header-top">
           <div className="rail-title">ReCal Builder</div>
@@ -132,6 +136,11 @@ function Rail() {
               onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
           ))}
         </div>
+        <label className="rail-toggle">
+          <input type="checkbox" checked={state.defaults.freezeOpsz}
+            onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
+          Freeze opsz
+        </label>
       </div>
 
       <div className="rail-group">
@@ -176,7 +185,9 @@ function ModeLabel() {
   useEffect(() => {
     const leaving = prev.current === 'edit' && state.recalMode === 'demo'
     prev.current = state.recalMode
-    if (!leaving) return
+    // Any non-leaving change (esp. re-entering EDIT mid-animation) resets the label,
+    // so the save spinner can never get stranded when the timers are cleaned up.
+    if (!leaving) { setSaving(null); return }
     setSaving('spin')
     const t1 = setTimeout(() => setSaving('check'), 650)
     const t2 = setTimeout(() => setSaving(null), 1400)
@@ -267,11 +278,9 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
     const onMove = (e: PointerEvent) => {
       const surf = surfRef.current
       if (!surf) return
-      // Hovering the floor transaction row (freeze-opsz / OFL / Download, which sits
-      // directly below the bar) collapses the preview so it's out of the way. Guard the
-      // WHOLE floor, not just the controls — else the empty gaps between controls would
-      // still satisfy the `clientY >= rect.top` open-rule and flicker it back open.
-      if (e.target instanceof Element && e.target.closest('.floor')) {
+      // Hovering the floating download dock (OFL + Download, bottom-right over the
+      // canvas) collapses the preview so it doesn't cover the pill.
+      if (e.target instanceof Element && e.target.closest('.dock-download')) {
         clearTimeout(timer)
         if (openRef.current) setOpen(false)
         return
@@ -401,9 +410,9 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
   )
 }
 
-// ── Floor: the transaction ────────────────────────────────────────────────────
-function Floor() {
-  const { state, dispatch } = useInstrument()
+// ── Download dock — a floating OFL + Download pill (no full-width floor). ─────────
+function DownloadDock() {
+  const { state } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
   const engine = useFontEngine(state.useHoi)
 
@@ -431,17 +440,9 @@ function Floor() {
     : 'Download'
 
   return (
-    <div className="floor">
-      <div className="floor-spacer" />
-      <label className="floor-toggle">
-        <input type="checkbox" checked={state.defaults.freezeOpsz}
-          onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
-        Freeze opsz
-      </label>
+    <div className="dock-download">
       {engine.error && (
-        <span className="floor-toggle" style={{ color: 'var(--text-muted)' }} title={engine.error}>
-          export failed — see console
-        </span>
+        <span className="dock-error" title={engine.error}>export failed — see console</span>
       )}
       <label className="floor-toggle">
         <input type="checkbox" checked={oflAgreed}
@@ -462,12 +463,24 @@ function Floor() {
   )
 }
 
+// The rail auto-collapses only on genuinely narrow windows (independent of edit/demo
+// mode); above this it stays open. Clicking the collapsed strip expands it.
+const RAIL_NARROW = '(max-width: 800px)'
+
 export default function Shell() {
   const { state } = useInstrument()
   const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
   const [leading, setLeading] = useState(1)
   const [opszAuto, setOpszAuto] = useState(true)
+  // Size-only: collapse when the window is narrow, pop open when it grows past 660px.
+  const [railCollapsed, setRailCollapsed] = useState(() => window.matchMedia(RAIL_NARROW).matches)
+  useEffect(() => {
+    const mq = window.matchMedia(RAIL_NARROW)
+    const on = (e: MediaQueryListEvent) => setRailCollapsed(e.matches)
+    mq.addEventListener('change', on)
+    return () => mq.removeEventListener('change', on)
+  }, [])
   // OpenType feature chips are global preview controls — they live in the play bar
   // and apply to every scene's text.
   const [feats, setFeats] = useState<Set<string>>(new Set(FEATS_DEFAULT))
@@ -486,15 +499,15 @@ export default function Shell() {
   }, [state.recalMode])
 
   return (
-    <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}`}>
-      <Rail />
+    <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
+      <Rail collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
       <Canvas
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}
         leading={leading} setLeading={setLeading}
         opszAuto={opszAuto} setOpszAuto={setOpszAuto}
         feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats} featStr={featStr} />
-      <Floor />
+      <DownloadDock />
     </div>
   )
 }

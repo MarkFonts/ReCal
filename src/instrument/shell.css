@@ -3,12 +3,10 @@
 .shell {
   display: grid;
   grid-template-columns: 264px 1fr;
-  grid-template-rows: 1fr auto;
-  grid-template-areas:
-    "rail canvas"
-    "floor floor";
+  grid-template-areas: "rail canvas";
   height: 100vh;
   overflow: hidden;
+  transition: grid-template-columns var(--dur) ease;
 }
 
 /* ── Rail — the font mutator (◆ file layer) ── */
@@ -23,6 +21,23 @@
   flex-direction: column;
   gap: 22px;
 }
+
+/* Narrow window collapses the rail to a strip showing just its label; clicking the
+   strip expands it. Width-only, independent of edit/demo mode. No chevron. */
+.rail-collapsed-label { display: none; }
+.shell--rail-collapsed { grid-template-columns: 44px 1fr; }
+.rail--collapsed { padding: 16px 0; gap: 0; overflow: hidden; cursor: pointer; align-items: center; }
+.rail--collapsed > *:not(.rail-collapsed-label) { display: none; }
+.rail--collapsed .rail-collapsed-label {
+  display: block;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-family: var(--ui-font);
+  font-size: 15px; font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.rail--collapsed:hover .rail-collapsed-label { color: var(--text); }
 .rail-header { display: flex; flex-direction: column; gap: 3px; }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */
@@ -476,6 +491,20 @@
 }
 .floor-btn:disabled { opacity: .45; cursor: default; }
 .floor-btn--primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+
+/* Floating download dock — OFL + Download, bottom-right of the canvas (no floor row). */
+.dock-download {
+  position: fixed;
+  right: 20px; bottom: 16px;
+  z-index: 50;
+  display: flex; align-items: center; gap: 14px;
+  padding: 8px 10px 8px 16px;
+  border-radius: calc(var(--radius) + 4px);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
+}
+.dock-error { font-size: 12px; color: var(--text-muted); }
 
 .ofl-check {
   display: flex;
