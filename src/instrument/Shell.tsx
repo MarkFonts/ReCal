@@ -13,6 +13,7 @@ import {
   Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode,
   DEFAULT_PARA_STYLES, PARA_STYLE_ORDER, PARA_STYLE_LABEL,
   type ParaStyleKey, type ParaStyle, type ParaStyles,
+  SCALE_TIERS, DEFAULT_SCALE_STYLES, type ScaleTierStyle, type ScaleStyles,
 } from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
@@ -217,7 +218,7 @@ function ModeLabel() {
   const editing = state.recalMode === 'edit'
   return (
     <div className={`mode-label${saving ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
-      {saving === 'spin' ? <><span className="mode-throb" aria-hidden /> Saving your ReCal…</>
+      {saving === 'spin' ? <><span className="mode-throb" aria-hidden /> Saving…</>
         : saving === 'check' ? <><span className="mode-check">✓</span> Saved</>
           : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
     </div>
@@ -273,13 +274,56 @@ function StyleMenu({ active, setActive, paraStyles }: {
   )
 }
 
-function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles }: {
+// Scale tier menu — MULTI-select which Tailwind tiers the controls target. Sizes are
+// fixed (Tailwind), so the checked tiers only receive tracking/leading (+ axes later).
+function TierMenu({ selected, toggle, scaleStyles }: {
+  selected: Set<string>; toggle: (k: string) => void; scaleStyles: ScaleStyles
+}) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!open) return
+    const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    document.addEventListener('pointerdown', onDoc)
+    return () => document.removeEventListener('pointerdown', onDoc)
+  }, [open])
+  const n = selected.size
+  const label = n === 0 ? 'No tiers' : n === 1 ? [...selected][0] : `${n} tiers`
+  return (
+    <div className="style-menu" ref={ref}>
+      <button className="style-menu-btn" onClick={() => setOpen(o => !o)}>
+        {label}<span className="style-menu-caret">▾</span>
+      </button>
+      {open && (
+        <div className="style-menu-list style-menu-list--scroll">
+          {SCALE_TIERS.map(t => {
+            const on = selected.has(t.key)
+            const st = scaleStyles[t.key]
+            return (
+              <button key={t.key} className={`style-menu-item${on ? ' on' : ''}`} onClick={() => toggle(t.key)}>
+                <span className="style-menu-check">{on ? '●' : '○'}</span>
+                <span className="style-menu-name">{t.key}</span>
+                <span className="style-menu-badges tnum">
+                  {st && st.tracking !== 0 && <span className="style-badge">{st.tracking > 0 ? '+' : '−'}{Math.abs(st.tracking)}</span>}
+                  <span className="style-badge">{t.px}px</span>
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, selectedTiers, toggleTier, scaleStyles }: {
   mode: SceneMode
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
   measure: number; setMeasure: (n: number) => void
   activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
+  selectedTiers: Set<string>; toggleTier: (k: string) => void; scaleStyles: ScaleStyles
 }) {
   const rows = TYPE_ROWS[mode] ?? []
   // Draggable by the header. Position persists across sessions; free-drag against the
@@ -328,6 +372,9 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
         onPointerUp={onUp} onPointerCancel={onUp}>Type</div>
       {mode === 'paragraph' && (
         <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
+      )}
+      {mode === 'scale' && (
+        <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
       )}
       {has('size') && (
         <div className="prow">
@@ -383,34 +430,48 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const [activeParaStyle, setActiveParaStyle] = useState<ParaStyleKey>('p')
   const patchPara = (p: Partial<ParaStyle>) =>
     setParaStyles(s => ({ ...s, [activeParaStyle]: { ...s[activeParaStyle], ...p } }))
-  // In Paragraph mode the size/tracking/leading controls target the selected style;
-  // elsewhere they drive the global view state.
+  // Per-tier Scale styles + which tier(s) the controls target (multi-select). Sizes
+  // stay Tailwind-fixed; only tracking/leading get edited here.
+  const [scaleStyles, setScaleStyles] = useState<ScaleStyles>(DEFAULT_SCALE_STYLES)
+  const [selectedTiers, setSelectedTiers] = useState<Set<string>>(() => new Set(['text-9xl']))
+  const toggleTier = (k: string) => setSelectedTiers(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
+  const patchScale = (p: Partial<ScaleTierStyle>) =>
+    setScaleStyles(s => { const n = { ...s }; selectedTiers.forEach(k => { n[k] = { ...n[k], ...p } }); return n })
+  // In Paragraph mode the controls target the selected style; in Scale mode they target
+  // every selected tier at once (reading the first as the shown value); else global.
   const isPara = mode === 'paragraph'
+  const isScale = mode === 'scale'
   const ps = paraStyles[activeParaStyle]
+  const firstTier = [...selectedTiers][0] ?? 'text-9xl'
+  const sc = scaleStyles[firstTier] ?? { tracking: 0, leading: 1.4 }
   const tSize = isPara ? ps.size : size
   const tSetSize = isPara ? (v: number) => patchPara({ size: v }) : setSize
-  const tTracking = isPara ? ps.tracking : tracking
-  const tSetTracking = isPara ? (v: number) => patchPara({ tracking: v }) : setTracking
-  const tLeading = isPara ? ps.leading : leading
-  const tSetLeading = isPara ? (v: number) => patchPara({ leading: v }) : setLeading
+  const tTracking = isPara ? ps.tracking : isScale ? sc.tracking : tracking
+  const tSetTracking = isPara ? (v: number) => patchPara({ tracking: v }) : isScale ? (v: number) => patchScale({ tracking: v }) : setTracking
+  const tLeading = isPara ? ps.leading : isScale ? sc.leading : leading
+  const tSetLeading = isPara ? (v: number) => patchPara({ leading: v }) : isScale ? (v: number) => patchScale({ leading: v }) : setLeading
 
   return (
     <div className="canvas">
       <div className="canvas-bar">
         <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
       </div>
-      <ModeLabel />
+      {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
+          disappearing never shifts the label (or stage) vertically. */}
+      <div className="mode-row">
+        <ModeLabel />
+        <SceneControls mode={mode} source={source} setSource={setSource}
+          pairs={pairs} togglePair={togglePair}
+          glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+      </div>
       <div className="canvas-body">
         <div className="stage">
           <div className="stage-scroll">
             <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
               source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
-              paraStyles={paraStyles} />
+              paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers} />
           </div>
         </div>
-        <SceneControls mode={mode} source={source} setSource={setSource}
-          pairs={pairs} togglePair={togglePair}
-          glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
         <PreviewSurface
           size={size} setSize={setSize}
           tracking={tracking} setTracking={setTracking}
@@ -420,7 +481,8 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
       </div>
       <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
         leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
-        activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles} />
+        activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
+        selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles} />
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>

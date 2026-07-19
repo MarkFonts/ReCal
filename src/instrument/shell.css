@@ -203,6 +203,25 @@
   padding: 12px 24px;
 }
 
+/* Mode label + its per-mode submenu on one baseline-aligned row, single left inset so
+   they line up under "Words" and nothing jumps when the submenu shows/hides. */
+.mode-row {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  min-height: 42px;            /* = tab-button row (32) + the 10px bottom padding, reserved
+                                  with or without a submenu so the label never jumps up on
+                                  Words/UI (no controls). box-sizing is border-box. */
+  padding: 0 24px 10px 32px;   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
+}
+/* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
+   always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
+.mode-row .mode-label { padding: 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }
+.mode-row .scene-bar { flex-direction: row; align-items: center; gap: 12px; padding: 0; }
+/* The Body-pairing label has no button padding; inset it 8px so its text lines up with
+   the tab-text column (tab buttons inset their own text by 8px). */
+.mode-row .body-pairing { padding-left: 8px; }
+
 /* ── Mode label — below the scene tabs, aligned with the "Words" text. Bold italic;
    throbs in EDIT. Leaving EDIT shows the save throbber → green check. ── */
 .mode-label {
@@ -567,7 +586,11 @@
 .style-menu-item.on { background: var(--surface-3); }
 .style-menu-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
 .style-menu-item:hover .style-badge { color: var(--bg); border-color: rgba(0, 0, 0, .35); }
-.style-menu-name { white-space: nowrap; }
+.style-menu-item:hover .style-menu-check { color: var(--bg); }
+.style-menu-name { white-space: nowrap; margin-right: auto; }
+.style-menu-check { flex-shrink: 0; width: 12px; font-size: 11px; color: var(--text-dim); }
+.style-menu-item.on .style-menu-check { color: var(--accent, var(--text)); }
+.style-menu-list--scroll { max-height: 340px; overflow-y: auto; }
 .style-menu-badges { display: flex; gap: 4px; flex-shrink: 0; }
 .style-badge {
   font-size: 10px; color: var(--text-dim); white-space: nowrap;

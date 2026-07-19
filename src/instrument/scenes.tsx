@@ -138,6 +138,14 @@ export const DISPLAY_TIERS = [
 export const BODY_TIERS = [
   { key: 'text-lg', px: 18 }, { key: 'text-base', px: 16 }, { key: 'text-sm', px: 14 }, { key: 'text-xs', px: 12 },
 ]
+// Every tier (largest → smallest) for the Scale style menu. Sizes are Tailwind-fixed;
+// only tracking/leading (+ axes later) are per-tier editable.
+export const SCALE_TIERS = [...DISPLAY_TIERS, ...BODY_TIERS]
+export type ScaleTierStyle = { tracking: number; leading: number }
+export type ScaleStyles = Record<string, ScaleTierStyle>
+export const DEFAULT_SCALE_STYLES: ScaleStyles = Object.fromEntries(
+  SCALE_TIERS.map(t => [t.key, { tracking: 0, leading: t.px >= 44 ? 1.05 : 1.4 }]),
+)
 const HEAD_WORD = 'Cal Sans'
 const PAIR_BODY = 'A wonderful serenity has taken possession of my entire soul, like these sweet mornings of spring which I enjoy with my whole heart. I am alone, and feel the charm of existence in this spot, which was created for the bliss of souls like mine.'
 
@@ -187,6 +195,7 @@ type SceneProps = {
   size: number; ls: string; leading: number; featStr: string
   source: string; measure: number; pairs: Set<string>; glyphSet: string; opszAuto: boolean
   paraStyles: ParaStyles
+  scaleStyles: ScaleStyles; selectedTiers: Set<string>
 }
 
 // When opsz-auto is on, omit opsz from the settings and set font-optical-sizing:auto
@@ -586,7 +595,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
   )
 }
 
-function Scale({ featStr, pairs, measure, ls, leading }: SceneProps) {
+function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
   const mult = state.defaults.opszMultiplier
@@ -597,6 +606,11 @@ function Scale({ featStr, pairs, measure, ls, leading }: SceneProps) {
   const flash = useGeomFlash()
   const [head, setHead] = useState(HEAD_WORD)
   const [body, setBody] = useState(PAIR_BODY)
+  // Per-tier tracking/leading (Scale style menu); size stays Tailwind-fixed.
+  const tierStyle = (key: string) => {
+    const st = scaleStyles[key] ?? { tracking: 0, leading: 1.4 }
+    return { letterSpacing: `${st.tracking / 100}em`, lineHeight: st.leading }
+  }
   return (
     <div className="stage-pad">
       {DISPLAY_TIERS.map(d => (
@@ -608,11 +622,11 @@ function Scale({ featStr, pairs, measure, ls, leading }: SceneProps) {
             )}
           </div>
           {/* Headline + body are editable and synced live across every size tier. */}
-          <EditableText value={head} onCommit={setHead} className="tier-head" boldVs={boldVs} italVs={italVs} flash={flash}
-            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr, letterSpacing: ls, lineHeight: leading }} />
+          <EditableText value={head} onCommit={setHead} className={`tier-head${selectedTiers.has(d.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash}
+            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr, ...tierStyle(d.key) }} />
           {use.map(b => (
-            <EditableText key={b.key} value={body} onCommit={setBody} className="tier-body" boldVs={boldVs} italVs={italVs} flash={flash}
-              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr, letterSpacing: ls, lineHeight: leading }} />
+            <EditableText key={b.key} value={body} onCommit={setBody} className={`tier-body${selectedTiers.has(b.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash}
+              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr, ...tierStyle(b.key) }} />
           ))}
         </div>
       ))}
