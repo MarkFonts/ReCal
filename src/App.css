@@ -1364,8 +1364,11 @@ button {
   cursor: pointer;
 }
 
+/* Theme-agnostic hover: lighten the button's own colour instead of forcing white,
+   which was dark-mode-hostile in BOTH the classic app and the instrument. Transparent
+   (all:unset) buttons stay transparent — no more white flash, no per-button override. */
 button:hover:not(:disabled) {
-  background: #fff;
+  filter: brightness(1.12);
 }
 
 button:disabled {
