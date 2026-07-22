@@ -48,10 +48,15 @@ export interface InstrumentState {
   useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
   buildName: string                             // editable export family name (INFO receipt)
   recalMode: 'edit' | 'demo'                    // EDIT = build the ◆ (play dimmed); DEMO = preview (rail dimmed)
+  past: DefaultsLayer[]                          // ◆ undo history (matrix drags snapshot on grab)
+  future: DefaultsLayer[]                        // ◆ redo stack
 }
 
 const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> =>
   Object.fromEntries(Object.entries(t).map(([k, v]) => [k, [...v]]))
+
+const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
+  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds) })
 
 export function shippedThresholds(): Record<string, number[]> {
   return Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
@@ -77,6 +82,8 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES): InstrumentS
     useHoi: false,
     buildName: 'ReCal Sans',
     recalMode: 'edit',   // open in EDIT (building the ◆); DEMO is the preview mode you switch to
+    past: [],
+    future: [],
   }
 }
 
@@ -134,6 +141,9 @@ export type Action =
   | { type: 'setBuildName'; name: string }
   | { type: 'setRecalMode'; mode: 'edit' | 'demo' }           // entering 'edit' clears preview
   | { type: 'resetDefaults' }                                 // rail reset: ◆ → SHIPPED + clear preset
+  | { type: 'pushHistory' }                                   // snapshot ◆ before a drag (one undo grain per drag)
+  | { type: 'undo' }
+  | { type: 'redo' }
 
 export function reducer(s: InstrumentState, a: Action): InstrumentState {
   switch (a.type) {
@@ -179,6 +189,18 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       // (naming choice) aren't bake-target adjustments — all preserved (§3.3).
       const fresh = createInitialState(s.shipped)
       return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName, recalMode: s.recalMode }
+    }
+    case 'pushHistory':
+      return { ...s, past: [...s.past, cloneDefaults(s.defaults)], future: [] }
+    case 'undo': {
+      if (s.past.length === 0) return s
+      const prev = s.past[s.past.length - 1]
+      return { ...s, defaults: prev, past: s.past.slice(0, -1), future: [cloneDefaults(s.defaults), ...s.future] }
+    }
+    case 'redo': {
+      if (s.future.length === 0) return s
+      const next = s.future[0]
+      return { ...s, defaults: next, past: [...s.past, cloneDefaults(s.defaults)], future: s.future.slice(1) }
     }
     default:
       return s

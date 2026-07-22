@@ -638,3 +638,114 @@
 .preview-surface input[type="range"]:focus-visible::-webkit-slider-thumb {
   background: var(--text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);
 }
+
+/* ── descent seams: a bottom chevron replaces a tab bar ──────────────────────
+   Both chevrons point down. The holo one travels down into the matrix; the
+   muted one (top of the matrix) pushes the matrix back down. */
+.rail-seam {
+  all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
+  gap: 10px; cursor: pointer; user-select: none; padding: 14px 16px;
+  font-family: var(--ui-font); font-size: 12px; letter-spacing: .18em;
+}
+.rail-seam:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.rail-seam-chv { width: 20px; height: 9px; display: block; }
+.rail-seam-lbl { white-space: nowrap; }
+
+.rail-seam--down { color: #b9c4d6; border-top: 1px solid var(--border-subtle); }
+.rail-seam--down .rail-seam-lbl {
+  background-image: linear-gradient(100deg,#6ad0ff 0%,#8affd6 18%,#d9a6ff 34%,#ffb0e6 48%,#ffe08a 62%,#7fffd0 78%,#6ab8ff 100%);
+  background-size: 260% auto; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: rail-holo 5.5s linear infinite;
+}
+@keyframes rail-holo { to { background-position: 260% center; } }
+
+/* App.css has a global button:hover that paints buttons white — override it so the
+   seam NEVER flashes white in dark mode. :not(:disabled) wins the specificity race. */
+.rail-seam:hover:not(:disabled),
+.rail-seam:focus-visible:not(:disabled) { background: var(--surface-2); }
+.rail-seam--down:hover:not(:disabled) .rail-seam-lbl { filter: brightness(1.2); }
+
+.rail-seam--up { color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
+.rail-seam--up:hover:not(:disabled) { color: rgba(232,232,232,.6); }
+
+.rail-matrix, .rail-blank { display: flex; flex-direction: column; gap: 14px; }
+.rail-blank-body { min-height: 260px; }
+
+/* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
+   next rides up from below. Ascend (up-seam): the mirror — current slides DOWN + out,
+   next comes from above. Keyed by group index, so each arrival is a fresh mount. */
+.rail-descent { display: flex; flex-direction: column; gap: 22px; }
+.rail-descent--fwd  { animation: descend-enter .4s var(--spring); }
+.rail-descent--back { animation: ascend-enter  .4s var(--spring); }
+.rail-descent--fwd.rail-descent--leaving  { animation: descend-leave .15s ease-in forwards; }
+.rail-descent--back.rail-descent--leaving { animation: ascend-leave  .15s ease-in forwards; }
+@keyframes descend-enter { from { opacity: 0; transform: translateY(30px); }  to { opacity: 1; transform: translateY(0); } }
+@keyframes descend-leave { from { opacity: 1; transform: translateY(0); }     to { opacity: 0; transform: translateY(-24px); } }
+@keyframes ascend-enter  { from { opacity: 0; transform: translateY(-30px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes ascend-leave  { from { opacity: 1; transform: translateY(0); }     to { opacity: 0; transform: translateY(24px); } }
+@media (prefers-reduced-motion: reduce) { .rail-descent { animation: none !important; } }
+
+/* ── GEOM swap editor (type matrix), instrument-styled ── */
+/* Horizontal padding insets everything together (bands, shade, axis labels are all
+   positioned within this box), so nothing jams the rail edge. */
+.matrix { display: flex; flex-direction: column; padding: 0 7px; }
+.matrix-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.matrix-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.matrix-reset {
+  all: unset; cursor: pointer; font-family: var(--ui-font); font-size: 12px; color: var(--text-muted);
+  padding: 2px 7px; border-radius: 5px;
+}
+.matrix-reset:hover:not(:disabled) { color: var(--text); background: var(--surface-3); }
+.matrix-reset:disabled { color: var(--text-faint); cursor: default; }
+.matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
+.matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: 10px; letter-spacing: .04em; color: rgba(255,255,255,.2); }
+.matrix-axis-tick--mid { transform: translateX(-50%); }
+.matrix-axis-tick--end { transform: translateX(-100%); }
+.matrix-rows { display: flex; flex-direction: column; gap: 4px; position: relative; }
+/* Fade the shade in/out vertically so the band eases in at the top and out at the
+   bottom instead of hard-cutting at the first / last lane. */
+.matrix-geom-shade {
+  position: absolute; inset: 0; z-index: 0; pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 calc(100% - 10px), transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 calc(100% - 10px), transparent 100%);
+}
+/* No z-index here: the lane must NOT form a stacking context, so its ◆ handles (z:3)
+   win the click over the GEOM grabber (z:2) wherever they overlap the default line. */
+.matrix-lane { position: relative; height: 34px; }
+.matrix-band { position: absolute; top: 25px; height: 3px; border-radius: 2px; opacity: .38; transition: opacity var(--dur-fast); }
+.matrix-band.on { opacity: 1; }
+.matrix-vglyph {
+  position: absolute; top: 1px; transform: translateX(-50%); white-space: nowrap;
+  font-size: 17px; line-height: 1; color: var(--text-dim); opacity: .4; pointer-events: none;
+  transition: opacity var(--dur-fast), color var(--dur-fast);
+}
+.matrix-vglyph.on { color: var(--text); opacity: 1; }
+/* Your ◆ remapping — the draggable handle, in the rail's ◆ accent language. */
+.matrix-handle {
+  position: absolute; top: 21px; width: 12px; height: 12px; margin-left: -6px; border-radius: 2px;
+  background: var(--accent); transform: rotate(45deg);
+  box-shadow: 0 0 0 1px var(--bg); cursor: ew-resize; touch-action: none; z-index: 3;
+}
+.matrix-handle:hover { background: #fff; }
+/* Cal Sans shipped default — a ghostly ● behind the track; stays put when you drag ◆ away. */
+.matrix-shipped {
+  position: absolute; top: 23px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
+  background: var(--text-muted); opacity: .28; pointer-events: none;
+}
+/* Transparent drag grabber on the hard line where the two shades meet (ew-resize). */
+.matrix-geom { position: absolute; top: 0; bottom: 0; width: 11px; margin-left: -5.5px; z-index: 2; cursor: ew-resize; touch-action: none; }
+.matrix-note { font-size: 11px; color: var(--text-dim); line-height: 1.5; margin-top: 16px; }
+
+/* Drag-only value chip: rises up from the dial you grabbed, fades down on release. */
+.matrix-val {
+  position: absolute; top: 3px; transform: translateX(-50%);
+  font-family: var(--ui-font); font-size: 10px; letter-spacing: .02em; color: var(--text);
+  background: var(--surface-3); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  pointer-events: none; z-index: 5; white-space: nowrap;
+}
+.matrix-val--geom { top: -2px; }
+.matrix-val--in { animation: matrix-val-in .18s var(--spring); }
+.matrix-val--out { animation: matrix-val-out .24s ease-in forwards; }
+@keyframes matrix-val-in { from { opacity: 0; transform: translateX(-50%) translateY(6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+@keyframes matrix-val-out { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(6px); } }

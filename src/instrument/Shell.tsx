@@ -18,6 +18,7 @@ import {
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { useFontEngine } from './useFontEngine'
+import { Matrix } from './Matrix'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -78,9 +79,39 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
   )
 }
 
+// Down chevron for the descent seams. Both seams point down: clicking the holo one
+// travels down into the matrix; clicking the muted one pushes the matrix back down.
+function SeamChevron() {
+  return (
+    <svg className="rail-seam-chv" viewBox="0 0 22 10" aria-hidden="true">
+      <path d="M1 1.5 11 8.5 21 1.5" fill="none" stroke="currentColor" strokeWidth="2.2"
+        strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  )
+}
+
 function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
+  // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = ssXX Freezer.
+  const [group, setGroup] = useState(0)
+  const [leaving, setLeaving] = useState(false)
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
+  // Descend (down-seam): current slides up + out, next rides up from below.
+  // Ascend (up-seam): the opposite — current slides down + out, next comes from above.
+  const go = (i: number, d: 'fwd' | 'back') => { setDir(d); setLeaving(true); setTimeout(() => { setGroup(i); setLeaving(false) }, 150) }
   const tag = TAG_TEXT[stateTag(state)]
+  // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!(e.metaKey || e.ctrlKey) || e.key.toLowerCase() !== 'z') return
+      const t = e.target as HTMLElement | null
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return
+      e.preventDefault()
+      dispatch({ type: e.shiftKey ? 'redo' : 'undo' })
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [dispatch])
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.
   return (
@@ -98,6 +129,8 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         <div className="rail-sub">◆ your defaults — baked into the export</div>
       </div>
 
+      <div key={group} className={`rail-descent rail-descent--${dir}${leaving ? ' rail-descent--leaving' : ''}`}>
+      {group === 0 && (<>
       <div className="rail-group">
         <div className="rail-group-label">Start from</div>
         <select className="rail-preset" value={state.activePreset ?? ''}
@@ -190,9 +223,41 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         </label>
       </div>
 
+      <button className="rail-seam rail-seam--down" onClick={() => go(1, 'fwd')}>
+        <SeamChevron /><span className="rail-seam-lbl">TYPE MATRIX</span><SeamChevron />
+      </button>
+      </>)}
+
+      {group === 1 && (
+      <div className="rail-matrix">
+        <button className="rail-seam rail-seam--up" onClick={() => go(0, 'back')}>
+          <SeamChevron /><span className="rail-seam-lbl">TYPE MATRIX</span><SeamChevron />
+        </button>
+        <Matrix />
+        <button className="rail-seam rail-seam--down" onClick={() => go(2, 'fwd')}>
+          <SeamChevron /><SeamChevron />
+        </button>
+      </div>
+      )}
+
+      {group === 2 && (
+      <div className="rail-blank">
+        <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
+          <SeamChevron /><SeamChevron />
+        </button>
+        <div className="rail-blank-body" />
+        <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
+          <SeamChevron /><SeamChevron />
+        </button>
+      </div>
+      )}
+      </div>{/* /rail-descent */}
+
+      {/* YOUR ◆ state tag — hidden for now
       <div className="rail-footer">
         <span className="state-tag" style={{ color: tag.color }}>{tag.label}</span>
       </div>
+      */}
     </div>
   )
 }
