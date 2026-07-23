@@ -797,6 +797,27 @@ type EBlock = { id: string; type: Block['type']; text: string }
 const presetBlocks = (source: string): EBlock[] =>
   (TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample).map((b, i) => ({ id: `${source}-${i}`, type: b.type, text: b.text }))
 
+// Compare-page font swap, sitting under the paragraph like a line of text (fused SEO
+// pages only — state.compare comes from BOOT). The target name renders in the font
+// you'd switch TO, so "compare to (Geist ⇄)" already shows what Geist looks like.
+function CompareInline() {
+  const { state, dispatch } = useInstrument()
+  const cmp = state.compare
+  if (!cmp) return null
+  const on = state.compareOn
+  return (
+    <div className="compare-inline">
+      {on ? 'comparing — back to ' : 'compare to '}
+      <button className="compare-inline-btn"
+        style={{ fontFamily: on ? "'CalSansPreview', 'CalSansVF', sans-serif" : cmp.family }}
+        title={on ? 'Back to ReCal Sans' : `Show this text in ${cmp.label}`}
+        onClick={() => dispatch({ type: 'setCompareOn', on: !on })}>
+        ({on ? 'ReCal Sans' : cmp.label} ⇄)
+      </button>
+    </div>
+  )
+}
+
 function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
@@ -891,6 +912,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
             </div>
           )
         })}
+        <CompareInline />
       </div>
     </div>
   )

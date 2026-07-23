@@ -87,6 +87,27 @@
 .para-block { margin: 0 0 14px; color: var(--text); font-weight: inherit; outline: none; caret-color: var(--text); }
 .para-block--h1, .para-block--h2, .para-block--h3 { margin-top: 10px; }
 .para-block:empty::before { content: '\200b'; color: transparent; }   /* keep empty blocks clickable */
+/* Compare swap — a line of text under the paragraph (fused SEO pages only). The
+   button renders the target's name in the target font: the label is the preview. */
+.compare-inline {
+  margin-top: 26px;
+  font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
+  font-size: 15px;
+  color: var(--text-muted);
+}
+.compare-inline-btn {
+  font-size: inherit;
+  color: var(--text);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-decoration-style: dotted;
+  text-underline-offset: 3px;
+  transition: color .15s;
+}
+.compare-inline-btn:hover { color: var(--accent); }
 .drawer-row { display: flex; align-items: center; gap: 12px; max-width: 360px; }
 /* Section labels (not controls) — bold so they read as headers above the chips. */
 .drawer-label { font-size: 12px; font-weight: 700; color: var(--text-muted); width: 90px; }

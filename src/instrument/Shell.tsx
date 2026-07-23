@@ -474,23 +474,6 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
   )
 }
 
-// Compare-page font swap (fused SEO pages only — state.compare comes from BOOT).
-// One button: specimen text flips between ReCal Sans and the referent webfont; the
-// play dock keeps working, mapped to what the referent supports (wght via
-// font-weight, ital ≥ .5 snaps to real italics, unsupported axes gray out).
-function CompareToggle() {
-  const { state, dispatch } = useInstrument()
-  if (!state.compare) return null
-  const on = state.compareOn
-  return (
-    <button className={`compare-toggle${on ? ' on' : ''}`}
-      title={on ? 'Back to ReCal Sans' : `Show this text in ${state.compare.label}`}
-      onClick={() => dispatch({ type: 'setCompareOn', on: !on })}>
-      ⇄ {on ? 'ReCal Sans' : state.compare.label}
-    </button>
-  )
-}
-
 function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
@@ -547,7 +530,6 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
         <SceneControls mode={mode} source={source} setSource={setSource}
           pairs={pairs} togglePair={togglePair}
           glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
-        <CompareToggle />
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
           bottom ● preview/DEMO dock and drops the reserved play-bar padding → full height. */}

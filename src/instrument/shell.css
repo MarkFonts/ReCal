@@ -226,24 +226,6 @@
 /* The Body-pairing label has no button padding; inset it 8px so its text lines up with
    the tab-text column (tab buttons inset their own text by 8px). */
 .mode-row .body-pairing { padding-left: 8px; }
-/* Compare-page font swap — right-aligned in the mode row (fused SEO pages only).
-   The right margin clears the floating TYPE panel's default docking spot. */
-.compare-toggle {
-  margin-left: auto;
-  margin-right: 200px;
-  flex: 0 0 auto;
-  font-family: var(--ui-font);
-  font-size: 12px;
-  color: var(--text-muted);
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 5px 12px;
-  cursor: pointer;
-  transition: color .15s, border-color .15s;
-}
-.compare-toggle:hover { color: var(--text); border-color: var(--text-dim); }
-.compare-toggle.on { color: var(--text); border-color: var(--accent); }
 
 /* ── Mode label — below the scene tabs, aligned with the "Words" text. Bold italic;
    throbs in EDIT. Leaving EDIT shows the save throbber → green check. ── */
