@@ -761,12 +761,19 @@ const RAIL_NARROW = '(max-width: 800px)'
 export default function Shell() {
   const { state, dispatch } = useInstrument()
   // Deep-link boot: ?preset=Poppins or a fused landing page's window.__RECAL_BOOT
-  // auto-applies a preset. Case-insensitive; unknown values are ignored.
+  // auto-applies a preset. Case-insensitive; unknown values are ignored. Referents
+  // that are NOT presets (e.g. Gotham) resemble themselves via raw BOOT.axes instead.
   useEffect(() => {
     const want = BOOT.preset
-    if (!want) return
-    const p = PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
-    if (p) applyPreset(dispatch, p)
+    const p = want && PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
+    if (p) { applyPreset(dispatch, p); return }
+    if (BOOT.axes) {
+      for (const [tag, value] of Object.entries(BOOT.axes)) dispatch({ type: 'setDefaultAxis', tag, value })
+      if (BOOT.freezeOpsz != null) {
+        dispatch({ type: 'setFreezeOpsz', value: true })
+        dispatch({ type: 'setFrozenOpszValue', value: BOOT.freezeOpsz })
+      }
+    }
   }, [dispatch])
   // Lazy-load the referent webfont the first time Compare is turned on — the
   // stylesheet URL rides BOOT.compare.css, injected once, so pure-preview visitors

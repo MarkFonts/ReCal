@@ -811,6 +811,18 @@ function CompareInline() {
   const { state, dispatch } = useInstrument()
   const cmp = state.compare
   if (!cmp) return null
+  // Paid referents with no embeddable webfont (Gotham, Neutraface, Circular,
+  // GT America): the swap can't fire, so the control is grayed — the specimen above
+  // still shows Cal Sans tuned to resemble it. (SVG disabled-mark lands here later.)
+  if (!cmp.css) {
+    return (
+      <div className="compare-inline compare-inline--disabled"
+        title={`${cmp.label} has no free webfont to embed — the specimen above is Cal Sans tuned to resemble it`}>
+        compare to <span className="compare-inline-btn" aria-disabled="true">({cmp.label} ⇄)</span>
+        <span className="compare-inline-note"> — no free webfont to embed</span>
+      </div>
+    )
+  }
   const on = state.compareOn
   return (
     <div className="compare-inline">

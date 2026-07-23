@@ -144,6 +144,7 @@ export const SEO_PRESETS = [
     kind: 'paid',
     axes: vs({ GEOM: 25, YTAS: 800, SHRP: 100 }),
     opticalSizing: false,
+    compare: { label: 'Neutraface', family: 'sans-serif', italic: false },
     title: 'ReCal Sans — a free variable alternative to Neutra',
     description:
       'ReCal Sans is a free, open-source variable sans you can tune in the browser and download. If you like Neutra’s architectural modernism, this is an OFL alternative with tall ascenders, sharp terminals, and real optical sizing.',
@@ -166,6 +167,7 @@ export const SEO_PRESETS = [
     kind: 'paid',
     axes: vs({ GEOM: 25, opsz: 20 }),
     opticalSizing: false,
+    compare: { label: 'Circular', family: 'sans-serif', italic: false },
     title: 'ReCal Sans — a free variable alternative to Circular',
     description:
       'ReCal Sans is a free, open-source variable geometric sans you can tune in the browser and download. If you use Circular, this is a customizable, OFL alternative with a friendlier license and a real optical-size axis.',
@@ -184,10 +186,15 @@ export const SEO_PRESETS = [
   {
     slug: 'gotham',
     referent: 'Gotham',
-    preset: 'Gotham',
+    // Gotham is deliberately NOT an app preset — the page resembles it via raw boot
+    // axes so the tool never ships a named "Gotham" preset. Still fully SEO-findable.
+    bootAxes: { GEOM: 50 },
+    bootFreezeOpsz: 14,
     kind: 'paid',
     axes: vs({ GEOM: 50, opsz: 14 }),
     opticalSizing: false,
+    // No embeddable webfont → disabled compare control (label only, no css).
+    compare: { label: 'Gotham', family: 'sans-serif', italic: false },
     title: 'ReCal Sans — a free variable alternative to Gotham',
     description:
       'ReCal Sans is a free, open-source variable geometric sans you can tune in the browser and download. If you use Gotham, this is a customizable, OFL alternative with a real optical-size axis.',
@@ -210,6 +217,7 @@ export const SEO_PRESETS = [
     kind: 'paid',
     axes: vs({ GEOM: 25, opsz: 8 }),
     opticalSizing: false,
+    compare: { label: 'GT America', family: 'sans-serif', italic: false },
     title: 'ReCal Sans — a free variable alternative to GT America',
     description:
       'ReCal Sans is a free, open-source variable sans you can tune in the browser and download. If you license GT America, this is a customizable, OFL alternative with an accessibility-to-geometric axis.',

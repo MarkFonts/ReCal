@@ -27,6 +27,10 @@ export type BootConfig = {
   scene?: string
   pitch?: { title: string; paragraphs: string[] }
   compare?: CompareSpec
+  axes?: Record<string, number>    // raw axis defaults for a page whose referent is
+                                   // NOT an app preset (e.g. Gotham): resemble it
+                                   // without shipping a named preset
+  freezeOpsz?: number              // pin opsz to this value alongside BOOT.axes
 }
 
 const injected: BootConfig = (window as any).__RECAL_BOOT ?? {}
@@ -37,4 +41,6 @@ export const BOOT: BootConfig = {
   scene: params.get('scene') ?? injected.scene,
   pitch: injected.pitch,
   compare: injected.compare,
+  axes: injected.axes,
+  freezeOpsz: injected.freezeOpsz,
 }

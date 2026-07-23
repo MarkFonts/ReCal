@@ -103,8 +103,14 @@ function page(p, all) {
       ? `https://use.typekit.net/${ADOBE_KIT}.css`
       : null
 
-  const boot = { preset: p.preset, scene: 'paragraph', pitch: p.pitch }
-  if (p.compare && fontHref) boot.compare = { ...p.compare, css: fontHref }
+  const boot = { scene: 'paragraph', pitch: p.pitch }
+  // Referents that aren't app presets (Gotham) resemble themselves via raw axes;
+  // the rest apply their named preset.
+  if (p.bootAxes) { boot.axes = p.bootAxes; if (p.bootFreezeOpsz != null) boot.freezeOpsz = p.bootFreezeOpsz }
+  else boot.preset = p.preset
+  // Compare control: active when a webfont is embeddable (css set), otherwise a
+  // grayed/disabled control (spec present, no css) — the specimen still resembles it.
+  if (p.compare) boot.compare = fontHref ? { ...p.compare, css: fontHref } : p.compare
 
   return `<!DOCTYPE html>
 <html lang="en">

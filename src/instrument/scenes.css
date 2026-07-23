@@ -108,6 +108,11 @@
   transition: color .15s;
 }
 .compare-inline-btn:hover { color: var(--accent); }
+/* Disabled compare (no embeddable webfont) — grayed, non-interactive. */
+.compare-inline--disabled { color: var(--text-muted); }
+.compare-inline--disabled .compare-inline-btn { color: var(--text-dim); cursor: default; text-decoration-style: dotted; }
+.compare-inline--disabled .compare-inline-btn:hover { color: var(--text-dim); }
+.compare-inline-note { opacity: .7; }
 .drawer-row { display: flex; align-items: center; gap: 12px; max-width: 360px; }
 /* Section labels (not controls) — bold so they read as headers above the chips. */
 .drawer-label { font-size: 12px; font-weight: 700; color: var(--text-muted); width: 90px; }
