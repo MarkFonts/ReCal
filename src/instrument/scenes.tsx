@@ -10,6 +10,7 @@ import { renderVarSettings, opszForSize } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
+import { BOOT } from './boot'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -471,6 +472,13 @@ export const SS_FEATURES: { tag: string; name: string }[] = [
 ]
 
 // ── Scenes ──────────────────────────────────────────────────────────────────────
+// SEO landing pages boot Paragraph with a referent-aware pitch as its own source tab.
+if (BOOT.pitch) {
+  TEXT_PRESETS.Pitch = [
+    { type: 'h1', text: BOOT.pitch.title },
+    ...BOOT.pitch.paragraphs.map((t): Block => ({ type: 'p', text: t })),
+  ]
+}
 export const TEXT_SOURCES = Object.keys(TEXT_PRESETS)
 
 export type SceneProps = {

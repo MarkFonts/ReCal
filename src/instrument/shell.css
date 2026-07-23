@@ -524,6 +524,11 @@
 .floor-btn:disabled { opacity: .45; cursor: default; }
 .floor-btn--primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
 
+/* Fused SEO pages: the fixed panels fade while reading the article below the app
+   (body.past-app is toggled by a scroll effect in Shell; the root page never scrolls). */
+.type-panel, .dock-download { transition: opacity .25s; }
+body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-events: none; }
+
 /* Floating download dock — OFL + Download, bottom-right of the canvas (no floor row). */
 .dock-download {
   position: fixed;

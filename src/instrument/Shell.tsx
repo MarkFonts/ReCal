@@ -9,8 +9,9 @@ import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
 import { renderVarSettings, opszForSize } from './render'
+import { BOOT } from './boot'
 import {
-  Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, type SceneMode,
+  Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, SCENES, type SceneMode,
   DEFAULT_PARA_STYLES, PARA_STYLE_ORDER, PARA_STYLE_LABEL,
   type ParaStyleKey, type ParaStyle, type ParaStyles,
   SCALE_TIERS, DEFAULT_SCALE_STYLES, type ScaleTierStyle, type ScaleStyles,
@@ -481,8 +482,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   feats: Set<string>; toggleFeat: (t: string) => void; resetFeats: () => void
   featStr: string
 }) {
-  const [mode, setMode] = useState<SceneMode>('words')
-  const [source, setSource] = useState('Sample')
+  const [mode, setMode] = useState<SceneMode>(
+    () => SCENES.find(s => s.mode === BOOT.scene)?.mode ?? 'words')
+  const [source, setSource] = useState(BOOT.pitch ? 'Pitch' : 'Sample')
   const [measure, setMeasure] = useState(34)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
@@ -752,7 +754,23 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
 const RAIL_NARROW = '(max-width: 800px)'
 
 export default function Shell() {
-  const { state } = useInstrument()
+  const { state, dispatch } = useInstrument()
+  // Deep-link boot: ?preset=Poppins or a fused landing page's window.__RECAL_BOOT
+  // auto-applies a preset. Case-insensitive; unknown values are ignored.
+  useEffect(() => {
+    const want = BOOT.preset
+    if (!want) return
+    const p = PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
+    if (p) applyPreset(dispatch, p)
+  }, [dispatch])
+  // Fused SEO landing pages put an article below the 100vh shell; fade the fixed
+  // panels (TYPE, download dock) out once the app is mostly scrolled away. The
+  // root app page never scrolls, so this never fires there.
+  useEffect(() => {
+    const on = () => document.body.classList.toggle('past-app', window.scrollY > window.innerHeight * 0.6)
+    window.addEventListener('scroll', on, { passive: true })
+    return () => window.removeEventListener('scroll', on)
+  }, [])
   const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
   const [leading, setLeading] = useState(1)
