@@ -3,10 +3,21 @@
 // app bundle so the instrument boots frozen into that preset — initial state only,
 // fully editable. URL params (?preset=&scene=) cover hand-written deep links and
 // take precedence over the injected object.
+// A referent webfont available on a fused compare page: the specimen text can swap
+// to it, with the play-dock axes mapped to what that font actually supports.
+export type CompareSpec = {
+  label: string                    // 'Poppins'
+  family: string                   // CSS font-family stack (the page loads the font)
+  wghtRange?: [number, number]     // usable font-weight span (static families snap)
+  opszRange?: [number, number]     // real opsz axis (e.g. Inter 14–32); absent = none
+  italic: boolean                  // real italic styles exist
+}
+
 export type BootConfig = {
   preset?: string
   scene?: string
   pitch?: { title: string; paragraphs: string[] }
+  compare?: CompareSpec
 }
 
 const injected: BootConfig = (window as any).__RECAL_BOOT ?? {}
@@ -16,4 +27,5 @@ export const BOOT: BootConfig = {
   preset: params.get('preset') ?? injected.preset,
   scene: params.get('scene') ?? injected.scene,
   pitch: injected.pitch,
+  compare: injected.compare,
 }

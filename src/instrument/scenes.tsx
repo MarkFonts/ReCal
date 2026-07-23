@@ -6,11 +6,11 @@ import './scenes.css'
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes, effectiveThresholds } from './store'
-import { renderVarSettings, opszForSize } from './render'
+import { renderVarSettings, opszForSize, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
-import { BOOT } from './boot'
+import { BOOT, type CompareSpec } from './boot'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -474,7 +474,7 @@ export const SS_FEATURES: { tag: string; name: string }[] = [
 // ── Scenes ──────────────────────────────────────────────────────────────────────
 // SEO landing pages boot Paragraph with a referent-aware pitch as its own source tab.
 if (BOOT.pitch) {
-  TEXT_PRESETS.Pitch = [
+  TEXT_PRESETS.Compare = [
     { type: 'h1', text: BOOT.pitch.title },
     ...BOOT.pitch.paragraphs.map((t): Block => ({ type: 'p', text: t })),
   ]
@@ -666,7 +666,7 @@ type FlashCtx = { flashes: Flashes; clear: (ch: string) => void; dragging: boole
 // Markdown inline renderer that ALSO flash-wraps swap glyphs (composites included).
 // Mirrors renderInline's delimiters; each text run and each bold/italic/underline
 // inner run is flash-wrapped with a unique key prefix so sibling runs never collide.
-function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx): ReactNode {
+function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx, cmp?: CompareSpec | null): ReactNode {
   const F = (s: string, kp: string) => flashText(s, fc.flashes, fc.clear, fc.dragging, kp)
   if (!/[*_]/.test(text)) return F(text, '')
   const out: ReactNode[] = []
@@ -675,8 +675,8 @@ function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx)
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(<Fragment key={`s${k}`}>{F(text.slice(last, m.index), `s${k}-`)}</Fragment>)
     const delim = m[1], inner = m[2]
-    if (delim === '**') out.push(<strong key={`b${k}`} style={{ fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{F(inner, `b${k}-`)}</strong>)
-    else if (delim === '*') out.push(<em key={`i${k}`} style={{ fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{F(inner, `i${k}-`)}</em>)
+    if (delim === '**') out.push(<strong key={`b${k}`} style={cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{F(inner, `b${k}-`)}</strong>)
+    else if (delim === '*') out.push(<em key={`i${k}`} style={cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{F(inner, `i${k}-`)}</em>)
     else out.push(<u key={`u${k}`}>{F(inner, `u${k}-`)}</u>)
     k++
     last = m.index + m[0].length
@@ -684,6 +684,14 @@ function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx)
   if (last < text.length) out.push(<Fragment key={`s${k}`}>{F(text.slice(last), `s${k}-`)}</Fragment>)
   return out
 }
+
+// Compare-mode replacements for the markdown bold/italic spans: the referent font
+// can't read wght/ital variation settings, so **bold** rides font-weight and *italic*
+// snaps to the real italic style (or stays upright if the referent has none).
+const cmpBold = (c: CompareSpec): CSSProperties =>
+  ({ fontVariationSettings: 'normal', fontWeight: Math.min(700, c.wghtRange?.[1] ?? 700), fontSynthesis: 'none' })
+const cmpItal = (c: CompareSpec): CSSProperties =>
+  ({ fontVariationSettings: 'normal', fontStyle: c.italic ? 'italic' : 'normal', fontSynthesis: 'none' })
 
 // ── Editable-markdown plumbing (ported/extended from font-proofer) ───────────────
 // Caret utilities.
@@ -719,7 +727,7 @@ function caretCharOffset(el: HTMLElement, x: number, y: number): number {
 // Inline markdown → styled nodes: **bold** (wght axis), *italic* (ital axis),
 // __underline__. Matched delimiters, non-greedy; nesting is not handled.
 const INLINE_RE = /(\*\*|__|\*)(.+?)\1/g
-function renderInline(text: string, boldVs: string, italVs: string): ReactNode {
+function renderInline(text: string, boldVs: string, italVs: string, cmp?: CompareSpec | null): ReactNode {
   if (!/[*_]/.test(text)) return text
   const out: ReactNode[] = []
   let last = 0, k = 0, m: RegExpExecArray | null
@@ -727,8 +735,8 @@ function renderInline(text: string, boldVs: string, italVs: string): ReactNode {
   while ((m = re.exec(text))) {
     if (m.index > last) out.push(text.slice(last, m.index))
     const delim = m[1], inner = m[2]
-    if (delim === '**') out.push(<strong key={k++} style={{ fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{inner}</strong>)
-    else if (delim === '*') out.push(<em key={k++} style={{ fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{inner}</em>)
+    if (delim === '**') out.push(<strong key={k++} style={cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{inner}</strong>)
+    else if (delim === '*') out.push(<em key={k++} style={cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{inner}</em>)
     else out.push(<u key={k++}>{inner}</u>)
     last = m.index + m[0].length
   }
@@ -738,9 +746,10 @@ function renderInline(text: string, boldVs: string, italVs: string): ReactNode {
 
 // A single contentEditable region: raw markdown while focused (browser owns the DOM,
 // caret stable), styled preview when not. `onCommit` fires live (input) + on blur.
-function EditableText({ value, onCommit, className, style, boldVs, italVs, flash }: {
+function EditableText({ value, onCommit, className, style, boldVs, italVs, flash, cmp }: {
   value: string; onCommit: (t: string) => void
   className?: string; style?: CSSProperties; boldVs: string; italVs: string; flash?: FlashCtx
+  cmp?: CompareSpec | null
 }) {
   const [focused, setFocused] = useState(false)
   const elRef = useRef<HTMLElement | null>(null)
@@ -758,7 +767,7 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
       onFocus={() => setFocused(true)}
       onBlur={e => { const t = e.currentTarget.textContent ?? ''; e.currentTarget.textContent = ''; onCommit(t); setFocused(false) }}
       onInput={e => { if (focused) onCommit(e.currentTarget.textContent ?? '') }}>
-      {focused ? null : (flash ? flashInline(value, boldVs, italVs, flash) : renderInline(value, boldVs, italVs))}
+      {focused ? null : (flash ? flashInline(value, boldVs, italVs, flash, cmp) : renderInline(value, boldVs, italVs, cmp))}
     </div>
   )
 }
@@ -766,13 +775,14 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
 function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
+  const cmp = state.compareOn ? state.compare : null
   const { flashes, clear, dragging } = useGeomFlash()
   const [text, setText] = useState('Iʼll jag My cat, Guv 2160')
   const [focused, setFocused] = useState(false)
   return (
     <div className="stage-pad words-scene">
       <div className="words-edit specimen" contentEditable suppressContentEditableWarning
-        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls }}
+        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
         onFocus={() => setFocused(true)}
         onBlur={e => { setText(e.currentTarget.textContent ?? ''); setFocused(false) }}>
         {/* Uncontrolled while focused: no onInput→setState, so typing never re-renders
@@ -792,6 +802,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
   const axes = effectiveAxes(state)
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, { skipOpsz: opszAuto })
   const italVs = renderVarSettings({ ...axes, ital: 1 }, { skipOpsz: opszAuto })
+  const cmp = state.compareOn ? state.compare : null
   const flash = useGeomFlash()
 
   const [blocks, setBlocks] = useState<EBlock[]>(() => presetBlocks(source))
@@ -865,7 +876,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type}`}
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em` }}
+              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: st.wght }, { opszAuto }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
@@ -876,7 +887,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
                 focus(null)
               }}
               onKeyDown={e => onKeyDown(b.id, e)}>
-              {focused ? null : flashInline(b.text, boldVs, italVs, flash)}
+              {focused ? null : flashInline(b.text, boldVs, italVs, flash, cmp)}
             </div>
           )
         })}
@@ -891,6 +902,10 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   const mult = state.defaults.opszMultiplier
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, {})
   const italVs = renderVarSettings({ ...axes, ital: 1 }, {})
+  const cmp = state.compareOn ? state.compare : null
+  // Compare mode: the referent tracks size via font-optical-sizing: auto (if it has
+  // opsz at all) — Cal Sans's multiplier math doesn't apply to another font.
+  const cmpSt = cmp ? compareStyle(cmp, axes, { opszAuto: true }) : {}
   const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: opszForSize(px, mult) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   const flash = useGeomFlash()
@@ -912,11 +927,11 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
             )}
           </div>
           {/* Headline + body are editable and synced live across every size tier. */}
-          <EditableText value={head} onCommit={setHead} className={`tier-head${selectedTiers.has(d.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash}
-            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr, ...tierStyle(d.key) }} />
+          <EditableText value={head} onCommit={setHead} className={`tier-head${selectedTiers.has(d.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash} cmp={cmp}
+            style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr, ...tierStyle(d.key), ...cmpSt }} />
           {use.map(b => (
-            <EditableText key={b.key} value={body} onCommit={setBody} className={`tier-body${selectedTiers.has(b.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash}
-              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr, ...tierStyle(b.key) }} />
+            <EditableText key={b.key} value={body} onCommit={setBody} className={`tier-body${selectedTiers.has(b.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash} cmp={cmp}
+              style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr, ...tierStyle(b.key), ...cmpSt }} />
           ))}
         </div>
       ))}

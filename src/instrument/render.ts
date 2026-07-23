@@ -2,6 +2,8 @@
 // Generalises the classic previewVarSettings / modalVarSettings into a single function
 // driven by the store's effective() axis map.
 import type { AxisMap } from './store'
+import type { CompareSpec } from './boot'
+import type { CSSProperties } from 'react'
 
 const AXIS_ORDER = ['wght', 'opsz', 'GEOM', 'YTAS', 'SHRP', 'ital'] as const
 
@@ -20,6 +22,36 @@ export function renderVarSettings(
     parts.push(`'${tag}' ${tag === 'ital' ? v : Math.round(v * 10) / 10}`)
   }
   return parts.join(', ') || 'normal'
+}
+
+// Compare-mode style override (fused SEO pages): the referent font can't read Cal
+// Sans's custom axes, so weight travels via font-weight (variable families track it,
+// static families snap to their nearest loaded style), ital ≥ 0.5 snaps to the real
+// italic style when one exists, and opsz applies only when the referent truly has the
+// axis. font-variation-settings is reset so Cal Sans axis values never leak through.
+export function compareStyle(
+  c: CompareSpec,
+  axes: AxisMap,
+  opts: { opszAuto?: boolean; wghtOverride?: number; italOverride?: number } = {},
+): CSSProperties {
+  const [wMin, wMax] = c.wghtRange ?? [400, 700]
+  const w = Math.round(Math.min(Math.max(opts.wghtOverride ?? axes.wght ?? 400, wMin), wMax))
+  const italic = c.italic && (opts.italOverride ?? axes.ital ?? 0) >= 0.5
+  const st: CSSProperties = {
+    fontFamily: c.family,
+    fontWeight: w,
+    fontStyle: italic ? 'italic' : 'normal',
+    fontSynthesis: 'none',
+    fontVariationSettings: 'normal',
+    fontOpticalSizing: 'none',
+  }
+  if (c.opszRange) {
+    if (opts.opszAuto ?? true) st.fontOpticalSizing = 'auto'
+    else if (axes.opsz !== undefined) {
+      st.fontVariationSettings = `'opsz' ${Math.min(Math.max(axes.opsz, c.opszRange[0]), c.opszRange[1])}`
+    }
+  }
+  return st
 }
 
 // opsz that a given rendered size should use under the export's multiplier: the font

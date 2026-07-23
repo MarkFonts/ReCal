@@ -15,7 +15,7 @@
 import { mkdirSync, writeFileSync, readFileSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SEO_PRESETS } from './seo-presets.mjs'
+import { SEO_PRESETS, ADOBE_KIT } from './seo-presets.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(__dirname, '..', 'dist')
@@ -94,7 +94,17 @@ function page(p, all) {
     ? `${p.referent} alternative, free ${p.referent} alternative, ${p.referent} free font, variable font, open source geometric sans, OFL font`
     : `${p.referent} alternative, customizable ${p.referent} alternative, variable font, tunable font, open source geometric sans, OFL font`
 
+  // Referent webfont, when legally embeddable: Google Fonts or the Adobe kit. The
+  // app's ⇄ compare toggle only appears when boot.compare is present, so pages
+  // without a font source (or before ADOBE_KIT is set) simply omit it.
+  const fontSrc = p.gf
+    ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=${p.gf}&display=swap">`
+    : p.adobe && ADOBE_KIT
+      ? `<link rel="stylesheet" href="https://use.typekit.net/${ADOBE_KIT}.css">`
+      : null
+
   const boot = { preset: p.preset, scene: 'paragraph', pitch: p.pitch }
+  if (p.compare && fontSrc) boot.compare = p.compare
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -117,6 +127,7 @@ function page(p, all) {
 <meta name="twitter:image" content="${ORIGIN}/thumb.png">
 <link rel="icon" type="image/svg+xml" href="${BASE}/favicon.svg">
 <link rel="preload" href="${BASE}/fonts/CalSansVF.ttf" as="font" type="font/ttf" crossorigin>
+${fontSrc ?? ''}
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>

@@ -8,6 +8,7 @@
 // Selectors: merged() = defaults + preview, effective() = stockHold ? SHIPPED : merged().
 
 import { GROUP_DEFS } from '../GlyphGroups'
+import type { CompareSpec } from './boot'
 
 export type AxisMap = Record<string, number>
 
@@ -50,6 +51,8 @@ export interface InstrumentState {
   recalMode: 'edit' | 'demo'                    // EDIT = build the ◆ (play dimmed); DEMO = preview (rail dimmed)
   past: DefaultsLayer[]                          // ◆ undo history (matrix drags snapshot on grab)
   future: DefaultsLayer[]                        // ◆ redo stack
+  compare: CompareSpec | null                   // referent webfont on a fused compare page (BOOT)
+  compareOn: boolean                            // specimen text swapped to the referent font
 }
 
 const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> =>
@@ -62,7 +65,7 @@ export function shippedThresholds(): Record<string, number[]> {
   return Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
 }
 
-export function createInitialState(shipped: AxisMap = SHIPPED_AXES): InstrumentState {
+export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: CompareSpec | null = null): InstrumentState {
   const th = shippedThresholds()
   return {
     shipped: { ...shipped },
@@ -84,6 +87,8 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES): InstrumentS
     recalMode: 'edit',   // open in EDIT (building the ◆); DEMO is the preview mode you switch to
     past: [],
     future: [],
+    compare,
+    compareOn: false,
   }
 }
 
@@ -140,6 +145,7 @@ export type Action =
   | { type: 'setUseHoi'; value: boolean }
   | { type: 'setBuildName'; name: string }
   | { type: 'setRecalMode'; mode: 'edit' | 'demo' }           // entering 'edit' clears preview
+  | { type: 'setCompareOn'; on: boolean }                     // swap specimen text to the referent font
   | { type: 'resetDefaults' }                                 // rail reset: ◆ → SHIPPED + clear preset
   | { type: 'pushHistory' }                                   // snapshot ◆ before a drag (one undo grain per drag)
   | { type: 'undo' }
@@ -148,7 +154,7 @@ export type Action =
 export function reducer(s: InstrumentState, a: Action): InstrumentState {
   switch (a.type) {
     case 'init':
-      return createInitialState(a.shipped)
+      return createInitialState(a.shipped, s.compare)
     case 'setDefaultAxis': {
       // Re-anchoring an axis clears its transient preview so the ● reflects the new ◆
       // (mirrors the classic app's handleSliderChange).
@@ -162,6 +168,8 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return previewDrifted(s) ? { ...s, preview: {} } : s
     case 'setStockHold':
       return { ...s, stockHold: a.held }
+    case 'setCompareOn':
+      return { ...s, compareOn: a.on }
     case 'setGeomDragging':
       return s.geomDragging === a.value ? s : { ...s, geomDragging: a.value }
     case 'setThresholds':
@@ -187,7 +195,7 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       // Reset every ◆ adjustment back toward SHIPPED and clear the engaged preset.
       // Preview (●) is the Return pill's job; HOI (rendering mode) and buildName
       // (naming choice) aren't bake-target adjustments — all preserved (§3.3).
-      const fresh = createInitialState(s.shipped)
+      const fresh = createInitialState(s.shipped, s.compare)
       return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName, recalMode: s.recalMode }
     }
     case 'pushHistory':

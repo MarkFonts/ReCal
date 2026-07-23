@@ -474,6 +474,23 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
   )
 }
 
+// Compare-page font swap (fused SEO pages only — state.compare comes from BOOT).
+// One button: specimen text flips between ReCal Sans and the referent webfont; the
+// play dock keeps working, mapped to what the referent supports (wght via
+// font-weight, ital ≥ .5 snaps to real italics, unsupported axes gray out).
+function CompareToggle() {
+  const { state, dispatch } = useInstrument()
+  if (!state.compare) return null
+  const on = state.compareOn
+  return (
+    <button className={`compare-toggle${on ? ' on' : ''}`}
+      title={on ? 'Back to ReCal Sans' : `Show this text in ${state.compare.label}`}
+      onClick={() => dispatch({ type: 'setCompareOn', on: !on })}>
+      ⇄ {on ? 'ReCal Sans' : state.compare.label}
+    </button>
+  )
+}
+
 function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
@@ -484,7 +501,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
 }) {
   const [mode, setMode] = useState<SceneMode>(
     () => SCENES.find(s => s.mode === BOOT.scene)?.mode ?? 'words')
-  const [source, setSource] = useState(BOOT.pitch ? 'Pitch' : 'Sample')
+  const [source, setSource] = useState(BOOT.pitch ? 'Compare' : 'Sample')
   const [measure, setMeasure] = useState(34)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
@@ -530,6 +547,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
         <SceneControls mode={mode} source={source} setSource={setSource}
           pairs={pairs} togglePair={togglePair}
           glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+        <CompareToggle />
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
           bottom ● preview/DEMO dock and drops the reserved play-bar padding → full height. */}
@@ -641,28 +659,33 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
               const { min, max } = AXIS_RANGES[tag]
               const on = tag in state.preview
               const v = merged[tag]
+              // Compare mode: gray out axes the referent font can't express. wght
+              // always maps (font-weight), ital only if real italics exist, opsz only
+              // if the referent has the axis; GEOM/YTAS/SHRP are Cal Sans-only.
+              const cmp = state.compareOn ? state.compare : null
+              const na = !!cmp && !(tag === 'wght' || (tag === 'ital' && cmp.italic) || (tag === 'opsz' && !!cmp.opszRange))
               if (tag === 'opsz') {
                 // opsz-auto: handle tracks the sample size; value reads "auto".
                 // Moving the handle disengages auto and reports the number.
                 return (
-                  <div className={`prow${on && !opszAuto ? ' on' : ''}`} key={tag}>
+                  <div className={`prow${on && !opszAuto ? ' on' : ''}${na ? ' prow--na' : ''}`} key={tag}>
                     <div className="prow-head">
                       <span className="prow-label">opsz
                         <label className="opsz-auto">auto
-                          <input type="checkbox" checked={opszAuto} onChange={e => setOpszAuto(e.target.checked)} /></label>
+                          <input type="checkbox" checked={opszAuto} disabled={na} onChange={e => setOpszAuto(e.target.checked)} /></label>
                       </span>
-                      <span className="prow-val tnum">{opszAuto ? 'auto' : Math.round(v)}</span>
+                      <span className="prow-val tnum">{na ? '—' : opszAuto ? 'auto' : Math.round(v)}</span>
                     </div>
-                    <input type="range" min={min} max={max} step={1} value={opszAuto ? autoOpsz : v}
+                    <input type="range" min={min} max={max} step={1} value={opszAuto ? autoOpsz : v} disabled={na}
                       onChange={e => { setOpszAuto(false); dispatch({ type: 'setPreview', tag: 'opsz', value: +e.target.value }) }} />
                   </div>
                 )
               }
               return (
-                <div className={`prow${on ? ' on' : ''}`} key={tag}>
+                <div className={`prow${on ? ' on' : ''}${na ? ' prow--na' : ''}`} key={tag}>
                   <div className="prow-head"><span className="prow-label">{tag}</span>
-                    <span className="prow-val tnum">{tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span></div>
-                  <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v}
+                    <span className="prow-val tnum">{na ? '—' : tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span></div>
+                  <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v} disabled={na}
                     onChange={e => dispatch({ type: 'setPreview', tag, value: +e.target.value })} />
                 </div>
               )
