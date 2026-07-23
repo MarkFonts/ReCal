@@ -186,12 +186,13 @@ export const SEO_PRESETS = [
   {
     slug: 'gotham',
     referent: 'Gotham',
-    // Gotham is deliberately NOT an app preset — the page resembles it via raw boot
-    // axes so the tool never ships a named "Gotham" preset. Still fully SEO-findable.
-    bootAxes: { GEOM: 50 },
-    bootFreezeOpsz: 14,
+    // Gotham is deliberately NOT an app preset — the page boots plain Cal Sans
+    // defaults (GEOM 25) with opsz frozen at 10, so the tool never ships a named
+    // "Gotham" preset. Still fully SEO-findable.
+    bootAxes: {},
+    bootFreezeOpsz: 10,
     kind: 'paid',
-    axes: vs({ GEOM: 50, opsz: 14 }),
+    axes: vs({ opsz: 10 }),
     opticalSizing: false,
     // No embeddable webfont → disabled compare control (label only, no css).
     compare: { label: 'Gotham', family: 'sans-serif', italic: false },
