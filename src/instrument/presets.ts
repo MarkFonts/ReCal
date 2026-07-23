@@ -29,6 +29,7 @@ export const PRESETS: Preset[] = [
   { name: 'Circular', geom: 25, frozenOpsz: 20 },
   { name: 'Geist', geom: 50, frozenOpsz: 16, thresholds: b => applyDrop('a', 0, 'Base', b) },
   { name: 'Poppins', geom: 50, frozenOpsz: 10, thresholds: b => applyDrop('y', 2, 'Base', b) },
+  { name: 'Gotham', geom: 50, frozenOpsz: 14 },
   { name: 'GT America', geom: 25, frozenOpsz: 8, thresholds: b => applyDelete('a', 0, 'A11Y', b) },
 ]
 
