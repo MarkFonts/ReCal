@@ -4,7 +4,26 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>ReBuild Cal Sans VF</title>
+    <title>ReCal Sans — customize a free variable font in the browser</title>
+    <meta name="description" content="ReCal Sans is a browser-based customizer for Cal Sans, a free variable font. Tune the geometric, optical-size, weight and ascender axes, remap glyph-swap thresholds, then download a static TTF with your decisions baked in. Open source (OFL), no upload, no account." />
+    <link rel="canonical" href="https://wordmark.nyc/recalsans/" />
+    <script>
+      // ?preset=Poppins duplicates /recalsans/poppins/ — point crawlers at the clean slug.
+      (function(){var m={'poppins':'poppins','gotham':'gotham','gt america':'gt-america'};
+      var p=(new URLSearchParams(location.search).get('preset')||'').toLowerCase();
+      if(m[p]){var l=document.querySelector('link[rel=canonical]');if(l)l.href='https://wordmark.nyc/recalsans/'+m[p]+'/';}})();
+    </script>
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="ReCal Sans — customize a free variable font in the browser" />
+    <meta property="og:description" content="Tune Cal Sans in the browser — geometric axis, real optical sizing, glyph-swap thresholds — and download your own static font. Free under the OFL." />
+    <meta property="og:url" content="https://wordmark.nyc/recalsans/" />
+    <meta property="og:image" content="https://wordmark.nyc/thumb.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="ReCal Sans — customize a free variable font in the browser" />
+    <meta name="twitter:description" content="Tune Cal Sans in the browser and download your own static font. Free under the OFL." />
+    <meta name="twitter:image" content="https://wordmark.nyc/thumb.png" />
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"ReCal Sans customizer","applicationCategory":"DesignApplication","operatingSystem":"Web browser","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"},"url":"https://wordmark.nyc/recalsans/","description":"Browser-based customizer for the Cal Sans variable font. Tune axes and glyph-swap thresholds, preview live, download a static TTF renamed ReCal Sans.","isAccessibleForFree":true,"license":"https://opensource.org/license/ofl-1-1"}</script>
     <!-- Google tag (gtag.js) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-MZ4M1P8P1P"></script>
     <script>
@@ -16,6 +35,10 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <p>ReCal Sans is a browser-based customizer for Cal Sans, a free variable font by WORDMARK. Tune the geometric (GEOM), optical-size, weight, ascender and sharpness axes, remap the glyph-swap thresholds, and download a static TTF with your decisions baked in — free under the SIL Open Font License. The customizer needs JavaScript; the fonts it produces do not.</p>
+      <p>Comparison pages: <a href="/recalsans/poppins/">Poppins alternative</a> · <a href="/recalsans/gotham/">Gotham alternative</a> · <a href="/recalsans/gt-america/">GT America alternative</a></p>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
