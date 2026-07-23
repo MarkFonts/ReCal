@@ -93,8 +93,7 @@
 .compare-caption {
   margin-top: 24px;
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
-  font-size: 13px;
-  letter-spacing: .02em;
+  font-size: 15px;
   color: var(--text-muted);
 }
 .compare-caption + .compare-inline { margin-top: 8px; }
