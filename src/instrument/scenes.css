@@ -89,6 +89,15 @@
 .para-block:empty::before { content: '\200b'; color: transparent; }   /* keep empty blocks clickable */
 /* Compare swap — a line of text under the paragraph (fused SEO pages only). The
    button renders the target's name in the target font: the label is the preview. */
+/* "Set in <font>" caption — names the actual rendered font, flips with the toggle. */
+.compare-caption {
+  margin-top: 24px;
+  font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
+  font-size: 13px;
+  letter-spacing: .02em;
+  color: var(--text-muted);
+}
+.compare-caption + .compare-inline { margin-top: 8px; }
 .compare-inline {
   margin-top: 26px;
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;

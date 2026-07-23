@@ -54,7 +54,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Poppins',
       paragraphs: [
-        'This is ReCal Sans with the geometric axis raised toward the circular, monolinear feel Poppins is loved for — and a real optical-size axis Poppins doesn’t have. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Poppins itself, then download the font with your settings baked in.',
+        'The geometric axis raised toward the circular, monolinear feel Poppins is loved for — and a real optical-size axis Poppins doesn’t have. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Poppins itself, then download the font with your settings baked in.',
       ],
     },
   },
@@ -78,7 +78,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Inter',
       paragraphs: [
-        'This is ReCal Sans in its clean UI register — the screen-native neutrality Inter is famous for, plus a geometric axis Inter doesn’t carry. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Inter itself, then download the font with your settings baked in.',
+        'A clean UI register — the screen-native neutrality Inter is famous for, plus a geometric axis Inter doesn’t carry. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Inter itself, then download the font with your settings baked in.',
       ],
     },
   },
@@ -102,7 +102,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Geist',
       paragraphs: [
-        'This is ReCal Sans set crisp and geometric — the developer-tool sharpness Geist is known for, with optical sizing and italics Geist doesn’t ship. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Geist itself, then download the font with your settings baked in.',
+        'Crisp and geometric — the developer-tool sharpness Geist is known for, with optical sizing and italics Geist doesn’t ship. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Geist itself, then download the font with your settings baked in.',
       ],
     },
   },
@@ -133,7 +133,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Futura',
       paragraphs: [
-        'This is ReCal Sans pushed fully geometric — tall ascenders, sharp terminals, the circles-first construction Futura defined in 1927. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
+        'Fully geometric — tall ascenders, sharp terminals, the circles-first construction Futura defined in 1927. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },
@@ -156,7 +156,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Neutra',
       paragraphs: [
-        'This is ReCal Sans in an architectural register — tall ascenders, flat sharpened terminals, the mid-century signage feel Neutra made famous. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
+        'An architectural register — tall ascenders, flat sharpened terminals, the mid-century signage feel Neutra made famous. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },
@@ -179,7 +179,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Circular',
       paragraphs: [
-        'This is ReCal Sans in its warm geometric register — the rounded, friendly construction Circular sold to a decade of brands, without the license. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
+        'A warm geometric register — the rounded, friendly construction Circular sold to a decade of brands, without the license. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },
@@ -207,7 +207,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Gotham',
       paragraphs: [
-        'This is ReCal Sans set upright and geometric — the confident, even-stroked construction Gotham made a branding default, without the license. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
+        'Upright and geometric — the confident, even-stroked construction Gotham made a branding default, without the license. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },
@@ -230,7 +230,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward GT America',
       paragraphs: [
-        'This is ReCal Sans in its grotesque register — the plainspoken, workhorse feel GT America is licensed for, free under the OFL. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in.',
+        'A grotesque register — the plainspoken, workhorse feel GT America is licensed for, free under the OFL. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in.',
       ],
     },
   },

@@ -841,6 +841,15 @@ function CompareInline() {
   )
 }
 
+// Names the font the specimen is actually set in — flips with the toggle so the copy
+// itself never has to claim "this is ReCal Sans" (which read wrong under a referent).
+function CompareCaption() {
+  const { state } = useInstrument()
+  const cmp = state.compare
+  if (!cmp) return null
+  return <div className="compare-caption">Set in {state.compareOn ? cmp.label : 'ReCal Sans'}</div>
+}
+
 // Static referent specimen (Gotham/Neutraface/Circular/GT America): fetch the
 // pre-rendered SVG once and inline it so fill="currentColor" inherits the theme.
 function CompareSvg({ url }: { url: string }) {
@@ -930,6 +939,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
       <div className="stage-pad">
         <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
           <CompareSvg url={svgUrl} />
+          <CompareCaption />
           <CompareInline />
         </div>
       </div>
@@ -963,6 +973,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
             </div>
           )
         })}
+        <CompareCaption />
         <CompareInline />
       </div>
     </div>
