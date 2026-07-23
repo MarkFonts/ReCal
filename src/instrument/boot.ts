@@ -17,6 +17,9 @@ export type CompareSpec = {
   heavy?: { from: number; family: string; weight: number }
   // ^ some Adobe kits split the blackest cut into its own family (Futura PT Bold =
   //   'futura-pt-bold' @ 700): weights ≥ from switch family and pin that weight.
+  headingWght?: number             // override heading weight in compare mode (e.g.
+                                   // Futura headers read better at Demi 600 than the
+                                   // 700 Bold cut); body/inline bold are unaffected
 }
 
 export type BootConfig = {

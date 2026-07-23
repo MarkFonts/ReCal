@@ -904,7 +904,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type}`}
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: st.wght }, { opszAuto }) : {}) }}
+              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
