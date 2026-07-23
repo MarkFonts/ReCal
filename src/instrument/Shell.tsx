@@ -281,11 +281,28 @@ function ModeLabel() {
     const t2 = setTimeout(() => setSaving(null), 1400)
     return () => { clearTimeout(t1); clearTimeout(t2) }
   }, [state.recalMode])
+
+  // Preview recompile (opsz / threshold edits): same throbber → checkmark spot, so
+  // the Pyodide rebuild latency reads as "working" instead of a dead control.
+  const [rebuild, setRebuild] = useState<'spin' | 'check' | null>(null)
+  const wasRebuilding = useRef(false)
+  useEffect(() => {
+    if (state.rebuilding) { setRebuild('spin'); wasRebuilding.current = true; return }
+    if (!wasRebuilding.current) return
+    wasRebuilding.current = false
+    setRebuild('check')
+    const t = setTimeout(() => setRebuild(null), 1100)
+    return () => clearTimeout(t)
+  }, [state.rebuilding])
+
+  // Rebuild feedback wins the label while active; otherwise the save animation; else mode.
+  const phase = rebuild ? { kind: rebuild, spin: 'Rebuilding…', check: 'Updated' }
+    : saving ? { kind: saving, spin: 'Saving…', check: 'Saved' } : null
   const editing = state.recalMode === 'edit'
   return (
-    <div className={`mode-label${saving ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
-      {saving === 'spin' ? <><span className="mode-throb" aria-hidden /> Saving…</>
-        : saving === 'check' ? <><span className="mode-check">✓</span> Saved</>
+    <div className={`mode-label${phase ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
+      {phase?.kind === 'spin' ? <><span className="mode-throb" aria-hidden /> {phase.spin}</>
+        : phase?.kind === 'check' ? <><span className="mode-check">✓</span> {phase.check}</>
           : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
     </div>
   )
@@ -829,6 +846,9 @@ export default function Shell() {
   // at defaults never loads Pyodide.
   const engine = useFontEngine(state.useHoi)
   const { rebuildPreview, clearPreviewFont } = engine
+  // Surface the preview recompile state in the store so ModeLabel can show the
+  // throbber/checkmark during the (opsz/threshold) Pyodide rebuild latency.
+  useEffect(() => { dispatch({ type: 'setRebuilding', value: engine.rebuilding }) }, [engine.rebuilding, dispatch])
   const d = state.defaults
   const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.freezeOpsz || d.autoAscender
   useEffect(() => {

@@ -53,6 +53,7 @@ export interface InstrumentState {
   future: DefaultsLayer[]                        // ◆ redo stack
   compare: CompareSpec | null                   // referent webfont on a fused compare page (BOOT)
   compareOn: boolean                            // specimen text swapped to the referent font
+  rebuilding: boolean                           // Pyodide preview recompile in flight (◆ edits)
 }
 
 const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> =>
@@ -89,6 +90,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
     future: [],
     compare,
     compareOn: false,
+    rebuilding: false,
   }
 }
 
@@ -146,6 +148,7 @@ export type Action =
   | { type: 'setBuildName'; name: string }
   | { type: 'setRecalMode'; mode: 'edit' | 'demo' }           // entering 'edit' clears preview
   | { type: 'setCompareOn'; on: boolean }                     // swap specimen text to the referent font
+  | { type: 'setRebuilding'; value: boolean }                 // engine → store: preview recompile state
   | { type: 'resetDefaults' }                                 // rail reset: ◆ → SHIPPED + clear preset
   | { type: 'pushHistory' }                                   // snapshot ◆ before a drag (one undo grain per drag)
   | { type: 'undo' }
@@ -170,6 +173,8 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return { ...s, stockHold: a.held }
     case 'setCompareOn':
       return { ...s, compareOn: a.on }
+    case 'setRebuilding':
+      return s.rebuilding === a.value ? s : { ...s, rebuilding: a.value }
     case 'setGeomDragging':
       return s.geomDragging === a.value ? s : { ...s, geomDragging: a.value }
     case 'setThresholds':

@@ -52,6 +52,7 @@ export function useFontEngine(useHoi: boolean) {
   const [started, setStarted] = useState(false)
   const [ready, setReady] = useState(false)
   const [building, setBuilding] = useState(false)
+  const [rebuilding, setRebuilding] = useState(false)   // preview (◆) recompile in flight
   const [error, setError] = useState<string | null>(null)
 
   // Preview @font-face plumbing: the latest requested config (re-fired once the worker
@@ -97,10 +98,12 @@ export function useFontEngine(useHoi: boolean) {
         setBuilding(false)
       } else if (msg.type === 'previewFontResult') {
         injectPreviewFace(msg.ttf as ArrayBuffer)
+        setRebuilding(false)
       } else if (msg.type === 'error') {
         console.error('[fontEngine]', msg.message)
         setError(String(msg.message))
         setBuilding(false)
+        setRebuilding(false)
         resolveRef.current = null
       }
     }
@@ -128,6 +131,7 @@ export function useFontEngine(useHoi: boolean) {
   // Rebuild the CalSansPreview face for the current ◆ (inits the worker if needed).
   const rebuildPreview = useCallback((cfg: PreviewConfig) => {
     init()
+    setRebuilding(true)   // stays true through Pyodide init + recompile, until previewFontResult
     previewCfgRef.current = cfg
     if (workerRef.current && readyRef.current) postPreview(workerRef.current, cfg)
   }, [init])
@@ -135,9 +139,10 @@ export function useFontEngine(useHoi: boolean) {
   // Drop the preview face → scenes fall back to raw CalSansVF (◆ is back at stock).
   const clearPreviewFont = useCallback(() => {
     previewCfgRef.current = null
+    setRebuilding(false)
     if (faceStyleRef.current) faceStyleRef.current.textContent = ''
     if (faceUrlRef.current) { URL.revokeObjectURL(faceUrlRef.current); faceUrlRef.current = null }
   }, [])
 
-  return { started, ready, building, error, init, download, rebuildPreview, clearPreviewFont }
+  return { started, ready, building, rebuilding, error, init, download, rebuildPreview, clearPreviewFont }
 }
