@@ -80,3 +80,7 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Commercial reference fonts (for local SVG specimen work) — never distribute
+ref/*.otf
+ref/*.ttf
