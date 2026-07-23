@@ -11,6 +11,9 @@ export type CompareSpec = {
   wghtRange?: [number, number]     // usable font-weight span (static families snap)
   opszRange?: [number, number]     // real opsz axis (e.g. Inter 14–32); absent = none
   italic: boolean                  // real italic styles exist
+  css?: string                     // referent-font stylesheet URL, injected lazily on
+                                   // first compare-on (Google Fonts / Adobe kit) so
+                                   // pure-preview visitors never download it
   heavy?: { from: number; family: string; weight: number }
   // ^ some Adobe kits split the blackest cut into its own family (Futura PT Bold =
   //   'futura-pt-bold' @ 700): weights ≥ from switch family and pin that weight.

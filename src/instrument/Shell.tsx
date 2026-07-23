@@ -768,6 +768,16 @@ export default function Shell() {
     const p = PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
     if (p) applyPreset(dispatch, p)
   }, [dispatch])
+  // Lazy-load the referent webfont the first time Compare is turned on — the
+  // stylesheet URL rides BOOT.compare.css, injected once, so pure-preview visitors
+  // never fetch Google Fonts / the Adobe kit.
+  useEffect(() => {
+    const css = state.compareOn && state.compare?.css
+    if (!css || document.querySelector(`link[data-compare-font="${css}"]`)) return
+    const l = document.createElement('link')
+    l.rel = 'stylesheet'; l.href = css; l.dataset.compareFont = css
+    document.head.appendChild(l)
+  }, [state.compareOn, state.compare])
   // Fused SEO landing pages put an article below the 100vh shell; fade the fixed
   // panels (TYPE, download dock) out once the app is mostly scrolled away. The
   // root app page never scrolls, so this never fires there.

@@ -115,9 +115,9 @@ export const SEO_PRESETS = [
     opticalSizing: false,
     adobe: true,
     compare: {
-      label: 'Futura PT', family: "'futura-pt', sans-serif", wghtRange: [400, 800], italic: true,
-      // The kit splits Bold into its own family: slider at 700 → Futura PT Bold
-      // (futura-pt's own 700 is the lighter Heavy cut).
+      label: 'Futura PT', family: "'futura-pt', sans-serif", wghtRange: [400, 700], italic: true,
+      // Kit subset to English + ligatures, weights 400–700 (Light/Extra Bold dropped).
+      // The blackest cut ships as its own family, so slider 700 → Futura PT Bold.
       heavy: { from: 700, family: "'futura-pt-bold', sans-serif", weight: 700 },
     },
     title: 'ReCal Sans — a free variable alternative to Futura',
