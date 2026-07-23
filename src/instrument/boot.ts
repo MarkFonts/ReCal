@@ -14,6 +14,9 @@ export type CompareSpec = {
   css?: string                     // referent-font stylesheet URL, injected lazily on
                                    // first compare-on (Google Fonts / Adobe kit) so
                                    // pure-preview visitors never download it
+  svg?: string                     // for referents we can't webfont-embed: a static
+                                   // pre-rendered specimen SVG (real outlines) fetched
+                                   // and inlined on compare-on instead of a live font
   heavy?: { from: number; family: string; weight: number }
   // ^ some Adobe kits split the blackest cut into its own family (Futura PT Bold =
   //   'futura-pt-bold' @ 700): weights ≥ from switch family and pin that weight.

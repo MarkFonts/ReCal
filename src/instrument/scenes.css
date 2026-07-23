@@ -113,6 +113,11 @@
 .compare-inline--disabled .compare-inline-btn { color: var(--text-dim); cursor: default; text-decoration-style: dotted; }
 .compare-inline--disabled .compare-inline-btn:hover { color: var(--text-dim); }
 .compare-inline-note { opacity: .7; }
+/* Static referent specimen (real outlines) — inherits --text via currentColor.
+   Pinned to the 544px column (rendered at the app's real point sizes) so it displays
+   1:1 with the Cal Sans specimen; scales down on narrow viewports. */
+.compare-svg { color: var(--text); width: 544px; max-width: 100%; margin-bottom: 26px; }
+.compare-svg svg { width: 100%; height: auto; display: block; }
 .drawer-row { display: flex; align-items: center; gap: 12px; max-width: 360px; }
 /* Section labels (not controls) — bold so they read as headers above the chips. */
 .drawer-label { font-size: 12px; font-weight: 700; color: var(--text-muted); width: 90px; }

@@ -782,7 +782,9 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
 function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
   const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
-  const cmp = state.compareOn ? state.compare : null
+  // Words/Scale only swap for a live webfont; static-SVG referents render only their
+  // Paragraph specimen, so here they fall back to Cal Sans.
+  const cmp = state.compareOn && state.compare?.css ? state.compare : null
   const { flashes, clear, dragging } = useGeomFlash()
   const [text, setText] = useState('Iʼll jag My cat, Guv 2160')
   const [focused, setFocused] = useState(false)
@@ -811,10 +813,10 @@ function CompareInline() {
   const { state, dispatch } = useInstrument()
   const cmp = state.compare
   if (!cmp) return null
-  // Paid referents with no embeddable webfont (Gotham, Neutraface, Circular,
-  // GT America): the swap can't fire, so the control is grayed — the specimen above
-  // still shows Cal Sans tuned to resemble it. (SVG disabled-mark lands here later.)
-  if (!cmp.css) {
+  const swappable = !!cmp.css || !!cmp.svg   // live webfont OR a static specimen SVG
+  // No webfont AND no rendered specimen → grayed control; the specimen above stays
+  // Cal Sans tuned to resemble the referent.
+  if (!swappable) {
     return (
       <div className="compare-inline compare-inline--disabled"
         title={`${cmp.label} webfont currently not available to ReCal — the specimen above is Cal Sans tuned to resemble it`}>
@@ -828,7 +830,9 @@ function CompareInline() {
     <div className="compare-inline">
       {on ? 'comparing — back to ' : 'compare to '}
       <button className="compare-inline-btn"
-        style={{ fontFamily: on ? "'CalSansPreview', 'CalSansVF', sans-serif" : cmp.family }}
+        // Live-font labels preview in that font; SVG specimens have no live face, so
+        // the label stays in the UI font.
+        style={{ fontFamily: on || !cmp.css ? "'CalSansPreview', 'CalSansVF', sans-serif" : cmp.family }}
         title={on ? 'Back to ReCal Sans' : `Show this text in ${cmp.label}`}
         onClick={() => dispatch({ type: 'setCompareOn', on: !on })}>
         ({on ? 'ReCal Sans' : cmp.label} ⇄)
@@ -837,12 +841,27 @@ function CompareInline() {
   )
 }
 
+// Static referent specimen (Gotham/Neutraface/Circular/GT America): fetch the
+// pre-rendered SVG once and inline it so fill="currentColor" inherits the theme.
+function CompareSvg({ url }: { url: string }) {
+  const [markup, setMarkup] = useState('')
+  useEffect(() => {
+    let live = true
+    fetch(url).then(r => r.text()).then(t => { if (live) setMarkup(t) }).catch(() => {})
+    return () => { live = false }
+  }, [url])
+  return <div className="compare-svg" dangerouslySetInnerHTML={{ __html: markup }} />
+}
+
 function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, { skipOpsz: opszAuto })
   const italVs = renderVarSettings({ ...axes, ital: 1 }, { skipOpsz: opszAuto })
-  const cmp = state.compareOn ? state.compare : null
+  // Comparing to a referent with a live webfont → restyle the blocks (compareStyle).
+  // Comparing to a no-webfont referent with a static specimen → show the SVG instead.
+  const cmp = state.compareOn && state.compare?.css ? state.compare : null
+  const svgUrl = state.compareOn ? state.compare?.svg : undefined
   const flash = useGeomFlash()
 
   const [blocks, setBlocks] = useState<EBlock[]>(() => presetBlocks(source))
@@ -904,6 +923,19 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
     }
   }
 
+  // Static specimen view: the referent has no live webfont, so show the pre-rendered
+  // SVG (real outlines) in place of the editable blocks. Toggle stays available.
+  if (svgUrl) {
+    return (
+      <div className="stage-pad">
+        <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
+          <CompareSvg url={svgUrl} />
+          <CompareInline />
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="stage-pad">
       <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
@@ -943,7 +975,7 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   const mult = state.defaults.opszMultiplier
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, {})
   const italVs = renderVarSettings({ ...axes, ital: 1 }, {})
-  const cmp = state.compareOn ? state.compare : null
+  const cmp = state.compareOn && state.compare?.css ? state.compare : null
   // Compare mode: the referent tracks size via font-optical-sizing: auto (if it has
   // opsz at all) — Cal Sans's multiplier math doesn't apply to another font.
   const cmpSt = cmp ? compareStyle(cmp, axes, { opszAuto: true }) : {}

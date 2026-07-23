@@ -658,11 +658,13 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
               const { min, max } = AXIS_RANGES[tag]
               const on = tag in state.preview
               const v = merged[tag]
-              // Compare mode: gray out axes the referent font can't express. wght
-              // always maps (font-weight), ital only if real italics exist, opsz only
-              // if the referent has the axis; GEOM/YTAS/SHRP are Cal Sans-only.
+              // Compare mode: gray out axes the referent font can't express. A static
+              // SVG specimen (no live font) grays everything; a live webfont keeps
+              // wght (font-weight), ital only if real italics exist, opsz only if the
+              // referent has the axis; GEOM/YTAS/SHRP are Cal Sans-only.
               const cmp = state.compareOn ? state.compare : null
-              const na = !!cmp && !(tag === 'wght' || (tag === 'ital' && cmp.italic) || (tag === 'opsz' && !!cmp.opszRange))
+              const na = !!cmp && (!!cmp.svg || !cmp.css ||
+                !(tag === 'wght' || (tag === 'ital' && cmp.italic) || (tag === 'opsz' && !!cmp.opszRange)))
               if (tag === 'opsz') {
                 // opsz-auto: handle tracks the sample size; value reads "auto".
                 // Moving the handle disengages auto and reports the number.

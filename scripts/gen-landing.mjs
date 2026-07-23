@@ -12,7 +12,7 @@
 //
 // Copy is kind-aware: 'paid' referents get the "free alternative" angle; 'free'
 // (OFL) referents get the variable/customizable angle — never price.
-import { mkdirSync, writeFileSync, readFileSync } from 'node:fs'
+import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SEO_PRESETS, ADOBE_KIT } from './seo-presets.mjs'
@@ -108,9 +108,19 @@ function page(p, all) {
   // the rest apply their named preset.
   if (p.bootAxes) { boot.axes = p.bootAxes; if (p.bootFreezeOpsz != null) boot.freezeOpsz = p.bootFreezeOpsz }
   else boot.preset = p.preset
-  // Compare control: active when a webfont is embeddable (css set), otherwise a
-  // grayed/disabled control (spec present, no css) — the specimen still resembles it.
-  if (p.compare) boot.compare = fontHref ? { ...p.compare, css: fontHref } : p.compare
+  // Compare control, in order of capability:
+  //  · css  → live webfont (Google Fonts / Adobe kit), lazy-loaded
+  //  · svg  → no embeddable webfont, but a committed static specimen exists
+  //           (public/compare/<slug>.svg, rendered locally from ref/*.otf)
+  //  · neither → grayed/disabled control; specimen stays Cal Sans resembling it
+  const svgPath = join(__dirname, '..', 'public', 'compare', `${p.slug}.svg`)
+  if (p.compare) {
+    boot.compare = fontHref
+      ? { ...p.compare, css: fontHref }
+      : existsSync(svgPath)
+        ? { ...p.compare, svg: `${BASE}/compare/${p.slug}.svg` }
+        : p.compare
+  }
 
   return `<!DOCTYPE html>
 <html lang="en">
