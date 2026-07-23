@@ -701,10 +701,13 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
   all: unset; cursor: pointer; font-family: var(--ui-font); font-size: 12px; color: var(--text-muted);
-  padding: 2px 7px; border-radius: 5px;
+  padding: 2px 8px; border-radius: 5px; transition: color .12s, background .12s, opacity .12s;
 }
-.matrix-reset:hover:not(:disabled) { color: var(--text); background: var(--surface-3); }
-.matrix-reset:disabled { color: var(--text-faint); cursor: default; }
+/* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
+   as actionable, not the muted header gray. */
+.matrix-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-3); }
+.matrix-reset:hover:not(:disabled) { background: var(--surface-2); }
+.matrix-reset:disabled { color: var(--text-faint); font-weight: 400; background: none; cursor: default; }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
 .matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: 10px; letter-spacing: .04em; color: rgba(255,255,255,.2); }
 .matrix-axis-tick--mid { transform: translateX(-50%); }

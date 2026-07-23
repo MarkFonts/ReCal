@@ -817,9 +817,9 @@ function CompareInline() {
   if (!cmp.css) {
     return (
       <div className="compare-inline compare-inline--disabled"
-        title={`${cmp.label} has no free webfont to embed — the specimen above is Cal Sans tuned to resemble it`}>
+        title={`${cmp.label} webfont currently not available to ReCal — the specimen above is Cal Sans tuned to resemble it`}>
         compare to <span className="compare-inline-btn" aria-disabled="true">({cmp.label} ⇄)</span>
-        <span className="compare-inline-note"> — no free webfont to embed</span>
+        <span className="compare-inline-note"> — webfont currently not available to ReCal</span>
       </div>
     )
   }
