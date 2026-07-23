@@ -688,8 +688,15 @@ function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx,
 // Compare-mode replacements for the markdown bold/italic spans: the referent font
 // can't read wght/ital variation settings, so **bold** rides font-weight and *italic*
 // snaps to the real italic style (or stays upright if the referent has none).
-const cmpBold = (c: CompareSpec): CSSProperties =>
-  ({ fontVariationSettings: 'normal', fontWeight: Math.min(700, c.wghtRange?.[1] ?? 700), fontSynthesis: 'none' })
+const cmpBold = (c: CompareSpec): CSSProperties => {
+  const w = Math.min(700, c.wghtRange?.[1] ?? 700)
+  const heavy = c.heavy && w >= c.heavy.from
+  return {
+    fontVariationSettings: 'normal', fontSynthesis: 'none',
+    fontWeight: heavy ? c.heavy!.weight : w,
+    ...(heavy ? { fontFamily: c.heavy!.family } : {}),
+  }
+}
 const cmpItal = (c: CompareSpec): CSSProperties =>
   ({ fontVariationSettings: 'normal', fontStyle: c.italic ? 'italic' : 'normal', fontSynthesis: 'none' })
 

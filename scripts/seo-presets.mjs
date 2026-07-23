@@ -28,9 +28,10 @@ const vs = ({ GEOM = 25, wght = 400, YTAS = 720, SHRP = 0, opsz }) => {
   return parts.join(', ')
 }
 
-// Adobe Fonts Web Project id (use.typekit.net/<id>.css). null = not yet created —
-// pages with adobe:true then generate without the font swap.
-export const ADOBE_KIT = null
+// Adobe Fonts Web Project id (use.typekit.net/<id>.css). Kit carries Futura PT
+// 300/400/500/600/700(Heavy)/800 + obliques as 'futura-pt' (the separate
+// 'futura-pt-bold' family duplicates 700 — unused).
+export const ADOBE_KIT = 'nsz1oha'
 
 export const SEO_PRESETS = [
   {
@@ -113,7 +114,12 @@ export const SEO_PRESETS = [
     axes: vs({ GEOM: 100, YTAS: 800, SHRP: 100, opsz: 16 }),
     opticalSizing: false,
     adobe: true,
-    compare: { label: 'Futura PT', family: "'futura-pt', sans-serif", wghtRange: [400, 700], italic: true },
+    compare: {
+      label: 'Futura PT', family: "'futura-pt', sans-serif", wghtRange: [400, 800], italic: true,
+      // The kit splits Bold into its own family: slider at 700 → Futura PT Bold
+      // (futura-pt's own 700 is the lighter Heavy cut).
+      heavy: { from: 700, family: "'futura-pt-bold', sans-serif", weight: 700 },
+    },
     title: 'ReCal Sans — a free variable alternative to Futura',
     description:
       'ReCal Sans is a free, open-source variable geometric sans you can tune in the browser and download. If you reach for Futura, this is an OFL alternative with true geometric forms, tall ascenders, and a real optical-size axis.',

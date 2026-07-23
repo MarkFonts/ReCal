@@ -37,9 +37,10 @@ export function compareStyle(
   const [wMin, wMax] = c.wghtRange ?? [400, 700]
   const w = Math.round(Math.min(Math.max(opts.wghtOverride ?? axes.wght ?? 400, wMin), wMax))
   const italic = c.italic && (opts.italOverride ?? axes.ital ?? 0) >= 0.5
+  const heavy = c.heavy && w >= c.heavy.from
   const st: CSSProperties = {
-    fontFamily: c.family,
-    fontWeight: w,
+    fontFamily: heavy ? c.heavy!.family : c.family,
+    fontWeight: heavy ? c.heavy!.weight : w,
     fontStyle: italic ? 'italic' : 'normal',
     fontSynthesis: 'none',
     fontVariationSettings: 'normal',
