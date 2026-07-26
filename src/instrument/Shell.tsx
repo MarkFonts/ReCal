@@ -741,7 +741,9 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
   }
   const cfgRef = useRef(buildConfig)
   cfgRef.current = buildConfig
-  const prefetch = () => engine.prebake(cfgRef.current())   // idempotent (single-flight)
+  // force = definitive intent (OFL / hovering the download) — bakes even during a
+  // preview rebuild. Passive pointer-vectoring stays un-forced.
+  const prefetch = (force = false) => engine.prebake(cfgRef.current(), force)
 
   // "Load the room behind the door": when the pointer is heading toward the download
   // pill (aligned velocity + within reach), speculatively bake the export so the click
@@ -761,7 +763,7 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
       const tx = r.left + r.width / 2 - px, ty = r.top + r.height / 2 - py
       const dist = Math.hypot(tx, ty), speed = Math.hypot(vx, vy)
       // within reach, moving fast enough, and aimed at the pill (cosine > 0.6)
-      if (dist < 460 && speed > 1.2 && (vx * tx + vy * ty) / (speed * dist || 1) > 0.6) prefetch()
+      if (dist < 460 && speed > 1.2 && (vx * tx + vy * ty) / (speed * dist || 1) > 0.6) prefetch(false)
     }
     window.addEventListener('pointermove', onMove)
     return () => window.removeEventListener('pointermove', onMove)
@@ -783,20 +785,20 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
     : 'Download'
 
   return (
-    <div className="dock-download" ref={dockRef} onPointerEnter={prefetch}>
+    <div className="dock-download" ref={dockRef} onPointerEnter={() => prefetch(true)}>
       {engine.error && (
         <span className="dock-error" title={engine.error}>export failed — see console</span>
       )}
       <label className="floor-toggle">
         <input type="checkbox" checked={oflAgreed}
-          onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) prefetch() }} />
+          onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) prefetch(true) }} />
         I accept the{' '}
         <a href="https://openfontlicense.org/open-font-license-official-text/"
           target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
       </label>
       <button className="floor-btn floor-btn--primary"
         disabled={!oflAgreed || !engine.ready || engine.building}
-        onPointerEnter={prefetch}
+        onPointerEnter={() => prefetch(true)}
         onClick={doDownload}
         title={!oflAgreed ? 'Accept the OFL to enable download'
           : !engine.ready ? 'Loading the font engine (first time ~10–20s)…' : 'Download your ReCal Sans TTF'}>

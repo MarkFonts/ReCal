@@ -152,11 +152,14 @@ export function useFontEngine(useHoi: boolean) {
     return promise
   }, [init])
 
-  // Speculative pre-bake on download intent (OFL check / heading to the button) — the
-  // "load the room behind the door" move. Silent (no Building… state); skipped while a
-  // preview edit is in flight so it never delays the live preview.
-  const prebake = useCallback((config: ExportConfig) => {
-    if (rebuildingRef.current) return
+  // Speculative pre-bake on download intent — the "load the room behind the door" move.
+  // Silent (no Building… state). `force` is for definitive intent (OFL check / heading
+  // to the button): it starts the export bake even during a preview rebuild, since the
+  // user clearly wants the download, not the refining preview. Un-forced (passive
+  // pointer-vectoring) still defers while a rebuild is in flight so it can't delay the
+  // live preview during active editing.
+  const prebake = useCallback((config: ExportConfig, force = false) => {
+    if (rebuildingRef.current && !force) return
     setError(null)
     bake(config).catch(() => {})
   }, [bake])
