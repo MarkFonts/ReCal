@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { SUBS } from './data/substitutions'
 
 export type VariantLabel = 'A11Y' | 'UI' | 'default' | 'Base' | 'Geo'
 type Variant = { label: VariantLabel; color: string }
@@ -17,29 +18,16 @@ const V: Record<VariantLabel, Variant> = {
   Geo:     { label: 'Geo',     color: '#4aad5c' },
 }
 
-// Thresholds derived from CalSansVF.ttf FeatureVariations band edges (GEOM
-// userspace). The 8pt-only opsz-gated A11Y extension is intentionally not
-// modelled here. The master/default outlines are now the UI forms, so the
-// "default" lane is kept as the neutral master (the UI zone shows it unswapped).
-export const GROUP_DEFS: GroupDef[] = [
-  { glyph: 'I', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'l', variants: [V.A11Y, V.default], defaultThresholds: [11] },
-  { glyph: 'a', variants: [V.A11Y, V.default, V.Base], defaultThresholds: [13, 34] },
-  { glyph: 'G', variants: [V.default, V.Base], defaultThresholds: [40] },
-  { glyph: 'g', variants: [V.A11Y, V.default], defaultThresholds: [16] },
-  // f's Base form reverts to the master above GEOM 76 (non-monotonic): default → Base → default
-  { glyph: 'f', variants: [V.default, V.Base, V.default], defaultThresholds: [39, 76] },
-  { glyph: 'j', variants: [V.default, V.Base, V.Geo], defaultThresholds: [39, 74] },
-  { glyph: 't', variants: [V.default, V.Base, V.Geo], defaultThresholds: [39, 74] },
-  { glyph: 'y', variants: [V.default, V.Base, V.Geo], defaultThresholds: [39, 59] },
-  { glyph: 'u', variants: [V.default, V.Geo], defaultThresholds: [59] },
-  { glyph: 'C', variants: [V.default, V.Geo], defaultThresholds: [79] },
-  { glyph: 'c', variants: [V.default, V.Geo], defaultThresholds: [79] },
-  { glyph: 'M', variants: [V.default, V.Geo], defaultThresholds: [79] },
-  { glyph: '0', variants: [V.default, V.Geo], defaultThresholds: [79] },
-  { glyph: '1', variants: [V.default, V.Geo], defaultThresholds: [79] },
-  { glyph: '5', variants: [V.default, V.Geo], defaultThresholds: [79] },
-]
+// Derived from the canonical substitution table (VISION §7 — src/data/substitutions.json,
+// generated from CalSansVF's own FeatureVariations). Threshold band edges + variant
+// sequence come from the font; colours from V. Non-monotonic reverts (f: default →
+// Base → default) and the exact onsets are all font-authoritative — no hand values to
+// drift. Regenerate: .venv/bin/python scripts/gen_substitutions.py
+export const GROUP_DEFS: GroupDef[] = SUBS.geomGroups.map(g => ({
+  glyph: g.headline,
+  variants: g.variants.map(v => V[v.label as VariantLabel]),
+  defaultThresholds: g.thresholds,
+}))
 
 export const LANDING_ZONES = [
   { label: 'A11Y', start: 0,  end: 10,  mid: 5,  sampleGeom: 3,  color: '#c97050' },

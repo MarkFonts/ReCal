@@ -1,0 +1,4622 @@
+{
+  "_generated": "from CalSansVF.ttf GSUB — regenerate: .venv/bin/python scripts/gen_substitutions.py",
+  "axis": {
+    "tag": "GEOM",
+    "min": 0.0,
+    "default": 25.0,
+    "max": 100.0
+  },
+  "zones": [
+    {
+      "label": "A11Y",
+      "suffix": "rcltA11y",
+      "char": "A",
+      "color": "#c97050",
+      "start": 0,
+      "end": 10,
+      "sampleGeom": 3
+    },
+    {
+      "label": "UI",
+      "suffix": null,
+      "char": "U",
+      "color": "#999999",
+      "start": 15,
+      "end": 30,
+      "sampleGeom": 22
+    },
+    {
+      "label": "Base",
+      "suffix": "rcltBase",
+      "char": "B",
+      "color": "#4a7fd4",
+      "start": 40,
+      "end": 60,
+      "sampleGeom": 50
+    },
+    {
+      "label": "Geo",
+      "suffix": "rcltGeo",
+      "char": "G",
+      "color": "#4aad5c",
+      "start": 80,
+      "end": 100,
+      "sampleGeom": 90
+    }
+  ],
+  "geomGroups": [
+    {
+      "headline": "I",
+      "cp": 73,
+      "thresholds": [
+        12
+      ],
+      "variants": [
+        {
+          "label": "A11Y",
+          "suffix": "rcltA11y",
+          "zone": "A11Y"
+        },
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        }
+      ]
+    },
+    {
+      "headline": "l",
+      "cp": 108,
+      "thresholds": [
+        12
+      ],
+      "variants": [
+        {
+          "label": "A11Y",
+          "suffix": "rcltA11y",
+          "zone": "A11Y"
+        },
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        }
+      ]
+    },
+    {
+      "headline": "a",
+      "cp": 97,
+      "thresholds": [
+        14,
+        34
+      ],
+      "variants": [
+        {
+          "label": "A11Y",
+          "suffix": "rcltA11y",
+          "zone": "A11Y"
+        },
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Base",
+          "suffix": "rcltBase",
+          "zone": "Base"
+        }
+      ]
+    },
+    {
+      "headline": "G",
+      "cp": 71,
+      "thresholds": [
+        40
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Base",
+          "suffix": "rcltBase",
+          "zone": "Base"
+        }
+      ]
+    },
+    {
+      "headline": "g",
+      "cp": 103,
+      "thresholds": [
+        17
+      ],
+      "variants": [
+        {
+          "label": "A11Y",
+          "suffix": "rcltA11y",
+          "zone": "A11Y"
+        },
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        }
+      ]
+    },
+    {
+      "headline": "f",
+      "cp": 102,
+      "thresholds": [
+        39,
+        77
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Base",
+          "suffix": "rcltBase",
+          "zone": "Base"
+        },
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        }
+      ]
+    },
+    {
+      "headline": "j",
+      "cp": 106,
+      "thresholds": [
+        39,
+        74
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Base",
+          "suffix": "rcltBase",
+          "zone": "Base"
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "t",
+      "cp": 116,
+      "thresholds": [
+        39,
+        74
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Base",
+          "suffix": "rcltBase",
+          "zone": "Base"
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "y",
+      "cp": 121,
+      "thresholds": [
+        39,
+        59
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Base",
+          "suffix": "rcltBase",
+          "zone": "Base"
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "u",
+      "cp": 117,
+      "thresholds": [
+        59
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "C",
+      "cp": 67,
+      "thresholds": [
+        79
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "c",
+      "cp": 99,
+      "thresholds": [
+        79
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "M",
+      "cp": 77,
+      "thresholds": [
+        79
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "0",
+      "cp": 48,
+      "thresholds": [
+        79
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "1",
+      "cp": 49,
+      "thresholds": [
+        79
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    },
+    {
+      "headline": "5",
+      "cp": 53,
+      "thresholds": [
+        79
+      ],
+      "variants": [
+        {
+          "label": "default",
+          "suffix": null,
+          "zone": null
+        },
+        {
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
+        }
+      ]
+    }
+  ],
+  "geomCells": [
+    {
+      "cp": 48,
+      "aalt": 0,
+      "name": "zero",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 48,
+      "aalt": 2,
+      "name": "zero.zero",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 48,
+      "aalt": 3,
+      "name": "zero.numr",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 48,
+      "aalt": 4,
+      "name": "zero.dnom",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 48,
+      "aalt": 5,
+      "name": "uni2070",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 48,
+      "aalt": 6,
+      "name": "uni2080",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 48,
+      "aalt": 7,
+      "name": "zero.tf",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 49,
+      "aalt": 0,
+      "name": "one",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 49,
+      "aalt": 2,
+      "name": "one.numr",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 49,
+      "aalt": 3,
+      "name": "one.dnom",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 49,
+      "aalt": 4,
+      "name": "uni00B9",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 49,
+      "aalt": 5,
+      "name": "uni2081",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 49,
+      "aalt": 6,
+      "name": "one.tf",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 53,
+      "aalt": 0,
+      "name": "five",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 53,
+      "aalt": 1,
+      "name": "five.numr",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 53,
+      "aalt": 2,
+      "name": "five.dnom",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 53,
+      "aalt": 3,
+      "name": "uni2075",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 53,
+      "aalt": 4,
+      "name": "uni2085",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 53,
+      "aalt": 5,
+      "name": "five.tf",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 67,
+      "aalt": 0,
+      "name": "C",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "C"
+    },
+    {
+      "cp": 71,
+      "aalt": 0,
+      "name": "G",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 73,
+      "aalt": 0,
+      "name": "I",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 77,
+      "aalt": 0,
+      "name": "M",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "M"
+    },
+    {
+      "cp": 97,
+      "aalt": 0,
+      "name": "a",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 97,
+      "aalt": 1,
+      "name": "ordfeminine",
+      "thresholds": [
+        34
+      ],
+      "zones": "-B",
+      "headline": "a"
+    },
+    {
+      "cp": 99,
+      "aalt": 0,
+      "name": "c",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "c"
+    },
+    {
+      "cp": 102,
+      "aalt": 0,
+      "name": "f",
+      "thresholds": [
+        39,
+        77
+      ],
+      "zones": "-B-",
+      "headline": "f"
+    },
+    {
+      "cp": 103,
+      "aalt": 0,
+      "name": "g",
+      "thresholds": [
+        17
+      ],
+      "zones": "A-",
+      "headline": "g"
+    },
+    {
+      "cp": 106,
+      "aalt": 0,
+      "name": "j",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "j"
+    },
+    {
+      "cp": 106,
+      "aalt": 1,
+      "name": "uni006A0301",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "j"
+    },
+    {
+      "cp": 108,
+      "aalt": 0,
+      "name": "l",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 116,
+      "aalt": 0,
+      "name": "t",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 117,
+      "aalt": 0,
+      "name": "u",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 121,
+      "aalt": 0,
+      "name": "y",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 170,
+      "aalt": 0,
+      "name": "ordfeminine",
+      "thresholds": [
+        34
+      ],
+      "zones": "-B",
+      "headline": "a"
+    },
+    {
+      "cp": 181,
+      "aalt": 0,
+      "name": "uni00B5",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 185,
+      "aalt": 0,
+      "name": "uni00B9",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 188,
+      "aalt": 0,
+      "name": "onequarter",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 189,
+      "aalt": 0,
+      "name": "onehalf",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 199,
+      "aalt": 0,
+      "name": "Ccedilla",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "C"
+    },
+    {
+      "cp": 204,
+      "aalt": 0,
+      "name": "Igrave",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 205,
+      "aalt": 0,
+      "name": "Iacute",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 206,
+      "aalt": 0,
+      "name": "Icircumflex",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 207,
+      "aalt": 0,
+      "name": "Idieresis",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 224,
+      "aalt": 0,
+      "name": "agrave",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 225,
+      "aalt": 0,
+      "name": "aacute",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 226,
+      "aalt": 0,
+      "name": "acircumflex",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 227,
+      "aalt": 0,
+      "name": "atilde",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 228,
+      "aalt": 0,
+      "name": "adieresis",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 229,
+      "aalt": 0,
+      "name": "aring",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 230,
+      "aalt": 0,
+      "name": "ae",
+      "thresholds": [
+        34
+      ],
+      "zones": "-B",
+      "headline": null
+    },
+    {
+      "cp": 231,
+      "aalt": 0,
+      "name": "ccedilla",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "c"
+    },
+    {
+      "cp": 249,
+      "aalt": 0,
+      "name": "ugrave",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 250,
+      "aalt": 0,
+      "name": "uacute",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 251,
+      "aalt": 0,
+      "name": "ucircumflex",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 252,
+      "aalt": 0,
+      "name": "udieresis",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 253,
+      "aalt": 0,
+      "name": "yacute",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 255,
+      "aalt": 0,
+      "name": "ydieresis",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 257,
+      "aalt": 0,
+      "name": "amacron",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 259,
+      "aalt": 0,
+      "name": "abreve",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 261,
+      "aalt": 0,
+      "name": "aogonek",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 262,
+      "aalt": 0,
+      "name": "Cacute",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "C"
+    },
+    {
+      "cp": 263,
+      "aalt": 0,
+      "name": "cacute",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "c"
+    },
+    {
+      "cp": 264,
+      "aalt": 0,
+      "name": "Ccircumflex",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "C"
+    },
+    {
+      "cp": 265,
+      "aalt": 0,
+      "name": "ccircumflex",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "c"
+    },
+    {
+      "cp": 266,
+      "aalt": 0,
+      "name": "Cdotaccent",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "C"
+    },
+    {
+      "cp": 267,
+      "aalt": 0,
+      "name": "cdotaccent",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "c"
+    },
+    {
+      "cp": 268,
+      "aalt": 0,
+      "name": "Ccaron",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "C"
+    },
+    {
+      "cp": 269,
+      "aalt": 0,
+      "name": "ccaron",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "c"
+    },
+    {
+      "cp": 284,
+      "aalt": 0,
+      "name": "Gcircumflex",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 285,
+      "aalt": 0,
+      "name": "gcircumflex",
+      "thresholds": [
+        17
+      ],
+      "zones": "A-",
+      "headline": "g"
+    },
+    {
+      "cp": 286,
+      "aalt": 0,
+      "name": "Gbreve",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 287,
+      "aalt": 0,
+      "name": "gbreve",
+      "thresholds": [
+        17
+      ],
+      "zones": "A-",
+      "headline": "g"
+    },
+    {
+      "cp": 288,
+      "aalt": 0,
+      "name": "Gdotaccent",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 289,
+      "aalt": 0,
+      "name": "gdotaccent",
+      "thresholds": [
+        17
+      ],
+      "zones": "A-",
+      "headline": "g"
+    },
+    {
+      "cp": 290,
+      "aalt": 0,
+      "name": "uni0122",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 291,
+      "aalt": 0,
+      "name": "uni0123",
+      "thresholds": [
+        17
+      ],
+      "zones": "A-",
+      "headline": "g"
+    },
+    {
+      "cp": 296,
+      "aalt": 0,
+      "name": "Itilde",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 298,
+      "aalt": 0,
+      "name": "Imacron",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 302,
+      "aalt": 0,
+      "name": "Iogonek",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 304,
+      "aalt": 0,
+      "name": "Idotaccent",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 306,
+      "aalt": 0,
+      "name": "IJ",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 307,
+      "aalt": 0,
+      "name": "ij",
+      "thresholds": [
+        74
+      ],
+      "zones": "-G",
+      "headline": "I"
+    },
+    {
+      "cp": 309,
+      "aalt": 0,
+      "name": "jcircumflex",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "j"
+    },
+    {
+      "cp": 314,
+      "aalt": 0,
+      "name": "lacute",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 316,
+      "aalt": 0,
+      "name": "uni013C",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 316,
+      "aalt": 1,
+      "name": "uni013C.loclMAH",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 318,
+      "aalt": 0,
+      "name": "lcaron",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 320,
+      "aalt": 0,
+      "name": "ldot",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 322,
+      "aalt": 0,
+      "name": "lslash",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 330,
+      "aalt": 0,
+      "name": "Eng",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 331,
+      "aalt": 0,
+      "name": "eng",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 355,
+      "aalt": 0,
+      "name": "uni0163",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 355,
+      "aalt": 1,
+      "name": "uni021B",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 357,
+      "aalt": 0,
+      "name": "tcaron",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 359,
+      "aalt": 0,
+      "name": "tbar",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 361,
+      "aalt": 0,
+      "name": "utilde",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 363,
+      "aalt": 0,
+      "name": "umacron",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 365,
+      "aalt": 0,
+      "name": "ubreve",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 367,
+      "aalt": 0,
+      "name": "uring",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 369,
+      "aalt": 0,
+      "name": "uhungarumlaut",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 371,
+      "aalt": 0,
+      "name": "uogonek",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 375,
+      "aalt": 0,
+      "name": "ycircumflex",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 432,
+      "aalt": 0,
+      "name": "uhorn",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 470,
+      "aalt": 0,
+      "name": "uni01D6",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 472,
+      "aalt": 0,
+      "name": "uni01D8",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 474,
+      "aalt": 0,
+      "name": "uni01DA",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 476,
+      "aalt": 0,
+      "name": "uni01DC",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 483,
+      "aalt": 0,
+      "name": "uni01E3",
+      "thresholds": [
+        34
+      ],
+      "zones": "-B",
+      "headline": null
+    },
+    {
+      "cp": 515,
+      "aalt": 0,
+      "name": "uni0203",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 522,
+      "aalt": 0,
+      "name": "uni020A",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 535,
+      "aalt": 0,
+      "name": "uni0217",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 539,
+      "aalt": 0,
+      "name": "uni021B",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 567,
+      "aalt": 0,
+      "name": "uni0237",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "j"
+    },
+    {
+      "cp": 960,
+      "aalt": 0,
+      "name": "pi",
+      "thresholds": [
+        74
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 7712,
+      "aalt": 0,
+      "name": "uni1E20",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 7713,
+      "aalt": 0,
+      "name": "uni1E21",
+      "thresholds": [
+        17
+      ],
+      "zones": "A-",
+      "headline": "g"
+    },
+    {
+      "cp": 7735,
+      "aalt": 0,
+      "name": "uni1E37",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 7737,
+      "aalt": 0,
+      "name": "uni1E39",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 7739,
+      "aalt": 0,
+      "name": "uni1E3B",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "l"
+    },
+    {
+      "cp": 7744,
+      "aalt": 0,
+      "name": "uni1E40",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "M"
+    },
+    {
+      "cp": 7746,
+      "aalt": 0,
+      "name": "uni1E42",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "M"
+    },
+    {
+      "cp": 7789,
+      "aalt": 0,
+      "name": "uni1E6D",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 7791,
+      "aalt": 0,
+      "name": "uni1E6F",
+      "thresholds": [
+        39,
+        74
+      ],
+      "zones": "-BG",
+      "headline": "t"
+    },
+    {
+      "cp": 7823,
+      "aalt": 0,
+      "name": "uni1E8F",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 7841,
+      "aalt": 0,
+      "name": "uni1EA1",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7843,
+      "aalt": 0,
+      "name": "uni1EA3",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7845,
+      "aalt": 0,
+      "name": "uni1EA5",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7847,
+      "aalt": 0,
+      "name": "uni1EA7",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7849,
+      "aalt": 0,
+      "name": "uni1EA9",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7851,
+      "aalt": 0,
+      "name": "uni1EAB",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7853,
+      "aalt": 0,
+      "name": "uni1EAD",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7855,
+      "aalt": 0,
+      "name": "uni1EAF",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7857,
+      "aalt": 0,
+      "name": "uni1EB1",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7859,
+      "aalt": 0,
+      "name": "uni1EB3",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7861,
+      "aalt": 0,
+      "name": "uni1EB5",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7863,
+      "aalt": 0,
+      "name": "uni1EB7",
+      "thresholds": [
+        14,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 7880,
+      "aalt": 0,
+      "name": "uni1EC8",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 7882,
+      "aalt": 0,
+      "name": "uni1ECA",
+      "thresholds": [
+        12
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
+      "cp": 7909,
+      "aalt": 0,
+      "name": "uni1EE5",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7911,
+      "aalt": 0,
+      "name": "uni1EE7",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7913,
+      "aalt": 0,
+      "name": "uni1EE9",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7915,
+      "aalt": 0,
+      "name": "uni1EEB",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7917,
+      "aalt": 0,
+      "name": "uni1EED",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7919,
+      "aalt": 0,
+      "name": "uni1EEF",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7921,
+      "aalt": 0,
+      "name": "uni1EF1",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 7923,
+      "aalt": 0,
+      "name": "ygrave",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 7925,
+      "aalt": 0,
+      "name": "uni1EF5",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 7927,
+      "aalt": 0,
+      "name": "uni1EF7",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 7929,
+      "aalt": 0,
+      "name": "uni1EF9",
+      "thresholds": [
+        39,
+        59
+      ],
+      "zones": "-BG",
+      "headline": "y"
+    },
+    {
+      "cp": 8304,
+      "aalt": 0,
+      "name": "uni2070",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 8309,
+      "aalt": 0,
+      "name": "uni2075",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 8320,
+      "aalt": 0,
+      "name": "uni2080",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "0"
+    },
+    {
+      "cp": 8321,
+      "aalt": 0,
+      "name": "uni2081",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 8325,
+      "aalt": 0,
+      "name": "uni2085",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 8364,
+      "aalt": 0,
+      "name": "Euro",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 8364,
+      "aalt": 1,
+      "name": "Euro.tf",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 8370,
+      "aalt": 0,
+      "name": "uni20B2",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": null
+    },
+    {
+      "cp": 8370,
+      "aalt": 1,
+      "name": "uni20B2.tf",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": null
+    },
+    {
+      "cp": 8531,
+      "aalt": 0,
+      "name": "uni2153",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 8532,
+      "aalt": 0,
+      "name": "uni2154",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 8539,
+      "aalt": 0,
+      "name": "oneeighth",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "1"
+    },
+    {
+      "cp": 8541,
+      "aalt": 0,
+      "name": "fiveeighths",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": "5"
+    },
+    {
+      "cp": 64257,
+      "aalt": 0,
+      "name": "fi",
+      "thresholds": [
+        39,
+        77
+      ],
+      "zones": "-B-",
+      "headline": "f"
+    },
+    {
+      "cp": 64258,
+      "aalt": 0,
+      "name": "fl",
+      "thresholds": [
+        39,
+        77
+      ],
+      "zones": "-B-",
+      "headline": "f"
+    }
+  ],
+  "stylisticSets": [
+    {
+      "tag": "ss01",
+      "name": "Geometric a",
+      "families": [
+        "a"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "a": "a.ss01",
+        "a.rcltA11y": "a.ss01",
+        "aacute": "aacute.ss01",
+        "aacute.rcltA11y": "aacute.ss01",
+        "abreve": "abreve.ss01",
+        "abreve.rcltA11y": "abreve.ss01",
+        "acircumflex": "acircumflex.ss01",
+        "acircumflex.rcltA11y": "acircumflex.ss01",
+        "adieresis": "adieresis.ss01",
+        "adieresis.rcltA11y": "adieresis.ss01",
+        "ae": "ae.ss01",
+        "ae.rcltBase": "ae.ss01",
+        "agrave": "agrave.ss01",
+        "agrave.rcltA11y": "agrave.ss01",
+        "amacron": "amacron.ss01",
+        "amacron.rcltA11y": "amacron.ss01",
+        "aogonek": "aogonek.ss01",
+        "aogonek.rcltA11y": "aogonek.ss01",
+        "aring": "aring.ss01",
+        "aring.rcltA11y": "aring.ss01",
+        "atilde": "atilde.ss01",
+        "atilde.rcltA11y": "atilde.ss01",
+        "ordfeminine": "ordfeminine.ss01",
+        "ordfeminine.rcltBase": "ordfeminine.ss01",
+        "uni01E3": "uni01E3.ss01",
+        "uni01E3.rcltBase": "uni01E3.ss01",
+        "uni0203": "uni0203.ss01",
+        "uni0203.rcltA11y": "uni0203.ss01",
+        "uni1EA1": "uni1EA1.ss01",
+        "uni1EA1.rcltA11y": "uni1EA1.ss01",
+        "uni1EA3": "uni1EA3.ss01",
+        "uni1EA3.rcltA11y": "uni1EA3.ss01",
+        "uni1EA5": "uni1EA5.ss01",
+        "uni1EA5.rcltA11y": "uni1EA5.ss01",
+        "uni1EA7": "uni1EA7.ss01",
+        "uni1EA7.rcltA11y": "uni1EA7.ss01",
+        "uni1EA9": "uni1EA9.ss01",
+        "uni1EA9.rcltA11y": "uni1EA9.ss01",
+        "uni1EAB": "uni1EAB.ss01",
+        "uni1EAB.rcltA11y": "uni1EAB.ss01",
+        "uni1EAD": "uni1EAD.ss01",
+        "uni1EAD.rcltA11y": "uni1EAD.ss01",
+        "uni1EAF": "uni1EAF.ss01",
+        "uni1EAF.rcltA11y": "uni1EAF.ss01",
+        "uni1EB1": "uni1EB1.ss01",
+        "uni1EB1.rcltA11y": "uni1EB1.ss01",
+        "uni1EB3": "uni1EB3.ss01",
+        "uni1EB3.rcltA11y": "uni1EB3.ss01",
+        "uni1EB5": "uni1EB5.ss01",
+        "uni1EB5.rcltA11y": "uni1EB5.ss01",
+        "uni1EB7": "uni1EB7.ss01",
+        "uni1EB7.rcltA11y": "uni1EB7.ss01"
+      }
+    },
+    {
+      "tag": "ss02",
+      "name": "Humanist a",
+      "families": [
+        "a"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "a": "a.ss02",
+        "a.rcltA11y": "a.ss02",
+        "a.rcltBase": "a.ss02",
+        "aacute": "aacute.ss02",
+        "aacute.rcltA11y": "aacute.ss02",
+        "aacute.rcltBase": "aacute.ss02",
+        "abreve": "abreve.ss02",
+        "abreve.rcltA11y": "abreve.ss02",
+        "abreve.rcltBase": "abreve.ss02",
+        "acircumflex": "acircumflex.ss02",
+        "acircumflex.rcltA11y": "acircumflex.ss02",
+        "acircumflex.rcltBase": "acircumflex.ss02",
+        "adieresis": "adieresis.ss02",
+        "adieresis.rcltA11y": "adieresis.ss02",
+        "adieresis.rcltBase": "adieresis.ss02",
+        "ae": "ae.ss02",
+        "ae.rcltBase": "ae.ss02",
+        "agrave": "agrave.ss02",
+        "agrave.rcltA11y": "agrave.ss02",
+        "agrave.rcltBase": "agrave.ss02",
+        "amacron": "amacron.ss02",
+        "amacron.rcltA11y": "amacron.ss02",
+        "amacron.rcltBase": "amacron.ss02",
+        "aogonek": "aogonek.ss02",
+        "aogonek.rcltA11y": "aogonek.ss02",
+        "aogonek.rcltBase": "aogonek.ss02",
+        "aring": "aring.ss02",
+        "aring.rcltA11y": "aring.ss02",
+        "aring.rcltBase": "aring.ss02",
+        "atilde": "atilde.ss02",
+        "atilde.rcltA11y": "atilde.ss02",
+        "atilde.rcltBase": "atilde.ss02",
+        "ordfeminine": "ordfeminine.ss02",
+        "ordfeminine.rcltBase": "ordfeminine.ss02",
+        "uni01E3": "uni01E3.ss02",
+        "uni01E3.rcltBase": "uni01E3.ss02",
+        "uni0203": "uni0203.ss02",
+        "uni0203.rcltA11y": "uni0203.ss02",
+        "uni0203.rcltBase": "uni0203.ss02",
+        "uni1EA1": "uni1EA1.ss02",
+        "uni1EA1.rcltA11y": "uni1EA1.ss02",
+        "uni1EA1.rcltBase": "uni1EA1.ss02",
+        "uni1EA3": "uni1EA3.ss02",
+        "uni1EA3.rcltA11y": "uni1EA3.ss02",
+        "uni1EA3.rcltBase": "uni1EA3.ss02",
+        "uni1EA5": "uni1EA5.ss02",
+        "uni1EA5.rcltA11y": "uni1EA5.ss02",
+        "uni1EA5.rcltBase": "uni1EA5.ss02",
+        "uni1EA7": "uni1EA7.ss02",
+        "uni1EA7.rcltA11y": "uni1EA7.ss02",
+        "uni1EA7.rcltBase": "uni1EA7.ss02",
+        "uni1EA9": "uni1EA9.ss02",
+        "uni1EA9.rcltA11y": "uni1EA9.ss02",
+        "uni1EA9.rcltBase": "uni1EA9.ss02",
+        "uni1EAB": "uni1EAB.ss02",
+        "uni1EAB.rcltA11y": "uni1EAB.ss02",
+        "uni1EAB.rcltBase": "uni1EAB.ss02",
+        "uni1EAD": "uni1EAD.ss02",
+        "uni1EAD.rcltA11y": "uni1EAD.ss02",
+        "uni1EAD.rcltBase": "uni1EAD.ss02",
+        "uni1EAF": "uni1EAF.ss02",
+        "uni1EAF.rcltA11y": "uni1EAF.ss02",
+        "uni1EAF.rcltBase": "uni1EAF.ss02",
+        "uni1EB1": "uni1EB1.ss02",
+        "uni1EB1.rcltA11y": "uni1EB1.ss02",
+        "uni1EB1.rcltBase": "uni1EB1.ss02",
+        "uni1EB3": "uni1EB3.ss02",
+        "uni1EB3.rcltA11y": "uni1EB3.ss02",
+        "uni1EB3.rcltBase": "uni1EB3.ss02",
+        "uni1EB5": "uni1EB5.ss02",
+        "uni1EB5.rcltA11y": "uni1EB5.ss02",
+        "uni1EB5.rcltBase": "uni1EB5.ss02",
+        "uni1EB7": "uni1EB7.ss02",
+        "uni1EB7.rcltA11y": "uni1EB7.ss02",
+        "uni1EB7.rcltBase": "uni1EB7.ss02"
+      }
+    },
+    {
+      "tag": "ss03",
+      "name": "Tailed a",
+      "families": [
+        "a"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "a": "a.ss03",
+        "a.rcltA11y": "a.ss03",
+        "aacute": "aacute.ss03",
+        "aacute.rcltA11y": "aacute.ss03",
+        "abreve": "abreve.ss03",
+        "abreve.rcltA11y": "abreve.ss03",
+        "acircumflex": "acircumflex.ss03",
+        "acircumflex.rcltA11y": "acircumflex.ss03",
+        "adieresis": "adieresis.ss03",
+        "adieresis.rcltA11y": "adieresis.ss03",
+        "ae": "ae.ss03",
+        "ae.rcltBase": "ae.ss03",
+        "agrave": "agrave.ss03",
+        "agrave.rcltA11y": "agrave.ss03",
+        "amacron": "amacron.ss03",
+        "amacron.rcltA11y": "amacron.ss03",
+        "aogonek": "aogonek.ss03",
+        "aogonek.rcltA11y": "aogonek.ss03",
+        "aring": "aring.ss03",
+        "aring.rcltA11y": "aring.ss03",
+        "atilde": "atilde.ss03",
+        "atilde.rcltA11y": "atilde.ss03",
+        "ordfeminine": "ordfeminine.ss03",
+        "ordfeminine.rcltBase": "ordfeminine.ss03",
+        "uni01E3": "uni01E3.ss03",
+        "uni01E3.rcltBase": "uni01E3.ss03",
+        "uni0203": "uni0203.ss03",
+        "uni0203.rcltA11y": "uni0203.ss03",
+        "uni1EA1": "uni1EA1.ss03",
+        "uni1EA1.rcltA11y": "uni1EA1.ss03",
+        "uni1EA3": "uni1EA3.ss03",
+        "uni1EA3.rcltA11y": "uni1EA3.ss03",
+        "uni1EA5": "uni1EA5.ss03",
+        "uni1EA5.rcltA11y": "uni1EA5.ss03",
+        "uni1EA7": "uni1EA7.ss03",
+        "uni1EA7.rcltA11y": "uni1EA7.ss03",
+        "uni1EA9": "uni1EA9.ss03",
+        "uni1EA9.rcltA11y": "uni1EA9.ss03",
+        "uni1EAB": "uni1EAB.ss03",
+        "uni1EAB.rcltA11y": "uni1EAB.ss03",
+        "uni1EAD": "uni1EAD.ss03",
+        "uni1EAD.rcltA11y": "uni1EAD.ss03",
+        "uni1EAF": "uni1EAF.ss03",
+        "uni1EAF.rcltA11y": "uni1EAF.ss03",
+        "uni1EB1": "uni1EB1.ss03",
+        "uni1EB1.rcltA11y": "uni1EB1.ss03",
+        "uni1EB3": "uni1EB3.ss03",
+        "uni1EB3.rcltA11y": "uni1EB3.ss03",
+        "uni1EB5": "uni1EB5.ss03",
+        "uni1EB5.rcltA11y": "uni1EB5.ss03",
+        "uni1EB7": "uni1EB7.ss03",
+        "uni1EB7.rcltA11y": "uni1EB7.ss03"
+      }
+    },
+    {
+      "tag": "ss04",
+      "name": "Geometric g",
+      "families": [
+        "g"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "g": "g.ss04",
+        "g.rcltA11y": "g.ss04",
+        "gbreve": "gbreve.ss04",
+        "gbreve.rcltA11y": "gbreve.ss04",
+        "gcircumflex": "gcircumflex.ss04",
+        "gcircumflex.rcltA11y": "gcircumflex.ss04",
+        "gdotaccent": "gdotaccent.ss04",
+        "gdotaccent.rcltA11y": "gdotaccent.ss04",
+        "uni0123": "uni0123.ss04",
+        "uni0123.rcltA11y": "uni0123.ss04",
+        "uni1E21": "uni1E21.ss04",
+        "uni1E21.rcltA11y": "uni1E21.ss04"
+      }
+    },
+    {
+      "tag": "ss05",
+      "name": "Gothic g",
+      "families": [
+        "g"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "g": "g.ss05",
+        "g.rcltA11y": "g.ss05",
+        "gbreve": "gbreve.ss05",
+        "gbreve.rcltA11y": "gbreve.ss05",
+        "gcircumflex": "gcircumflex.ss05",
+        "gcircumflex.rcltA11y": "gcircumflex.ss05",
+        "gdotaccent": "gdotaccent.ss05",
+        "gdotaccent.rcltA11y": "gdotaccent.ss05",
+        "uni0123": "uni0123.ss05",
+        "uni0123.rcltA11y": "uni0123.ss05",
+        "uni1E21": "uni1E21.ss05",
+        "uni1E21.rcltA11y": "uni1E21.ss05"
+      }
+    },
+    {
+      "tag": "ss06",
+      "name": "Geometric G",
+      "families": [
+        "G"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "G": "G.ss06",
+        "G.rcltGeo": "G.ss06",
+        "Gbreve": "Gbreve.ss06",
+        "Gbreve.rcltGeo": "Gbreve.ss06",
+        "Gcircumflex": "Gcircumflex.ss06",
+        "Gcircumflex.rcltGeo": "Gcircumflex.ss06",
+        "Gdotaccent": "Gdotaccent.ss06",
+        "Gdotaccent.rcltGeo": "Gdotaccent.ss06",
+        "uni0122": "uni0122.ss06",
+        "uni0122.rcltGeo": "uni0122.ss06",
+        "uni1E20": "uni1E20.ss06",
+        "uni1E20.rcltGeo": "uni1E20.ss06",
+        "uni20B2": "uni20B2.ss06",
+        "uni20B2.rcltGeo": "uni20B2.ss06",
+        "uni20B2.tf": "uni20B2.tf.ss06",
+        "uni20B2.tf.rcltGeo": "uni20B2.tf.ss06"
+      }
+    },
+    {
+      "tag": "ss07",
+      "name": "Humanist G",
+      "families": [
+        "G"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "G": "G.ss07",
+        "G.rcltGeo": "G.ss07",
+        "Gbreve": "Gbreve.ss07",
+        "Gbreve.rcltGeo": "Gbreve.ss07",
+        "Gcircumflex": "Gcircumflex.ss07",
+        "Gcircumflex.rcltGeo": "Gcircumflex.ss07",
+        "Gdotaccent": "Gdotaccent.ss07",
+        "Gdotaccent.rcltGeo": "Gdotaccent.ss07",
+        "uni0122": "uni0122.ss07",
+        "uni0122.rcltGeo": "uni0122.ss07",
+        "uni1E20": "uni1E20.ss07",
+        "uni1E20.rcltGeo": "uni1E20.ss07",
+        "uni20B2": "uni20B2.ss07",
+        "uni20B2.rcltGeo": "uni20B2.ss07",
+        "uni20B2.tf": "uni20B2.tf.ss07",
+        "uni20B2.tf.rcltGeo": "uni20B2.tf.ss07"
+      }
+    },
+    {
+      "tag": "ss08",
+      "name": "Constructed j and y",
+      "families": [
+        "I",
+        "j",
+        "y"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "ij": "ij.ss08",
+        "ij.rcltGeo": "j.ss08",
+        "ijacute": "ijacute.ss08",
+        "ijacute.rcltGeo": "ijacute.ss08",
+        "j": "j.ss08",
+        "j.rcltGeo": "j.ss08",
+        "jcircumflex": "jcircumflex.ss08",
+        "jcircumflex.rcltGeo": "jcircumflex.ss08",
+        "uni006A0301": "uni006A0301.ss08",
+        "uni006A0301.rcltGeo": "uni006A0301.ss08",
+        "uni0237": "uni0237.ss08",
+        "uni0237.rcltGeo": "uni0237.ss08",
+        "uni1E8F": "uni1E8F.ss08",
+        "uni1E8F.rcltGeo": "uni1E8F.ss08",
+        "uni1EF5": "uni1EF5.ss08",
+        "uni1EF5.rcltGeo": "uni1EF5.ss08",
+        "uni1EF7": "uni1EF7.ss08",
+        "uni1EF7.rcltGeo": "uni1EF7.ss08",
+        "uni1EF9": "uni1EF9.ss08",
+        "uni1EF9.rcltGeo": "uni1EF9.ss08",
+        "y": "y.ss08",
+        "y.rcltGeo": "y.ss08",
+        "yacute": "yacute.ss08",
+        "yacute.rcltGeo": "yacute.ss08",
+        "ycircumflex": "ycircumflex.ss08",
+        "ycircumflex.rcltGeo": "ycircumflex.ss08",
+        "ydieresis": "ydieresis.ss08",
+        "ydieresis.rcltGeo": "ydieresis.ss08",
+        "ygrave": "ygrave.ss08",
+        "ygrave.rcltGeo": "ygrave.ss08"
+      }
+    },
+    {
+      "tag": "ss09",
+      "name": "Humanist j and y",
+      "families": [
+        "I",
+        "j",
+        "y"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "ij": "ij.ss09",
+        "ij.rcltGeo": "j.ss09",
+        "ijacute": "ijacute.ss09",
+        "ijacute.rcltGeo": "ijacute.ss09",
+        "j": "j.ss09",
+        "j.rcltGeo": "j.ss09",
+        "jcircumflex": "jcircumflex.ss09",
+        "jcircumflex.rcltGeo": "jcircumflex.ss09",
+        "uni006A0301": "uni006A0301.ss09",
+        "uni006A0301.rcltGeo": "uni006A0301.ss09",
+        "uni0237": "uni0237.ss09",
+        "uni0237.rcltGeo": "uni0237.ss09",
+        "uni1E8F": "uni1E8F.ss09",
+        "uni1E8F.rcltGeo": "uni1E8F.ss09",
+        "uni1EF5": "uni1EF5.ss09",
+        "uni1EF5.rcltGeo": "uni1EF5.ss09",
+        "uni1EF7": "uni1EF7.ss09",
+        "uni1EF7.rcltGeo": "uni1EF7.ss09",
+        "uni1EF9": "uni1EF9.ss09",
+        "uni1EF9.rcltGeo": "uni1EF9.ss09",
+        "y": "y.ss09",
+        "y.rcltGeo": "y.ss09",
+        "yacute": "yacute.ss09",
+        "yacute.rcltGeo": "yacute.ss09",
+        "ycircumflex": "ycircumflex.ss09",
+        "ycircumflex.rcltGeo": "ycircumflex.ss09",
+        "ydieresis": "ydieresis.ss09",
+        "ydieresis.rcltGeo": "ydieresis.ss09",
+        "ygrave": "ygrave.ss09",
+        "ygrave.rcltGeo": "ygrave.ss09"
+      }
+    },
+    {
+      "tag": "ss10",
+      "name": "Futura alternatives",
+      "families": [
+        "0",
+        "1",
+        "5",
+        "C",
+        "I",
+        "a",
+        "c",
+        "f",
+        "j",
+        "t",
+        "u",
+        "y"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "C": "C.ss10",
+        "C.rcltGeo": "C.ss10",
+        "Cacute": "Cacute.ss10",
+        "Cacute.rcltGeo": "Cacute.ss10",
+        "Ccaron": "Ccaron.ss10",
+        "Ccaron.rcltGeo": "Ccaron.ss10",
+        "Ccedilla": "Ccedilla.ss10",
+        "Ccedilla.rcltGeo": "Ccedilla.ss10",
+        "Ccircumflex": "Ccircumflex.ss10",
+        "Ccircumflex.rcltGeo": "Ccircumflex.ss10",
+        "Cdotaccent": "Cdotaccent.ss10",
+        "Cdotaccent.rcltGeo": "Cdotaccent.ss10",
+        "Eng": "Eng.ss10",
+        "Eng.rcltGeo": "Eng.ss10",
+        "Euro": "Euro.ss10",
+        "Euro.rcltGeo": "Euro.ss10",
+        "Euro.tf": "Euro.tf.ss10",
+        "Euro.tf.rcltGeo": "Euro.tf.ss10",
+        "a": "a.ss01",
+        "a.rcltA11y": "a.ss01",
+        "a.rcltBase": "a.ss01",
+        "aacute": "aacute.ss01",
+        "aacute.rcltA11y": "aacute.ss01",
+        "aacute.rcltBase": "aacute.ss01",
+        "abreve": "abreve.ss01",
+        "abreve.rcltA11y": "abreve.ss01",
+        "abreve.rcltBase": "abreve.ss01",
+        "acircumflex": "acircumflex.ss01",
+        "acircumflex.rcltA11y": "acircumflex.ss01",
+        "acircumflex.rcltBase": "acircumflex.ss01",
+        "adieresis": "adieresis.ss01",
+        "adieresis.rcltA11y": "adieresis.ss01",
+        "adieresis.rcltBase": "adieresis.ss01",
+        "ae": "ae.ss01",
+        "ae.rcltBase": "ae.ss01",
+        "agrave": "agrave.ss01",
+        "agrave.rcltA11y": "agrave.ss01",
+        "agrave.rcltBase": "agrave.ss01",
+        "amacron": "amacron.ss01",
+        "amacron.rcltA11y": "amacron.ss01",
+        "amacron.rcltBase": "amacron.ss01",
+        "aogonek": "aogonek.ss01",
+        "aogonek.rcltA11y": "aogonek.ss01",
+        "aogonek.rcltBase": "aogonek.ss01",
+        "aring": "aring.ss01",
+        "aring.rcltA11y": "aring.ss01",
+        "aring.rcltBase": "aring.ss01",
+        "atilde": "atilde.ss01",
+        "atilde.rcltA11y": "atilde.ss01",
+        "atilde.rcltBase": "atilde.ss01",
+        "c": "c.ss10",
+        "c.rcltGeo": "c.ss10",
+        "cacute": "cacute.ss10",
+        "cacute.rcltGeo": "cacute.ss10",
+        "ccaron": "ccaron.ss10",
+        "ccaron.rcltGeo": "ccaron.ss10",
+        "ccedilla": "ccedilla.ss10",
+        "ccedilla.rcltGeo": "ccedilla.ss10",
+        "ccircumflex": "ccircumflex.ss10",
+        "ccircumflex.rcltGeo": "ccircumflex.ss10",
+        "cdotaccent": "cdotaccent.ss10",
+        "cdotaccent.rcltGeo": "cdotaccent.ss10",
+        "eng": "eng.ss10",
+        "eng.rcltGeo": "eng.ss10",
+        "f.rcltBase": "f.alt",
+        "f_t": "f_t.ss10",
+        "f_t.rcltBase": "f_t.ss10",
+        "f_t.rcltGeo": "f_t.ss10",
+        "five": "five.ss10",
+        "five.dnom": "five.dnom.ss10",
+        "five.dnom.rcltGeo": "five.dnom.ss10",
+        "five.numr": "five.numr.ss10",
+        "five.numr.rcltGeo": "five.numr.ss10",
+        "five.rcltGeo": "five.ss10",
+        "fiveeighths": "fiveeighths.ss10",
+        "fiveeighths.rcltGeo": "fiveeighths.ss10",
+        "ij": "ij.ss10",
+        "ij.rcltBase": "ij.ss10",
+        "ij.rcltGeo": "ij.ss10",
+        "ijacute": "ijacute.ss10",
+        "ijacute.rcltBase": "ijacute.ss10",
+        "ijacute.rcltGeo": "ijacute.ss10",
+        "j": "j.ss10",
+        "j.rcltBase": "j.ss10",
+        "j.rcltGeo": "j.ss10",
+        "jcircumflex": "jcircumflex.ss10",
+        "jcircumflex.rcltBase": "jcircumflex.ss10",
+        "jcircumflex.rcltGeo": "jcircumflex.ss10",
+        "one": "one.ss10",
+        "one.dnom": "one.dnom.ss10",
+        "one.dnom.rcltGeo": "one.dnom.ss10",
+        "one.lf": "one.lf.ss10",
+        "one.lf.rcltGeo": "one.lf.ss10",
+        "one.numr": "one.numr.ss10",
+        "one.numr.rcltGeo": "one.numr.ss10",
+        "one.rcltGeo": "one.ss10",
+        "one.tf": "one.tf.ss10",
+        "one.tf.rcltGeo": "one.tf.ss10",
+        "oneeighth": "oneeighth.ss10",
+        "oneeighth.rcltGeo": "oneeighth.ss10",
+        "onehalf": "onehalf.ss10",
+        "onehalf.rcltGeo": "onehalf.ss10",
+        "onequarter": "onequarter.ss10",
+        "onequarter.rcltGeo": "onequarter.ss10",
+        "ordfeminine": "ordfeminine.ss01",
+        "ordfeminine.rcltBase": "ordfeminine.ss01",
+        "pi": "pi.ss10",
+        "pi.rcltGeo": "pi.ss10",
+        "t": "t.ss10",
+        "t.rcltBase": "t.ss10",
+        "t.rcltGeo": "t.ss10",
+        "tbar": "tbar.ss10",
+        "tbar.rcltBase": "tbar.ss10",
+        "tbar.rcltGeo": "tbar.ss10",
+        "tcaron": "tcaron.ss10",
+        "tcaron.rcltBase": "tcaron.ss10",
+        "tcaron.rcltGeo": "tcaron.ss10",
+        "u": "u.ss10",
+        "u.rcltGeo": "u.ss10",
+        "uacute": "uacute.ss10",
+        "uacute.rcltGeo": "uacute.ss10",
+        "ubreve": "ubreve.ss10",
+        "ubreve.rcltGeo": "ubreve.ss10",
+        "ucircumflex": "ucircumflex.ss10",
+        "ucircumflex.rcltGeo": "ucircumflex.ss10",
+        "udieresis": "udieresis.ss10",
+        "udieresis.rcltGeo": "udieresis.ss10",
+        "ugrave": "ugrave.ss10",
+        "ugrave.rcltGeo": "ugrave.ss10",
+        "uhorn": "uhorn.ss10",
+        "uhorn.rcltGeo": "uhorn.ss10",
+        "uhungarumlaut": "uhungarumlaut.ss10",
+        "uhungarumlaut.rcltGeo": "uhungarumlaut.ss10",
+        "umacron": "umacron.ss10",
+        "umacron.rcltGeo": "umacron.ss10",
+        "uni006A0301": "uni006A0301.ss10",
+        "uni006A0301.rcltBase": "uni006A0301.ss10",
+        "uni006A0301.rcltGeo": "uni006A0301.ss10",
+        "uni00B5": "uni00B5.ss10",
+        "uni00B5.rcltGeo": "uni00B5.ss10",
+        "uni00B9": "uni00B9.ss10",
+        "uni00B9.rcltGeo": "uni00B9.ss10",
+        "uni0163": "uni0163.ss10",
+        "uni0163.rcltBase": "uni0163.ss10",
+        "uni0163.rcltGeo": "uni0163.ss10",
+        "uni01D6": "uni01D6.ss10",
+        "uni01D6.rcltGeo": "uni01D6.ss10",
+        "uni01D8": "uni01D8.ss10",
+        "uni01D8.rcltGeo": "uni01D8.ss10",
+        "uni01DA": "uni01DA.ss10",
+        "uni01DA.rcltGeo": "uni01DA.ss10",
+        "uni01DC": "uni01DC.ss10",
+        "uni01DC.rcltGeo": "uni01DC.ss10",
+        "uni01E3": "uni01E3.ss01",
+        "uni01E3.rcltBase": "uni01E3.ss01",
+        "uni0203": "uni0203.ss01",
+        "uni0203.rcltA11y": "uni0203.ss01",
+        "uni0203.rcltBase": "uni0203.ss01",
+        "uni0217": "uni0217.ss10",
+        "uni0217.rcltGeo": "uni0217.ss10",
+        "uni021B": "uni021B.ss10",
+        "uni021B.rcltBase": "uni021B.ss10",
+        "uni021B.rcltGeo": "uni021B.ss10",
+        "uni0237": "uni0237.ss10",
+        "uni0237.rcltBase": "uni0237.ss10",
+        "uni0237.rcltGeo": "uni0237.ss10",
+        "uni1E6D": "uni1E6D.ss10",
+        "uni1E6D.rcltBase": "uni1E6D.ss10",
+        "uni1E6D.rcltGeo": "uni1E6D.ss10",
+        "uni1E6F": "uni1E6F.ss10",
+        "uni1E6F.rcltBase": "uni1E6F.ss10",
+        "uni1E6F.rcltGeo": "uni1E6F.ss10",
+        "uni1E8F": "uni1E8F.ss10",
+        "uni1E8F.rcltBase": "uni1E8F.ss10",
+        "uni1E8F.rcltGeo": "uni1E8F.ss10",
+        "uni1EA1": "uni1EA1.ss01",
+        "uni1EA1.rcltA11y": "uni1EA1.ss01",
+        "uni1EA1.rcltBase": "uni1EA1.ss01",
+        "uni1EA3": "uni1EA3.ss01",
+        "uni1EA3.rcltA11y": "uni1EA3.ss01",
+        "uni1EA3.rcltBase": "uni1EA3.ss01",
+        "uni1EA5": "uni1EA5.ss01",
+        "uni1EA5.rcltA11y": "uni1EA5.ss01",
+        "uni1EA5.rcltBase": "uni1EA5.ss01",
+        "uni1EA7": "uni1EA7.ss01",
+        "uni1EA7.rcltA11y": "uni1EA7.ss01",
+        "uni1EA7.rcltBase": "uni1EA7.ss01",
+        "uni1EA9": "uni1EA9.ss01",
+        "uni1EA9.rcltA11y": "uni1EA9.ss01",
+        "uni1EA9.rcltBase": "uni1EA9.ss01",
+        "uni1EAB": "uni1EAB.ss01",
+        "uni1EAB.rcltA11y": "uni1EAB.ss01",
+        "uni1EAB.rcltBase": "uni1EAB.ss01",
+        "uni1EAD": "uni1EAD.ss01",
+        "uni1EAD.rcltA11y": "uni1EAD.ss01",
+        "uni1EAD.rcltBase": "uni1EAD.ss01",
+        "uni1EAF": "uni1EAF.ss01",
+        "uni1EAF.rcltA11y": "uni1EAF.ss01",
+        "uni1EAF.rcltBase": "uni1EAF.ss01",
+        "uni1EB1": "uni1EB1.ss01",
+        "uni1EB1.rcltA11y": "uni1EB1.ss01",
+        "uni1EB1.rcltBase": "uni1EB1.ss01",
+        "uni1EB3": "uni1EB3.ss01",
+        "uni1EB3.rcltA11y": "uni1EB3.ss01",
+        "uni1EB3.rcltBase": "uni1EB3.ss01",
+        "uni1EB5": "uni1EB5.ss01",
+        "uni1EB5.rcltA11y": "uni1EB5.ss01",
+        "uni1EB5.rcltBase": "uni1EB5.ss01",
+        "uni1EB7": "uni1EB7.ss01",
+        "uni1EB7.rcltA11y": "uni1EB7.ss01",
+        "uni1EB7.rcltBase": "uni1EB7.ss01",
+        "uni1EE5": "uni1EE5.ss10",
+        "uni1EE5.rcltGeo": "uni1EE5.ss10",
+        "uni1EE7": "uni1EE7.ss10",
+        "uni1EE7.rcltGeo": "uni1EE7.ss10",
+        "uni1EE9": "uni1EE9.ss10",
+        "uni1EE9.rcltGeo": "uni1EE9.ss10",
+        "uni1EEB": "uni1EEB.ss10",
+        "uni1EEB.rcltGeo": "uni1EEB.ss10",
+        "uni1EED": "uni1EED.ss10",
+        "uni1EED.rcltGeo": "uni1EED.ss10",
+        "uni1EEF": "uni1EEF.ss10",
+        "uni1EEF.rcltGeo": "uni1EEF.ss10",
+        "uni1EF1": "uni1EF1.ss10",
+        "uni1EF1.rcltGeo": "uni1EF1.ss10",
+        "uni1EF5": "uni1EF5.ss10",
+        "uni1EF5.rcltBase": "uni1EF5.ss10",
+        "uni1EF5.rcltGeo": "uni1EF5.ss10",
+        "uni1EF7": "uni1EF7.ss10",
+        "uni1EF7.rcltBase": "uni1EF7.ss10",
+        "uni1EF7.rcltGeo": "uni1EF7.ss10",
+        "uni1EF9": "uni1EF9.ss10",
+        "uni1EF9.rcltBase": "uni1EF9.ss10",
+        "uni1EF9.rcltGeo": "uni1EF9.ss10",
+        "uni2070": "uni2070.ss10",
+        "uni2070.rcltGeo": "uni2070.ss10",
+        "uni2075": "uni2075.ss10",
+        "uni2075.rcltGeo": "uni2075.ss10",
+        "uni2080": "uni2080.ss10",
+        "uni2080.rcltGeo": "uni2080.ss10",
+        "uni2081": "uni2081.ss10",
+        "uni2081.rcltGeo": "uni2081.ss10",
+        "uni2085": "uni2085.ss10",
+        "uni2085.rcltGeo": "uni2085.ss10",
+        "uni2153": "uni2153.ss10",
+        "uni2153.rcltGeo": "uni2153.ss10",
+        "uni2154": "uni2154.ss10",
+        "uni2154.rcltGeo": "uni2154.ss10",
+        "uogonek": "uogonek.ss10",
+        "uogonek.rcltGeo": "uogonek.ss10",
+        "uring": "uring.ss10",
+        "uring.rcltGeo": "uring.ss10",
+        "utilde": "utilde.ss10",
+        "utilde.rcltGeo": "utilde.ss10",
+        "y": "y.ss10",
+        "y.rcltBase": "y.ss10",
+        "y.rcltGeo": "y.ss10",
+        "yacute": "yacute.ss10",
+        "yacute.rcltBase": "yacute.ss10",
+        "yacute.rcltGeo": "yacute.ss10",
+        "ycircumflex": "ycircumflex.ss10",
+        "ycircumflex.rcltBase": "ycircumflex.ss10",
+        "ycircumflex.rcltGeo": "ycircumflex.ss10",
+        "ydieresis": "ydieresis.ss10",
+        "ydieresis.rcltBase": "ydieresis.ss10",
+        "ydieresis.rcltGeo": "ydieresis.ss10",
+        "ygrave": "ygrave.ss10",
+        "ygrave.rcltBase": "ygrave.ss10",
+        "ygrave.rcltGeo": "ygrave.ss10",
+        "zero": "zero.ss10",
+        "zero.dnom": "zero.dnom.ss10",
+        "zero.dnom.rcltGeo": "zero.dnom.ss10",
+        "zero.lf": "zero.lf.ss10",
+        "zero.lf.rcltGeo": "zero.lf.ss10",
+        "zero.numr": "zero.numr.ss10",
+        "zero.numr.rcltGeo": "zero.numr.ss10",
+        "zero.rcltGeo": "zero.ss10",
+        "zero.tf": "zero.tf.ss10",
+        "zero.tf.rcltGeo": "zero.tf.ss10"
+      }
+    },
+    {
+      "tag": "ss11",
+      "name": "Futura alternatives and ligations",
+      "families": [
+        "0",
+        "1",
+        "5",
+        "C",
+        "I",
+        "a",
+        "c",
+        "f",
+        "j",
+        "t",
+        "u",
+        "y"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "C": "C.ss10",
+        "C.rcltGeo": "C.ss10",
+        "Cacute": "Cacute.ss10",
+        "Cacute.rcltGeo": "Cacute.ss10",
+        "Ccaron": "Ccaron.ss10",
+        "Ccaron.rcltGeo": "Ccaron.ss10",
+        "Ccedilla": "Ccedilla.ss10",
+        "Ccedilla.rcltGeo": "Ccedilla.ss10",
+        "Ccircumflex": "Ccircumflex.ss10",
+        "Ccircumflex.rcltGeo": "Ccircumflex.ss10",
+        "Cdotaccent": "Cdotaccent.ss10",
+        "Cdotaccent.rcltGeo": "Cdotaccent.ss10",
+        "Eng": "Eng.ss10",
+        "Eng.rcltGeo": "Eng.ss10",
+        "Euro": "Euro.ss10",
+        "Euro.rcltGeo": "Euro.ss10",
+        "Euro.tf": "Euro.tf.ss10",
+        "Euro.tf.rcltGeo": "Euro.tf.ss10",
+        "a": "a.ss01",
+        "a.rcltA11y": "a.ss01",
+        "a.rcltBase": "a.ss01",
+        "aacute": "aacute.ss01",
+        "aacute.rcltA11y": "aacute.ss01",
+        "aacute.rcltBase": "aacute.ss01",
+        "abreve": "abreve.ss01",
+        "abreve.rcltA11y": "abreve.ss01",
+        "abreve.rcltBase": "abreve.ss01",
+        "acircumflex": "acircumflex.ss01",
+        "acircumflex.rcltA11y": "acircumflex.ss01",
+        "acircumflex.rcltBase": "acircumflex.ss01",
+        "adieresis": "adieresis.ss01",
+        "adieresis.rcltA11y": "adieresis.ss01",
+        "adieresis.rcltBase": "adieresis.ss01",
+        "ae": "ae.ss01",
+        "ae.rcltBase": "ae.ss01",
+        "agrave": "agrave.ss01",
+        "agrave.rcltA11y": "agrave.ss01",
+        "agrave.rcltBase": "agrave.ss01",
+        "amacron": "amacron.ss01",
+        "amacron.rcltA11y": "amacron.ss01",
+        "amacron.rcltBase": "amacron.ss01",
+        "aogonek": "aogonek.ss01",
+        "aogonek.rcltA11y": "aogonek.ss01",
+        "aogonek.rcltBase": "aogonek.ss01",
+        "aring": "aring.ss01",
+        "aring.rcltA11y": "aring.ss01",
+        "aring.rcltBase": "aring.ss01",
+        "atilde": "atilde.ss01",
+        "atilde.rcltA11y": "atilde.ss01",
+        "atilde.rcltBase": "atilde.ss01",
+        "c": "c.ss10",
+        "c.rcltGeo": "c.ss10",
+        "cacute": "cacute.ss10",
+        "cacute.rcltGeo": "cacute.ss10",
+        "ccaron": "ccaron.ss10",
+        "ccaron.rcltGeo": "ccaron.ss10",
+        "ccedilla": "ccedilla.ss10",
+        "ccedilla.rcltGeo": "ccedilla.ss10",
+        "ccircumflex": "ccircumflex.ss10",
+        "ccircumflex.rcltGeo": "ccircumflex.ss10",
+        "cdotaccent": "cdotaccent.ss10",
+        "cdotaccent.rcltGeo": "cdotaccent.ss10",
+        "eng": "eng.ss10",
+        "eng.rcltGeo": "eng.ss10",
+        "f.rcltBase": "f.alt",
+        "f_f_i": "f_f_i.ss11",
+        "f_f_i.rcltBase": "f_f_i.ss11",
+        "f_f_l": "f_f_l.ss11",
+        "f_f_l.rcltBase": "f_f_l.ss11",
+        "f_t": "f_t.ss11",
+        "f_t.rcltBase": "f_t.ss11",
+        "f_t.rcltGeo": "f_t.ss11",
+        "fi": "fi.ss11",
+        "fi.rcltBase": "fi.ss11",
+        "five": "five.ss10",
+        "five.dnom": "five.dnom.ss10",
+        "five.dnom.rcltGeo": "five.dnom.ss10",
+        "five.numr": "five.numr.ss10",
+        "five.numr.rcltGeo": "five.numr.ss10",
+        "five.rcltGeo": "five.ss10",
+        "fiveeighths": "fiveeighths.ss10",
+        "fiveeighths.rcltGeo": "fiveeighths.ss10",
+        "fl": "fl.ss11",
+        "fl.rcltBase": "fl.ss11",
+        "ij": "ij.ss10",
+        "ij.rcltBase": "ij.ss10",
+        "ij.rcltGeo": "ij.ss10",
+        "ijacute": "ijacute.ss10",
+        "ijacute.rcltBase": "ijacute.ss10",
+        "ijacute.rcltGeo": "ijacute.ss10",
+        "j": "j.ss10",
+        "j.rcltBase": "j.ss10",
+        "j.rcltGeo": "j.ss10",
+        "jcircumflex": "jcircumflex.ss10",
+        "jcircumflex.rcltBase": "jcircumflex.ss10",
+        "jcircumflex.rcltGeo": "jcircumflex.ss10",
+        "one": "one.ss10",
+        "one.dnom": "one.dnom.ss10",
+        "one.dnom.rcltGeo": "one.dnom.ss10",
+        "one.lf": "one.lf.ss10",
+        "one.lf.rcltGeo": "one.lf.ss10",
+        "one.numr": "one.numr.ss10",
+        "one.numr.rcltGeo": "one.numr.ss10",
+        "one.rcltGeo": "one.ss10",
+        "one.tf": "one.tf.ss10",
+        "one.tf.rcltGeo": "one.tf.ss10",
+        "oneeighth": "oneeighth.ss10",
+        "oneeighth.rcltGeo": "oneeighth.ss10",
+        "onehalf": "onehalf.ss10",
+        "onehalf.rcltGeo": "onehalf.ss10",
+        "onequarter": "onequarter.ss10",
+        "onequarter.rcltGeo": "onequarter.ss10",
+        "ordfeminine": "ordfeminine.ss01",
+        "ordfeminine.rcltBase": "ordfeminine.ss01",
+        "pi": "pi.ss10",
+        "pi.rcltGeo": "pi.ss10",
+        "t": "t.ss10",
+        "t.rcltBase": "t.ss10",
+        "t.rcltGeo": "t.ss10",
+        "tbar": "tbar.ss10",
+        "tbar.rcltBase": "tbar.ss10",
+        "tbar.rcltGeo": "tbar.ss10",
+        "tcaron": "tcaron.ss10",
+        "tcaron.rcltBase": "tcaron.ss10",
+        "tcaron.rcltGeo": "tcaron.ss10",
+        "u": "u.ss10",
+        "u.rcltGeo": "u.ss10",
+        "uacute": "uacute.ss10",
+        "uacute.rcltGeo": "uacute.ss10",
+        "ubreve": "ubreve.ss10",
+        "ubreve.rcltGeo": "ubreve.ss10",
+        "ucircumflex": "ucircumflex.ss10",
+        "ucircumflex.rcltGeo": "ucircumflex.ss10",
+        "udieresis": "udieresis.ss10",
+        "udieresis.rcltGeo": "udieresis.ss10",
+        "ugrave": "ugrave.ss10",
+        "ugrave.rcltGeo": "ugrave.ss10",
+        "uhorn": "uhorn.ss10",
+        "uhorn.rcltGeo": "uhorn.ss10",
+        "uhungarumlaut": "uhungarumlaut.ss10",
+        "uhungarumlaut.rcltGeo": "uhungarumlaut.ss10",
+        "umacron": "umacron.ss10",
+        "umacron.rcltGeo": "umacron.ss10",
+        "uni006A0301": "uni006A0301.ss10",
+        "uni006A0301.rcltBase": "uni006A0301.ss10",
+        "uni006A0301.rcltGeo": "uni006A0301.ss10",
+        "uni00B5": "uni00B5.ss10",
+        "uni00B5.rcltGeo": "uni00B5.ss10",
+        "uni00B9": "uni00B9.ss10",
+        "uni00B9.rcltGeo": "uni00B9.ss10",
+        "uni0163": "uni0163.ss10",
+        "uni0163.rcltBase": "uni0163.ss10",
+        "uni0163.rcltGeo": "uni0163.ss10",
+        "uni01D6": "uni01D6.ss10",
+        "uni01D6.rcltGeo": "uni01D6.ss10",
+        "uni01D8": "uni01D8.ss10",
+        "uni01D8.rcltGeo": "uni01D8.ss10",
+        "uni01DA": "uni01DA.ss10",
+        "uni01DA.rcltGeo": "uni01DA.ss10",
+        "uni01DC": "uni01DC.ss10",
+        "uni01DC.rcltGeo": "uni01DC.ss10",
+        "uni01E3": "uni01E3.ss01",
+        "uni01E3.rcltBase": "uni01E3.ss01",
+        "uni0203": "uni0203.ss01",
+        "uni0203.rcltA11y": "uni0203.ss01",
+        "uni0203.rcltBase": "uni0203.ss01",
+        "uni0217": "uni0217.ss10",
+        "uni0217.rcltGeo": "uni0217.ss10",
+        "uni021B": "uni021B.ss10",
+        "uni021B.rcltBase": "uni021B.ss10",
+        "uni021B.rcltGeo": "uni021B.ss10",
+        "uni0237": "uni0237.ss10",
+        "uni0237.rcltBase": "uni0237.ss10",
+        "uni0237.rcltGeo": "uni0237.ss10",
+        "uni1E6D": "uni1E6D.ss10",
+        "uni1E6D.rcltBase": "uni1E6D.ss10",
+        "uni1E6D.rcltGeo": "uni1E6D.ss10",
+        "uni1E6F": "uni1E6F.ss10",
+        "uni1E6F.rcltBase": "uni1E6F.ss10",
+        "uni1E6F.rcltGeo": "uni1E6F.ss10",
+        "uni1E8F": "uni1E8F.ss10",
+        "uni1E8F.rcltBase": "uni1E8F.ss10",
+        "uni1E8F.rcltGeo": "uni1E8F.ss10",
+        "uni1EA1": "uni1EA1.ss01",
+        "uni1EA1.rcltA11y": "uni1EA1.ss01",
+        "uni1EA1.rcltBase": "uni1EA1.ss01",
+        "uni1EA3": "uni1EA3.ss01",
+        "uni1EA3.rcltA11y": "uni1EA3.ss01",
+        "uni1EA3.rcltBase": "uni1EA3.ss01",
+        "uni1EA5": "uni1EA5.ss01",
+        "uni1EA5.rcltA11y": "uni1EA5.ss01",
+        "uni1EA5.rcltBase": "uni1EA5.ss01",
+        "uni1EA7": "uni1EA7.ss01",
+        "uni1EA7.rcltA11y": "uni1EA7.ss01",
+        "uni1EA7.rcltBase": "uni1EA7.ss01",
+        "uni1EA9": "uni1EA9.ss01",
+        "uni1EA9.rcltA11y": "uni1EA9.ss01",
+        "uni1EA9.rcltBase": "uni1EA9.ss01",
+        "uni1EAB": "uni1EAB.ss01",
+        "uni1EAB.rcltA11y": "uni1EAB.ss01",
+        "uni1EAB.rcltBase": "uni1EAB.ss01",
+        "uni1EAD": "uni1EAD.ss01",
+        "uni1EAD.rcltA11y": "uni1EAD.ss01",
+        "uni1EAD.rcltBase": "uni1EAD.ss01",
+        "uni1EAF": "uni1EAF.ss01",
+        "uni1EAF.rcltA11y": "uni1EAF.ss01",
+        "uni1EAF.rcltBase": "uni1EAF.ss01",
+        "uni1EB1": "uni1EB1.ss01",
+        "uni1EB1.rcltA11y": "uni1EB1.ss01",
+        "uni1EB1.rcltBase": "uni1EB1.ss01",
+        "uni1EB3": "uni1EB3.ss01",
+        "uni1EB3.rcltA11y": "uni1EB3.ss01",
+        "uni1EB3.rcltBase": "uni1EB3.ss01",
+        "uni1EB5": "uni1EB5.ss01",
+        "uni1EB5.rcltA11y": "uni1EB5.ss01",
+        "uni1EB5.rcltBase": "uni1EB5.ss01",
+        "uni1EB7": "uni1EB7.ss01",
+        "uni1EB7.rcltA11y": "uni1EB7.ss01",
+        "uni1EB7.rcltBase": "uni1EB7.ss01",
+        "uni1EE5": "uni1EE5.ss10",
+        "uni1EE5.rcltGeo": "uni1EE5.ss10",
+        "uni1EE7": "uni1EE7.ss10",
+        "uni1EE7.rcltGeo": "uni1EE7.ss10",
+        "uni1EE9": "uni1EE9.ss10",
+        "uni1EE9.rcltGeo": "uni1EE9.ss10",
+        "uni1EEB": "uni1EEB.ss10",
+        "uni1EEB.rcltGeo": "uni1EEB.ss10",
+        "uni1EED": "uni1EED.ss10",
+        "uni1EED.rcltGeo": "uni1EED.ss10",
+        "uni1EEF": "uni1EEF.ss10",
+        "uni1EEF.rcltGeo": "uni1EEF.ss10",
+        "uni1EF1": "uni1EF1.ss10",
+        "uni1EF1.rcltGeo": "uni1EF1.ss10",
+        "uni1EF5": "uni1EF5.ss10",
+        "uni1EF5.rcltBase": "uni1EF5.ss10",
+        "uni1EF5.rcltGeo": "uni1EF5.ss10",
+        "uni1EF7": "uni1EF7.ss10",
+        "uni1EF7.rcltBase": "uni1EF7.ss10",
+        "uni1EF7.rcltGeo": "uni1EF7.ss10",
+        "uni1EF9": "uni1EF9.ss10",
+        "uni1EF9.rcltBase": "uni1EF9.ss10",
+        "uni1EF9.rcltGeo": "uni1EF9.ss10",
+        "uni2070": "uni2070.ss10",
+        "uni2070.rcltGeo": "uni2070.ss10",
+        "uni2075": "uni2075.ss10",
+        "uni2075.rcltGeo": "uni2075.ss10",
+        "uni2080": "uni2080.ss10",
+        "uni2080.rcltGeo": "uni2080.ss10",
+        "uni2081": "uni2081.ss10",
+        "uni2081.rcltGeo": "uni2081.ss10",
+        "uni2085": "uni2085.ss10",
+        "uni2085.rcltGeo": "uni2085.ss10",
+        "uni2153": "uni2153.ss10",
+        "uni2153.rcltGeo": "uni2153.ss10",
+        "uni2154": "uni2154.ss10",
+        "uni2154.rcltGeo": "uni2154.ss10",
+        "uogonek": "uogonek.ss10",
+        "uogonek.rcltGeo": "uogonek.ss10",
+        "uring": "uring.ss10",
+        "uring.rcltGeo": "uring.ss10",
+        "utilde": "utilde.ss10",
+        "utilde.rcltGeo": "utilde.ss10",
+        "y": "y.ss10",
+        "y.rcltBase": "y.ss10",
+        "y.rcltGeo": "y.ss10",
+        "yacute": "yacute.ss10",
+        "yacute.rcltBase": "yacute.ss10",
+        "yacute.rcltGeo": "yacute.ss10",
+        "ycircumflex": "ycircumflex.ss10",
+        "ycircumflex.rcltBase": "ycircumflex.ss10",
+        "ycircumflex.rcltGeo": "ycircumflex.ss10",
+        "ydieresis": "ydieresis.ss10",
+        "ydieresis.rcltBase": "ydieresis.ss10",
+        "ydieresis.rcltGeo": "ydieresis.ss10",
+        "ygrave": "ygrave.ss10",
+        "ygrave.rcltBase": "ygrave.ss10",
+        "ygrave.rcltGeo": "ygrave.ss10",
+        "zero": "zero.ss10",
+        "zero.dnom": "zero.dnom.ss10",
+        "zero.dnom.rcltGeo": "zero.dnom.ss10",
+        "zero.lf": "zero.lf.ss10",
+        "zero.lf.rcltGeo": "zero.lf.ss10",
+        "zero.numr": "zero.numr.ss10",
+        "zero.numr.rcltGeo": "zero.numr.ss10",
+        "zero.rcltGeo": "zero.ss10",
+        "zero.tf": "zero.tf.ss10",
+        "zero.tf.rcltGeo": "zero.tf.ss10"
+      }
+    },
+    {
+      "tag": "ss12",
+      "name": "Angular M",
+      "families": [
+        "M"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "M": "M.ss12",
+        "M.rcltGeo": "M.ss12",
+        "Mcommaaccent": "Mcommaaccent.ss12",
+        "Mcommaaccent.loclMAH": "Mcommaaccent.loclMAH.ss12",
+        "Mcommaaccent.loclMAH.rcltGeo": "Mcommaaccent.loclMAH.ss12",
+        "Mcommaaccent.rcltGeo": "Mcommaaccent.ss12",
+        "uni1E40": "uni1E40.ss12",
+        "uni1E40.rcltGeo": "uni1E40.ss12",
+        "uni1E42": "uni1E42.ss12",
+        "uni1E42.rcltGeo": "uni1E42.ss12"
+      }
+    },
+    {
+      "tag": "ss13",
+      "name": "Square M",
+      "families": [
+        "M"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "M": "M.ss13",
+        "M.rcltGeo": "M.ss13",
+        "Mcommaaccent": "Mcommaaccent.ss13",
+        "Mcommaaccent.loclMAH": "Mcommaaccent.loclMAH.ss13",
+        "Mcommaaccent.loclMAH.rcltGeo": "Mcommaaccent.loclMAH.ss13",
+        "Mcommaaccent.rcltGeo": "Mcommaaccent.ss13",
+        "uni1E40": "uni1E40.ss13",
+        "uni1E40.rcltGeo": "uni1E40.ss13",
+        "uni1E42": "uni1E42.ss13",
+        "uni1E42.rcltGeo": "uni1E42.ss13"
+      }
+    },
+    {
+      "tag": "ss14",
+      "name": "Constructed f and t",
+      "families": [
+        "f",
+        "t"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "f": "f.ss14",
+        "f_f_i": "f_f_i.ss14",
+        "f_f_l": "f_f_l.ss14",
+        "f_t": "f_t.ss14",
+        "f_t.rcltGeo": "f_t.ss14",
+        "fi": "fi.ss14",
+        "fl": "fl.ss14",
+        "t": "t.ss14",
+        "t.rcltGeo": "t.ss14",
+        "tbar": "tbar.ss14",
+        "tbar.rcltGeo": "tbar.ss14",
+        "tcaron": "tcaron.ss14",
+        "tcaron.rcltGeo": "tcaron.ss14",
+        "uni0163": "uni0163.ss14",
+        "uni0163.rcltGeo": "uni0163.ss14",
+        "uni021B": "uni021B.ss14",
+        "uni021B.rcltGeo": "uni021B.ss14",
+        "uni1E6D": "uni1E6D.ss14",
+        "uni1E6D.rcltGeo": "uni1E6D.ss14",
+        "uni1E6F": "uni1E6F.ss14",
+        "uni1E6F.rcltGeo": "uni1E6F.ss14"
+      }
+    },
+    {
+      "tag": "ss15",
+      "name": "Humanist f and t",
+      "families": [
+        "f",
+        "t"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "f": "f.ss15",
+        "f_f_i": "f_f_i.ss15",
+        "f_f_l": "f_f_l.ss15",
+        "f_t": "f_t.ss15",
+        "f_t.rcltGeo": "f_t.ss15",
+        "fi": "fi.ss15",
+        "fl": "fl.ss15",
+        "t": "t.ss15",
+        "t.rcltGeo": "t.ss15",
+        "tbar": "tbar.ss15",
+        "tbar.rcltGeo": "tbar.ss15",
+        "tcaron": "tcaron.ss15",
+        "tcaron.rcltGeo": "tcaron.ss15",
+        "uni0163": "uni0163.ss15",
+        "uni0163.rcltGeo": "uni0163.ss15",
+        "uni021B": "uni021B.ss15",
+        "uni021B.rcltGeo": "uni021B.ss15",
+        "uni1E6D": "uni1E6D.ss15",
+        "uni1E6D.rcltGeo": "uni1E6D.ss15",
+        "uni1E6F": "uni1E6F.ss15",
+        "uni1E6F.rcltGeo": "uni1E6F.ss15"
+      }
+    },
+    {
+      "tag": "ss16",
+      "name": "Humanist/Grotesk 6 and 9",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "nine": "nine.ss16",
+        "nine.dnom": "nine.dnom.ss16",
+        "nine.dnom.rclt1": "nine.dnom.ss16",
+        "nine.dnom.rclt2": "nine.dnom.ss16",
+        "nine.dnom.rclt3": "nine.dnom.ss16",
+        "nine.lf": "nine.lf.ss16",
+        "nine.lf.rclt1": "nine.lf.ss16",
+        "nine.numr": "nine.numr.ss16",
+        "nine.numr.rclt1": "nine.numr.ss16",
+        "nine.numr.rclt2": "nine.numr.ss16",
+        "nine.numr.rclt3": "nine.numr.ss16",
+        "nine.rclt1": "nine.ss16",
+        "nine.rclt2": "nine.ss16",
+        "nine.rclt3": "nine.ss16",
+        "nine.tf": "nine.tf.ss16",
+        "nine.tf.rclt1": "nine.tf.ss16",
+        "six": "six.ss16",
+        "six.dnom": "six.dnom.ss16",
+        "six.dnom.rclt1": "six.dnom.ss16",
+        "six.dnom.rclt2": "six.dnom.ss16",
+        "six.dnom.rclt3": "six.dnom.ss16",
+        "six.lf": "six.lf.ss16",
+        "six.lf.rclt1": "six.lf.ss16",
+        "six.numr": "six.numr.ss16",
+        "six.numr.rclt1": "six.numr.ss16",
+        "six.numr.rclt2": "six.numr.ss16",
+        "six.numr.rclt3": "six.numr.ss16",
+        "six.rclt1": "six.ss16",
+        "six.rclt2": "six.ss16",
+        "six.rclt3": "six.ss16",
+        "six.tf": "six.tf.ss16",
+        "six.tf.rclt1": "six.tf.ss16",
+        "uni2076": "uni2076.ss16",
+        "uni2076.rclt1": "uni2076.ss16",
+        "uni2076.rclt2": "uni2076.ss16",
+        "uni2076.rclt3": "uni2076.ss16",
+        "uni2079": "uni2079.ss16",
+        "uni2079.rclt1": "uni2079.ss16",
+        "uni2079.rclt2": "uni2079.ss16",
+        "uni2079.rclt3": "uni2079.ss16",
+        "uni2086": "uni2086.ss16",
+        "uni2086.rclt1": "uni2086.ss16",
+        "uni2086.rclt2": "uni2086.ss16",
+        "uni2086.rclt3": "uni2086.ss16",
+        "uni2089": "uni2089.ss16",
+        "uni2089.rclt1": "uni2089.ss16",
+        "uni2089.rclt2": "uni2089.ss16",
+        "uni2089.rclt3": "uni2089.ss16"
+      }
+    },
+    {
+      "tag": "ss17",
+      "name": "Geometric/legible 6 and 9",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "nine.dnom": "nine.dnom.ss17",
+        "nine.lf.rclt1": "nine.lf.ss17",
+        "nine.lf.ss16": "nine.lf.ss17",
+        "nine.numr": "nine.numr.ss17",
+        "nine.rclt1": "nine.ss17",
+        "nine.rclt2": "nine.ss17",
+        "nine.rclt3": "nine.ss17",
+        "nine.ss16": "nine.ss17",
+        "nine.tf.rclt1": "nine.tf.ss17",
+        "nine.tf.ss16": "nine.tf.ss17",
+        "six.dnom": "six.dnom.ss17",
+        "six.lf.rclt1": "six.lf.ss17",
+        "six.lf.ss16": "six.lf.ss17",
+        "six.numr": "six.numr.ss17",
+        "six.rclt1": "six.ss17",
+        "six.rclt2": "six.ss17",
+        "six.rclt3": "six.ss17",
+        "six.ss16": "six.ss17",
+        "six.tf.rclt1": "six.tf.ss17",
+        "six.tf.ss16": "six.tf.ss17",
+        "uni2076": "uni2076.ss17",
+        "uni2079": "uni2079.ss17",
+        "uni2086": "uni2086.ss17",
+        "uni2089": "uni2089.ss17"
+      }
+    },
+    {
+      "tag": "ss18",
+      "name": "A11Y I l a",
+      "families": [
+        "I",
+        "a",
+        "g",
+        "l"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "I": "I.ss18",
+        "I.rcltA11y": "I.ss18",
+        "IJ": "IJ.ss18",
+        "IJ.rcltA11y": "IJ.ss18",
+        "IJacute": "IJacute.ss18",
+        "IJacute.rcltA11y": "IJacute.ss18",
+        "Iacute": "Iacute.ss18",
+        "Iacute.rcltA11y": "Iacute.ss18",
+        "Icircumflex": "Icircumflex.ss18",
+        "Icircumflex.rcltA11y": "Icircumflex.ss18",
+        "Idieresis": "Idieresis.ss18",
+        "Idieresis.rcltA11y": "Idieresis.ss18",
+        "Idotaccent": "Idotaccent.ss18",
+        "Idotaccent.rcltA11y": "Idotaccent.ss18",
+        "Igrave": "Igrave.ss18",
+        "Igrave.rcltA11y": "Igrave.ss18",
+        "Imacron": "Imacron.ss18",
+        "Imacron.rcltA11y": "Imacron.ss18",
+        "Iogonek": "Iogonek.ss18",
+        "Iogonek.rcltA11y": "Iogonek.ss18",
+        "Itilde": "Itilde.ss18",
+        "Itilde.rcltA11y": "Itilde.ss18",
+        "a": "a.ss18",
+        "a.rcltA11y": "a.ss18",
+        "a.rcltBase": "a.ss18",
+        "aacute": "aacute.ss18",
+        "aacute.rcltA11y": "aacute.ss18",
+        "aacute.rcltBase": "aacute.ss18",
+        "abreve": "abreve.ss18",
+        "abreve.rcltA11y": "abreve.ss18",
+        "abreve.rcltBase": "abreve.ss18",
+        "acircumflex": "acircumflex.ss18",
+        "acircumflex.rcltA11y": "acircumflex.ss18",
+        "acircumflex.rcltBase": "acircumflex.ss18",
+        "adieresis": "adieresis.ss18",
+        "adieresis.rcltA11y": "adieresis.ss18",
+        "adieresis.rcltBase": "adieresis.ss18",
+        "ae": "ae.ss03",
+        "agrave": "agrave.ss18",
+        "agrave.rcltA11y": "agrave.ss18",
+        "agrave.rcltBase": "agrave.ss18",
+        "amacron": "amacron.ss18",
+        "amacron.rcltA11y": "amacron.ss18",
+        "amacron.rcltBase": "amacron.ss18",
+        "aogonek": "aogonek.ss18",
+        "aogonek.rcltA11y": "aogonek.ss18",
+        "aogonek.rcltBase": "aogonek.ss18",
+        "aring": "aring.ss18",
+        "aring.rcltA11y": "aring.ss18",
+        "aring.rcltBase": "aring.ss18",
+        "atilde": "atilde.ss18",
+        "atilde.rcltA11y": "atilde.ss18",
+        "atilde.rcltBase": "atilde.ss18",
+        "g": "g.rcltA11y",
+        "gbreve": "gbreve.rcltA11y",
+        "gcircumflex": "gcircumflex.rcltA11y",
+        "gdotaccent": "gdotaccent.rcltA11y",
+        "l": "l.ss18",
+        "l.rcltA11y": "l.ss18",
+        "lacute": "lacute.ss18",
+        "lacute.rcltA11y": "lacute.ss18",
+        "lcaron": "lcaron.ss18",
+        "lcaron.rcltA11y": "lcaron.ss18",
+        "ldot": "ldot.ss18",
+        "ldot.rcltA11y": "ldot.ss18",
+        "lslash": "lslash.ss18",
+        "lslash.rcltA11y": "lslash.ss18",
+        "ordfeminine": "ordfeminine.ss03",
+        "uni0123": "uni0123.rcltA11y",
+        "uni013C": "uni013C.ss18",
+        "uni013C.loclMAH": "uni013C.loclMAH.ss18",
+        "uni013C.loclMAH.rcltA11y": "uni013C.loclMAH.ss18",
+        "uni013C.rcltA11y": "uni013C.ss18",
+        "uni01E3": "uni01E3.ss03",
+        "uni0203": "uni0203.ss18",
+        "uni0203.rcltA11y": "uni0203.ss18",
+        "uni0203.rcltBase": "uni0203.ss18",
+        "uni020A": "uni020A.ss18",
+        "uni020A.rcltA11y": "uni020A.ss18",
+        "uni1E21": "uni1E21.rcltA11y",
+        "uni1E37": "uni1E37.ss18",
+        "uni1E37.rcltA11y": "uni1E37.ss18",
+        "uni1E39": "uni1E39.ss18",
+        "uni1E39.rcltA11y": "uni1E39.ss18",
+        "uni1E3B": "uni1E3B.ss18",
+        "uni1E3B.rcltA11y": "uni1E3B.ss18",
+        "uni1EA1": "uni1EA1.ss18",
+        "uni1EA1.rcltA11y": "uni1EA1.ss18",
+        "uni1EA1.rcltBase": "uni1EA1.ss18",
+        "uni1EA3": "uni1EA3.ss18",
+        "uni1EA3.rcltA11y": "uni1EA3.ss18",
+        "uni1EA3.rcltBase": "uni1EA3.ss18",
+        "uni1EA5": "uni1EA5.ss18",
+        "uni1EA5.rcltA11y": "uni1EA5.ss18",
+        "uni1EA5.rcltBase": "uni1EA5.ss18",
+        "uni1EA7": "uni1EA7.ss18",
+        "uni1EA7.rcltA11y": "uni1EA7.ss18",
+        "uni1EA7.rcltBase": "uni1EA7.ss18",
+        "uni1EA9": "uni1EA9.ss18",
+        "uni1EA9.rcltA11y": "uni1EA9.ss18",
+        "uni1EA9.rcltBase": "uni1EA9.ss18",
+        "uni1EAB": "uni1EAB.ss18",
+        "uni1EAB.rcltA11y": "uni1EAB.ss18",
+        "uni1EAB.rcltBase": "uni1EAB.ss18",
+        "uni1EAD": "uni1EAD.ss18",
+        "uni1EAD.rcltA11y": "uni1EAD.ss18",
+        "uni1EAD.rcltBase": "uni1EAD.ss18",
+        "uni1EAF": "uni1EAF.ss18",
+        "uni1EAF.rcltA11y": "uni1EAF.ss18",
+        "uni1EAF.rcltBase": "uni1EAF.ss18",
+        "uni1EB1": "uni1EB1.ss18",
+        "uni1EB1.rcltA11y": "uni1EB1.ss18",
+        "uni1EB1.rcltBase": "uni1EB1.ss18",
+        "uni1EB3": "uni1EB3.ss18",
+        "uni1EB3.rcltA11y": "uni1EB3.ss18",
+        "uni1EB3.rcltBase": "uni1EB3.ss18",
+        "uni1EB5": "uni1EB5.ss18",
+        "uni1EB5.rcltA11y": "uni1EB5.ss18",
+        "uni1EB5.rcltBase": "uni1EB5.ss18",
+        "uni1EB7": "uni1EB7.ss18",
+        "uni1EB7.rcltA11y": "uni1EB7.ss18",
+        "uni1EB7.rcltBase": "uni1EB7.ss18",
+        "uni1EC8": "uni1EC8.ss18",
+        "uni1EC8.rcltA11y": "uni1EC8.ss18",
+        "uni1ECA": "uni1ECA.ss18",
+        "uni1ECA.rcltA11y": "uni1ECA.ss18"
+      }
+    },
+    {
+      "tag": "ss19",
+      "name": "Constructed l",
+      "families": [
+        "l"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "l": "l.ss19",
+        "l.rcltA11y": "l.ss19",
+        "lacute": "lacute.ss19",
+        "lacute.rcltA11y": "lacute.ss19",
+        "lcaron": "lcaron.ss19",
+        "lcaron.rcltA11y": "lcaron.ss19",
+        "ldot": "ldot.ss19",
+        "ldot.rcltA11y": "ldot.ss19",
+        "lslash": "lslash.ss19",
+        "lslash.rcltA11y": "lslash.ss19",
+        "uni013C": "uni013C.ss19",
+        "uni013C.loclMAH": "uni013C.loclMAH.ss19",
+        "uni013C.loclMAH.rcltA11y": "uni013C.loclMAH.ss19",
+        "uni013C.rcltA11y": "uni013C.ss19",
+        "uni1E37": "uni1E37.ss19",
+        "uni1E37.rcltA11y": "uni1E37.ss19",
+        "uni1E39": "uni1E39.ss19",
+        "uni1E39.rcltA11y": "uni1E39.ss19",
+        "uni1E3B": "uni1E3B.ss19",
+        "uni1E3B.rcltA11y": "uni1E3B.ss19"
+      }
+    },
+    {
+      "tag": "ss20",
+      "name": "Horizontal Sharps",
+      "families": [
+        "1",
+        "5"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "Z": "Z.ss20",
+        "Zacute": "Zacute.ss20",
+        "Zcaron": "Zcaron.ss20",
+        "Zdotaccent": "Zdotaccent.ss20",
+        "five": "five.ss20",
+        "five.dnom.rcltGeo": "five.dnom.rcltGeo.ss20",
+        "five.dnom.ss10": "five.dnom.ss10.ss20",
+        "five.lf": "five.lf.ss20",
+        "five.lf.rcltGeo": "five.lf.rcltGeo.ss20",
+        "five.lf.ss10": "five.lf.ss10.ss20",
+        "five.numr.rcltGeo": "five.numr.rcltGeo.ss20",
+        "five.numr.ss10": "five.numr.ss10.ss20",
+        "five.rcltGeo": "five.rcltGeo.ss20",
+        "five.ss10": "five.ss10.ss20",
+        "five.tf.rcltGeo": "five.tf.rcltGeo.ss20",
+        "five.tf.ss10": "five.tf.ss10.ss20",
+        "fiveeighths.rcltGeo": "fiveeighths.rcltGeo.ss20",
+        "fiveeighths.ss10": "fiveeighths.ss10.ss20",
+        "four": "four.ss20",
+        "four.dnom": "four.dnom.ss20",
+        "four.lf": "four.lf.ss20",
+        "four.numr": "four.numr.ss20",
+        "four.tf": "four.tf.ss20",
+        "one": "one.ss20",
+        "one.dnom": "one.dnom.ss20",
+        "one.lf": "one.lf.ss20",
+        "one.lf.rcltGeo": "one.lf.ss20",
+        "one.numr": "one.numr.ss20",
+        "one.rcltGeo": "one.ss20",
+        "one.tf": "one.tf.ss20",
+        "one.tf.rcltGeo": "one.tf.ss20",
+        "oneeighth": "oneeighth.ss20",
+        "oneeighth.rcltGeo": "oneeighth.ss10.ss20",
+        "oneeighth.ss10": "oneeighth.ss10.ss20",
+        "onehalf": "onehalf.ss20",
+        "onehalf.rcltGeo": "onehalf.ss10.ss20",
+        "onehalf.ss10": "onehalf.ss10.ss20",
+        "onequarter": "onequarter.ss20",
+        "onequarter.rcltGeo": "onequarter.ss10.ss20",
+        "onequarter.ss10": "onequarter.ss10.ss20",
+        "seven": "seven.ss20",
+        "seven.disp": "seven.disp.ss20",
+        "seven.dnom": "seven.dnom.ss20",
+        "seven.lf": "seven.lf.ss20",
+        "seven.numr": "seven.numr.ss20",
+        "seven.tf": "seven.tf.ss20",
+        "two": "two.ss20",
+        "two.dnom": "two.dnom.ss20",
+        "two.lf": "two.lf.ss20",
+        "two.numr": "two.numr.ss20",
+        "two.tf": "two.tf.ss20",
+        "uni00B2": "uni00B2.ss20",
+        "uni00B9": "uni00B9.ss20",
+        "uni1E92": "uni1E92.ss20",
+        "uni1E93": "uni1E93.ss20",
+        "uni1E94": "uni1E94.ss20",
+        "uni1E95": "uni1E95.ss20",
+        "uni2074": "uni2074.ss20",
+        "uni2075.rcltGeo": "uni2075.rcltGeo.ss20",
+        "uni2075.ss10": "uni2075.ss10.ss20",
+        "uni2077": "uni2077.ss20",
+        "uni2081": "uni2081.ss20",
+        "uni2082": "uni2082.ss20",
+        "uni2084": "uni2084.ss20",
+        "uni2085.ss10": "uni2085.ss10.ss20",
+        "uni2087": "uni2087.ss20",
+        "uni2153": "uni2153.ss20",
+        "uni2153.rcltGeo": "uni2153.ss10.ss20",
+        "uni2153.ss10": "uni2153.ss10.ss20",
+        "uni2154": "uni2154.ss20",
+        "uni2154.rcltGeo": "uni2154.ss10.ss20",
+        "uni2154.ss10": "uni2154.ss10.ss20",
+        "z": "z.ss20",
+        "zacute": "zacute.ss20",
+        "zcaron": "zcaron.ss20",
+        "zdotaccent": "zdotaccent.ss20"
+      }
+    }
+  ],
+  "charVariants": [
+    {
+      "tag": "cv01",
+      "name": "Geometric a",
+      "families": [
+        "a"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "a": "a.ss01",
+        "a.rcltA11y": "a.ss01",
+        "a.rcltBase": "a.ss01",
+        "aacute": "aacute.ss01",
+        "aacute.rcltA11y": "aacute.ss01",
+        "aacute.rcltBase": "aacute.ss01",
+        "abreve": "abreve.ss01",
+        "abreve.rcltA11y": "abreve.ss01",
+        "abreve.rcltBase": "abreve.ss01",
+        "acircumflex": "acircumflex.ss01",
+        "acircumflex.rcltA11y": "acircumflex.ss01",
+        "acircumflex.rcltBase": "acircumflex.ss01",
+        "adieresis": "adieresis.ss01",
+        "adieresis.rcltA11y": "adieresis.ss01",
+        "adieresis.rcltBase": "adieresis.ss01",
+        "agrave": "agrave.ss01",
+        "agrave.rcltA11y": "agrave.ss01",
+        "agrave.rcltBase": "agrave.ss01",
+        "amacron": "amacron.ss01",
+        "amacron.rcltA11y": "amacron.ss01",
+        "amacron.rcltBase": "amacron.ss01",
+        "aogonek": "aogonek.ss01",
+        "aogonek.rcltA11y": "aogonek.ss01",
+        "aogonek.rcltBase": "aogonek.ss01",
+        "aring": "aring.ss01",
+        "aring.rcltA11y": "aring.ss01",
+        "aring.rcltBase": "aring.ss01",
+        "atilde": "atilde.ss01",
+        "atilde.rcltA11y": "atilde.ss01",
+        "atilde.rcltBase": "atilde.ss01",
+        "ordfeminine": "ordfeminine.ss01",
+        "ordfeminine.rcltBase": "ordfeminine.ss01",
+        "uni0203": "uni0203.ss01",
+        "uni0203.rcltA11y": "uni0203.ss01",
+        "uni0203.rcltBase": "uni0203.ss01",
+        "uni1EA1": "uni1EA1.ss01",
+        "uni1EA1.rcltA11y": "uni1EA1.ss01",
+        "uni1EA1.rcltBase": "uni1EA1.ss01",
+        "uni1EA3": "uni1EA3.ss01",
+        "uni1EA3.rcltA11y": "uni1EA3.ss01",
+        "uni1EA3.rcltBase": "uni1EA3.ss01",
+        "uni1EA5": "uni1EA5.ss01",
+        "uni1EA5.rcltA11y": "uni1EA5.ss01",
+        "uni1EA5.rcltBase": "uni1EA5.ss01",
+        "uni1EA7": "uni1EA7.ss01",
+        "uni1EA7.rcltA11y": "uni1EA7.ss01",
+        "uni1EA7.rcltBase": "uni1EA7.ss01",
+        "uni1EA9": "uni1EA9.ss01",
+        "uni1EA9.rcltA11y": "uni1EA9.ss01",
+        "uni1EA9.rcltBase": "uni1EA9.ss01",
+        "uni1EAB": "uni1EAB.ss01",
+        "uni1EAB.rcltA11y": "uni1EAB.ss01",
+        "uni1EAB.rcltBase": "uni1EAB.ss01",
+        "uni1EAD": "uni1EAD.ss01",
+        "uni1EAD.rcltA11y": "uni1EAD.ss01",
+        "uni1EAD.rcltBase": "uni1EAD.ss01",
+        "uni1EAF": "uni1EAF.ss01",
+        "uni1EAF.rcltA11y": "uni1EAF.ss01",
+        "uni1EAF.rcltBase": "uni1EAF.ss01",
+        "uni1EB1": "uni1EB1.ss01",
+        "uni1EB1.rcltA11y": "uni1EB1.ss01",
+        "uni1EB1.rcltBase": "uni1EB1.ss01",
+        "uni1EB3": "uni1EB3.ss01",
+        "uni1EB3.rcltA11y": "uni1EB3.ss01",
+        "uni1EB3.rcltBase": "uni1EB3.ss01",
+        "uni1EB5": "uni1EB5.ss01",
+        "uni1EB5.rcltA11y": "uni1EB5.ss01",
+        "uni1EB5.rcltBase": "uni1EB5.ss01",
+        "uni1EB7": "uni1EB7.ss01",
+        "uni1EB7.rcltA11y": "uni1EB7.ss01",
+        "uni1EB7.rcltBase": "uni1EB7.ss01"
+      }
+    },
+    {
+      "tag": "cv02",
+      "name": "Humanist a",
+      "families": [
+        "a"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "a": "a.ss02",
+        "a.rcltA11y": "a.ss02",
+        "a.rcltBase": "a.ss02",
+        "aacute": "aacute.ss02",
+        "aacute.rcltA11y": "aacute.ss02",
+        "aacute.rcltBase": "aacute.ss02",
+        "abreve": "abreve.ss02",
+        "abreve.rcltA11y": "abreve.ss02",
+        "abreve.rcltBase": "abreve.ss02",
+        "acircumflex": "acircumflex.ss02",
+        "acircumflex.rcltA11y": "acircumflex.ss02",
+        "acircumflex.rcltBase": "acircumflex.ss02",
+        "adieresis": "adieresis.ss02",
+        "adieresis.rcltA11y": "adieresis.ss02",
+        "adieresis.rcltBase": "adieresis.ss02",
+        "agrave": "agrave.ss02",
+        "agrave.rcltA11y": "agrave.ss02",
+        "agrave.rcltBase": "agrave.ss02",
+        "amacron": "amacron.ss02",
+        "amacron.rcltA11y": "amacron.ss02",
+        "amacron.rcltBase": "amacron.ss02",
+        "aogonek": "aogonek.ss02",
+        "aogonek.rcltA11y": "aogonek.ss02",
+        "aogonek.rcltBase": "aogonek.ss02",
+        "aring": "aring.ss02",
+        "aring.rcltA11y": "aring.ss02",
+        "aring.rcltBase": "aring.ss02",
+        "atilde": "atilde.ss02",
+        "atilde.rcltA11y": "atilde.ss02",
+        "atilde.rcltBase": "atilde.ss02",
+        "ordfeminine": "ordfeminine.ss02",
+        "ordfeminine.rcltBase": "ordfeminine.ss02",
+        "uni0203": "uni0203.ss02",
+        "uni0203.rcltA11y": "uni0203.ss02",
+        "uni0203.rcltBase": "uni0203.ss02",
+        "uni1EA1": "uni1EA1.ss02",
+        "uni1EA1.rcltA11y": "uni1EA1.ss02",
+        "uni1EA1.rcltBase": "uni1EA1.ss02",
+        "uni1EA3": "uni1EA3.ss02",
+        "uni1EA3.rcltA11y": "uni1EA3.ss02",
+        "uni1EA3.rcltBase": "uni1EA3.ss02",
+        "uni1EA5": "uni1EA5.ss02",
+        "uni1EA5.rcltA11y": "uni1EA5.ss02",
+        "uni1EA5.rcltBase": "uni1EA5.ss02",
+        "uni1EA7": "uni1EA7.ss02",
+        "uni1EA7.rcltA11y": "uni1EA7.ss02",
+        "uni1EA7.rcltBase": "uni1EA7.ss02",
+        "uni1EA9": "uni1EA9.ss02",
+        "uni1EA9.rcltA11y": "uni1EA9.ss02",
+        "uni1EA9.rcltBase": "uni1EA9.ss02",
+        "uni1EAB": "uni1EAB.ss02",
+        "uni1EAB.rcltA11y": "uni1EAB.ss02",
+        "uni1EAB.rcltBase": "uni1EAB.ss02",
+        "uni1EAD": "uni1EAD.ss02",
+        "uni1EAD.rcltA11y": "uni1EAD.ss02",
+        "uni1EAD.rcltBase": "uni1EAD.ss02",
+        "uni1EAF": "uni1EAF.ss02",
+        "uni1EAF.rcltA11y": "uni1EAF.ss02",
+        "uni1EAF.rcltBase": "uni1EAF.ss02",
+        "uni1EB1": "uni1EB1.ss02",
+        "uni1EB1.rcltA11y": "uni1EB1.ss02",
+        "uni1EB1.rcltBase": "uni1EB1.ss02",
+        "uni1EB3": "uni1EB3.ss02",
+        "uni1EB3.rcltA11y": "uni1EB3.ss02",
+        "uni1EB3.rcltBase": "uni1EB3.ss02",
+        "uni1EB5": "uni1EB5.ss02",
+        "uni1EB5.rcltA11y": "uni1EB5.ss02",
+        "uni1EB5.rcltBase": "uni1EB5.ss02",
+        "uni1EB7": "uni1EB7.ss02",
+        "uni1EB7.rcltA11y": "uni1EB7.ss02",
+        "uni1EB7.rcltBase": "uni1EB7.ss02"
+      }
+    },
+    {
+      "tag": "cv03",
+      "name": "Accessible/tailed a",
+      "families": [
+        "a"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "a": "a.ss18",
+        "a.rcltA11y": "a.ss18",
+        "a.rcltBase": "a.ss18",
+        "aacute": "aacute.ss18",
+        "aacute.rcltA11y": "aacute.ss18",
+        "aacute.rcltBase": "aacute.ss18",
+        "abreve": "abreve.ss18",
+        "abreve.rcltA11y": "abreve.ss18",
+        "abreve.rcltBase": "abreve.ss18",
+        "acircumflex": "acircumflex.ss18",
+        "acircumflex.rcltA11y": "acircumflex.ss18",
+        "acircumflex.rcltBase": "acircumflex.ss18",
+        "adieresis": "adieresis.ss18",
+        "adieresis.rcltA11y": "adieresis.ss18",
+        "adieresis.rcltBase": "adieresis.ss18",
+        "agrave": "agrave.ss18",
+        "agrave.rcltA11y": "agrave.ss18",
+        "agrave.rcltBase": "agrave.ss18",
+        "amacron": "amacron.ss18",
+        "amacron.rcltA11y": "amacron.ss18",
+        "amacron.rcltBase": "amacron.ss18",
+        "aogonek": "aogonek.ss18",
+        "aogonek.rcltA11y": "aogonek.ss18",
+        "aogonek.rcltBase": "aogonek.ss18",
+        "aring": "aring.ss18",
+        "aring.rcltA11y": "aring.ss18",
+        "aring.rcltBase": "aring.ss18",
+        "atilde": "atilde.ss18",
+        "atilde.rcltA11y": "atilde.ss18",
+        "atilde.rcltBase": "atilde.ss18",
+        "uni0203": "uni0203.ss18",
+        "uni0203.rcltA11y": "uni0203.ss18",
+        "uni0203.rcltBase": "uni0203.ss18",
+        "uni1EA1": "uni1EA1.ss18",
+        "uni1EA1.rcltA11y": "uni1EA1.ss18",
+        "uni1EA1.rcltBase": "uni1EA1.ss18",
+        "uni1EA3": "uni1EA3.ss18",
+        "uni1EA3.rcltA11y": "uni1EA3.ss18",
+        "uni1EA3.rcltBase": "uni1EA3.ss18",
+        "uni1EA5": "uni1EA5.ss18",
+        "uni1EA5.rcltA11y": "uni1EA5.ss18",
+        "uni1EA5.rcltBase": "uni1EA5.ss18",
+        "uni1EA7": "uni1EA7.ss18",
+        "uni1EA7.rcltA11y": "uni1EA7.ss18",
+        "uni1EA7.rcltBase": "uni1EA7.ss18",
+        "uni1EA9": "uni1EA9.ss18",
+        "uni1EA9.rcltA11y": "uni1EA9.ss18",
+        "uni1EA9.rcltBase": "uni1EA9.ss18",
+        "uni1EAB": "uni1EAB.ss18",
+        "uni1EAB.rcltA11y": "uni1EAB.ss18",
+        "uni1EAB.rcltBase": "uni1EAB.ss18",
+        "uni1EAD": "uni1EAD.ss18",
+        "uni1EAD.rcltA11y": "uni1EAD.ss18",
+        "uni1EAD.rcltBase": "uni1EAD.ss18",
+        "uni1EAF": "uni1EAF.ss18",
+        "uni1EAF.rcltA11y": "uni1EAF.ss18",
+        "uni1EAF.rcltBase": "uni1EAF.ss18",
+        "uni1EB1": "uni1EB1.ss18",
+        "uni1EB1.rcltA11y": "uni1EB1.ss18",
+        "uni1EB1.rcltBase": "uni1EB1.ss18",
+        "uni1EB3": "uni1EB3.ss18",
+        "uni1EB3.rcltA11y": "uni1EB3.ss18",
+        "uni1EB3.rcltBase": "uni1EB3.ss18",
+        "uni1EB5": "uni1EB5.ss18",
+        "uni1EB5.rcltA11y": "uni1EB5.ss18",
+        "uni1EB5.rcltBase": "uni1EB5.ss18",
+        "uni1EB7": "uni1EB7.ss18",
+        "uni1EB7.rcltA11y": "uni1EB7.ss18",
+        "uni1EB7.rcltBase": "uni1EB7.ss18"
+      }
+    },
+    {
+      "tag": "cv04",
+      "name": "Geometric ae",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "ae": "ae.ss01",
+        "ae.rcltBase": "ae.ss01",
+        "uni01E3": "uni01E3.ss01",
+        "uni01E3.rcltBase": "uni01E3.ss01"
+      }
+    },
+    {
+      "tag": "cv05",
+      "name": "Humanist ae",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "ae": "ae.ss02",
+        "ae.rcltBase": "ae.ss02",
+        "uni01E3": "uni01E3.ss02",
+        "uni01E3.rcltBase": "uni01E3.ss02"
+      }
+    },
+    {
+      "tag": "cv06",
+      "name": "Futura-style C",
+      "families": [
+        "C",
+        "c"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "C": "C.ss10",
+        "C.rcltGeo": "C.ss10",
+        "Cacute": "Cacute.ss10",
+        "Cacute.rcltGeo": "Cacute.ss10",
+        "Ccaron": "Ccaron.ss10",
+        "Ccaron.rcltGeo": "Ccaron.ss10",
+        "Ccedilla": "Ccedilla.ss10",
+        "Ccedilla.rcltGeo": "Ccedilla.ss10",
+        "Ccircumflex": "Ccircumflex.ss10",
+        "Ccircumflex.rcltGeo": "Ccircumflex.ss10",
+        "Cdotaccent": "Cdotaccent.ss10",
+        "Cdotaccent.rcltGeo": "Cdotaccent.ss10",
+        "Euro": "Euro.ss10",
+        "Euro.tf": "Euro.tf.ss10",
+        "c": "c.ss10",
+        "c.rcltGeo": "c.ss10",
+        "cacute": "cacute.ss10",
+        "cacute.rcltGeo": "cacute.ss10",
+        "ccaron": "ccaron.ss10",
+        "ccaron.rcltGeo": "ccaron.ss10",
+        "ccedilla": "ccedilla.ss10",
+        "ccedilla.rcltGeo": "ccedilla.ss10",
+        "ccircumflex": "ccircumflex.ss10",
+        "ccircumflex.rcltGeo": "ccircumflex.ss10",
+        "cdotaccent": "cdotaccent.ss10",
+        "cdotaccent.rcltGeo": "cdotaccent.ss10"
+      }
+    },
+    {
+      "tag": "cv07",
+      "name": "Constructed f",
+      "families": [
+        "f"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "f": "f.ss14",
+        "f.rcltBase": "f.ss14"
+      }
+    },
+    {
+      "tag": "cv08",
+      "name": "Geometric g",
+      "families": [
+        "g"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "g": "g.ss04",
+        "g.rcltA11y": "g.ss04",
+        "gbreve": "gbreve.ss04",
+        "gbreve.rcltA11y": "gbreve.ss04",
+        "gcircumflex": "gcircumflex.ss04",
+        "gcircumflex.rcltA11y": "gcircumflex.ss04",
+        "gdotaccent": "gdotaccent.ss04",
+        "gdotaccent.rcltA11y": "gdotaccent.ss04",
+        "uni0123": "uni0123.ss04",
+        "uni0123.rcltA11y": "uni0123.ss04",
+        "uni1E21": "uni1E21.ss04",
+        "uni1E21.rcltA11y": "uni1E21.ss04"
+      }
+    },
+    {
+      "tag": "cv09",
+      "name": "Gothic g",
+      "families": [
+        "g"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "g": "g.ss05",
+        "g.rcltA11y": "g.ss05",
+        "gbreve": "gbreve.ss05",
+        "gbreve.rcltA11y": "gbreve.ss05",
+        "gcircumflex": "gcircumflex.ss05",
+        "gcircumflex.rcltA11y": "gcircumflex.ss05",
+        "gdotaccent": "gdotaccent.ss05",
+        "gdotaccent.rcltA11y": "gdotaccent.ss05",
+        "uni0123": "uni0123.ss05",
+        "uni0123.rcltA11y": "uni0123.ss05",
+        "uni1E21": "uni1E21.ss05",
+        "uni1E21.rcltA11y": "uni1E21.ss05"
+      }
+    },
+    {
+      "tag": "cv10",
+      "name": "Geometric G",
+      "families": [
+        "G"
+      ],
+      "overridesGeom": false,
+      "subs": {
+        "G": "G.ss06",
+        "Gbreve": "Gbreve.ss06",
+        "Gcircumflex": "Gcircumflex.ss06",
+        "Gdotaccent": "Gdotaccent.ss06",
+        "uni0122": "uni0122.ss06",
+        "uni1E20": "uni1E20.ss06",
+        "uni20B2": "uni20B2.ss06",
+        "uni20B2.tf": "uni20B2.tf.ss06"
+      }
+    },
+    {
+      "tag": "cv11",
+      "name": "Humanist G",
+      "families": [
+        "G"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "G": "G.ss07",
+        "G.rcltGeo": "G.ss07",
+        "Gbreve": "Gbreve.ss07",
+        "Gbreve.rcltGeo": "Gbreve.ss07",
+        "Gcircumflex": "Gcircumflex.ss07",
+        "Gcircumflex.rcltGeo": "Gcircumflex.ss07",
+        "Gdotaccent": "Gdotaccent.ss07",
+        "Gdotaccent.rcltGeo": "Gdotaccent.ss07",
+        "uni0122": "uni0122.ss07",
+        "uni0122.rcltGeo": "uni0122.ss07",
+        "uni1E20": "uni1E20.ss07",
+        "uni1E20.rcltGeo": "uni1E20.ss07",
+        "uni20B2": "uni20B2.ss07",
+        "uni20B2.rcltGeo": "uni20B2.ss07",
+        "uni20B2.tf": "uni20B2.tf.ss07",
+        "uni20B2.tf.rcltGeo": "uni20B2.tf.ss07"
+      }
+    },
+    {
+      "tag": "cv12",
+      "name": "Accessible/seriffed I",
+      "families": [
+        "I"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "I": "I.ss18",
+        "I.rcltA11y": "I.ss18",
+        "IJ": "IJ.ss18",
+        "IJ.rcltA11y": "IJ.ss18",
+        "IJacute": "IJacute.ss18",
+        "IJacute.rcltA11y": "IJacute.ss18",
+        "Iacute": "Iacute.ss18",
+        "Iacute.rcltA11y": "Iacute.ss18",
+        "Icircumflex": "Icircumflex.ss18",
+        "Icircumflex.rcltA11y": "Icircumflex.ss18",
+        "Idieresis": "Idieresis.ss18",
+        "Idieresis.rcltA11y": "Idieresis.ss18",
+        "Idotaccent": "Idotaccent.ss18",
+        "Idotaccent.rcltA11y": "Idotaccent.ss18",
+        "Igrave": "Igrave.ss18",
+        "Igrave.rcltA11y": "Igrave.ss18",
+        "Imacron": "Imacron.ss18",
+        "Imacron.rcltA11y": "Imacron.ss18",
+        "Iogonek": "Iogonek.ss18",
+        "Iogonek.rcltA11y": "Iogonek.ss18",
+        "Itilde": "Itilde.ss18",
+        "Itilde.rcltA11y": "Itilde.ss18",
+        "uni020A": "uni020A.ss18",
+        "uni020A.rcltA11y": "uni020A.ss18",
+        "uni1EC8": "uni1EC8.ss18",
+        "uni1EC8.rcltA11y": "uni1EC8.ss18",
+        "uni1ECA": "uni1ECA.ss18",
+        "uni1ECA.rcltA11y": "uni1ECA.ss18"
+      }
+    },
+    {
+      "tag": "cv13",
+      "name": "Constructed j",
+      "families": [
+        "I",
+        "j"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "ij": "ij.ss08",
+        "ij.rcltBase": "ij.ss08",
+        "ij.rcltGeo": "ij.ss08",
+        "ijacute": "ijacute.ss08",
+        "ijacute.rcltBase": "ijacute.ss08",
+        "ijacute.rcltGeo": "ijacute.ss08",
+        "j": "j.ss08",
+        "j.rcltBase": "j.ss08",
+        "j.rcltGeo": "j.ss08",
+        "jcircumflex": "jcircumflex.ss08",
+        "jcircumflex.rcltBase": "jcircumflex.ss08",
+        "jcircumflex.rcltGeo": "jcircumflex.ss08",
+        "uni006A0301": "uni006A0301.ss08",
+        "uni006A0301.rcltBase": "uni006A0301.ss08",
+        "uni006A0301.rcltGeo": "uni006A0301.ss08",
+        "uni0237": "uni0237.ss08",
+        "uni0237.rcltBase": "uni0237.ss08",
+        "uni0237.rcltGeo": "uni0237.ss08"
+      }
+    },
+    {
+      "tag": "cv14",
+      "name": "Geometric j",
+      "families": [
+        "I",
+        "j"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "Eng": "Eng.ss10",
+        "Eng.rcltGeo": "Eng.ss10",
+        "eng": "eng.ss10",
+        "eng.rcltGeo": "eng.ss10",
+        "ij": "ij.ss10",
+        "ij.rcltBase": "ij.ss10",
+        "ij.rcltGeo": "ij.ss10",
+        "ijacute": "ijacute.ss10",
+        "ijacute.rcltBase": "ijacute.ss10",
+        "ijacute.rcltGeo": "ijacute.ss10",
+        "j": "j.ss10",
+        "j.rcltBase": "j.ss10",
+        "j.rcltGeo": "j.ss10",
+        "jcircumflex": "jcircumflex.ss10",
+        "jcircumflex.rcltBase": "jcircumflex.ss10",
+        "jcircumflex.rcltGeo": "jcircumflex.ss10",
+        "uni006A0301": "uni006A0301.ss10",
+        "uni006A0301.rcltBase": "uni006A0301.ss10",
+        "uni006A0301.rcltGeo": "uni006A0301.ss10",
+        "uni0237": "uni0237.ss10",
+        "uni0237.rcltBase": "uni0237.ss10",
+        "uni0237.rcltGeo": "uni0237.ss10"
+      }
+    },
+    {
+      "tag": "cv15",
+      "name": "Accessible/seriffed l",
+      "families": [
+        "l"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "l": "l.ss18",
+        "l.rcltA11y": "l.ss18",
+        "lacute": "lacute.ss18",
+        "lacute.rcltA11y": "lacute.ss18",
+        "lcaron": "lcaron.ss18",
+        "lcaron.rcltA11y": "lcaron.ss18",
+        "ldot": "ldot.ss18",
+        "ldot.rcltA11y": "ldot.ss18",
+        "lslash": "lslash.ss18",
+        "lslash.rcltA11y": "lslash.ss18",
+        "uni013C": "uni013C.ss18",
+        "uni013C.loclMAH": "uni013C.loclMAH.ss18",
+        "uni013C.loclMAH.rcltA11y": "uni013C.loclMAH.ss18",
+        "uni013C.rcltA11y": "uni013C.ss18",
+        "uni1E37": "uni1E37.ss18",
+        "uni1E37.rcltA11y": "uni1E37.ss18",
+        "uni1E39": "uni1E39.ss18",
+        "uni1E39.rcltA11y": "uni1E39.ss18",
+        "uni1E3B": "uni1E3B.ss18",
+        "uni1E3B.rcltA11y": "uni1E3B.ss18"
+      }
+    },
+    {
+      "tag": "cv16",
+      "name": "Constructed l",
+      "families": [
+        "l"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "l": "l.ss19",
+        "l.rcltA11y": "l.ss19",
+        "lacute": "lacute.ss19",
+        "lacute.rcltA11y": "lacute.ss19",
+        "lcaron": "lcaron.ss19",
+        "lcaron.rcltA11y": "lcaron.ss19",
+        "ldot": "ldot.ss19",
+        "ldot.rcltA11y": "ldot.ss19",
+        "lslash": "lslash.ss19",
+        "lslash.rcltA11y": "lslash.ss19",
+        "uni013C": "uni013C.ss19",
+        "uni013C.loclMAH": "uni013C.loclMAH.ss19",
+        "uni013C.loclMAH.rcltA11y": "uni013C.loclMAH.ss19",
+        "uni013C.rcltA11y": "uni013C.ss19",
+        "uni1E37": "uni1E37.ss19",
+        "uni1E37.rcltA11y": "uni1E37.ss19",
+        "uni1E39": "uni1E39.ss19",
+        "uni1E39.rcltA11y": "uni1E39.ss19",
+        "uni1E3B": "uni1E3B.ss19",
+        "uni1E3B.rcltA11y": "uni1E3B.ss19"
+      }
+    },
+    {
+      "tag": "cv17",
+      "name": "Angled M",
+      "families": [
+        "M"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "M": "M.ss12",
+        "M.rcltGeo": "M.ss12",
+        "Mcommaaccent": "Mcommaaccent.ss12",
+        "Mcommaaccent.loclMAH": "Mcommaaccent.loclMAH.ss12",
+        "Mcommaaccent.loclMAH.rcltGeo": "Mcommaaccent.loclMAH.ss12",
+        "Mcommaaccent.rcltGeo": "Mcommaaccent.ss12",
+        "uni1E40": "uni1E40.ss12",
+        "uni1E40.rcltGeo": "uni1E40.ss12",
+        "uni1E42": "uni1E42.ss12",
+        "uni1E42.rcltGeo": "uni1E42.ss12"
+      }
+    },
+    {
+      "tag": "cv18",
+      "name": "Constructed t",
+      "families": [
+        "t"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "t": "t.ss14",
+        "t.rcltBase": "t.ss14",
+        "t.rcltGeo": "t.ss14",
+        "tbar": "tbar.ss14",
+        "tbar.rcltBase": "tbar.ss14",
+        "tbar.rcltGeo": "tbar.ss14",
+        "tcaron": "tcaron.ss14",
+        "tcaron.rcltBase": "tcaron.ss14",
+        "tcaron.rcltGeo": "tcaron.ss14",
+        "uni0163": "uni0163.ss14",
+        "uni0163.rcltBase": "uni0163.ss14",
+        "uni0163.rcltGeo": "uni0163.ss14",
+        "uni021B": "uni021B.ss14",
+        "uni021B.rcltBase": "uni021B.ss14",
+        "uni021B.rcltGeo": "uni021B.ss14",
+        "uni1E6D": "uni1E6D.ss14",
+        "uni1E6D.rcltBase": "uni1E6D.ss14",
+        "uni1E6D.rcltGeo": "uni1E6D.ss14",
+        "uni1E6F": "uni1E6F.ss14",
+        "uni1E6F.rcltBase": "uni1E6F.ss14",
+        "uni1E6F.rcltGeo": "uni1E6F.ss14"
+      }
+    },
+    {
+      "tag": "cv19",
+      "name": "Futura-style t",
+      "families": [
+        "t"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "pi": "pi.ss10",
+        "pi.rcltGeo": "pi.ss10",
+        "t": "t.ss10",
+        "t.rcltBase": "t.ss10",
+        "t.rcltGeo": "t.ss10",
+        "tbar": "tbar.ss10",
+        "tbar.rcltBase": "tbar.ss10",
+        "tbar.rcltGeo": "tbar.ss10",
+        "tcaron": "tcaron.ss10",
+        "tcaron.rcltBase": "tcaron.ss10",
+        "tcaron.rcltGeo": "tcaron.ss10",
+        "uni0163": "uni0163.ss10",
+        "uni0163.rcltBase": "uni0163.ss10",
+        "uni0163.rcltGeo": "uni0163.ss10",
+        "uni021B": "uni021B.ss10",
+        "uni021B.rcltBase": "uni021B.ss10",
+        "uni021B.rcltGeo": "uni021B.ss10",
+        "uni1E6D": "uni1E6D.ss10",
+        "uni1E6D.rcltBase": "uni1E6D.ss10",
+        "uni1E6D.rcltGeo": "uni1E6D.ss10",
+        "uni1E6F": "uni1E6F.ss10",
+        "uni1E6F.rcltBase": "uni1E6F.ss10",
+        "uni1E6F.rcltGeo": "uni1E6F.ss10"
+      }
+    },
+    {
+      "tag": "cv20",
+      "name": "Futura-style u",
+      "families": [
+        "u"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "u": "u.ss10",
+        "u.rcltGeo": "u.ss10",
+        "uacute": "uacute.ss10",
+        "uacute.rcltGeo": "uacute.ss10",
+        "ubreve": "ubreve.ss10",
+        "ubreve.rcltGeo": "ubreve.ss10",
+        "ucircumflex": "ucircumflex.ss10",
+        "ucircumflex.rcltGeo": "ucircumflex.ss10",
+        "udieresis": "udieresis.ss10",
+        "udieresis.rcltGeo": "udieresis.ss10",
+        "ugrave": "ugrave.ss10",
+        "ugrave.rcltGeo": "ugrave.ss10",
+        "uhorn": "uhorn.ss10",
+        "uhorn.rcltGeo": "uhorn.ss10",
+        "uhungarumlaut": "uhungarumlaut.ss10",
+        "uhungarumlaut.rcltGeo": "uhungarumlaut.ss10",
+        "umacron": "umacron.ss10",
+        "umacron.rcltGeo": "umacron.ss10",
+        "uni00B5": "uni00B5.ss10",
+        "uni00B5.rcltGeo": "uni00B5.ss10",
+        "uni01D6": "uni01D6.ss10",
+        "uni01D6.rcltGeo": "uni01D6.ss10",
+        "uni01D8": "uni01D8.ss10",
+        "uni01D8.rcltGeo": "uni01D8.ss10",
+        "uni01DA": "uni01DA.ss10",
+        "uni01DA.rcltGeo": "uni01DA.ss10",
+        "uni01DC": "uni01DC.ss10",
+        "uni01DC.rcltGeo": "uni01DC.ss10",
+        "uni0217": "uni0217.ss10",
+        "uni0217.rcltGeo": "uni0217.ss10",
+        "uni1EE5": "uni1EE5.ss10",
+        "uni1EE5.rcltGeo": "uni1EE5.ss10",
+        "uni1EE7": "uni1EE7.ss10",
+        "uni1EE7.rcltGeo": "uni1EE7.ss10",
+        "uni1EE9": "uni1EE9.ss10",
+        "uni1EE9.rcltGeo": "uni1EE9.ss10",
+        "uni1EEB": "uni1EEB.ss10",
+        "uni1EEB.rcltGeo": "uni1EEB.ss10",
+        "uni1EED": "uni1EED.ss10",
+        "uni1EED.rcltGeo": "uni1EED.ss10",
+        "uni1EEF": "uni1EEF.ss10",
+        "uni1EEF.rcltGeo": "uni1EEF.ss10",
+        "uni1EF1": "uni1EF1.ss10",
+        "uni1EF1.rcltGeo": "uni1EF1.ss10",
+        "uogonek": "uogonek.ss10",
+        "uogonek.rcltGeo": "uogonek.ss10",
+        "uring": "uring.ss10",
+        "uring.rcltGeo": "uring.ss10",
+        "utilde": "utilde.ss10",
+        "utilde.rcltGeo": "utilde.ss10"
+      }
+    },
+    {
+      "tag": "cv21",
+      "name": "Constructed y",
+      "families": [
+        "y"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "uni1E8F": "uni1E8F.ss08",
+        "uni1E8F.rcltBase": "uni1E8F.ss08",
+        "uni1E8F.rcltGeo": "uni1E8F.ss08",
+        "uni1EF5": "uni1EF5.ss08",
+        "uni1EF5.rcltBase": "uni1EF5.ss08",
+        "uni1EF5.rcltGeo": "uni1EF5.ss08",
+        "uni1EF7": "uni1EF7.ss08",
+        "uni1EF7.rcltBase": "uni1EF7.ss08",
+        "uni1EF7.rcltGeo": "uni1EF7.ss08",
+        "uni1EF9": "uni1EF9.ss08",
+        "uni1EF9.rcltBase": "uni1EF9.ss08",
+        "uni1EF9.rcltGeo": "uni1EF9.ss08",
+        "y": "y.ss08",
+        "y.rcltBase": "y.ss08",
+        "y.rcltGeo": "y.ss08",
+        "yacute": "yacute.ss08",
+        "yacute.rcltBase": "yacute.ss08",
+        "yacute.rcltGeo": "yacute.ss08",
+        "ycircumflex": "ycircumflex.ss08",
+        "ycircumflex.rcltBase": "ycircumflex.ss08",
+        "ycircumflex.rcltGeo": "ycircumflex.ss08",
+        "ydieresis": "ydieresis.ss08",
+        "ydieresis.rcltBase": "ydieresis.ss08",
+        "ydieresis.rcltGeo": "ydieresis.ss08",
+        "ygrave": "ygrave.ss08",
+        "ygrave.rcltBase": "ygrave.ss08",
+        "ygrave.rcltGeo": "ygrave.ss08"
+      }
+    },
+    {
+      "tag": "cv22",
+      "name": "Geometric y",
+      "families": [
+        "y"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "uni1E8F": "uni1E8F.ss10",
+        "uni1E8F.rcltBase": "uni1E8F.ss10",
+        "uni1E8F.rcltGeo": "uni1E8F.ss10",
+        "uni1EF5": "uni1EF5.ss10",
+        "uni1EF5.rcltBase": "uni1EF5.ss10",
+        "uni1EF5.rcltGeo": "uni1EF5.ss10",
+        "uni1EF7": "uni1EF7.ss10",
+        "uni1EF7.rcltBase": "uni1EF7.ss10",
+        "uni1EF7.rcltGeo": "uni1EF7.ss10",
+        "uni1EF9": "uni1EF9.ss10",
+        "uni1EF9.rcltBase": "uni1EF9.ss10",
+        "uni1EF9.rcltGeo": "uni1EF9.ss10",
+        "y": "y.ss10",
+        "y.rcltBase": "y.ss10",
+        "y.rcltGeo": "y.ss10",
+        "yacute": "yacute.ss10",
+        "yacute.rcltBase": "yacute.ss10",
+        "yacute.rcltGeo": "yacute.ss10",
+        "ycircumflex": "ycircumflex.ss10",
+        "ycircumflex.rcltBase": "ycircumflex.ss10",
+        "ycircumflex.rcltGeo": "ycircumflex.ss10",
+        "ydieresis": "ydieresis.ss10",
+        "ydieresis.rcltBase": "ydieresis.ss10",
+        "ydieresis.rcltGeo": "ydieresis.ss10",
+        "ygrave": "ygrave.ss10",
+        "ygrave.rcltBase": "ygrave.ss10",
+        "ygrave.rcltGeo": "ygrave.ss10"
+      }
+    },
+    {
+      "tag": "cv23",
+      "name": "Futura-style zero",
+      "families": [
+        "0"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "uni2070": "uni2070.ss10",
+        "uni2070.rcltGeo": "uni2070.ss10",
+        "uni2080": "uni2080.ss10",
+        "uni2080.rcltGeo": "uni2080.ss10",
+        "zero": "zero.ss10",
+        "zero.dnom": "zero.dnom.ss10",
+        "zero.dnom.rcltGeo": "zero.dnom.ss10",
+        "zero.lf": "zero.lf.ss10",
+        "zero.lf.rcltGeo": "zero.lf.ss10",
+        "zero.numr": "zero.numr.ss10",
+        "zero.numr.rcltGeo": "zero.numr.ss10",
+        "zero.rcltGeo": "zero.ss10",
+        "zero.tf": "zero.tf.ss10",
+        "zero.tf.rcltGeo": "zero.tf.ss10"
+      }
+    },
+    {
+      "tag": "cv24",
+      "name": "Futura-style one",
+      "families": [
+        "1"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "one": "one.ss10",
+        "one.dnom": "one.dnom.ss10",
+        "one.dnom.rcltGeo": "one.dnom.ss10",
+        "one.lf": "one.lf.ss10",
+        "one.lf.rcltGeo": "one.lf.ss10",
+        "one.numr": "one.numr.ss10",
+        "one.numr.rcltGeo": "one.numr.ss10",
+        "one.rcltGeo": "one.ss10",
+        "one.tf": "one.tf.ss10",
+        "one.tf.rcltGeo": "one.tf.ss10",
+        "oneeighth": "oneeighth.ss10",
+        "oneeighth.rcltGeo": "oneeighth.ss10",
+        "onehalf": "onehalf.ss10",
+        "onehalf.rcltGeo": "onehalf.ss10",
+        "onequarter": "onequarter.ss10",
+        "onequarter.rcltGeo": "onequarter.ss10",
+        "uni00B9": "uni00B9.ss10",
+        "uni00B9.rcltGeo": "uni00B9.ss10",
+        "uni2081": "uni2081.ss10",
+        "uni2081.rcltGeo": "uni2081.ss10",
+        "uni2153": "uni2153.ss10",
+        "uni2153.rcltGeo": "uni2153.ss10",
+        "uni2154": "uni2154.ss10",
+        "uni2154.rcltGeo": "uni2154.ss10"
+      }
+    },
+    {
+      "tag": "cv25",
+      "name": "Geometric five",
+      "families": [
+        "5"
+      ],
+      "overridesGeom": true,
+      "subs": {
+        "five": "five.ss10",
+        "five.dnom": "five.dnom.ss10",
+        "five.dnom.rcltGeo": "five.dnom.ss10",
+        "five.numr": "five.numr.ss10",
+        "five.numr.rcltGeo": "five.numr.ss10",
+        "five.rcltGeo": "five.ss10",
+        "fiveeighths": "fiveeighths.ss10",
+        "fiveeighths.rcltGeo": "fiveeighths.ss10",
+        "uni2075": "uni2075.ss10",
+        "uni2075.rcltGeo": "uni2075.ss10",
+        "uni2085": "uni2085.ss10",
+        "uni2085.rcltGeo": "uni2085.ss10"
+      }
+    },
+    {
+      "tag": "cv26",
+      "name": "Humanist/Grotesk 6",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "six": "six.ss16",
+        "six.dnom": "six.dnom.ss16",
+        "six.dnom.rclt1": "six.dnom.ss16",
+        "six.dnom.rclt2": "six.dnom.ss16",
+        "six.dnom.rclt3": "six.dnom.ss16",
+        "six.lf": "six.lf.ss16",
+        "six.lf.rclt1": "six.lf.ss16",
+        "six.numr": "six.numr.ss16",
+        "six.numr.rclt1": "six.numr.ss16",
+        "six.numr.rclt2": "six.numr.ss16",
+        "six.numr.rclt3": "six.numr.ss16",
+        "six.rclt1": "six.ss16",
+        "six.rclt2": "six.ss16",
+        "six.rclt3": "six.ss16",
+        "six.tf": "six.tf.ss16",
+        "six.tf.rclt1": "six.tf.ss16",
+        "uni2076": "uni2076.ss16",
+        "uni2076.rclt1": "uni2076.ss16",
+        "uni2076.rclt2": "uni2076.ss16",
+        "uni2076.rclt3": "uni2076.ss16",
+        "uni2086": "uni2086.ss16",
+        "uni2086.rclt1": "uni2086.ss16",
+        "uni2086.rclt2": "uni2086.ss16",
+        "uni2086.rclt3": "uni2086.ss16"
+      }
+    },
+    {
+      "tag": "cv27",
+      "name": "Humanist/Grotesk 9",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "nine": "nine.ss16",
+        "nine.dnom": "nine.dnom.ss16",
+        "nine.dnom.rclt1": "nine.dnom.ss16",
+        "nine.dnom.rclt2": "nine.dnom.ss16",
+        "nine.dnom.rclt3": "nine.dnom.ss16",
+        "nine.lf": "nine.lf.ss16",
+        "nine.lf.rclt1": "nine.lf.ss16",
+        "nine.numr": "nine.numr.ss16",
+        "nine.numr.rclt1": "nine.numr.ss16",
+        "nine.numr.rclt2": "nine.numr.ss16",
+        "nine.numr.rclt3": "nine.numr.ss16",
+        "nine.rclt1": "nine.ss16",
+        "nine.rclt2": "nine.ss16",
+        "nine.rclt3": "nine.ss16",
+        "nine.tf": "nine.tf.ss16",
+        "nine.tf.rclt1": "nine.tf.ss16",
+        "uni2079": "uni2079.ss16",
+        "uni2079.rclt1": "uni2079.ss16",
+        "uni2079.rclt2": "uni2079.ss16",
+        "uni2079.rclt3": "uni2079.ss16",
+        "uni2089": "uni2089.ss16",
+        "uni2089.rclt1": "uni2089.ss16",
+        "uni2089.rclt2": "uni2089.ss16",
+        "uni2089.rclt3": "uni2089.ss16"
+      }
+    },
+    {
+      "tag": "cv28",
+      "name": "Geometric/legible 6",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "six": "six.ss17",
+        "six.dnom": "six.dnom.ss17",
+        "six.dnom.rclt1": "six.dnom.ss17",
+        "six.dnom.rclt2": "six.dnom.ss17",
+        "six.dnom.rclt3": "six.dnom.ss17",
+        "six.lf": "six.lf.ss17",
+        "six.lf.rclt1": "six.lf.ss17",
+        "six.numr": "six.numr.ss17",
+        "six.numr.rclt1": "six.numr.ss17",
+        "six.numr.rclt2": "six.numr.ss17",
+        "six.numr.rclt3": "six.numr.ss17",
+        "six.rclt1": "six.ss17",
+        "six.rclt2": "six.ss17",
+        "six.rclt3": "six.ss17",
+        "six.tf": "six.tf.ss17",
+        "six.tf.rclt1": "six.tf.ss17",
+        "uni2076": "uni2076.ss17",
+        "uni2076.rclt1": "uni2076.ss17",
+        "uni2076.rclt2": "uni2076.ss17",
+        "uni2076.rclt3": "uni2076.ss17",
+        "uni2086": "uni2086.ss17",
+        "uni2086.rclt1": "uni2086.ss17",
+        "uni2086.rclt2": "uni2086.ss17",
+        "uni2086.rclt3": "uni2086.ss17"
+      }
+    },
+    {
+      "tag": "cv29",
+      "name": "Geometric/legible 9",
+      "families": [],
+      "overridesGeom": true,
+      "subs": {
+        "nine": "nine.ss17",
+        "nine.dnom": "nine.dnom.ss17",
+        "nine.dnom.rclt1": "nine.dnom.ss17",
+        "nine.dnom.rclt2": "nine.dnom.ss17",
+        "nine.dnom.rclt3": "nine.dnom.ss17",
+        "nine.lf": "nine.lf.ss17",
+        "nine.lf.rclt1": "nine.lf.ss17",
+        "nine.numr": "nine.numr.ss17",
+        "nine.numr.rclt1": "nine.numr.ss17",
+        "nine.numr.rclt2": "nine.numr.ss17",
+        "nine.numr.rclt3": "nine.numr.ss17",
+        "nine.rclt1": "nine.ss17",
+        "nine.rclt2": "nine.ss17",
+        "nine.rclt3": "nine.ss17",
+        "nine.tf": "nine.tf.ss17",
+        "nine.tf.rclt1": "nine.tf.ss17",
+        "uni2079": "uni2079.ss17",
+        "uni2079.rclt1": "uni2079.ss17",
+        "uni2079.rclt2": "uni2079.ss17",
+        "uni2079.rclt3": "uni2079.ss17",
+        "uni2089": "uni2089.ss17",
+        "uni2089.rclt1": "uni2089.ss17",
+        "uni2089.rclt2": "uni2089.ss17",
+        "uni2089.rclt3": "uni2089.ss17"
+      }
+    },
+    {
+      "tag": "cv30",
+      "name": "Open-aperture 6",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {
+        "six": "six.rclt2",
+        "six.dnom": "six.dnom.rclt2",
+        "six.numr": "six.numr.rclt2",
+        "uni2076": "uni2076.rclt2",
+        "uni2086": "uni2086.rclt2"
+      }
+    },
+    {
+      "tag": "cv31",
+      "name": "Open-aperture 9",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {
+        "nine": "nine.rclt2",
+        "nine.dnom": "nine.dnom.rclt2",
+        "nine.numr": "nine.numr.rclt2",
+        "uni2079": "uni2079.rclt2",
+        "uni2089": "uni2089.rclt2"
+      }
+    },
+    {
+      "tag": "cv32",
+      "name": "Constructed ffi",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv33",
+      "name": "Futura Ligation ffi",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv34",
+      "name": "Constructed ffl",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv35",
+      "name": "Futura Ligation ffl",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv36",
+      "name": "Constructed fi",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv37",
+      "name": "Futura discretionary ligation fi",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv38",
+      "name": "Constructed fl",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv39",
+      "name": "Futura discretionary ligation fl",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv40",
+      "name": "Constructed ft",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv41",
+      "name": "Futura ligation ft",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    },
+    {
+      "tag": "cv42",
+      "name": "Futura discretionary ligation ft",
+      "families": [],
+      "overridesGeom": false,
+      "subs": {}
+    }
+  ]
+}
