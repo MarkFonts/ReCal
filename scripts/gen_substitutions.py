@@ -119,10 +119,15 @@ def bands(g):
         for x in range(int(round(lo)), int(round(hi)) + 1):
             if 0 <= x <= 100:
                 za[x] = zc
+    # A threshold is the font's condition BOUNDARY (inclusive), which is what
+    # round-trips through the worker's export. Rising into a band → the band's onset
+    # (za[x] = its first/lo index). Falling into the master/default → the ending
+    # band's inclusive max (za[x-1], i.e. x-1), NOT the first default index. Getting
+    # this wrong shifts every A11y/Base upper edge by 1 (e.g. a: 13 not 14).
     thr, zon, cur = [], [za[0] or '-'], za[0]
     for x in range(1, 101):
         if za[x] != cur:
-            thr.append(x)
+            thr.append(x - 1 if za[x] is None else x)
             zon.append(za[x] or '-')
             cur = za[x]
     return thr, ''.join(zon)

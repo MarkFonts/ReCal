@@ -49,7 +49,7 @@
       "headline": "I",
       "cp": 73,
       "thresholds": [
-        12
+        11
       ],
       "variants": [
         {
@@ -68,7 +68,7 @@
       "headline": "l",
       "cp": 108,
       "thresholds": [
-        12
+        11
       ],
       "variants": [
         {
@@ -87,7 +87,7 @@
       "headline": "a",
       "cp": 97,
       "thresholds": [
-        14,
+        13,
         34
       ],
       "variants": [
@@ -131,7 +131,7 @@
       "headline": "g",
       "cp": 103,
       "thresholds": [
-        17
+        16
       ],
       "variants": [
         {
@@ -151,7 +151,7 @@
       "cp": 102,
       "thresholds": [
         39,
-        77
+        76
       ],
       "variants": [
         {
@@ -596,7 +596,7 @@
       "aalt": 0,
       "name": "I",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -616,7 +616,7 @@
       "aalt": 0,
       "name": "a",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -648,7 +648,7 @@
       "name": "f",
       "thresholds": [
         39,
-        77
+        76
       ],
       "zones": "-B-",
       "headline": "f"
@@ -658,7 +658,7 @@
       "aalt": 0,
       "name": "g",
       "thresholds": [
-        17
+        16
       ],
       "zones": "A-",
       "headline": "g"
@@ -690,7 +690,7 @@
       "aalt": 0,
       "name": "l",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -792,7 +792,7 @@
       "aalt": 0,
       "name": "Igrave",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -802,7 +802,7 @@
       "aalt": 0,
       "name": "Iacute",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -812,7 +812,7 @@
       "aalt": 0,
       "name": "Icircumflex",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -822,7 +822,7 @@
       "aalt": 0,
       "name": "Idieresis",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -832,7 +832,7 @@
       "aalt": 0,
       "name": "agrave",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -843,7 +843,7 @@
       "aalt": 0,
       "name": "aacute",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -854,7 +854,7 @@
       "aalt": 0,
       "name": "acircumflex",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -865,7 +865,7 @@
       "aalt": 0,
       "name": "atilde",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -876,7 +876,7 @@
       "aalt": 0,
       "name": "adieresis",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -887,7 +887,7 @@
       "aalt": 0,
       "name": "aring",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -980,7 +980,7 @@
       "aalt": 0,
       "name": "amacron",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -991,7 +991,7 @@
       "aalt": 0,
       "name": "abreve",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1002,7 +1002,7 @@
       "aalt": 0,
       "name": "aogonek",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1103,7 +1103,7 @@
       "aalt": 0,
       "name": "gcircumflex",
       "thresholds": [
-        17
+        16
       ],
       "zones": "A-",
       "headline": "g"
@@ -1123,7 +1123,7 @@
       "aalt": 0,
       "name": "gbreve",
       "thresholds": [
-        17
+        16
       ],
       "zones": "A-",
       "headline": "g"
@@ -1143,7 +1143,7 @@
       "aalt": 0,
       "name": "gdotaccent",
       "thresholds": [
-        17
+        16
       ],
       "zones": "A-",
       "headline": "g"
@@ -1163,7 +1163,7 @@
       "aalt": 0,
       "name": "uni0123",
       "thresholds": [
-        17
+        16
       ],
       "zones": "A-",
       "headline": "g"
@@ -1173,7 +1173,7 @@
       "aalt": 0,
       "name": "Itilde",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1183,7 +1183,7 @@
       "aalt": 0,
       "name": "Imacron",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1193,7 +1193,7 @@
       "aalt": 0,
       "name": "Iogonek",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1203,7 +1203,7 @@
       "aalt": 0,
       "name": "Idotaccent",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1213,7 +1213,7 @@
       "aalt": 0,
       "name": "IJ",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1244,7 +1244,7 @@
       "aalt": 0,
       "name": "lacute",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1254,7 +1254,7 @@
       "aalt": 0,
       "name": "uni013C",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1264,7 +1264,7 @@
       "aalt": 1,
       "name": "uni013C.loclMAH",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1274,7 +1274,7 @@
       "aalt": 0,
       "name": "lcaron",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1284,7 +1284,7 @@
       "aalt": 0,
       "name": "ldot",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1294,7 +1294,7 @@
       "aalt": 0,
       "name": "lslash",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1499,7 +1499,7 @@
       "aalt": 0,
       "name": "uni0203",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1510,7 +1510,7 @@
       "aalt": 0,
       "name": "uni020A",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1572,7 +1572,7 @@
       "aalt": 0,
       "name": "uni1E21",
       "thresholds": [
-        17
+        16
       ],
       "zones": "A-",
       "headline": "g"
@@ -1582,7 +1582,7 @@
       "aalt": 0,
       "name": "uni1E37",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1592,7 +1592,7 @@
       "aalt": 0,
       "name": "uni1E39",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1602,7 +1602,7 @@
       "aalt": 0,
       "name": "uni1E3B",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "l"
@@ -1665,7 +1665,7 @@
       "aalt": 0,
       "name": "uni1EA1",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1676,7 +1676,7 @@
       "aalt": 0,
       "name": "uni1EA3",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1687,7 +1687,7 @@
       "aalt": 0,
       "name": "uni1EA5",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1698,7 +1698,7 @@
       "aalt": 0,
       "name": "uni1EA7",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1709,7 +1709,7 @@
       "aalt": 0,
       "name": "uni1EA9",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1720,7 +1720,7 @@
       "aalt": 0,
       "name": "uni1EAB",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1731,7 +1731,7 @@
       "aalt": 0,
       "name": "uni1EAD",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1742,7 +1742,7 @@
       "aalt": 0,
       "name": "uni1EAF",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1753,7 +1753,7 @@
       "aalt": 0,
       "name": "uni1EB1",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1764,7 +1764,7 @@
       "aalt": 0,
       "name": "uni1EB3",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1775,7 +1775,7 @@
       "aalt": 0,
       "name": "uni1EB5",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1786,7 +1786,7 @@
       "aalt": 0,
       "name": "uni1EB7",
       "thresholds": [
-        14,
+        13,
         34
       ],
       "zones": "A-B",
@@ -1797,7 +1797,7 @@
       "aalt": 0,
       "name": "uni1EC8",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -1807,7 +1807,7 @@
       "aalt": 0,
       "name": "uni1ECA",
       "thresholds": [
-        12
+        11
       ],
       "zones": "A-",
       "headline": "I"
@@ -2062,7 +2062,7 @@
       "name": "fi",
       "thresholds": [
         39,
-        77
+        76
       ],
       "zones": "-B-",
       "headline": "f"
@@ -2073,7 +2073,7 @@
       "name": "fl",
       "thresholds": [
         39,
-        77
+        76
       ],
       "zones": "-B-",
       "headline": "f"
