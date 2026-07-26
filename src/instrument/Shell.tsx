@@ -724,19 +724,52 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
 function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) {
   const { state } = useInstrument()
   const [oflAgreed, setOflAgreed] = useState(false)
+  const dockRef = useRef<HTMLDivElement>(null)
 
-  // Bake the ◆ defaults into a TTF via the (legacy) worker and trigger the download.
-  const doDownload = async () => {
+  // The exact export config for the current ◆ (deterministic → cacheable). Kept in a
+  // ref so the pointer-vector listener always speculates on the latest config.
+  const buildConfig = () => {
     const d = state.defaults
-    const axisDefaults = Object.fromEntries(Object.entries(d.axes).filter(([t]) => t !== 'opsz'))
-    const ttf = await engine.download({
-      axisDefaults,
+    return {
+      axisDefaults: Object.fromEntries(Object.entries(d.axes).filter(([t]) => t !== 'opsz')),
       opszMultiplier: d.opszMultiplier,
       freezeOpsz: d.freezeOpsz,
       frozenOpszValue: d.frozenOpszValue,
       autoAscender: d.autoAscender,
       thresholds: d.glyphThresholds,
-    })
+    }
+  }
+  const cfgRef = useRef(buildConfig)
+  cfgRef.current = buildConfig
+  const prefetch = () => engine.prebake(cfgRef.current())   // idempotent (single-flight)
+
+  // "Load the room behind the door": when the pointer is heading toward the download
+  // pill (aligned velocity + within reach), speculatively bake the export so the click
+  // is instant. 9/10 people check the OFL box first, which also prefetches — this just
+  // buys even more lead time.
+  useEffect(() => {
+    let px = 0, py = 0, vx = 0, vy = 0, last = 0
+    const onMove = (e: PointerEvent) => {
+      if (last) {
+        const a = Math.min(1, (e.timeStamp - last) / 80)   // EMA on velocity
+        vx = vx * (1 - a) + (e.clientX - px) * a
+        vy = vy * (1 - a) + (e.clientY - py) * a
+      }
+      px = e.clientX; py = e.clientY; last = e.timeStamp
+      const dock = dockRef.current; if (!dock) return
+      const r = dock.getBoundingClientRect()
+      const tx = r.left + r.width / 2 - px, ty = r.top + r.height / 2 - py
+      const dist = Math.hypot(tx, ty), speed = Math.hypot(vx, vy)
+      // within reach, moving fast enough, and aimed at the pill (cosine > 0.6)
+      if (dist < 460 && speed > 1.2 && (vx * tx + vy * ty) / (speed * dist || 1) > 0.6) prefetch()
+    }
+    window.addEventListener('pointermove', onMove)
+    return () => window.removeEventListener('pointermove', onMove)
+  }, [])
+
+  // Bake the ◆ defaults into a TTF (instant if already pre-baked) and trigger download.
+  const doDownload = async () => {
+    const ttf = await engine.download(cfgRef.current())
     const url = URL.createObjectURL(new Blob([new Uint8Array(ttf)], { type: 'font/ttf' }))
     const a = document.createElement('a')
     a.href = url
@@ -750,20 +783,20 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
     : 'Download'
 
   return (
-    <div className="dock-download">
+    <div className="dock-download" ref={dockRef} onPointerEnter={prefetch}>
       {engine.error && (
         <span className="dock-error" title={engine.error}>export failed — see console</span>
       )}
       <label className="floor-toggle">
         <input type="checkbox" checked={oflAgreed}
-          onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) engine.init() }} />
+          onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) prefetch() }} />
         I accept the{' '}
         <a href="https://openfontlicense.org/open-font-license-official-text/"
           target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
       </label>
       <button className="floor-btn floor-btn--primary"
         disabled={!oflAgreed || !engine.ready || engine.building}
-        onPointerEnter={engine.init}
+        onPointerEnter={prefetch}
         onClick={doDownload}
         title={!oflAgreed ? 'Accept the OFL to enable download'
           : !engine.ready ? 'Loading the font engine (first time ~10–20s)…' : 'Download your ReCal Sans TTF'}>

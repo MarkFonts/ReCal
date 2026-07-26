@@ -5,7 +5,7 @@ export type AxisInfo = { tag: string; name: string; min: number; default: number
 type MainToWorker =
   | { type: 'loadFont'; fontBytes: ArrayBuffer }
   | { type: 'loadFlexAvar'; fontBytes: ArrayBuffer }
-  | { type: 'applyConfig'; configJson: string }
+  | { type: 'applyConfig'; configJson: string; id: number }
   | { type: 'previewFont'; thresholdsJson: string; autoAscender?: boolean; opszMultiplier?: number; freezeOpsz?: boolean; frozenOpszValue?: number | null }
   | { type: 'measureWords'; wordsJson: string; geomValuesJson: string; axisDefaultsJson: string }
 
@@ -13,7 +13,7 @@ type WorkerToMain =
   | { type: 'status'; message: string }
   | { type: 'ready' }
   | { type: 'axisInfo'; axisInfoJson: string }
-  | { type: 'fontResult'; ttf: ArrayBuffer }
+  | { type: 'fontResult'; ttf: ArrayBuffer; id: number }
   | { type: 'previewFontResult'; ttf: ArrayBuffer }
   | { type: 'measureWordsResult'; dataJson: string }
   | { type: 'error'; message: string }
@@ -463,7 +463,7 @@ out.getvalue()
 `)
       const ttfBytes: Uint8Array = ttfPy.toJs()
       post(
-        { type: 'fontResult', ttf: ttfBytes.buffer as ArrayBuffer },
+        { type: 'fontResult', ttf: ttfBytes.buffer as ArrayBuffer, id: msg.id },
         [ttfBytes.buffer as ArrayBuffer]
       )
     }

@@ -45,9 +45,19 @@ function postPreview(w: Worker, cfg: PreviewConfig) {
 
 export function useFontEngine(useHoi: boolean) {
   const workerRef = useRef<Worker | null>(null)
-  const resolveRef = useRef<((buf: ArrayBuffer) => void) | null>(null)
   const useHoiRef = useRef(useHoi)
   useHoiRef.current = useHoi
+
+  // Bake RPC with request-matching, so a speculative pre-bake and a real download
+  // (or two edits) can't clobber each other's result. Each applyConfig carries an id
+  // the worker echoes back; `bake` is single-flight per config key (JSON) so calling
+  // it repeatedly — e.g. from every prefetch trigger — reuses one in-flight job.
+  const pending = useRef(new Map<number, { resolve: (b: ArrayBuffer) => void; reject: (e: unknown) => void }>())
+  const idRef = useRef(0)
+  const bakeCacheRef = useRef<{ key: string; promise: Promise<ArrayBuffer> } | null>(null)
+  const bakedKeys = useRef(new Set<string>())          // configs whose bake has resolved
+  const queuedBakes = useRef<{ id: number; config: ExportConfig }[]>([])  // requested pre-ready
+  const rebuildingRef = useRef(false)
 
   const [started, setStarted] = useState(false)
   const [ready, setReady] = useState(false)
@@ -92,19 +102,23 @@ export function useFontEngine(useHoi: boolean) {
       } else if (msg.type === 'axisInfo') {
         setReady(true); readyRef.current = true          // font loaded + axes parsed
         if (previewCfgRef.current) postPreview(worker, previewCfgRef.current)   // re-fire pending
+        for (const b of queuedBakes.current)             // flush bakes requested before ready
+          worker.postMessage({ type: 'applyConfig', configJson: JSON.stringify(b.config), id: b.id })
+        queuedBakes.current = []
       } else if (msg.type === 'fontResult') {
-        resolveRef.current?.(msg.ttf as ArrayBuffer)
-        resolveRef.current = null
-        setBuilding(false)
+        pending.current.get(msg.id)?.resolve(msg.ttf as ArrayBuffer)
+        pending.current.delete(msg.id)
       } else if (msg.type === 'previewFontResult') {
         injectPreviewFace(msg.ttf as ArrayBuffer)
-        setRebuilding(false)
+        setRebuilding(false); rebuildingRef.current = false
       } else if (msg.type === 'error') {
         console.error('[fontEngine]', msg.message)
         setError(String(msg.message))
         setBuilding(false)
-        setRebuilding(false)
-        resolveRef.current = null
+        setRebuilding(false); rebuildingRef.current = false
+        pending.current.forEach(p => p.reject(new Error(String(msg.message))))
+        pending.current.clear()
+        bakeCacheRef.current = null
       }
     }
   }, [loadMain, injectPreviewFace])
@@ -120,18 +134,47 @@ export function useFontEngine(useHoi: boolean) {
     faceStyleRef.current?.remove()
   }, [])
 
-  const download = useCallback((config: ExportConfig) =>
-    new Promise<ArrayBuffer>((resolve) => {
-      setError(null)
-      resolveRef.current = resolve
-      setBuilding(true)
-      workerRef.current!.postMessage({ type: 'applyConfig', configJson: JSON.stringify(config) })
-    }), [])
+  // Single-flight bake: one job per config key. Returns a cached promise for a key
+  // already baking/baked, so prefetch triggers can call it freely. Posts to the worker
+  // now if ready, else queues to fire on axisInfo.
+  const bake = useCallback((config: ExportConfig): Promise<ArrayBuffer> => {
+    const key = JSON.stringify(config)
+    if (bakeCacheRef.current?.key === key) return bakeCacheRef.current.promise
+    init()
+    const id = ++idRef.current
+    const promise = new Promise<ArrayBuffer>((resolve, reject) => {
+      pending.current.set(id, { resolve, reject })
+      const msg = { type: 'applyConfig' as const, configJson: JSON.stringify(config), id }
+      if (workerRef.current && readyRef.current) workerRef.current.postMessage(msg)
+      else queuedBakes.current.push({ id, config })
+    }).then(buf => { bakedKeys.current.add(key); return buf })
+    bakeCacheRef.current = { key, promise }
+    return promise
+  }, [init])
+
+  // Speculative pre-bake on download intent (OFL check / heading to the button) — the
+  // "load the room behind the door" move. Silent (no Building… state); skipped while a
+  // preview edit is in flight so it never delays the live preview.
+  const prebake = useCallback((config: ExportConfig) => {
+    if (rebuildingRef.current) return
+    setError(null)
+    bake(config).catch(() => {})
+  }, [bake])
+
+  // Real download: instant if the exact config was already pre-baked, else shows
+  // Building… while it bakes.
+  const download = useCallback(async (config: ExportConfig): Promise<ArrayBuffer> => {
+    setError(null)
+    const cached = bakedKeys.current.has(JSON.stringify(config))
+    if (!cached) setBuilding(true)
+    try { return await bake(config) }
+    finally { if (!cached) setBuilding(false) }
+  }, [bake])
 
   // Rebuild the CalSansPreview face for the current ◆ (inits the worker if needed).
   const rebuildPreview = useCallback((cfg: PreviewConfig) => {
     init()
-    setRebuilding(true)   // stays true through Pyodide init + recompile, until previewFontResult
+    setRebuilding(true); rebuildingRef.current = true   // through Pyodide init + recompile
     previewCfgRef.current = cfg
     if (workerRef.current && readyRef.current) postPreview(workerRef.current, cfg)
   }, [init])
@@ -144,5 +187,5 @@ export function useFontEngine(useHoi: boolean) {
     if (faceUrlRef.current) { URL.revokeObjectURL(faceUrlRef.current); faceUrlRef.current = null }
   }, [])
 
-  return { started, ready, building, rebuilding, error, init, download, rebuildPreview, clearPreviewFont }
+  return { started, ready, building, rebuilding, error, init, prebake, download, rebuildPreview, clearPreviewFont }
 }
