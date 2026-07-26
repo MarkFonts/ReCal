@@ -276,13 +276,11 @@ def _do_preview():
     # point size in the preview EXACTLY as the export does (axis defaults stay stock —
     # the instrument applies those live via CSS font-variation-settings).
     opsz_m = float(_opsz_mult)
-    if _freeze_opsz and not _auto_ascender:
-        oa = next((a for a in fnt['fvar'].axes if a.axisTag == 'opsz'), None)
-        if oa is not None:
-            fv = oa.defaultValue if _frozen_opsz is None else float(_frozen_opsz)
-            fv = min(max(fv, oa.minValue), oa.maxValue)
-            instantiateVariableFont(fnt, {'opsz': fv}, inplace=True)
-    elif opsz_m != 1:
+    # opsz FREEZE is NOT baked in the preview anymore — the specimen applies it live via
+    # CSS ('opsz' N + font-optical-sizing:none), which the browser interpolates for free.
+    # The ~5s instancer + gvar re-save it caused only ever mattered for the static
+    # download. Only the cheap SCALER relabel stays here (optical-sizing:auto maps size).
+    if opsz_m != 1:
         for axis in fnt['fvar'].axes:
             if axis.axisTag == 'opsz':
                 axis.minValue *= opsz_m; axis.defaultValue *= opsz_m; axis.maxValue *= opsz_m

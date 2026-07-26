@@ -6,7 +6,7 @@ import './scenes.css'
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes, effectiveThresholds } from './store'
-import { renderVarSettings, opszForSize, compareStyle } from './render'
+import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
@@ -781,7 +781,8 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
 
 function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
+  const op = opszCss(state.defaults, opszAuto)
+  const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   // Words/Scale only swap for a live webfont; static-SVG referents render only their
   // Paragraph specimen, so here they fall back to Cal Sans.
   const cmp = state.compareOn && state.compare?.css ? state.compare : null
@@ -791,7 +792,7 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   return (
     <div className="stage-pad words-scene">
       <div className="words-edit specimen" contentEditable suppressContentEditableWarning
-        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
+        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
         onFocus={() => setFocused(true)}
         onBlur={e => { setText(e.currentTarget.textContent ?? ''); setFocused(false) }}>
         {/* Uncontrolled while focused: no onInput→setState, so typing never re-renders
@@ -865,8 +866,9 @@ function CompareSvg({ url }: { url: string }) {
 function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
-  const boldVs = renderVarSettings({ ...axes, wght: 700 }, { skipOpsz: opszAuto })
-  const italVs = renderVarSettings({ ...axes, ital: 1 }, { skipOpsz: opszAuto })
+  const op = opszCss(state.defaults, opszAuto)
+  const boldVs = renderVarSettings({ ...axes, wght: 700 }, op.renderOpts)
+  const italVs = renderVarSettings({ ...axes, ital: 1 }, op.renderOpts)
   // Comparing to a referent with a live webfont → restyle the blocks (compareStyle).
   // Comparing to a no-webfont referent with a static specimen → show the SVG instead.
   const cmp = state.compareOn && state.compare?.css ? state.compare : null
@@ -951,14 +953,14 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
       <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
         {blocks.map(b => {
           const st = paraStyles[b.type]
-          const blockVs = renderVarSettings({ ...axes, wght: st.wght }, { skipOpsz: opszAuto })
+          const blockVs = renderVarSettings({ ...axes, wght: st.wght }, op.renderOpts)
           const focused = focusedId === b.id
           return (
             <div key={b.id}
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type}`}
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
+              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
@@ -990,7 +992,10 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   // Compare mode: the referent tracks size via font-optical-sizing: auto (if it has
   // opsz at all) — Cal Sans's multiplier math doesn't apply to another font.
   const cmpSt = cmp ? compareStyle(cmp, axes, { opszAuto: true }) : {}
-  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: opszForSize(px, mult) })
+  // Freeze pins every size to the frozen opsz; otherwise the waterfall shows opsz
+  // following size (the export's multiplier). Both live in CSS now — no re-bake.
+  const frozen = state.defaults.freezeOpsz ? Math.min(Math.max(state.defaults.frozenOpszValue ?? 14, 8), 45) : null
+  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? opszForSize(px, mult) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   const flash = useGeomFlash()
   const [head, setHead] = useState(HEAD_WORD)
@@ -1035,7 +1040,8 @@ function loadCmap(): Promise<CmapRanges | null> {
 
 function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
   const { state } = useInstrument()
-  const vs = renderVarSettings(effectiveAxes(state), { skipOpsz: opszAuto })
+  const op = opszCss(state.defaults, opszAuto)
+  const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   const { flashes, clear, dragging } = useGridFlash()
   const [ranges, setRanges] = useState<CmapRanges | null>(null)
   useEffect(() => { let alive = true; loadCmap().then(r => { if (alive) setRanges(r) }); return () => { alive = false } }, [])
@@ -1058,7 +1064,7 @@ function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
             <span key={`${i}-${fl?.nonce ?? 0}`}
               className={`glyph-cell${fl ? (dragging ? ' geom-flash-hold' : ' geom-flash') : ''}`}
               onAnimationEnd={fl && !dragging ? () => clear(`${cpOf(c.ch)}:${c.aalt}`) : undefined}
-              style={{ fontVariationSettings: vs, fontOpticalSizing: optical(opszAuto), fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1`, ...(fl && { ['--flash-color' as string]: fl.color }) }}>
+              style={{ fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1`, ...(fl && { ['--flash-color' as string]: fl.color }) }}>
               {c.ch}
             </span>
           )

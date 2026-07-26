@@ -909,7 +909,10 @@ export default function Shell() {
     }
   }, [warmEngine])
   const d = state.defaults
-  const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.freezeOpsz || d.autoAscender
+  // opsz FREEZE is applied live via CSS now (opszCss in the scenes) — it no longer
+  // needs a Pyodide rebuild. Only the SCALER relabel, threshold (matrix) edits, and
+  // auto-ascender still require the worker.
+  const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.autoAscender
   useEffect(() => {
     const t = setTimeout(() => {
       if (needsRebuild) rebuildPreview({ thresholds: d.glyphThresholds, opszMultiplier: d.opszMultiplier, freezeOpsz: d.freezeOpsz, frozenOpszValue: d.frozenOpszValue, autoAscender: d.autoAscender })
