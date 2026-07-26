@@ -851,6 +851,26 @@ export default function Shell() {
   // Surface the preview recompile state in the store so ModeLabel can show the
   // throbber/checkmark during the (opsz/threshold) Pyodide rebuild latency.
   useEffect(() => { dispatch({ type: 'setRebuilding', value: engine.rebuilding }) }, [engine.rebuilding, dispatch])
+  // Warm the Pyodide engine the moment the pointer enters the control rail (or first
+  // touches it), so its ~8s cold start overlaps the user's decision time instead of
+  // landing on the first preset click. Pure viewers who never touch the rail never
+  // load it. init() is idempotent.
+  const warmEngine = engine.init
+  useEffect(() => {
+    const rail = document.querySelector('.rail')
+    if (!rail) return
+    const warm = () => {
+      warmEngine()
+      rail.removeEventListener('pointerenter', warm)
+      rail.removeEventListener('pointerdown', warm)
+    }
+    rail.addEventListener('pointerenter', warm)
+    rail.addEventListener('pointerdown', warm)
+    return () => {
+      rail.removeEventListener('pointerenter', warm)
+      rail.removeEventListener('pointerdown', warm)
+    }
+  }, [warmEngine])
   const d = state.defaults
   const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.freezeOpsz || d.autoAscender
   useEffect(() => {
