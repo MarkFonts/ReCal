@@ -886,13 +886,15 @@ export default function Shell() {
   // Surface the preview recompile state in the store so ModeLabel can show the
   // throbber/checkmark during the (opsz/threshold) Pyodide rebuild latency.
   useEffect(() => { dispatch({ type: 'setRebuilding', value: engine.rebuilding }) }, [engine.rebuilding, dispatch])
-  // Warm the Pyodide engine the moment the pointer enters the control rail (or first
-  // touches it), so its ~8s cold start overlaps the user's decision time instead of
-  // landing on the first preset click. Pure viewers who never touch the rail never
-  // load it. init() is idempotent.
+  // Boot Pyodide (both workers) — it IS the point of the customizer, so start its ~8s
+  // cold load immediately on mount so it overlaps the user orienting, not their first
+  // click. On the bare customizer we load eagerly; on the SEO/compare landing pages
+  // (BOOT.pitch set) visitors are mostly just looking, so there we defer to first rail
+  // interaction. init() is idempotent.
   const warmEngine = engine.init
   useEffect(() => {
-    const rail = document.querySelector('.rail')
+    if (!BOOT.pitch) { warmEngine(); return }         // customizer → eager
+    const rail = document.querySelector('.rail')       // landing page → on first touch
     if (!rail) return
     const warm = () => {
       warmEngine()
