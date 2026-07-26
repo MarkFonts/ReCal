@@ -393,7 +393,7 @@ _measure_words()
       pyodide.globals.set('_config_json', msg.configJson)
 
       const ttfPy = await pyodide.runPythonAsync(`
-import io, json, logging
+import io, json, logging, time
 from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 
@@ -407,21 +407,27 @@ frozen_opsz = config.get('frozenOpszValue', None)   # opsz to pin to when frozen
 auto_ascender = bool(config.get('autoAscender', False))
 thresh = config.get('thresholds', {})
 
+_t0 = time.perf_counter()
 buf = io.BytesIO(_font_data)
 font = TTFont(buf)
+_t_parse = time.perf_counter()
 
 # Bake the user's glyph thresholds into FeatureVariations using the SAME rebuild
 # as the live preview, BEFORE instancing — so the default shift re-normalizes
 # the new conditions. This closes the "what you preview is what you get" gap.
 if thresh:
     _rebuild_fv(font, thresh)
+_t_fv = time.perf_counter()
 
 # instancer can't partial-instance an avar2 table, so always strip first; auto
 # ascender re-grafts Flex's avar2 store at the very end (opsz/YTAS aren't shifted,
 # so its deltas stay valid).
 _strip_avar2(font)
 
-# Shift non-opsz axis defaults via instancer
+# Shift non-opsz axis defaults via instancer — but ONLY for axes that actually move.
+# instantiateVariableFont is ~expensive (seconds in Pyodide) even when the "shift" is a
+# no-op, so a preset like Circular (GEOM 25 = the stock default) was paying a full
+# instancer pass to change nothing. Skip any axis whose new default equals its current.
 axis_limits = {}
 for axis in font['fvar'].axes:
     tag = axis.axisTag
@@ -429,9 +435,11 @@ for axis in font['fvar'].axes:
         continue  # handled separately below
     nd = float(new_defaults.get(tag, axis.defaultValue))
     nd = min(max(nd, axis.minValue), axis.maxValue)
-    axis_limits[tag] = (axis.minValue, nd, axis.maxValue)
+    if nd != axis.defaultValue:
+        axis_limits[tag] = (axis.minValue, nd, axis.maxValue)
 
 result = instantiateVariableFont(font, axis_limits, inplace=True) if axis_limits else font
+_t_shift = time.perf_counter()
 
 # opsz: freeze to a fixed optical size (pin the axis), or scale by the multiplier.
 # Scaling all user-space values preserves normalized ratios. Freeze is skipped when
@@ -451,6 +459,7 @@ elif opsz_m != 1:
     for instance in result['fvar'].instances:
         if 'opsz' in instance.coordinates:
             instance.coordinates['opsz'] *= opsz_m
+_t_inst = time.perf_counter()
 
 # Auto Ascender → graft Flex's avar2 (opsz->YTAS) onto the result + hide YTAS.
 if auto_ascender:
@@ -459,9 +468,18 @@ if auto_ascender:
 _set_recal_names(result)
 out = io.BytesIO()
 result.save(out)
+_t_save = time.perf_counter()
+
+_ms = lambda a, b: round(1000 * (b - a))
+_bake_timing = (
+    "[bake] parse=%dms rebuild_fv=%dms axis_shift=%dms opsz=%dms save=%dms | total=%dms"
+    % (_ms(_t0, _t_parse), _ms(_t_parse, _t_fv), _ms(_t_fv, _t_shift),
+       _ms(_t_shift, _t_inst), _ms(_t_inst, _t_save), _ms(_t0, _t_save))
+)
 out.getvalue()
 `)
       const ttfBytes: Uint8Array = ttfPy.toJs()
+      try { post({ type: 'status', message: String(pyodide.globals.get('_bake_timing') ?? '') }) } catch { /* best-effort */ }
       post(
         { type: 'fontResult', ttf: ttfBytes.buffer as ArrayBuffer, id: msg.id },
         [ttfBytes.buffer as ArrayBuffer]

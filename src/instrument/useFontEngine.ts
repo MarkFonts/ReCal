@@ -111,6 +111,8 @@ export function useFontEngine(useHoi: boolean) {
       } else if (msg.type === 'previewFontResult') {
         injectPreviewFace(msg.ttf as ArrayBuffer)
         setRebuilding(false); rebuildingRef.current = false
+      } else if (msg.type === 'status' && typeof msg.message === 'string' && msg.message.startsWith('[bake]')) {
+        console.log('%c' + msg.message, 'color:#4aad5c;font-weight:bold')   // bake timing breakdown
       } else if (msg.type === 'error') {
         console.error('[fontEngine]', msg.message)
         setError(String(msg.message))
