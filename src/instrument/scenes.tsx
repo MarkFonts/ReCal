@@ -610,7 +610,7 @@ function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void; draggi
 // Freezer gold trigger (A + B). The frozen glyphs light gold transiently — never
 // persistently — so the specimen is clean at rest:
 //   A) toggling a freeze pulses just the changed feature's glyphs, then fades;
-//   B) dragging GEOM holds ALL frozen glyphs gold, fading a beat after release.
+//   B) dragging GEOM holds all frozen glyphs gold, fading a beat after release.
 // Reuses the geom-flash hold/fade timing; the hold-vs-fade class is picked in flashText
 // off the same `dragging` flag.
 const symDiff = (a: string[], b: string[]): string[] =>

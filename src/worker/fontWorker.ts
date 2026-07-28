@@ -293,14 +293,14 @@ def _freeze_features(font, tags, geom):
     for cp, g in best.items():
         rclt_form = rmap.get(g, g)        # what GEOM's rclt yields at the baked default
         cur = rclt_form
-        for _t, fm in fmaps:              # rclt FIRST, then each feature in order (ssXX, …)
+        for _t, fm in fmaps:              # rclt first, then each feature in order (ssXX, …)
             cur = fm.get(cur, cur)
         if cur != rclt_form:
             # ss-style: the feature's subs carry rclt-suffixed keys (a.rcltA11y → a.ss01),
             # so composing onto the rclt form works directly. Bake that glyph.
             remap[cp] = cur
         else:
-            # zero/tnum-style: the feature maps only the BASE glyph (zero → zero.zero, no
+            # zero/tnum-style: the feature maps only the base glyph (zero → zero.zero, no
             # rclt-suffixed keys), so rclt-first no-ops at a non-default GEOM. Apply the
             # feature to the base and remap to THAT — rclt keeps driving it (cmap 0 →
             # zero.zero, and rclt still yields zero.zero.rcltGeo in the Geo zone), so the
@@ -505,7 +505,7 @@ buf = io.BytesIO(_font_data)
 font = TTFont(buf)
 _t_parse = time.perf_counter()
 
-# Bake the user's glyph thresholds into FeatureVariations using the SAME rebuild
+# Bake the user's glyph thresholds into FeatureVariations using the same rebuild
 # as the live preview, BEFORE instancing — so the default shift re-normalizes
 # the new conditions. This closes the "what you preview is what you get" gap.
 if thresh:
@@ -525,7 +525,7 @@ _t_freeze = time.perf_counter()
 # so its deltas stay valid).
 _strip_avar2(font)
 
-# Shift non-opsz axis defaults via instancer — but ONLY for axes that actually move.
+# Shift non-opsz axis defaults via instancer — but only for axes that actually move.
 # instantiateVariableFont is ~expensive (seconds in Pyodide) even when the "shift" is a
 # no-op, so a preset like Circular (GEOM 25 = the stock default) was paying a full
 # instancer pass to change nothing. Skip any axis whose new default equals its current.

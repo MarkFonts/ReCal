@@ -316,7 +316,7 @@ function ModeLabel() {
   return (
     <div className={`mode-label${phase ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
       {phase?.kind === 'spin' ? <><span className="mode-throb" aria-hidden /> {phase.spin}</>
-        : phase?.kind === 'check' ? <><span className="mode-check">✓</span> {phase.check}</>
+        : phase?.kind === 'check' ? <span className="mode-check">✓ <span className="mc-word">{phase.check}</span></span>
           : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
     </div>
   )
@@ -817,7 +817,7 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
         onClick={doDownload}
         title={!oflAgreed ? 'Accept the OFL to enable download'
           : !engine.ready ? 'Loading the font engine (first time ~10–20s)…' : 'Download your ReCal Sans TTF'}>
-        {label}
+        {engine.building ? <span className="holo-loading">Building…</span> : label}
       </button>
     </div>
   )

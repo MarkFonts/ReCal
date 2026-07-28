@@ -1,72 +1,108 @@
-/* ═══════════════════════════════════════════════════════════════════════════════════
-   Holographic seam tab — the whole effect in ONE place: the colour band + brushed-metal
-   base gradient, its motion, the V chevrons, and the hover weight/brightness. Tune the
-   entire look from the custom properties in :root below (size, speed, metal colour,
-   hover weight) — the rest rarely needs touching. Applied to the rail's down-seam label.
-   Imported by Shell.tsx alongside shell.css.
-   ═══════════════════════════════════════════════════════════════════════════════════ */
+/* ───────────────────────────────────────────────────────────────────────────────────
+   Holographic text — two effects that share one mechanism: a colour gradient screened
+   over a base layer, clipped to the glyphs, its position animated through a registered
+   custom property.
+
+     1. Seam tabs (.rail-seam--down .rail-seam-lbl) — a diffraction colour band sweeping
+        over drifting brushed metal, plus the V chevrons and the hover weight.
+     2. ✓ Saved   (.mc-word) — a one-shot rainbow over the resting gray, timed to the
+        check's ~0.5s life. The ✓ itself stays green (.mode-check's colour, in shell.css).
+
+   Tune both from the custom properties in :root below. Imported by Shell.tsx.
+   ─────────────────────────────────────────────────────────────────────────────────── */
 
 :root {
-  /* ── motion ── */
-  --holo-sweep:        14.3s;   /* one colour-band sweep + pause cycle (bigger = slower) */
-  --holo-drift:        3s;      /* metal base drift speed */
-  /* ── size ── */
-  --holo-band-size:    200%;    /* colour-band width (bigger = wider band) */
-  --holo-metal-size:   200%;    /* metal base scale */
-  /* ── metal base colour (dark ↔ light brushed metal) ── */
-  --holo-metal-dark:   #545454;
+  /* ── seam tab ── */
+  --holo-sweep:        14.3s;    /* colour-band sweep + pause cycle (bigger = slower) */
+  --holo-drift:        3s;       /* metal base drift speed */
+  --holo-band-size:    200%;     /* colour-band width (bigger = wider) */
+  --holo-metal-size:   200%;     /* metal base scale */
+  --holo-metal-dark:   #545454;  /* brushed metal: dark ↔ light */
   --holo-metal-light:  #b5b5b5;
-  /* ── hover weight ── */
-  --holo-weight:       550;
+  --holo-weight:       550;      /* seam label weight: resting → hover */
   --holo-weight-hover: 700;
   --holo-hover-ease:   .25s;
+
+  /* ── ✓ Saved check (one-shot; its whole life is ~half a second) ── */
+  --check-holo-dur:    .5s;
+  --check-holo-start:  75%;      /* band mid-runway when the check appears → no dead frames */
+  --check-holo-end:   -25%;      /* …then it exits */
 }
 
-/* Registered so the sweep/drift positions can animate (a plain custom prop can't). */
-@property --holo0 { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
-@property --holo1 { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+/* Positions animate through registered custom properties (a plain --var can't animate). */
+@property --holo0      { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+@property --holo1      { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+@property --check-holo { syntax: "<percentage>"; inherits: false; initial-value: 100%; }
+@property --holo-load  { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
 
-/* The holographic fill: a composite diffraction colour band — 3 colour sub-bands + a
-   white specular, hard-edged with a colour gradient inside (opacities 100/75/100/50) —
-   that sweeps L→R then pauses, SCREENED over a dark→light brushed-metal base that slowly
-   drifts. Clipped to the text; the V chevrons live inside the label so they share it. */
+/* Shared mechanism: layer 1 (colour) screened over layer 2 (base), clipped to the text. */
+.rail-seam--down .rail-seam-lbl,
+.mc-word,
+.holo-loading {
+  background-blend-mode: screen, normal;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 1 ─ Seam tab. Colour band = three sub-bands + a white specular (opacities 100/75/100/50),
+   sweeping left→right then pausing, over a drifting dark↔light metal base. The V chevrons
+   sit inside the label, so they ride this one clipped gradient too. */
 .rail-seam--down .rail-seam-lbl {
   background-image:
     linear-gradient(90deg,
       transparent 0 40%,
-      rgba(255,30,168,0) 40%, #ff1ea8 41.25%, #ffe600 42.5%, #21ff6a 43.75%, #1a3cff 45%,
-      transparent 45% 47%,
-      rgba(255,30,168,.75) 47%, rgba(255,230,0,.75) 48.5%, rgba(26,60,255,.75) 50%,
-      transparent 50% 53%,
-      rgba(255,255,255,0) 53%, #ffffff 53.5%, rgba(255,255,255,0) 54%,
-      transparent 54% 57%,
-      rgba(255,30,168,0) 57%, rgba(255,30,168,.5) 58%, rgba(255,230,0,.5) 59%, rgba(26,60,255,.5) 60%,
-      transparent 60%),
+      rgba(255,30,168,0) 40%, #ff1ea8 42.5%, #ffe600 45%, #21ff6a 47%, #1a3cff 49%,
+      #ffffff 50.5%,
+      rgba(255,30,168,.85) 52%, rgba(255,230,0,.85) 54.5%, rgba(26,60,255,.85) 57%,
+      rgba(26,60,255,0) 60%),
     linear-gradient(100deg, var(--holo-metal-dark) 0%, var(--holo-metal-light) 28%,
       var(--holo-metal-dark) 52%, var(--holo-metal-light) 78%, var(--holo-metal-dark) 100%);
   background-size: var(--holo-band-size) 100%, var(--holo-metal-size) 100%;
   background-position: var(--holo1) center, var(--holo0) center;
   background-repeat: no-repeat;
-  background-blend-mode: screen, normal;   /* colour band screens over the moving metal → luminous */
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
+  color: transparent;   /* fallback for the clipped fill */
   animation: holo-0 var(--holo-drift) linear infinite, holo-1 var(--holo-sweep) ease-out infinite;
 }
 @keyframes holo-0 { from { --holo0: 100%; } to { --holo0: 0%; } }
-/* colour band: sweep across (first ~43% of the cycle), then hold off-screen for the pause */
-@keyframes holo-1 { 0% { --holo1: 125%; } 42.86% { --holo1: -25%; } 100% { --holo1: -25%; } }
+/* band sweeps across in the first ~25% of the cycle, then holds off-screen for the pause */
+@keyframes holo-1 { 0% { --holo1: 125%; } 25% { --holo1: -25%; } 100% { --holo1: -25%; } }
 .rail-seam--down:hover:not(:disabled) .rail-seam-lbl { filter: brightness(1.2); }
 
-/* Weight: all seam tabs (word + V's) rest at --holo-weight, easing to --holo-weight-hover
-   on hover. The word rides font-weight; the V chevrons ride font-variation-settings. */
+/* Seam weight: word + V chevrons rest at --holo-weight, easing to --holo-weight-hover on
+   hover — the word via font-weight, the chevrons via font-variation-settings. */
 .rail-seam-lbl { font-weight: var(--holo-weight); transition: font-weight var(--holo-hover-ease) ease; }
 .rail-seam:hover .rail-seam-lbl { font-weight: var(--holo-weight-hover); }
 .rail-seam-chv-t {
-  /* capital V at max SHRP (crisp point) = the chevron, two em-spaces off the word. No
-     transform — a transform on a background-clip:text child drops the shared fill and the
-     V vanishes; kept inline so it rides the word's one synced gradient. */
+  /* a capital V at max SHRP is the chevron, two em-spaces off the word. No transform — it
+     would drop the shared clip fill and the V vanishes; kept inline to ride the gradient. */
   margin: 0 2em; letter-spacing: 0;
   font-variation-settings: 'wght' var(--holo-weight), 'SHRP' 100;
   transition: font-variation-settings var(--holo-hover-ease) ease;
 }
 .rail-seam:hover .rail-seam-chv-t { font-variation-settings: 'wght' var(--holo-weight-hover), 'SHRP' 100; }
+
+/* 2 ─ ✓ Saved word. A green-free rainbow (no cyan/teal, which read green) tiled over its
+   gray base so there's no rainbow edge cutting into it; sweeps once as the check appears. */
+.mc-word {
+  background-image:
+    linear-gradient(90deg, #ff2e6e, #ffb02e, #ffe600, #ff2ec4, #b05cff, #5c7aff, #7a8aff, #ff2e6e),
+    linear-gradient(var(--text-muted), var(--text-muted));
+  background-size: 300% 100%, 100% 100%;
+  background-position: var(--check-holo) center, center;
+  background-repeat: repeat, no-repeat;
+  animation: check-holo var(--check-holo-dur) ease-out;
+}
+@keyframes check-holo { from { --check-holo: var(--check-holo-start); } to { --check-holo: var(--check-holo-end); } }
+
+/* 3 ─ "Building…" download label. The same green-free rainbow, looping continuously over a
+   dark base while a font bakes — a holographic "working" shimmer (repeat → seamless loop). */
+.holo-loading {
+  background-image:
+    linear-gradient(90deg, #ff2e6e, #ffb02e, #ffe600, #ff2ec4, #b05cff, #5c7aff, #7a8aff, #ff2e6e),
+    linear-gradient(#2a2a2a, #2a2a2a);
+  background-size: 300% 100%, 100% 100%;
+  background-position: var(--holo-load) center, center;
+  background-repeat: repeat, no-repeat;
+  animation: holo-load 2.5s linear infinite;
+}
+@keyframes holo-load { to { --holo-load: 300%; } }
