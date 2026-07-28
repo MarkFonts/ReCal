@@ -225,6 +225,101 @@ def _rebuild_fv(font, thresh):
     gsub.LookupList.LookupCount = len(LK)
     gsub.FeatureVariations = fv
 
+# ── Feature freezer ──────────────────────────────────────────────────────────────
+# "Freeze" a SingleSubst OpenType feature (ssXX/cvXX/tnum/zero/case/…) by fusing the
+# form it produces into the default cmap, so the exported font shows it with no
+# font-feature-settings. Replicates the browser exactly: apply rclt (at the baked GEOM
+# default) THEN each frozen feature in order to each codepoint's glyph — the same
+# composition font-feature-settings does live, so what you preview is what you bake.
+# Only SingleSubst lookups fuse (glyph→glyph); ligature/contextual features are a no-op
+# here and aren't offered in the UI.
+
+# The base→variant map the GEOM rclt substitution yields at a given GEOM (userspace),
+# read straight back out of the FeatureVariations _rebuild_fv just built.
+def _rclt_map_at(font, geom):
+    gsub = font.get('GSUB')
+    if gsub is None:
+        return {}
+    gt = gsub.table
+    fv = getattr(gt, 'FeatureVariations', None)
+    axes = font['fvar'].axes
+    ga = next((a for a in axes if a.axisTag == 'GEOM'), None)
+    if fv is None or ga is None:
+        return {}
+    gi = [a.axisTag for a in axes].index('GEOM')
+    gmin, gdef, gmax = ga.minValue, ga.defaultValue, ga.maxValue
+    v = min(max(float(geom), gmin), gmax)
+    d = (gdef - gmin) if v <= gdef else (gmax - gdef)
+    gn = (v - gdef) / d if d else 0.0
+    for rec in fv.FeatureVariationRecord:
+        conds = [c for c in rec.ConditionSet.ConditionTable if getattr(c, 'AxisIndex', None) == gi]
+        if conds and all(c.FilterRangeMinValue <= gn <= c.FilterRangeMaxValue for c in conds):
+            m = {}
+            for sr in rec.FeatureTableSubstitution.SubstitutionRecord:
+                for li in sr.Feature.LookupListIndex:
+                    lk = gt.LookupList.Lookup[li]
+                    for st in lk.SubTable:
+                        m.update(getattr(st, 'mapping', {}) or {})
+            return m
+    return {}
+
+# Every SingleSubst base→variant pair a feature tag drives (across all its lookups).
+def _feature_map(font, tag):
+    gsub = font.get('GSUB')
+    if gsub is None:
+        return {}
+    gt = gsub.table
+    lset = []
+    for fr in gt.FeatureList.FeatureRecord:
+        if fr.FeatureTag == tag:
+            for li in fr.Feature.LookupListIndex:
+                if li not in lset:
+                    lset.append(li)
+    m = {}
+    for li in lset:
+        lk = gt.LookupList.Lookup[li]
+        for st in lk.SubTable:
+            m.update(getattr(st, 'mapping', {}) or {})
+    return m
+
+def _freeze_features(font, tags, geom):
+    tags = [t for t in (tags or [])]
+    if not tags:
+        return
+    rmap = _rclt_map_at(font, geom)
+    fmaps = [(t, _feature_map(font, t)) for t in tags]
+    best = font.getBestCmap() or {}
+    remap = {}
+    for cp, g in best.items():
+        rclt_form = rmap.get(g, g)        # what GEOM's rclt yields at the baked default
+        cur = rclt_form
+        for _t, fm in fmaps:              # rclt FIRST, then each feature in order (ssXX, …)
+            cur = fm.get(cur, cur)
+        if cur != rclt_form:
+            # ss-style: the feature's subs carry rclt-suffixed keys (a.rcltA11y → a.ss01),
+            # so composing onto the rclt form works directly. Bake that glyph.
+            remap[cp] = cur
+        else:
+            # zero/tnum-style: the feature maps only the BASE glyph (zero → zero.zero, no
+            # rclt-suffixed keys), so rclt-first no-ops at a non-default GEOM. Apply the
+            # feature to the base and remap to THAT — rclt keeps driving it (cmap 0 →
+            # zero.zero, and rclt still yields zero.zero.rcltGeo in the Geo zone), so the
+            # frozen glyph stays GEOM-live instead of silently not freezing.
+            base = g
+            for _t, fm in fmaps:
+                base = fm.get(base, base)
+            if base != g:
+                remap[cp] = base
+        # else: no frozen feature touches this glyph — leave it for GEOM to drive live.
+    if not remap:
+        return
+    for tbl in font['cmap'].tables:
+        if not tbl.isUnicode():
+            continue
+        for cp, ng in remap.items():
+            if cp in tbl.cmap:
+                tbl.cmap[cp] = ng
+
 axes_out = []
 for axis in _font_cache['fvar'].axes:
     name = _font_cache['name'].getDebugName(axis.axisNameID) or axis.axisTag
@@ -417,6 +512,14 @@ if thresh:
     _rebuild_fv(font, thresh)
 _t_fv = time.perf_counter()
 
+# Fuse any frozen features into the default cmap (before instancing — cmap is
+# axis-independent). Uses the baked GEOM default to pick the rclt form each feature
+# composes onto, so preview and export agree at that GEOM.
+frozen_features = config.get('frozenFeatures', [])
+if frozen_features:
+    _freeze_features(font, frozen_features, float(new_defaults.get('GEOM', 25)))
+_t_freeze = time.perf_counter()
+
 # instancer can't partial-instance an avar2 table, so always strip first; auto
 # ascender re-grafts Flex's avar2 store at the very end (opsz/YTAS aren't shifted,
 # so its deltas stay valid).
@@ -470,9 +573,9 @@ _t_save = time.perf_counter()
 
 _ms = lambda a, b: round(1000 * (b - a))
 _bake_timing = (
-    "[bake] parse=%dms rebuild_fv=%dms axis_shift=%dms opsz=%dms save=%dms | total=%dms"
-    % (_ms(_t0, _t_parse), _ms(_t_parse, _t_fv), _ms(_t_fv, _t_shift),
-       _ms(_t_shift, _t_inst), _ms(_t_inst, _t_save), _ms(_t0, _t_save))
+    "[bake] parse=%dms rebuild_fv=%dms freeze=%dms axis_shift=%dms opsz=%dms save=%dms | total=%dms"
+    % (_ms(_t0, _t_parse), _ms(_t_parse, _t_fv), _ms(_t_fv, _t_freeze),
+       _ms(_t_freeze, _t_shift), _ms(_t_shift, _t_inst), _ms(_t_inst, _t_save), _ms(_t0, _t_save))
 )
 out.getvalue()
 `)

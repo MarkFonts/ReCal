@@ -230,3 +230,13 @@
   100%    { color: var(--text); }
 }
 
+/* Freezer gold — same hold/fade model as the GEOM zone flash, but its own hue: the
+   glyphs a frozen feature governs, lit while you toggle a freeze or drag GEOM, then
+   eased back to rest. Not persistent — the specimen is clean when idle. */
+.freeze-gold-hold { color: var(--freeze-gold); transition: none; }
+.freeze-gold { animation: freeze-gold-fade .5s ease-out; }
+@keyframes freeze-gold-fade {
+  0%, 40% { color: var(--freeze-gold); }
+  100%    { color: var(--text); }
+}
+

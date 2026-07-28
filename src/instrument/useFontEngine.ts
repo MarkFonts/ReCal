@@ -15,6 +15,7 @@ export interface ExportConfig {
   frozenOpszValue: number | null          // opsz to pin to when frozen (null → axis default)
   autoAscender: boolean
   thresholds: Record<string, number[]>   // ◆ GEOM swap map → FeatureVariations
+  frozenFeatures: string[]               // ◆ ssXX/cvXX/tnum/… fused into the default + stripped
 }
 
 // Preview rebuild config — the rebuild-only edits CSS can't show (opsz-axis rescale/pin +

@@ -34,6 +34,8 @@ export interface DefaultsLayer {
   freezeOpsz: boolean                           // ◆ bake a fixed opsz
   frozenOpszValue: number | null                // ◆ the frozen value (preset-set)
   autoAscender: boolean                         // ◆ graft avar2 so YTAS tracks opsz
+  frozenFeatures: string[]                      // ◆ ssXX/cvXX pinned as manual overrides
+                                                //   (baked into the default forms + features stripped on export)
 }
 
 export type PreviewLayer = AxisMap              // ● transient per-axis overrides (incl. ital)
@@ -60,7 +62,7 @@ const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> 
   Object.fromEntries(Object.entries(t).map(([k, v]) => [k, [...v]]))
 
 const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
-  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds) })
+  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures] })
 
 export function shippedThresholds(): Record<string, number[]> {
   return Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
@@ -78,6 +80,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       freezeOpsz: false,
       frozenOpszValue: null,
       autoAscender: false,
+      frozenFeatures: [],
     },
     preview: {},
     stockHold: false,
@@ -128,6 +131,7 @@ export const defaultsDirty = (s: InstrumentState): boolean =>
   s.defaults.freezeOpsz ||
   s.defaults.frozenOpszValue !== null ||
   s.defaults.autoAscender ||
+  s.defaults.frozenFeatures.length > 0 ||
   s.activePreset !== null
 
 // ── Actions / reducer ───────────────────────────────────────────────────────────
@@ -143,6 +147,7 @@ export type Action =
   | { type: 'setFreezeOpsz'; value: boolean }
   | { type: 'setFrozenOpszValue'; value: number | null }
   | { type: 'setAutoAscender'; value: boolean }
+  | { type: 'toggleFrozenFeature'; tag: string }             // freezer: pin/unpin an ssXX/cvXX form
   | { type: 'setActivePreset'; name: string | null }
   | { type: 'setUseHoi'; value: boolean }
   | { type: 'setBuildName'; name: string }
@@ -187,6 +192,11 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return { ...s, defaults: { ...s.defaults, frozenOpszValue: a.value } }
     case 'setAutoAscender':
       return { ...s, defaults: { ...s.defaults, autoAscender: a.value } }
+    case 'toggleFrozenFeature': {
+      const cur = s.defaults.frozenFeatures
+      const next = cur.includes(a.tag) ? cur.filter(t => t !== a.tag) : [...cur, a.tag]
+      return { ...s, defaults: { ...s.defaults, frozenFeatures: next } }
+    }
     case 'setActivePreset':
       return { ...s, activePreset: a.name }
     case 'setUseHoi':

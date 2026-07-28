@@ -20,6 +20,7 @@ import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { useFontEngine } from './useFontEngine'
 import { Matrix } from './Matrix'
+import { Freezer } from './Freezer'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -93,7 +94,7 @@ function SeamChevron() {
 
 function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
-  // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = ssXX Freezer.
+  // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = Freezer · 3 = Vertical Metrics.
   const [group, setGroup] = useState(0)
   const [leaving, setLeaving] = useState(false)
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
@@ -236,15 +237,27 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         </button>
         <Matrix />
         <button className="rail-seam rail-seam--down" onClick={() => go(2, 'fwd')}>
-          <SeamChevron /><SeamChevron />
+          <SeamChevron /><span className="rail-seam-lbl">FREEZER</span><SeamChevron />
         </button>
       </div>
       )}
 
       {group === 2 && (
-      <div className="rail-blank">
+      <div className="rail-freezer">
         <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
-          <SeamChevron /><SeamChevron />
+          <SeamChevron /><span className="rail-seam-lbl">TYPE MATRIX</span><SeamChevron />
+        </button>
+        <Freezer />
+        <button className="rail-seam rail-seam--down" onClick={() => go(3, 'fwd')}>
+          <SeamChevron /><span className="rail-seam-lbl">VERTICAL METRICS</span><SeamChevron />
+        </button>
+      </div>
+      )}
+
+      {group === 3 && (
+      <div className="rail-vmetrics">
+        <button className="rail-seam rail-seam--up" onClick={() => go(2, 'back')}>
+          <SeamChevron /><span className="rail-seam-lbl">FREEZER</span><SeamChevron />
         </button>
         <div className="rail-blank-body" />
         <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
@@ -737,6 +750,7 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
       frozenOpszValue: d.frozenOpszValue,
       autoAscender: d.autoAscender,
       thresholds: d.glyphThresholds,
+      frozenFeatures: d.frozenFeatures,
     }
   }
   const cfgRef = useRef(buildConfig)
@@ -862,7 +876,10 @@ export default function Shell() {
   // OpenType feature chips are global preview controls — they live in the play bar
   // and apply to every scene's text.
   const [feats, setFeats] = useState<Set<string>>(new Set(FEATS_DEFAULT))
-  const featStr = ["'rclt' 1", ...[...feats].map(t => `'${t}' 1`)].join(', ')
+  // Frozen ss/cv (the ◆ freezer) render live too — union them into the specimen's
+  // feature string so the preview shows exactly what the bake will fuse into the default.
+  const activeFeats = [...new Set([...feats, ...state.defaults.frozenFeatures])]
+  const featStr = ["'rclt' 1", ...activeFeats.map(t => `'${t}' 1`)].join(', ')
   const toggleFeat = (t: string) => setFeats(s => { const n = new Set(s); n.has(t) ? n.delete(t) : n.add(t); return n })
   const resetFeats = () => setFeats(new Set(FEATS_DEFAULT))
 

@@ -10,6 +10,7 @@ import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
+import { SUBS } from '../data/substitutions'
 import { BOOT, type CompareSpec } from './boot'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
@@ -524,6 +525,24 @@ const groupKeyOf = (ch: string): string | undefined => {
 
 type Flashes = Record<string, { color: string; nonce: number }>
 
+// ── Freezer gold ─────────────────────────────────────────────────────────────────
+// Characters a frozen feature swaps get painted gold in the specimen — the freezer's
+// zone-like colour language ("held off GEOM", distinct from the four GEOM zone hues).
+// ss/cv derive their chars from `families`; figure/case features from an explicit list.
+const FEATURE_CHARS: Record<string, string> = {
+  tnum: '0123456789', pnum: '0123456789', zero: '0', case: '-–—()[]{}',
+}
+const FEATURE_FAMILIES: Record<string, string[]> =
+  Object.fromEntries([...SUBS.stylisticSets, ...SUBS.charVariants].map(f => [f.tag, f.families]))
+function frozenCharSet(tags: string[]): Set<string> {
+  const s = new Set<string>()
+  for (const t of tags) {
+    for (const c of FEATURE_FAMILIES[t] ?? []) s.add(c)
+    for (const c of FEATURE_CHARS[t] ?? '') s.add(c)
+  }
+  return s
+}
+
 // Shared GEOM-crossing detector (EDIT mode only). As GEOM crosses a swapping
 // glyph's threshold, that glyph is flagged with the zone colour of the variant it
 // just entered — a persistent per-glyph colour, not a one-shot pulse. Landing on
@@ -588,6 +607,41 @@ function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void; draggi
   return { flashes, clear, dragging }
 }
 
+// Freezer gold trigger (A + B). The frozen glyphs light gold transiently — never
+// persistently — so the specimen is clean at rest:
+//   A) toggling a freeze pulses just the changed feature's glyphs, then fades;
+//   B) dragging GEOM holds ALL frozen glyphs gold, fading a beat after release.
+// Reuses the geom-flash hold/fade timing; the hold-vs-fade class is picked in flashText
+// off the same `dragging` flag.
+const symDiff = (a: string[], b: string[]): string[] =>
+  [...a.filter(x => !b.includes(x)), ...b.filter(x => !a.includes(x))]
+
+function useFrozenGold(tags: string[]): { chars: Set<string> } | null {
+  const { state } = useInstrument()
+  const dragging = state.geomDragging
+  const [pulse, setPulse] = useState<Set<string> | null>(null)   // A: toggle-triggered fade set
+  const [dragFade, setDragFade] = useState(false)                // B: post-release fade window
+  const prevTags = useRef(tags)
+  const wasDragging = useRef(dragging)
+  useEffect(() => {   // A — a freeze was toggled: pulse the changed feature's glyphs
+    const prev = prevTags.current; prevTags.current = tags
+    if (prev === tags) return
+    const changed = symDiff(prev, tags)
+    if (!changed.length) return
+    setPulse(frozenCharSet(changed))
+    const t = setTimeout(() => setPulse(null), 560)
+    return () => clearTimeout(t)
+  }, [tags])
+  useEffect(() => {   // B — GEOM drag released: run the fade beat
+    const was = wasDragging.current; wasDragging.current = dragging
+    if (dragging) { setDragFade(false); return }
+    if (was) { setDragFade(true); const t = setTimeout(() => setDragFade(false), 560); return () => clearTimeout(t) }
+  }, [dragging])
+  if (dragging || dragFade) return { chars: frozenCharSet(tags) }   // B wins → all frozen glyphs
+  if (pulse) return { chars: pulse }                                // A → just the toggled one
+  return null
+}
+
 // Glyphs-grid flash: same hold-while-dragging / fade-on-release model as useGeomFlash,
 // but detects crossings over the FULL font-derived swap set (GRID_ENTRIES, keyed by
 // "cp:aaltIndex") — so base glyphs AND every rclt alternate/compound flash, not just
@@ -637,13 +691,22 @@ function useGridFlash(): { flashes: Flashes; clear: (k: string) => void; draggin
 // While `dragging`, the span holds its colour (`geom-flash-hold`, no animation);
 // on release it runs the keyframe fade (`geom-flash`) and `clear`s on animation end.
 // Non-flashing runs stay plain (Fragment, no DOM).
-function flashText(text: string, flashes: Flashes, clear: (ch: string) => void, dragging: boolean, kp = ''): ReactNode {
-  // fast path: nothing here maps to a flashing group (composites resolve via groupKeyOf)
-  if (![...text].some(ch => { const gk = groupKeyOf(ch); return gk && flashes[gk] })) return text
+function flashText(text: string, flashes: Flashes, clear: (ch: string) => void, dragging: boolean, kp = '', frozen?: Set<string>): ReactNode {
+  const anyFrozen = !!frozen && frozen.size > 0
+  const hasFlash = [...text].some(ch => { const gk = groupKeyOf(ch); return gk && flashes[gk] })
+  const hasFrozen = anyFrozen && [...text].some(ch => frozen!.has(ch))
+  if (!hasFlash && !hasFrozen) return text   // fast path: nothing to wrap
   const out: ReactNode[] = []
   let buf = '', runStart = 0
   const flush = () => { if (buf) { out.push(<Fragment key={`${kp}t${runStart}`}>{buf}</Fragment>); buf = '' } }
   ;[...text].forEach((ch, i) => {
+    // A frozen glyph flashes gold (hold while dragging GEOM, else the fade beat) and
+    // never GEOM-flashes its zone colour.
+    if (anyFrozen && frozen!.has(ch)) {
+      flush()
+      out.push(<span key={`${kp}f${i}`} className={dragging ? 'freeze-gold-hold' : 'freeze-gold'}>{ch}</span>)
+      return
+    }
     const gk = groupKeyOf(ch)
     const fl = gk ? flashes[gk] : undefined
     if (fl) {
@@ -661,13 +724,13 @@ function flashText(text: string, flashes: Flashes, clear: (ch: string) => void, 
 
 // Flash context threaded into the markdown inline renderer so Paragraph/Scale glyphs
 // flash too (same focused/unfocused model as Words).
-type FlashCtx = { flashes: Flashes; clear: (ch: string) => void; dragging: boolean }
+type FlashCtx = { flashes: Flashes; clear: (ch: string) => void; dragging: boolean; frozen?: Set<string> }
 
 // Markdown inline renderer that ALSO flash-wraps swap glyphs (composites included).
 // Mirrors renderInline's delimiters; each text run and each bold/italic/underline
 // inner run is flash-wrapped with a unique key prefix so sibling runs never collide.
 function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx, cmp?: CompareSpec | null): ReactNode {
-  const F = (s: string, kp: string) => flashText(s, fc.flashes, fc.clear, fc.dragging, kp)
+  const F = (s: string, kp: string) => flashText(s, fc.flashes, fc.clear, fc.dragging, kp, fc.frozen)
   if (!/[*_]/.test(text)) return F(text, '')
   const out: ReactNode[] = []
   let last = 0, k = 0, m: RegExpExecArray | null
@@ -787,7 +850,8 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   // Paragraph specimen, so here they fall back to Cal Sans.
   const cmp = state.compareOn && state.compare?.css ? state.compare : null
   const { flashes, clear, dragging } = useGeomFlash()
-  const [text, setText] = useState('Iʼll jag My cat, Guv 2160')
+  const gold = useFrozenGold(state.defaults.frozenFeatures)
+  const [text, setText] = useState('2160 just Groovy, I’ll Magic')
   const [focused, setFocused] = useState(false)
   return (
     <div className="stage-pad words-scene">
@@ -797,7 +861,7 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
         onBlur={e => { setText(e.currentTarget.textContent ?? ''); setFocused(false) }}>
         {/* Uncontrolled while focused: no onInput→setState, so typing never re-renders
             and never resets the caret. Text is captured on blur, then flash-wrapped. */}
-        {focused ? text : flashText(text, flashes, clear, dragging)}
+        {focused ? text : flashText(text, flashes, clear, dragging, '', gold?.chars)}
       </div>
     </div>
   )
@@ -873,7 +937,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
   // Comparing to a no-webfont referent with a static specimen → show the SVG instead.
   const cmp = state.compareOn && state.compare?.css ? state.compare : null
   const svgUrl = state.compareOn ? state.compare?.svg : undefined
-  const flash = useGeomFlash()
+  const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
 
   const [blocks, setBlocks] = useState<EBlock[]>(() => presetBlocks(source))
   const [focusedId, setFocusedId] = useState<string | null>(null)
@@ -997,7 +1061,7 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   const frozen = state.defaults.freezeOpsz ? Math.min(Math.max(state.defaults.frozenOpszValue ?? 14, 8), 45) : null
   const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? opszForSize(px, mult) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
-  const flash = useGeomFlash()
+  const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
   const [head, setHead] = useState(HEAD_WORD)
   const [body, setBody] = useState(PAIR_BODY)
   // Per-tier tracking/leading (Scale style menu); size stays Tailwind-fixed.

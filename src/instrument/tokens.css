@@ -28,6 +28,14 @@
   --marker-preview: #999;           /* ● PREVIEWING */
   --state-stock:    #c97050;        /* STOCK narrator only (= the A11Y zone hue) */
 
+  /* ── Freezer (ssXX/cvXX manual override) ──
+     Gold marks a glyph pinned off the GEOM continuum by a frozen feature — a
+     deliberately separate hue from the four GEOM zones (user directive: "color …
+     distinguishing ss-frozen from GEOM-driven"). The only warm accent besides the
+     A11Y terracotta, kept muted so it reads as "held" rather than an alert. */
+  --freeze-gold:     #d9a441;
+  --freeze-gold-dim: rgba(217, 164, 65, .16);
+
   /* ── Zones (reuse existing exactly) ── */
   --zone-a11y:       #c97050;
   --zone-ui:         #999;

@@ -676,8 +676,71 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-seam--up { color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
 .rail-seam--up:hover:not(:disabled) { color: rgba(232,232,232,.6); }
 
-.rail-matrix, .rail-blank { display: flex; flex-direction: column; gap: 14px; }
+.rail-matrix, .rail-blank, .rail-freezer, .rail-vmetrics { display: flex; flex-direction: column; gap: 14px; }
 .rail-blank-body { min-height: 260px; }
+
+/* ── ssXX Freezer (rail group 2) ── Keynote Typography-panel rows: base → variant in
+   the live font, name, toggle. Gold = frozen (held off the GEOM continuum). */
+.freezer { display: flex; flex-direction: column; padding: 0 7px; }
+.freezer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.freezer-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.freezer-reset {
+  font-family: var(--ui-font); font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+  padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer; background: none;
+}
+.freezer-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-3); }
+.freezer-reset:hover:not(:disabled) { background: var(--surface-2); }
+.freezer-reset:disabled { color: var(--text-faint); font-weight: 400; cursor: default; }
+
+.freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
+.freezer-section-title {
+  font-family: var(--ui-font); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-dim); padding: 10px 4px 4px;
+}
+.freezer-list { display: flex; flex-direction: column; }
+.freezer-row {
+  display: grid; grid-template-columns: auto 1fr 18px; align-items: center; gap: 9px;
+  width: 100%; padding: 5px 6px; border: none; background: none; cursor: pointer; text-align: left;
+  border-radius: 6px;
+}
+.freezer-row:hover { background: var(--surface-2); }
+
+/* before → after aligned around the arrow (Keynote): a fixed before-cell so the before
+   glyphs share a left edge, a fixed arrow column so the arrows form a vertical line, and
+   the after glyph flowing right. No overflow clip — descenders (g/j/y) must show. */
+.freezer-ba {
+  display: grid; grid-template-columns: 30px auto auto; align-items: baseline;
+  column-gap: 7px; font-size: 15px; line-height: 1.4;
+}
+/* before right-aligned (hugs the arrow) + after left-aligned, with equal gaps around
+   the arrow → arrows sit centered between the pair and still line up down the column. */
+.freezer-glyph { color: var(--text-dim); text-align: right; }
+.freezer-glyph--after { color: var(--text-muted); text-align: left; }
+.freezer-glyph--after.on { color: var(--freeze-gold); }
+.freezer-arrow { font-size: 10px; color: var(--text-faint); }
+
+/* Single-line name; ellipsis rather than wrap/overlap if a label still runs long. */
+.freezer-name {
+  font-family: var(--ui-font); font-size: 12.5px; color: var(--text-muted);
+  min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.freezer-row.on .freezer-name { color: var(--text); }
+
+/* Rounded checkbox: neutral checked state (accent, NOT gold — gold is reserved for the
+   swapped glyphs themselves, in the specimen and the "after" sample). */
+.freezer-check {
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+  width: 18px; height: 18px; border-radius: 5px;
+  background: var(--surface-3); border: 1px solid var(--border); color: transparent;
+  transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
+}
+.freezer-row:hover .freezer-check { border-color: var(--text-dim); }
+.freezer-check.on {
+  background: var(--accent); border-color: var(--accent); color: var(--bg);
+}
+
+.freezer-note { font-size: 11px; color: var(--text-dim); line-height: 1.5; margin-top: 14px; padding: 0 4px; }
+.freezer-note-gold { color: var(--freeze-gold); font-weight: 600; }
 
 /* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
    next rides up from below. Ascend (up-seam): the mirror — current slides DOWN + out,

@@ -31,7 +31,7 @@ const appScript = appHtml.match(/<script type="module"[^>]*><\/script>/)?.[0]
 const appCss = appHtml.match(/<link rel="stylesheet"[^>]*>/)?.[0]
 if (!appScript || !appCss) throw new Error('[seo] could not find app asset tags in dist/index.html')
 
-const SPECIMEN = 'Ill jag My cat, Guv 2160'   // exercises I l a g G j y t + figures
+const SPECIMEN = '2160 just Groovy, I’ll Magic'   // exercises I l a g G j y t + figures
 
 function page(p, all) {
   const url = `${ORIGIN}${BASE}/${p.slug}/`
