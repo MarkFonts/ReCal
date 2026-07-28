@@ -14,7 +14,10 @@
   grid-area: rail;
   border-right: 1px solid var(--border);
   background: var(--surface-1);
-  padding: 20px 16px;
+  /* No vertical padding: it lives on the header (below) so the sticky seams pin flush
+     to the rail's top/bottom edges — padding here would leave a strip above/below a
+     stuck seam that scrolling content bleeds through. */
+  padding: 0 16px;
   overflow-y: auto;
   scrollbar-gutter: stable;
   display: flex;
@@ -38,7 +41,7 @@
   white-space: nowrap;
 }
 .rail--collapsed:hover .rail-collapsed-label { color: var(--text); }
-.rail-header { display: flex; flex-direction: column; gap: 3px; }
+.rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: 20px; }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */
 .rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -651,29 +654,29 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    muted one (top of the matrix) pushes the matrix back down. */
 .rail-seam {
   all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
-  gap: 10px; cursor: pointer; user-select: none; padding: 14px 16px;
+  width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
+  gap: 10px; cursor: pointer; user-select: none; padding: 20px 16px;
   font-family: var(--ui-font); font-size: 12px; letter-spacing: .18em;
+  /* Pin to the rail's scroll edges: the up-seam sticks to the top, the down-seam to the
+     bottom, so a seam stays flush with the viewport while the panel scrolls past — and
+     only slides in normal flow once the panel's own edge reaches it. Opaque bg + z so
+     the scrolling content passes cleanly behind. */
+  position: sticky; z-index: 4; background: var(--surface-1);
 }
 .rail-seam:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 .rail-seam-chv { width: 20px; height: 9px; display: block; }
 .rail-seam-lbl { white-space: nowrap; }
 
-.rail-seam--down { color: #b9c4d6; border-top: 1px solid var(--border-subtle); }
-.rail-seam--down .rail-seam-lbl {
-  background-image: linear-gradient(100deg,#6ad0ff 0%,#8affd6 18%,#d9a6ff 34%,#ffb0e6 48%,#ffe08a 62%,#7fffd0 78%,#6ab8ff 100%);
-  background-size: 260% auto; -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent; color: transparent;
-  animation: rail-holo 5.5s linear infinite;
-}
-@keyframes rail-holo { to { background-position: 260% center; } }
+.rail-seam--down { bottom: 0; color: #b9c4d6; border-top: 1px solid var(--border-subtle); }
+/* ↓ Holographic seam tab — the fill, motion, V chevrons and hover weight all live in
+   holo.css (imported by Shell.tsx), tunable from the custom properties at its top. */
 
 /* App.css has a global button:hover that paints buttons white — override it so the
    seam NEVER flashes white in dark mode. :not(:disabled) wins the specificity race. */
 .rail-seam:hover:not(:disabled),
 .rail-seam:focus-visible:not(:disabled) { background: var(--surface-2); }
-.rail-seam--down:hover:not(:disabled) .rail-seam-lbl { filter: brightness(1.2); }
 
-.rail-seam--up { color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
+.rail-seam--up { top: 0; color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
 .rail-seam--up:hover:not(:disabled) { color: rgba(232,232,232,.6); }
 
 .rail-matrix, .rail-blank, .rail-freezer, .rail-vmetrics { display: flex; flex-direction: column; gap: 14px; }
@@ -721,7 +724,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 /* Single-line name; ellipsis rather than wrap/overlap if a label still runs long. */
 .freezer-name {
-  font-family: var(--ui-font); font-size: 12.5px; color: var(--text-muted);
+  font-family: var(--ui-font); font-size: 11px; color: var(--text-dim);
   min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .freezer-row.on .freezer-name { color: var(--text); }

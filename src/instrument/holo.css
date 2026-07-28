@@ -1,0 +1,72 @@
+/* ═══════════════════════════════════════════════════════════════════════════════════
+   Holographic seam tab — the whole effect in ONE place: the colour band + brushed-metal
+   base gradient, its motion, the V chevrons, and the hover weight/brightness. Tune the
+   entire look from the custom properties in :root below (size, speed, metal colour,
+   hover weight) — the rest rarely needs touching. Applied to the rail's down-seam label.
+   Imported by Shell.tsx alongside shell.css.
+   ═══════════════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* ── motion ── */
+  --holo-sweep:        14.3s;   /* one colour-band sweep + pause cycle (bigger = slower) */
+  --holo-drift:        3s;      /* metal base drift speed */
+  /* ── size ── */
+  --holo-band-size:    200%;    /* colour-band width (bigger = wider band) */
+  --holo-metal-size:   200%;    /* metal base scale */
+  /* ── metal base colour (dark ↔ light brushed metal) ── */
+  --holo-metal-dark:   #545454;
+  --holo-metal-light:  #b5b5b5;
+  /* ── hover weight ── */
+  --holo-weight:       550;
+  --holo-weight-hover: 700;
+  --holo-hover-ease:   .25s;
+}
+
+/* Registered so the sweep/drift positions can animate (a plain custom prop can't). */
+@property --holo0 { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+@property --holo1 { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
+
+/* The holographic fill: a composite diffraction colour band — 3 colour sub-bands + a
+   white specular, hard-edged with a colour gradient inside (opacities 100/75/100/50) —
+   that sweeps L→R then pauses, SCREENED over a dark→light brushed-metal base that slowly
+   drifts. Clipped to the text; the V chevrons live inside the label so they share it. */
+.rail-seam--down .rail-seam-lbl {
+  background-image:
+    linear-gradient(90deg,
+      transparent 0 40%,
+      rgba(255,30,168,0) 40%, #ff1ea8 41.25%, #ffe600 42.5%, #21ff6a 43.75%, #1a3cff 45%,
+      transparent 45% 47%,
+      rgba(255,30,168,.75) 47%, rgba(255,230,0,.75) 48.5%, rgba(26,60,255,.75) 50%,
+      transparent 50% 53%,
+      rgba(255,255,255,0) 53%, #ffffff 53.5%, rgba(255,255,255,0) 54%,
+      transparent 54% 57%,
+      rgba(255,30,168,0) 57%, rgba(255,30,168,.5) 58%, rgba(255,230,0,.5) 59%, rgba(26,60,255,.5) 60%,
+      transparent 60%),
+    linear-gradient(100deg, var(--holo-metal-dark) 0%, var(--holo-metal-light) 28%,
+      var(--holo-metal-dark) 52%, var(--holo-metal-light) 78%, var(--holo-metal-dark) 100%);
+  background-size: var(--holo-band-size) 100%, var(--holo-metal-size) 100%;
+  background-position: var(--holo1) center, var(--holo0) center;
+  background-repeat: no-repeat;
+  background-blend-mode: screen, normal;   /* colour band screens over the moving metal → luminous */
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: holo-0 var(--holo-drift) linear infinite, holo-1 var(--holo-sweep) ease-out infinite;
+}
+@keyframes holo-0 { from { --holo0: 100%; } to { --holo0: 0%; } }
+/* colour band: sweep across (first ~43% of the cycle), then hold off-screen for the pause */
+@keyframes holo-1 { 0% { --holo1: 125%; } 42.86% { --holo1: -25%; } 100% { --holo1: -25%; } }
+.rail-seam--down:hover:not(:disabled) .rail-seam-lbl { filter: brightness(1.2); }
+
+/* Weight: all seam tabs (word + V's) rest at --holo-weight, easing to --holo-weight-hover
+   on hover. The word rides font-weight; the V chevrons ride font-variation-settings. */
+.rail-seam-lbl { font-weight: var(--holo-weight); transition: font-weight var(--holo-hover-ease) ease; }
+.rail-seam:hover .rail-seam-lbl { font-weight: var(--holo-weight-hover); }
+.rail-seam-chv-t {
+  /* capital V at max SHRP (crisp point) = the chevron, two em-spaces off the word. No
+     transform — a transform on a background-clip:text child drops the shared fill and the
+     V vanishes; kept inline so it rides the word's one synced gradient. */
+  margin: 0 2em; letter-spacing: 0;
+  font-variation-settings: 'wght' var(--holo-weight), 'SHRP' 100;
+  transition: font-variation-settings var(--holo-hover-ease) ease;
+}
+.rail-seam:hover .rail-seam-chv-t { font-variation-settings: 'wght' var(--holo-weight-hover), 'SHRP' 100; }

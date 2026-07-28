@@ -2,6 +2,7 @@
 // Live font via CalSansVF + effective(); GEOM glyph swaps render through the font's
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
+import './holo.css'
 import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
@@ -226,18 +227,18 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       </div>
 
       <button className="rail-seam rail-seam--down" onClick={() => go(1, 'fwd')}>
-        <SeamChevron /><span className="rail-seam-lbl">TYPE MATRIX</span><SeamChevron />
+        <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>TYPE MATRIX<span className="rail-seam-chv-t">V</span></span>
       </button>
       </>)}
 
       {group === 1 && (
       <div className="rail-matrix">
         <button className="rail-seam rail-seam--up" onClick={() => go(0, 'back')}>
-          <SeamChevron /><span className="rail-seam-lbl">TYPE MATRIX</span><SeamChevron />
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>TYPE MATRIX<span className="rail-seam-chv-t">V</span></span>
         </button>
         <Matrix />
         <button className="rail-seam rail-seam--down" onClick={() => go(2, 'fwd')}>
-          <SeamChevron /><span className="rail-seam-lbl">FREEZER</span><SeamChevron />
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>FREEZER<span className="rail-seam-chv-t">V</span></span>
         </button>
       </div>
       )}
@@ -245,11 +246,11 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 2 && (
       <div className="rail-freezer">
         <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
-          <SeamChevron /><span className="rail-seam-lbl">TYPE MATRIX</span><SeamChevron />
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>TYPE MATRIX<span className="rail-seam-chv-t">V</span></span>
         </button>
         <Freezer />
         <button className="rail-seam rail-seam--down" onClick={() => go(3, 'fwd')}>
-          <SeamChevron /><span className="rail-seam-lbl">VERTICAL METRICS</span><SeamChevron />
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>VERTICAL METRICS<span className="rail-seam-chv-t">V</span></span>
         </button>
       </div>
       )}
@@ -257,11 +258,11 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 3 && (
       <div className="rail-vmetrics">
         <button className="rail-seam rail-seam--up" onClick={() => go(2, 'back')}>
-          <SeamChevron /><span className="rail-seam-lbl">FREEZER</span><SeamChevron />
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>FREEZER<span className="rail-seam-chv-t">V</span></span>
         </button>
         <div className="rail-blank-body" />
         <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
-          <SeamChevron /><SeamChevron />
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span><span className="rail-seam-chv-t">V</span></span>
         </button>
       </div>
       )}
