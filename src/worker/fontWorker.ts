@@ -566,6 +566,26 @@ _t_inst = time.perf_counter()
 if auto_ascender:
     _graft_avar2(result)
 
+# Vertical metrics → OS/2 (typo asc/desc/gap, win asc/desc, USE_TYPO bit) + hhea
+# (asc/desc/gap). Metrics are global, so this is safe after instancing. The WORDMARK
+# default equals the shipped values, so a default config writes them back unchanged.
+vm = config.get('vmetrics')
+if vm:
+    _os2 = result['OS/2']
+    _hh = result['hhea']
+    _os2.sTypoAscender = int(vm['typo']['asc'])
+    _os2.sTypoDescender = int(vm['typo']['desc'])
+    _os2.sTypoLineGap = int(vm['typo']['gap'])
+    _os2.usWinAscent = int(vm['win']['asc'])
+    _os2.usWinDescent = int(vm['win']['desc'])
+    _hh.ascent = int(vm['hhea']['asc'])
+    _hh.descent = int(vm['hhea']['desc'])
+    _hh.lineGap = int(vm['hhea']['gap'])
+    if vm['useTypo']:
+        _os2.fsSelection |= (1 << 7)          # USE_TYPO_METRICS
+    else:
+        _os2.fsSelection &= ~(1 << 7)
+
 _set_recal_names(result)
 out = io.BytesIO()
 result.save(out)

@@ -9,6 +9,7 @@
 
 import { GROUP_DEFS } from '../GlyphGroups'
 import type { CompareSpec } from './boot'
+import { DEFAULT_VMETRICS, type VMetrics } from './vmetrics'
 
 export type AxisMap = Record<string, number>
 
@@ -36,6 +37,7 @@ export interface DefaultsLayer {
   autoAscender: boolean                         // ◆ graft avar2 so YTAS tracks opsz
   frozenFeatures: string[]                      // ◆ ssXX/cvXX pinned as manual overrides
                                                 //   (baked into the default forms + features stripped on export)
+  vmetrics: VMetrics                            // ◆ OS/2 + hhea vertical metrics (baked on export)
 }
 
 export type PreviewLayer = AxisMap              // ● transient per-axis overrides (incl. ital)
@@ -56,13 +58,17 @@ export interface InstrumentState {
   compare: CompareSpec | null                   // referent webfont on a fused compare page (BOOT)
   compareOn: boolean                            // specimen text swapped to the referent font
   rebuilding: boolean                           // Pyodide preview recompile in flight (◆ edits)
+  railGroup: number                             // rail descent section: 0 tune · 1 matrix · 2 freezer · 3 vmetrics
 }
 
 const cloneThresholds = (t: Record<string, number[]>): Record<string, number[]> =>
   Object.fromEntries(Object.entries(t).map(([k, v]) => [k, [...v]]))
 
+const cloneVMetrics = (v: VMetrics): VMetrics =>
+  ({ ...v, hhea: { ...v.hhea }, typo: { ...v.typo }, win: { ...v.win } })
+
 const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
-  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures] })
+  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics) })
 
 export function shippedThresholds(): Record<string, number[]> {
   return Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
@@ -81,6 +87,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       frozenOpszValue: null,
       autoAscender: false,
       frozenFeatures: [],
+      vmetrics: cloneVMetrics(DEFAULT_VMETRICS),
     },
     preview: {},
     stockHold: false,
@@ -94,6 +101,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
     compare,
     compareOn: false,
     rebuilding: false,
+    railGroup: 0,
   }
 }
 
@@ -132,6 +140,7 @@ export const defaultsDirty = (s: InstrumentState): boolean =>
   s.defaults.frozenOpszValue !== null ||
   s.defaults.autoAscender ||
   s.defaults.frozenFeatures.length > 0 ||
+  s.defaults.vmetrics.preset !== DEFAULT_VMETRICS.preset ||
   s.activePreset !== null
 
 // ── Actions / reducer ───────────────────────────────────────────────────────────
@@ -148,6 +157,8 @@ export type Action =
   | { type: 'setFrozenOpszValue'; value: number | null }
   | { type: 'setAutoAscender'; value: boolean }
   | { type: 'toggleFrozenFeature'; tag: string }             // freezer: pin/unpin an ssXX/cvXX form
+  | { type: 'setVMetrics'; value: VMetrics }                 // vmetrics: preset or hand-tuned metrics
+  | { type: 'setRailGroup'; group: number }                  // rail descent section (transient UI)
   | { type: 'setActivePreset'; name: string | null }
   | { type: 'setUseHoi'; value: boolean }
   | { type: 'setBuildName'; name: string }
@@ -197,6 +208,10 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       const next = cur.includes(a.tag) ? cur.filter(t => t !== a.tag) : [...cur, a.tag]
       return { ...s, defaults: { ...s.defaults, frozenFeatures: next } }
     }
+    case 'setVMetrics':
+      return { ...s, defaults: { ...s.defaults, vmetrics: a.value } }
+    case 'setRailGroup':
+      return s.railGroup === a.group ? s : { ...s, railGroup: a.group }
     case 'setActivePreset':
       return { ...s, activePreset: a.name }
     case 'setUseHoi':
@@ -211,7 +226,7 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       // Preview (●) is the Return pill's job; HOI (rendering mode) and buildName
       // (naming choice) aren't bake-target adjustments — all preserved (§3.3).
       const fresh = createInitialState(s.shipped, s.compare)
-      return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName, recalMode: s.recalMode }
+      return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName, recalMode: s.recalMode, railGroup: s.railGroup }
     }
     case 'pushHistory':
       return { ...s, past: [...s.past, cloneDefaults(s.defaults)], future: [] }

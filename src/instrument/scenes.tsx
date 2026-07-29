@@ -12,6 +12,7 @@ import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
 import { SUBS } from '../data/substitutions'
 import { BOOT, type CompareSpec } from './boot'
+import { effectiveLineHeightEm, capShiftEm } from './vmetrics'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -940,6 +941,11 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
   const cmp = state.compareOn && state.compare?.css ? state.compare : null
   const svgUrl = state.compareOn ? state.compare?.svg : undefined
   const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
+  // On the Vertical Metrics tab, drive line spacing (vmLH) and the cap-position shift
+  // (vmShift) from the chosen metrics, so a preset change reflows the paragraph and slides
+  // the caps within each line — a simulation of the export's line box, no re-baking.
+  const vmLH = state.railGroup === 3 ? effectiveLineHeightEm(state.defaults.vmetrics) : null
+  const vmShift = state.railGroup === 3 ? capShiftEm(state.defaults.vmetrics) : 0
 
   const [blocks, setBlocks] = useState<EBlock[]>(() => presetBlocks(source))
   const [focusedId, setFocusedId] = useState<string | null>(null)
@@ -1026,7 +1032,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type}`}
-              style={{ fontSize: st.size, lineHeight: st.leading, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
+              style={{ fontSize: st.size, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
@@ -1066,10 +1072,14 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
   const [head, setHead] = useState(HEAD_WORD)
   const [body, setBody] = useState(PAIR_BODY)
+  // On the Vertical Metrics tab, line height + the cap-position shift come from the metrics
+  // (a preset change reflows the waterfall and slides the caps — visible at these sizes).
+  const vmLH = state.railGroup === 3 ? effectiveLineHeightEm(state.defaults.vmetrics) : null
+  const vmShift = state.railGroup === 3 ? capShiftEm(state.defaults.vmetrics) : 0
   // Per-tier tracking/leading (Scale style menu); size stays Tailwind-fixed.
   const tierStyle = (key: string) => {
     const st = scaleStyles[key] ?? { tracking: 0, leading: 1.4 }
-    return { letterSpacing: `${st.tracking / 100}em`, lineHeight: st.leading }
+    return { letterSpacing: `${st.tracking / 100}em`, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined }
   }
   return (
     <div className="stage-pad">

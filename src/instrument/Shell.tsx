@@ -22,6 +22,7 @@ import { PRESETS, applyPreset } from './presets'
 import { useFontEngine } from './useFontEngine'
 import { Matrix } from './Matrix'
 import { Freezer } from './Freezer'
+import { VMetricsPanel, VMetricsScene } from './VMetricsView'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
@@ -96,12 +97,13 @@ function SeamChevron() {
 function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
   // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = Freezer · 3 = Vertical Metrics.
-  const [group, setGroup] = useState(0)
+  // Lives in the store so the canvas can swap to the metrics preview on group 3.
+  const group = state.railGroup
   const [leaving, setLeaving] = useState(false)
   const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
   // Descend (down-seam): current slides up + out, next rides up from below.
   // Ascend (up-seam): the opposite — current slides down + out, next comes from above.
-  const go = (i: number, d: 'fwd' | 'back') => { setDir(d); setLeaving(true); setTimeout(() => { setGroup(i); setLeaving(false) }, 150) }
+  const go = (i: number, d: 'fwd' | 'back') => { setDir(d); setLeaving(true); setTimeout(() => { dispatch({ type: 'setRailGroup', group: i }); setLeaving(false) }, 150) }
   const tag = TAG_TEXT[stateTag(state)]
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
@@ -246,7 +248,7 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 2 && (
       <div className="rail-freezer">
         <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>TYPE MATRIX<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>FREEZER<span className="rail-seam-chv-t">V</span></span>
         </button>
         <Freezer />
         <button className="rail-seam rail-seam--down" onClick={() => go(3, 'fwd')}>
@@ -258,12 +260,14 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 3 && (
       <div className="rail-vmetrics">
         <button className="rail-seam rail-seam--up" onClick={() => go(2, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>FREEZER<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>VERTICAL METRICS<span className="rail-seam-chv-t">V</span></span>
         </button>
-        <div className="rail-blank-body" />
+        <VMetricsPanel ytasPin={<Pin tag="YTAS" label="Ascender" />} />
+        {/* Vertical Metrics is the last section — no down-seam (its rule + chevrons removed).
+            Restore this button if a section is ever added below it.
         <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
           <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span><span className="rail-seam-chv-t">V</span></span>
-        </button>
+        </button> */}
       </div>
       )}
       </div>{/* /rail-descent */}
@@ -522,6 +526,10 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const [glyphSet, setGlyphSet] = useState('All')
   const [showInfo, setShowInfo] = useState(false)
   const ls = `${tracking / 100}em`
+  // On the Vertical Metrics rail tab the Words scene swaps for the metrics preview; the
+  // other scenes stay themselves (so you can see the metrics' effect in a real paragraph/UI).
+  const { state: inst } = useInstrument()
+  const vmActive = inst.railGroup === 3 && mode === 'words'
 
   // Editable per-block paragraph styles + which one the TYPE controls target.
   const [paraStyles, setParaStyles] = useState<ParaStyles>(DEFAULT_PARA_STYLES)
@@ -550,7 +558,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const tSetLeading = isPara ? (v: number) => patchPara({ leading: v }) : isScale ? (v: number) => patchScale({ leading: v }) : setLeading
 
   return (
-    <div className="canvas">
+    <div className={`canvas${vmActive ? ' canvas--vm' : ''}`}>
       <div className="canvas-bar">
         <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
       </div>
@@ -564,15 +572,17 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
           bottom ● preview/DEMO dock and drops the reserved play-bar padding → full height. */}
-      <div className={`canvas-body${mode === 'ui' ? ' canvas-body--full' : ''}`}>
+      <div className={`canvas-body${mode === 'ui' && !vmActive ? ' canvas-body--full' : ''}${vmActive ? ' canvas-body--vm' : ''}`}>
         <div className="stage">
-          <div className={`stage-scroll${mode === 'ui' ? ' stage-scroll--flush' : ''}`}>
-            <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-              source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
-              paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers} />
+          <div className={`stage-scroll${mode === 'ui' && !vmActive ? ' stage-scroll--flush' : ''}${vmActive ? ' stage-scroll--bleed' : ''}`}>
+            {vmActive
+              ? <VMetricsScene />
+              : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
+                  source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
+                  paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers} />}
           </div>
         </div>
-        {mode !== 'ui' && (
+        {(mode !== 'ui' || vmActive) && (
           <PreviewSurface
             size={size} setSize={setSize}
             tracking={tracking} setTracking={setTracking}
@@ -581,10 +591,10 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
             opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
         )}
       </div>
-      <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
+      {!vmActive && <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
         leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
         activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
-        selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles} />
+        selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles} />}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
@@ -626,6 +636,9 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
         if (openRef.current) setOpen(false)
         return
       }
+      // Over the left rail (e.g. reaching the bottom seam buttons) — never bloom the dock;
+      // the rail overlaps the bar's full width, so the south edge shouldn't trigger it.
+      if (e.target instanceof Element && e.target.closest('.rail')) return
       const rect = surf.getBoundingClientRect()
       const focused = surf.contains(document.activeElement)
       // Open ONLY when actually over the bar (no preemptive proximity bloom — the
@@ -752,6 +765,7 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
       autoAscender: d.autoAscender,
       thresholds: d.glyphThresholds,
       frozenFeatures: d.frozenFeatures,
+      vmetrics: d.vmetrics,
     }
   }
   const cfgRef = useRef(buildConfig)

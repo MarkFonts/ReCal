@@ -15,6 +15,7 @@ import './coss.css'
 import { useState, useEffect, useLayoutEffect, useRef, useCallback, Fragment, type CSSProperties, type ReactNode } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { renderVarSettings } from './render'
+import { effectiveLineHeightEm, capShiftEm } from './vmetrics'
 import type { SceneProps } from './scenes'
 
 type Particle = { name: string; desc: string; node: ReactNode; wide?: boolean; pop?: boolean }
@@ -278,7 +279,7 @@ function TabsCtl({ tabs, body }: { tabs: string[]; body: string }) {
   return (
     <div>
       <div className="ui-tabs">{tabs.map((t, i) => <span key={t} className={`ui-tab${i === sel ? ' on coss-b' : ''}`} onClick={() => setSel(i)}>{t}</span>)}</div>
-      <p className="ui-muted" style={{ fontSize: 12.5, lineHeight: 1.45, margin: 0 }}>{body}</p>
+      <p className="ui-muted" style={{ fontSize: 12.5, lineHeight: 'var(--vm-lh, 1.45)', margin: 0 }}>{body}</p>
     </div>
   )
 }
@@ -572,7 +573,7 @@ function makeParticles(v: number): Particle[] {
           <span className="ui-avatar coss-b" style={{ width: 34, height: 34, marginLeft: 0 }}>{ini(at(NAMES, v))}</span>
           <div><div className="coss-b" style={{ fontSize: 13.5 }}>{at(NAMES, v)}</div><div className="ui-muted" style={{ fontSize: 12 }}>@{at(HANDLES, v)}</div></div>
         </div>
-        <div className="ui-muted" style={{ fontSize: 12, marginTop: 9, lineHeight: 1.45 }}>{at(ROLES, v)} in {at(CITIES, v)}. Booked 128 meetings this year.</div>
+        <div className="ui-muted" style={{ fontSize: 12, marginTop: 9, lineHeight: 'var(--vm-lh, 1.45)' }}>{at(ROLES, v)} in {at(CITIES, v)}. Booked 128 meetings this year.</div>
       </div>
     ) },
     { name: 'Login', desc: 'A sign-in form with email and password.', node: (
@@ -631,6 +632,13 @@ export default function CossScene({ featStr }: SceneProps) {
     ['--w-default' as string]: String(defWght),
     ['--w-bold' as string]: String(boldWght),
     ['--vs' as string]: bodyVs,
+    // On the Vertical Metrics tab, text reads its line-height (--vm-lh) and cap-position
+    // shift (--vm-shift) from these vars, so a preset change re-spaces the board and slides
+    // the caps in the labels/buttons. Both fall back to no-op elsewhere.
+    ...(state.railGroup === 3 ? {
+      ['--vm-lh' as string]: String(effectiveLineHeightEm(state.defaults.vmetrics)),
+      ['--vm-shift' as string]: `${capShiftEm(state.defaults.vmetrics)}em`,
+    } : {}),
   }
 
   // ── 2D infinite board ───────────────────────────────────────────────────────────
@@ -724,7 +732,7 @@ export default function CossScene({ featStr }: SceneProps) {
 
   return (
     <div className="coss-strip" ref={stripRef} onScroll={onScroll}>
-      <div className="coss-board" style={style}>
+      <div className={`coss-board${state.railGroup === 3 ? ' coss--vm' : ''}`} style={style}>
         {cols.map(({ c, tiles }) => (
           <div key={c} className={`coss-col${tiles.some(t => t.wide) ? ' coss-col--wide' : ''}`}>
             {tiles.map(p => (

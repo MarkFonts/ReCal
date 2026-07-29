@@ -240,3 +240,35 @@
   100%    { color: var(--text); }
 }
 
+
+/* ── Vertical Metrics preview (canvas, on the Vertical Metrics rail tab) ─────────
+   "Ắ Match fpv" with reference lines measured live off the current instance (SVG
+   getBBox honours the variation settings), plus black bars showing how some apps
+   crop to the win box — tighten the ascent below Ắ's 993 and the top bar bites it. */
+/* The black stage IS the letterbox: it fills the whole preview, and the content band is
+   flex-centred within it (like the Words specimen), so the specimen sits at the vertical
+   centre and the black reaches every edge. The band's width is 100% at a fixed viewBox
+   width → constant scale, so a bolder weight never rescales it. */
+/* The whole canvas goes black on this tab (under the tabs, EDIT mode and the dock), so the
+   letterbox is full-bleed. The stage keeps the normal tab layout, so the specimen centres
+   exactly where the Words specimen does and the dock overlays without shifting it. */
+.canvas--vm, .canvas--vm .mode-row, .canvas--vm .canvas-bar { background: #000; }
+.canvas-body--vm { background: #000; }
+/* Padding matches the normal scroll box (40 top / 64 bottom) so the band centres exactly
+   where the Words specimen does; the black bg paints under the padding, staying full-bleed. */
+.vmetrics-stage { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 40px 0 64px; box-sizing: border-box; overflow: hidden; background: #000; }
+.vm-svg { display: block; width: 100%; height: auto; }
+.vm-slot { fill: var(--bg); }
+/* editable specimen (inside the SVG via foreignObject, so it scales with the metric lines) */
+.vm-spec-edit { color: var(--text); outline: none; white-space: nowrap; width: max-content; caret-color: var(--text); }
+
+.vm-line { stroke: var(--text-dim); stroke-width: 1; }
+.vm-line.vm-line--base { stroke: var(--text-muted); }
+.vm-line.vm-cropedge { stroke: var(--state-stock); stroke-width: 2; stroke-dasharray: 7 5; }
+.vm-line-lbl { fill: var(--text-muted); font-family: var(--ui-font); font-size: 25px; }
+.vm-crop-lbl { fill: var(--state-stock); font-family: var(--ui-font); font-size: 25px; }
+
+/* The letterbox bars are translucent, not opaque: over empty stage they read as solid black
+   (black on black), but a glyph poking into the clip zone shows through dimmed — suggesting
+   "this gets clipped" rather than chopping it off. */
+.vm-crop { fill: #000; opacity: .72; }

@@ -52,7 +52,7 @@
 }
 .coss-card-head { padding: 15px 17px 13px; }
 .coss-card-name { font-size: 18px; line-height: 1.1; font-weight: var(--w-bold, 640); }
-.coss-card-desc { font-size: 12.5px; line-height: 1.35; color: var(--text-muted); margin-top: 5px; }
+.coss-card-desc { font-size: 12.5px; line-height: var(--vm-lh, 1.35); color: var(--text-muted); margin-top: 5px; }
 .coss-card-body {
   flex: 1;
   padding: 18px 17px;
@@ -91,7 +91,7 @@
 .ui-help { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; }
 /* contentEditable field — text caret (not the pointer .ui-field would give), min height.
    .ui-field.ui-editable beats the later `.ui-field { cursor: pointer }` interactive rule. */
-.ui-field.ui-editable { cursor: text; outline: none; min-height: 62px; line-height: 1.5; }
+.ui-field.ui-editable { cursor: text; outline: none; min-height: 62px; line-height: var(--vm-lh, 1.5); }
 .ui-field.ui-editable:focus { border-color: var(--text-muted); }
 
 .ui-chip {
@@ -123,7 +123,7 @@
   cursor: pointer; transition: color .12s ease;
 }
 .ui-acc-row:hover { color: var(--text); }
-.ui-acc-ans { font-size: 12.5px; color: var(--text-muted); padding: 8px 0 2px; line-height: 1.45; }
+.ui-acc-ans { font-size: 12.5px; color: var(--text-muted); padding: 8px 0 2px; line-height: var(--vm-lh, 1.45); }
 .ui-chev { color: var(--text-dim); font-size: 11px; }
 
 .ui-alert { display: flex; gap: 10px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 9px; }
@@ -132,7 +132,7 @@
   display: grid; place-items: center; font-size: 12px; color: var(--bg); background: #e0603a;
 }
 .ui-alert-title { font-size: 13px; }
-.ui-alert-msg { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: 1.4; }
+.ui-alert-msg { font-size: 12px; color: var(--text-muted); margin-top: 2px; line-height: var(--vm-lh, 1.4); }
 
 .ui-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
 .ui-table th { text-align: left; color: var(--text-muted); font-weight: inherit; padding: 5px 6px; border-bottom: 1px solid var(--border); }
@@ -196,7 +196,7 @@
 }
 .ui-toast { box-shadow: 0 6px 20px rgba(0, 0, 0, .35); }
 .ui-toast-title, .ui-dialog-title { font-size: 13.5px; }
-.ui-toast-sub, .ui-dialog-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.ui-toast-sub, .ui-dialog-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: var(--vm-lh, 1.4); }
 .ui-dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
 
 .ui-seg { display: inline-flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
@@ -211,7 +211,7 @@
 
 .ui-empty { text-align: center; padding: 6px 4px; }
 .ui-empty-h { font-size: 15px; }
-.ui-empty-p { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 12px; line-height: 1.45; }
+.ui-empty-p { font-size: 12.5px; color: var(--text-muted); margin: 6px 0 12px; line-height: var(--vm-lh, 1.45); }
 
 .ui-sep { height: 1px; background: var(--border-subtle); margin: 5px 0; }
 
@@ -280,7 +280,7 @@
 /* Card */
 .ui-card2 { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--surface-1); }
 .ui-card2-h { font-size: 14px; }
-.ui-card2-p { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: 1.4; }
+.ui-card2-p { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: var(--vm-lh, 1.4); }
 
 /* Calendar */
 .ui-cal-head { display: flex; align-items: center; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
@@ -299,7 +299,7 @@
 .ui-chart-x span { flex: 1; text-align: center; font-size: 10px; color: var(--text-dim); }
 
 /* Code block */
-.ui-code { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: 1.6; color: var(--text-muted); font-feature-settings: 'tnum' 1; overflow: hidden; }
+.ui-code { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: var(--vm-lh, 1.6); color: var(--text-muted); font-feature-settings: 'tnum' 1; overflow: hidden; }
 .ui-code .k { color: var(--text); }
 
 /* Kbd shortcut row */
@@ -361,4 +361,14 @@
 .scene-loading {
   display: flex; align-items: center; justify-content: center;
   gap: 10px; height: 60vh; color: var(--text-muted); font-size: 15px;
+}
+
+/* Vertical Metrics tab: text slides by the cap-position shift (--vm-shift, an em translate
+   set on the board). Scoped to .coss--vm so no transform/stacking context is created off
+   the tab. Applied to text-bearing leaves — labels, names, body, buttons, stats. */
+.coss--vm .coss-card-name, .coss--vm .coss-card-desc, .coss--vm .ui-muted,
+.coss--vm .ui-acc-ans, .coss--vm .ui-alert-msg, .coss--vm .ui-toast-sub,
+.coss--vm .ui-dialog-sub, .coss--vm .ui-empty-p, .coss--vm .ui-card2-p,
+.coss--vm .ui-code, .coss--vm .ui-stat-num, .coss--vm .coss-b, .coss--vm .ui-btn {
+  transform: translateY(var(--vm-shift, 0));
 }

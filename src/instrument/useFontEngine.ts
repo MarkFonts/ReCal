@@ -7,6 +7,7 @@
 // Lazy: the worker (Pyodide is several MB + ~10–20s) is only created once the user
 // signals download intent via `init()`, so pure-preview visitors never pay for it.
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { VMetrics } from './vmetrics'
 
 export interface ExportConfig {
   axisDefaults: Record<string, number>   // ◆ axis defaults, EXCLUDING opsz
@@ -16,6 +17,7 @@ export interface ExportConfig {
   autoAscender: boolean
   thresholds: Record<string, number[]>   // ◆ GEOM swap map → FeatureVariations
   frozenFeatures: string[]               // ◆ ssXX/cvXX/tnum/… fused into the default + stripped
+  vmetrics: VMetrics                     // ◆ OS/2 + hhea vertical metrics
 }
 
 // Preview rebuild config — the rebuild-only edits CSS can't show (opsz-axis rescale/pin +

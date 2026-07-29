@@ -205,6 +205,8 @@
 /* …and the COSS board manages its own inset, so drop the scroll box's big bottom padding
    (the 64px blank band under the board). */
 .stage-scroll.stage-scroll--flush { padding: 28px 48px 0; }
+/* Vertical Metrics: the letterbox preview is full-bleed — no padding, no scroll gutter. */
+.stage-scroll.stage-scroll--bleed { padding: 0; scrollbar-gutter: auto; overflow: hidden; }
 .canvas-bar {
   display: flex;
   align-items: center;
@@ -825,3 +827,39 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-val--out { animation: matrix-val-out .24s ease-in forwards; }
 @keyframes matrix-val-in { from { opacity: 0; transform: translateX(-50%) translateY(6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 @keyframes matrix-val-out { from { opacity: 1; transform: translateX(-50%) translateY(0); } to { opacity: 0; transform: translateX(-50%) translateY(6px); } }
+
+/* ── Vertical Metrics panel (rail group 3) ──────────────────────────────────────
+   Reuses the Freezer's frame (VERTICAL METRICS header → Line Metrics section). A preset
+   dropdown seeds the numbers, an hhea-strategy dropdown re-derives them, then a Line Gap
+   field, the Use-Typo toggle, the Ascender (YTAS) pin and a live readout of the three
+   metric sets. The note flags (in white/bold) when the win box crops a glyph. */
+.vmetrics-panel .freezer-section { gap: 11px; }
+.vm-head-right { display: flex; align-items: center; gap: 10px; }
+.vm-lh { font-family: var(--ui-font); font-size: 12px; color: var(--text-muted); }
+.vmetrics-panel .rail-preset { margin-top: 2px; }
+.vm-strategy { color: var(--text-muted); }
+
+.vm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vm-row-label { font-size: 13px; color: var(--text-muted); }
+.vm-num {
+  width: 84px; text-align: right; font-family: var(--ui-font); font-size: 13px; color: var(--text);
+  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 9px;
+}
+
+/* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */
+.vm-toggle { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.vm-toggle input { accent-color: var(--accent); margin-top: 2px; flex: none; }
+.vm-toggle-lbl { line-height: 1.4; }
+.vm-warn { display: block; color: var(--text-dim); font-size: 11px; }
+
+/* the reused Ascender (YTAS) pin gets extra air before and after it */
+.vm-pin { margin: 6px 0; }
+
+.vm-table { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 12px; }
+.vm-tr { display: grid; grid-template-columns: 46px 1fr 1fr 1fr; }
+.vm-tr span:first-child { color: var(--text-muted); }
+.vm-tr span:not(:first-child) { text-align: right; color: var(--text); }
+.vm-tr--head span { color: var(--text-dim); }
+
+.vm-note { margin: 4px 0 0; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.vm-note b { color: var(--text); font-weight: 700; }
