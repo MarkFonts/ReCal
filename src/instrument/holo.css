@@ -106,3 +106,29 @@
   animation: holo-load 2.5s linear infinite;
 }
 @keyframes holo-load { to { --holo-load: 300%; } }
+
+/* 4 ─ Download-ready flourish. A SINGLE rainbow band sweeping left→right through the dark
+   "Download" letters (0.5s, like the ✓ Saved check). The type leans into italic as the band
+   passes, HOLDS through it, then reclines upright AFTER the band is gone (never leaning back
+   mid-sweep). One band, not tiled (no-repeat). DownloadDock strips the class on the ital
+   animation's end (the longer of the two) so the button returns to its normal dark fill. */
+@property --holo-once { syntax: "<percentage>"; inherits: false; initial-value: 130%; }
+.holo-once {
+  background-image:
+    linear-gradient(90deg, transparent 0 42%, #ff2e6e 45%, #ffb02e 47%, #ffe600 49%, #ff2ec4 51%, #b05cff 53%, #5c7aff 55%, transparent 58% 100%),
+    linear-gradient(var(--bg), var(--bg));
+  background-size: 220% 100%, 100% 100%;
+  background-position: var(--holo-once) center, center;
+  background-repeat: no-repeat, no-repeat;
+  background-blend-mode: screen, normal;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: holo-once-sweep .5s ease-out, holo-once-ital .9s ease-in-out;
+}
+@keyframes holo-once-sweep { from { --holo-once: 130%; } to { --holo-once: -30%; } }
+@keyframes holo-once-ital {
+  0%   { font-variation-settings: 'opsz' 10, 'GEOM' 25, 'ital' 0; }
+  11%  { font-variation-settings: 'opsz' 10, 'GEOM' 25, 'ital' 1; }   /* snap into italic in ~0.1s as the band starts */
+  56%  { font-variation-settings: 'opsz' 10, 'GEOM' 25, 'ital' 1; }   /* hold until the band is gone (~0.5s) */
+  100% { font-variation-settings: 'opsz' 10, 'GEOM' 25, 'ital' 0; }   /* recline upright, after */
+}

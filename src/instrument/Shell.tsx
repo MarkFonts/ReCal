@@ -809,8 +809,19 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
     URL.revokeObjectURL(url)
   }
 
+  // One-shot holo (+ ital lean) over the "Download" letters when the export first becomes
+  // downloadable. In dev the Pyodide worker often never boots (stuck on "Preparing engine…"),
+  // so once OFL is ticked we FAKE-ready the button — clicking replays the flourish — to
+  // preview the animation without the engine. This never fakes a bake (doDownload needs ready).
+  const [holoKey, setHoloKey] = useState(0)
+  const playHolo = () => setHoloKey(k => k + 1)
+  const devFake = import.meta.env.DEV && oflAgreed && !engine.ready && !engine.building
+  const showDownload = engine.ready || devFake
+  const wasReady = useRef(false)
+  useEffect(() => { if (showDownload && !wasReady.current) playHolo(); wasReady.current = showDownload }, [showDownload])
+
   const label = engine.building ? 'Building…'
-    : (engine.started && !engine.ready) ? 'Preparing engine…'
+    : (engine.started && !showDownload) ? 'Preparing engine…'
     : 'Download'
 
   return (
@@ -826,12 +837,15 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
           target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
       </label>
       <button className="floor-btn floor-btn--primary"
-        disabled={!oflAgreed || !engine.ready || engine.building}
+        disabled={!oflAgreed || engine.building || (!engine.ready && !devFake)}
         onPointerEnter={() => prefetch(true)}
-        onClick={doDownload}
+        onClick={() => { if (engine.ready) doDownload(); else if (devFake) playHolo() }}
         title={!oflAgreed ? 'Accept the OFL to enable download'
           : !engine.ready ? 'Loading the font engine (first time ~10–20s)…' : 'Download your ReCal Sans TTF'}>
-        {engine.building ? <span className="holo-loading">Building…</span> : label}
+        {engine.building
+          ? <span className="holo-loading">Building…</span>
+          : <span key={holoKey} className={holoKey > 0 ? 'holo-once' : ''}
+              onAnimationEnd={e => { if (e.animationName === 'holo-once-ital') e.currentTarget.classList.remove('holo-once') }}>{label}</span>}
       </button>
     </div>
   )
