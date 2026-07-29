@@ -856,9 +856,11 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   return (
     <div className="stage-pad words-scene">
       <div className="words-edit specimen" contentEditable suppressContentEditableWarning
-        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
+        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', whiteSpace: 'pre-wrap', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
         onFocus={() => setFocused(true)}
-        onBlur={e => { setText(e.currentTarget.textContent ?? ''); setFocused(false) }}>
+        // innerText (not textContent) preserves soft line breaks: Enter inserts <br>/<div>
+        // nodes that textContent would concatenate with no \n, flattening the layout.
+        onBlur={e => { setText(e.currentTarget.innerText ?? ''); setFocused(false) }}>
         {/* Uncontrolled while focused: no onInput→setState, so typing never re-renders
             and never resets the caret. Text is captured on blur, then flash-wrapped. */}
         {focused ? text : flashText(text, flashes, clear, dragging, '', gold?.chars)}
