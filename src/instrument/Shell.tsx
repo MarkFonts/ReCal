@@ -6,6 +6,7 @@ import './holo.css'
 import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
+import { StyleScopeList } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
@@ -356,19 +357,25 @@ function StyleMenu({ active, setActive, paraStyles }: {
       </button>
       {open && (
         <div className="style-menu-list">
-          {PARA_STYLE_ORDER.map(k => {
-            const s = paraStyles[k]
-            return (
-              <button key={k} className={`style-menu-item${k === active ? ' on' : ''}`}
-                onClick={() => { setActive(k); setOpen(false) }}>
-                <span className="style-menu-name">{PARA_STYLE_LABEL[k]}</span>
-                <span className="style-menu-badges tnum">
-                  <span className="style-badge">{Math.round(s.size)}px</span>
-                  <span className="style-badge">wght {s.wght}</span>
-                </span>
-              </button>
-            )
-          })}
+          {/* migrated to shared StyleScopeList (wm-primitives) */}
+          <StyleScopeList
+            inline
+            mode="single"
+            onSelect={k => setActive(k as ParaStyleKey)}
+            onPicked={() => setOpen(false)}
+            rows={PARA_STYLE_ORDER.map(k => {
+              const s = paraStyles[k]
+              return {
+                id: k,
+                label: PARA_STYLE_LABEL[k],
+                chips: [
+                  { text: `${Math.round(s.size)}px`, kind: 'size' as const },
+                  { text: `wght ${s.wght}`, kind: 'axis' as const },
+                ],
+                selected: k === active,
+              }
+            })}
+          />
         </div>
       )}
     </div>
@@ -397,20 +404,26 @@ function TierMenu({ selected, toggle, scaleStyles }: {
       </button>
       {open && (
         <div className="style-menu-list style-menu-list--scroll">
-          {SCALE_TIERS.map(t => {
-            const on = selected.has(t.key)
-            const st = scaleStyles[t.key]
-            return (
-              <button key={t.key} className={`style-menu-item${on ? ' on' : ''}`} onClick={() => toggle(t.key)}>
-                <span className="style-menu-check">{on ? '●' : '○'}</span>
-                <span className="style-menu-name">{t.key}</span>
-                <span className="style-menu-badges tnum">
-                  {st && st.tracking !== 0 && <span className="style-badge">{st.tracking > 0 ? '+' : '−'}{Math.abs(st.tracking)}</span>}
-                  <span className="style-badge">{t.px}px</span>
-                </span>
-              </button>
-            )
-          })}
+          {/* migrated to shared StyleScopeList (wm-primitives), multi-select */}
+          <StyleScopeList
+            inline
+            mode="multi"
+            onSelect={k => toggle(k)}
+            rows={SCALE_TIERS.map(t => {
+              const st = scaleStyles[t.key]
+              return {
+                id: t.key,
+                label: t.key,
+                chips: [
+                  ...(st && st.tracking !== 0
+                    ? [{ text: `${st.tracking > 0 ? '+' : '−'}${Math.abs(st.tracking)}`, kind: 'tracking' as const }]
+                    : []),
+                  { text: `${t.px}px`, kind: 'size' as const },
+                ],
+                selected: selected.has(t.key),
+              }
+            })}
+          />
         </div>
       )}
     </div>
