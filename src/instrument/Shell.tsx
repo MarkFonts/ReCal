@@ -6,7 +6,7 @@ import './holo.css'
 import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { StyleScopeList } from '../../shared/index' // wm-primitives (git submodule)
+import { StyleScopeList, InlineEmphasisBubble } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
@@ -980,6 +980,9 @@ export default function Shell() {
     return () => clearTimeout(t)
   }, [needsRebuild, d.opszMultiplier, d.glyphThresholds, d.freezeOpsz, d.frozenOpszValue, d.autoAscender, state.useHoi, rebuildPreview, clearPreviewFont])
 
+  // Real Cal Sans italic/bold for the emphasis-bubble labels — same axes renderInline uses.
+  const emphItalVs = renderVarSettings({ ...effectiveAxes(state), ital: 1 }, {})
+  const emphBoldVs = renderVarSettings({ ...effectiveAxes(state), wght: 700 }, {})
   return (
     <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
       <Rail collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
@@ -990,6 +993,12 @@ export default function Shell() {
         opszAuto={opszAuto} setOpszAuto={setOpszAuto}
         feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats} featStr={featStr} />
       <DownloadDock engine={engine} />
+      {/* Inline-emphasis bubble — shared wm-primitives component; labels use Cal Sans's real ital/bold axes */}
+      <InlineEmphasisBubble
+        selector=".para-block, .tier-head, .tier-body"
+        italicLabelStyle={{ fontFamily: "'CalSansVF'", fontVariationSettings: emphItalVs, fontStyle: 'normal', fontSynthesis: 'none' }}
+        boldLabelStyle={{ fontFamily: "'CalSansVF'", fontVariationSettings: emphBoldVs, fontWeight: 'normal', fontSynthesis: 'none' }}
+      />
     </div>
   )
 }
