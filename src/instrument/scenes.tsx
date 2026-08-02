@@ -5,6 +5,7 @@
 import './scenes.css'
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -766,34 +767,7 @@ const cmpItal = (c: CompareSpec): CSSProperties =>
 
 // ── Editable-markdown plumbing (ported/extended from font-proofer) ───────────────
 // Caret utilities.
-function placeCaretAtStart(el: HTMLElement) {
-  const r = document.createRange(), s = window.getSelection()
-  r.setStart(el, 0); r.collapse(true); s?.removeAllRanges(); s?.addRange(r)
-}
-function placeCaretAtEnd(el: HTMLElement) {
-  const r = document.createRange(), s = window.getSelection()
-  r.selectNodeContents(el); r.collapse(false); s?.removeAllRanges(); s?.addRange(r)
-}
-function placeCaretAtOffset(el: HTMLElement, offset: number) {
-  const tn = el.firstChild, len = tn?.textContent?.length ?? 0
-  const r = document.createRange(), s = window.getSelection()
-  r.setStart(tn ?? el, Math.min(Math.max(offset, 0), len)); r.collapse(true)
-  s?.removeAllRanges(); s?.addRange(r)
-}
-// Character offset within el at a viewport point (so a click into a styled block
-// lands the caret where you clicked, not at the start).
-function caretCharOffset(el: HTMLElement, x: number, y: number): number {
-  const doc = el.ownerDocument as Document & {
-    caretPositionFromPoint?: (x: number, y: number) => { offsetNode: Node; offset: number } | null
-    caretRangeFromPoint?: (x: number, y: number) => Range | null
-  }
-  let node: Node | null = null, offset = 0
-  if (doc.caretPositionFromPoint) { const p = doc.caretPositionFromPoint(x, y); if (p) { node = p.offsetNode; offset = p.offset } }
-  else if (doc.caretRangeFromPoint) { const rr = doc.caretRangeFromPoint(x, y); if (rr) { node = rr.startContainer; offset = rr.startOffset } }
-  if (!node || !el.contains(node)) return el.textContent?.length ?? 0
-  const r = document.createRange(); r.selectNodeContents(el); r.setEnd(node, offset)
-  return r.toString().length
-}
+// caret helpers imported from wm-primitives (see import at top).
 
 // Inline markdown → styled nodes: **bold** (wght axis), *italic* (ital axis),
 // __underline__. Matched delimiters, non-greedy; nesting is not handled.
