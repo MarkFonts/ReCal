@@ -5,7 +5,7 @@
 import './scenes.css'
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset } from '../../shared/index' // wm-primitives
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -733,21 +733,13 @@ type FlashCtx = { flashes: Flashes; clear: (ch: string) => void; dragging: boole
 // inner run is flash-wrapped with a unique key prefix so sibling runs never collide.
 function flashInline(text: string, boldVs: string, italVs: string, fc: FlashCtx, cmp?: CompareSpec | null): ReactNode {
   const F = (s: string, kp: string) => flashText(s, fc.flashes, fc.clear, fc.dragging, kp, fc.frozen)
-  if (!/[*_]/.test(text)) return F(text, '')
-  const out: ReactNode[] = []
-  let last = 0, k = 0, m: RegExpExecArray | null
-  const re = new RegExp(INLINE_RE)
-  while ((m = re.exec(text))) {
-    if (m.index > last) out.push(<Fragment key={`s${k}`}>{F(text.slice(last, m.index), `s${k}-`)}</Fragment>)
-    const delim = m[1], inner = m[2]
-    if (delim === '**') out.push(<strong key={`b${k}`} style={cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{F(inner, `b${k}-`)}</strong>)
-    else if (delim === '*') out.push(<em key={`i${k}`} style={cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{F(inner, `i${k}-`)}</em>)
-    else out.push(<u key={`u${k}`}>{F(inner, `u${k}-`)}</u>)
-    k++
-    last = m.index + m[0].length
-  }
-  if (last < text.length) out.push(<Fragment key={`s${k}`}>{F(text.slice(last), `s${k}-`)}</Fragment>)
-  return out
+  const toks = splitInlineMarkup(text)
+  if (isPlainRun(toks)) return F(text, '')
+  return toks.map((t, k) =>
+    t.type === 'bold' ? <strong key={`b${k}`} style={cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{F(t.value, `b${k}-`)}</strong>
+      : t.type === 'italic' ? <em key={`i${k}`} style={cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{F(t.value, `i${k}-`)}</em>
+        : t.type === 'underline' ? <u key={`u${k}`}>{F(t.value, `u${k}-`)}</u>
+          : <Fragment key={`s${k}`}>{F(t.value, `s${k}-`)}</Fragment>)
 }
 
 // Compare-mode replacements for the markdown bold/italic spans: the referent font
@@ -770,23 +762,15 @@ const cmpItal = (c: CompareSpec): CSSProperties =>
 // caret helpers imported from wm-primitives (see import at top).
 
 // Inline markdown → styled nodes: **bold** (wght axis), *italic* (ital axis),
-// __underline__. Matched delimiters, non-greedy; nesting is not handled.
-const INLINE_RE = /(\*\*|__|\*)(.+?)\1/g
+// __underline__. Parsing shared (splitInlineMarkup); nesting is not handled.
 function renderInline(text: string, boldVs: string, italVs: string, cmp?: CompareSpec | null): ReactNode {
-  if (!/[*_]/.test(text)) return text
-  const out: ReactNode[] = []
-  let last = 0, k = 0, m: RegExpExecArray | null
-  const re = new RegExp(INLINE_RE)
-  while ((m = re.exec(text))) {
-    if (m.index > last) out.push(text.slice(last, m.index))
-    const delim = m[1], inner = m[2]
-    if (delim === '**') out.push(<strong key={k++} style={cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{inner}</strong>)
-    else if (delim === '*') out.push(<em key={k++} style={cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{inner}</em>)
-    else out.push(<u key={k++}>{inner}</u>)
-    last = m.index + m[0].length
-  }
-  if (last < text.length) out.push(text.slice(last))
-  return out
+  const toks = splitInlineMarkup(text)
+  if (isPlainRun(toks)) return text
+  return toks.map((t, k) =>
+    t.type === 'bold' ? <strong key={k} style={cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' }}>{t.value}</strong>
+      : t.type === 'italic' ? <em key={k} style={cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' }}>{t.value}</em>
+        : t.type === 'underline' ? <u key={k}>{t.value}</u>
+          : t.value)
 }
 
 // A single contentEditable region: raw markdown while focused (browser owns the DOM,
