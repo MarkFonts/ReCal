@@ -503,33 +503,19 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
       {mode === 'scale' && (
         <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
       )}
+      {/* Proofing controls (not ◆ defaults) → default AxisSlider variant, matching
+          font-proofer's TYPOGRAPHY. No diamond/marker/reference. */}
       {has('size') && (
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">size</span>
-            <span className="prow-val tnum">{size}px</span></div>
-          <input type="range" min={16} max={200} step={1} value={size} onChange={e => setSize(+e.target.value)} />
-        </div>
+        <AxisSlider label="size" value={size} min={16} max={200} step={1} onChange={v => setSize(v as number)} />
       )}
       {has('tracking') && (
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">tracking</span>
-            <span className="prow-val tnum">{tracking > 0 ? '+' : tracking < 0 ? '−' : ''}{Math.abs(tracking)}%</span></div>
-          <input type="range" min={-10} max={30} step={1} value={tracking} onChange={e => setTracking(+e.target.value)} />
-        </div>
+        <AxisSlider label="tracking" value={tracking} min={-10} max={30} step={1} onChange={v => setTracking(v as number)} />
       )}
       {has('leading') && (
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">leading</span>
-            <span className="prow-val tnum">{leading.toFixed(1)}</span></div>
-          <input type="range" min={0.8} max={2.5} step={0.1} value={leading} onChange={e => setLeading(+e.target.value)} />
-        </div>
+        <AxisSlider label="leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
       )}
       {has('measure') && (
-        <div className="prow">
-          <div className="prow-head"><span className="prow-label">measure</span>
-            <span className="prow-val tnum">{measure}em</span></div>
-          <input type="range" min={16} max={52} step={1} value={measure} onChange={e => setMeasure(+e.target.value)} />
-        </div>
+        <AxisSlider label="measure" value={measure} min={16} max={52} step={1} onChange={v => setMeasure(v as number)} />
       )}
     </div>
   )
