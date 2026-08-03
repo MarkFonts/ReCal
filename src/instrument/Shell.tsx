@@ -722,12 +722,17 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
                 )
               }
               return (
-                <div className={`prow${on ? ' on' : ''}${na ? ' prow--na' : ''}`} key={tag}>
-                  <div className="prow-head"><span className="prow-label">{tag}</span>
-                    <span className="prow-val tnum">{na ? '—' : tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span></div>
-                  <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v} disabled={na}
-                    onChange={e => dispatch({ type: 'setPreview', tag, value: +e.target.value })} />
-                </div>
+                <AxisSlider
+                  key={tag}
+                  variant="skeletal"
+                  label={tag}
+                  value={v}
+                  min={min}
+                  max={max}
+                  step={tag === 'ital' ? 0.01 : 1}
+                  disabled={na}
+                  onChange={val => dispatch({ type: 'setPreview', tag, value: val as number })}
+                />
               )
             })}
           </div>
