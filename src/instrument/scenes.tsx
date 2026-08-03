@@ -814,7 +814,7 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   const [focused, setFocused] = useState(false)
   return (
     <div className="stage-pad words-scene">
-      <div className="words-edit specimen" contentEditable suppressContentEditableWarning
+      <div className="words-edit specimen edit-rail" contentEditable suppressContentEditableWarning
         style={{ fontSize: size, lineHeight: leading, textAlign: 'center', whiteSpace: 'pre-wrap', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
         onFocus={() => setFocused(true)}
         // innerText (not textContent) preserves soft line breaks: Enter inserts <br>/<div>
@@ -989,7 +989,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
             <div key={b.id}
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
-              className={`para-block para-block--${b.type}`}
+              className={`para-block para-block--${b.type} edit-rail`}
               style={{ fontSize: st.size, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
@@ -1050,10 +1050,10 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
             )}
           </div>
           {/* Headline + body are editable and synced live across every size tier. */}
-          <EditableText value={head} onCommit={setHead} className={`tier-head${selectedTiers.has(d.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash} cmp={cmp}
+          <EditableText value={head} onCommit={setHead} className={`tier-head edit-rail${selectedTiers.has(d.key) ? ' edit-rail--target' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash} cmp={cmp}
             style={{ fontSize: d.px, fontVariationSettings: vsFor(d.px), fontFeatureSettings: featStr, ...tierStyle(d.key), ...cmpSt }} />
           {use.map(b => (
-            <EditableText key={b.key} value={body} onCommit={setBody} className={`tier-body${selectedTiers.has(b.key) ? ' tier-sel' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash} cmp={cmp}
+            <EditableText key={b.key} value={body} onCommit={setBody} className={`tier-body edit-rail${selectedTiers.has(b.key) ? ' edit-rail--target' : ''}`} boldVs={boldVs} italVs={italVs} flash={flash} cmp={cmp}
               style={{ fontSize: b.px, fontVariationSettings: vsFor(b.px), fontFeatureSettings: featStr, ...tierStyle(b.key), ...cmpSt }} />
           ))}
         </div>

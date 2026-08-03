@@ -185,11 +185,8 @@
 .tier-block { margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border-subtle); max-width: 100%; }
 /* Tiers the Scale menu currently targets get a subtle rail so it's clear what edits hit.
    Applied per line (head or body), so a paired body isn't highlighted unless it's picked. */
-.tier-sel { position: relative; }
-.tier-sel::before {
-  content: ''; position: absolute; left: -10px; top: 0; bottom: 0; width: 3px;
-  border-radius: 2px; background: rgba(255, 255, 255, .28);
-}
+/* Scale tier target/focus rail is now the shared edit-rail (edit-rail / --target);
+   see wm-primitives/src/editRail.css. */
 .tier-block .tier-head { overflow: visible; }
 .tier-label { margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
 .tier-token { font-size: 12px; color: var(--text-muted); letter-spacing: .04em; }
