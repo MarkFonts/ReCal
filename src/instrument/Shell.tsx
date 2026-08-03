@@ -6,7 +6,7 @@ import './holo.css'
 import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { StyleScopeList, InlineEmphasisBubble } from '../../shared/index' // wm-primitives (git submodule)
+import { StyleScopeList, InlineEmphasisBubble, AxisSlider } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
@@ -64,7 +64,7 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
   // While this slider is held, GEOM-swap flashes hold their zone colour (live map)
   // and only fade on release. Window-level pointerup ends it even if released
   // outside the thumb; keyboard changes don't set it (they read as instant jumps).
-  const onPointerDown = dragSignal
+  const onRangePointerDown = dragSignal
     ? () => {
         dispatch({ type: 'setGeomDragging', value: true })
         const up = () => { dispatch({ type: 'setGeomDragging', value: false }); window.removeEventListener('pointerup', up) }
@@ -72,15 +72,18 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
       }
     : undefined
   return (
-    <div className="pin">
-      <div className="pin-head">
-        <span className="pin-label">{label} <span className="pin-tag">{tag}</span></span>
-        <span className="pin-val tnum">{tag === 'ital' ? v.toFixed(2) : Math.round(v)}</span>
-      </div>
-      <input type="range" min={min} max={max} step={tag === 'ital' ? 0.01 : 1} value={v}
-        onPointerDown={onPointerDown}
-        onChange={e => dispatch({ type: 'setDefaultAxis', tag, value: +e.target.value })} />
-    </div>
+    <AxisSlider
+      label={label}
+      tag={tag}
+      value={v}
+      min={min}
+      max={max}
+      step={tag === 'ital' ? 0.01 : 1}
+      variant="diamond"
+      reference={state.shipped[tag]}
+      onRangePointerDown={onRangePointerDown}
+      onChange={val => dispatch({ type: 'setDefaultAxis', tag, value: val as number })}
+    />
   )
 }
 
@@ -182,16 +185,26 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         </div>
         {/* Optical size — only meaningful when frozen: off = the browser scales opsz to
             size (auto); on = pin the opsz axis to this value for a fixed display size. */}
-        <div className={`pin${state.defaults.freezeOpsz ? '' : ' pin--off'}`}>
-          <div className="pin-head">
-            <span className="pin-label">Optical size <span className="pin-tag">opsz</span></span>
-            <span className="pin-val tnum">{state.defaults.freezeOpsz ? Math.round(state.defaults.frozenOpszValue ?? 14) : 'auto'}</span>
-          </div>
-          <input type="range" min={AXIS_RANGES.opsz.min} max={AXIS_RANGES.opsz.max} step={1}
-            value={state.defaults.frozenOpszValue ?? 14}
-            disabled={!state.defaults.freezeOpsz}
-            onChange={e => dispatch({ type: 'setFrozenOpszValue', value: +e.target.value })} />
-        </div>
+        {/* opsz uses the canonical allowAuto affordance: field shows "auto" until you
+            edit it (type a value to freeze, `a` to go auto); the Freeze checkbox stays
+            in sync. Diamond thumb + burned stock reference like the other rail axes. */}
+        <AxisSlider
+          label="Optical size"
+          tag="opsz"
+          value={state.defaults.freezeOpsz ? (state.defaults.frozenOpszValue ?? 14) : 'auto'}
+          min={AXIS_RANGES.opsz.min}
+          max={AXIS_RANGES.opsz.max}
+          step={1}
+          allowAuto
+          autoValue={state.defaults.frozenOpszValue ?? 14}
+          variant="diamond"
+          disabled={!state.defaults.freezeOpsz}
+          reference={state.shipped.opsz}
+          onChange={val => {
+            if (val === 'auto') { dispatch({ type: 'setFreezeOpsz', value: false }) }
+            else { dispatch({ type: 'setFreezeOpsz', value: true }); dispatch({ type: 'setFrozenOpszValue', value: val }) }
+          }}
+        />
         <div className="pin">
           <div className="pin-head"><span className="pin-label">Optical scale</span>
             <span className="pin-val tnum">{state.defaults.opszMultiplier}×</span></div>

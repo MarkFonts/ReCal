@@ -4,6 +4,7 @@
    terracotta/orange accent. Zone colours reuse the existing four exactly. */
 
 :root {
+  color-scheme: dark;   /* native form controls (AxisSlider number steppers) render dark */
   /* ── Surfaces (existing dark scale) ── */
   --bg:        #0f0f0f;
   --surface-1: #111;

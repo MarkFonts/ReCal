@@ -808,8 +808,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-handle:hover { background: #fff; }
 /* Cal Sans shipped default — a ghostly ● behind the track; stays put when you drag ◆ away. */
 .matrix-shipped {
-  position: absolute; top: 23px; width: 8px; height: 8px; margin-left: -4px; border-radius: 50%;
-  background: var(--text-muted); opacity: .28; pointer-events: none;
+  position: absolute; top: 23px; width: 8px; height: 8px; margin-left: -4px; border-radius: 1px;
+  background: var(--text-muted); opacity: .28; pointer-events: none; transform: rotate(45deg); /* rhombus, mirrors the handle */
 }
 /* Transparent drag grabber on the hard line where the two shades meet (ew-resize). */
 .matrix-geom { position: absolute; top: 0; bottom: 0; width: 11px; margin-left: -5.5px; z-index: 2; cursor: ew-resize; touch-action: none; }
