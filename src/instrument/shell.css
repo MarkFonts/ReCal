@@ -254,9 +254,10 @@
 .mode-throb {
   width: 13px; height: 13px; border-radius: 50%; flex-shrink: 0;
   border: 2px solid var(--text-dim); border-top-color: var(--text);
-  animation: recal-spin .6s linear infinite;
+  animation: wm-spin .6s linear infinite;
 }
-@keyframes recal-spin { to { transform: rotate(360deg); } }
+/* Shared rotate keyframe — also used by .spinner (App.css). */
+@keyframes wm-spin { to { transform: rotate(360deg); } }
 .mode-check { color: var(--zone-geo); font-style: normal; font-weight: 700; }
 
 /* DEMO mode: the rail stays full width; its controls just fade to .2 (still

@@ -28,9 +28,6 @@
    every card in the column matches (cards fill 100% of the column). */
 .coss-col { display: flex; flex-direction: column; gap: 16px; width: 270px; }
 .coss-col--wide { width: 420px; }
-.coss-strip::-webkit-scrollbar { width: 9px; height: 9px; }
-.coss-strip::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 5px; }
-.coss-strip::-webkit-scrollbar-thumb:hover { background: var(--border); }
 .coss-b { font-weight: var(--w-bold, 640); }
 /* Real axes only — never faux bold/italic. Italic text maps to the ital axis (ital 1) on
    top of the current GEOM/YTAS/SHRP (--vs), so it stays a true italic, not a slant. */
@@ -226,14 +223,8 @@
 @keyframes coss-fade { from { opacity: .25; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .ui-fade-in { animation: none; } }
 
-/* Spinner particle + the infinite-scroll throbber that sits under the board. */
-.ui-spinner {
-  width: 18px; height: 18px; border-radius: 50%; flex: 0 0 auto;
-  border: 2px solid var(--border); border-top-color: var(--text);
-  animation: coss-spin .7s linear infinite;
-}
-@keyframes coss-spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .ui-spinner { animation-duration: 2s; } }
+/* .ui-spinner + coss-spin now live only in wm-primitives' UiKitBoard.css — the board
+   renders the spinner and brings its own (identical) styles; local duplicate removed. */
 /* Loading pill — FIXED to the viewport; its left/top are computed from the preview panel's
    box (see pillStyle) so it centres on the PREVIEW, not the window. */
 .coss-loading {

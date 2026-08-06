@@ -216,11 +216,7 @@ h2 {
   border: 2px solid #2a2a2a;
   border-top-color: #e8e8e8;
   border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
+  animation: wm-spin 0.7s linear infinite;
 }
 
 .loading-note {
