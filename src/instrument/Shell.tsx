@@ -6,7 +6,7 @@ import './holo.css'
 import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { StyleScopeList, InlineEmphasisBubble, AxisSlider } from '../../shared/index' // wm-primitives (git submodule)
+import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
@@ -429,7 +429,7 @@ function TierMenu({ selected, toggle, scaleStyles }: {
                 label: t.key,
                 chips: [
                   ...(st && st.tracking !== 0
-                    ? [{ text: `${st.tracking > 0 ? '+' : '−'}${Math.abs(st.tracking)}`, kind: 'tracking' as const }]
+                    ? [{ text: `${st.tracking > 0 ? '+' : ''}${nbMinus(st.tracking)}`, kind: 'tracking' as const }]
                     : []),
                   { text: `${t.px}px`, kind: 'size' as const },
                 ],
