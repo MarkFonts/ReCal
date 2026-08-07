@@ -21,6 +21,8 @@
   --border:        #333;
   --border-subtle: #222;
   --edit-rail:     rgba(255, 255, 255, 0.28);  /* "you can type here" left rail */
+  --scrollbar-thumb:       var(--surface-3);   /* house 6px scrollbar (wm-primitives) */
+  --scrollbar-thumb-hover: var(--text-dim);
 
   /* ── Accent & origin markers ──
      ◆ baked-default marker takes the site accent; ● preview marker a neutral —

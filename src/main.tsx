@@ -2,6 +2,7 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import InstrumentApp from './instrument/InstrumentApp'
+import '../shared/src/scrollbar.css' // house 6px scrollbar (wm-primitives)
 
 // CSS url() with an absolute path ignores the vite base, so inject the
 // font-face here where BASE_URL is available.
