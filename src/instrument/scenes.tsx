@@ -5,7 +5,7 @@
 import './scenes.css'
 import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun } from '../../shared/index' // wm-primitives
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -775,29 +775,16 @@ function renderInline(text: string, boldVs: string, italVs: string, cmp?: Compar
 
 // A single contentEditable region: raw markdown while focused (browser owns the DOM,
 // caret stable), styled preview when not. `onCommit` fires live (input) + on blur.
+// Thin wrapper over the shared EditableTextBlock: ReCal's blurred view renders the
+// GEOM-flash / compare-aware inline markup.
 function EditableText({ value, onCommit, className, style, boldVs, italVs, flash, cmp }: {
   value: string; onCommit: (t: string) => void
   className?: string; style?: CSSProperties; boldVs: string; italVs: string; flash?: FlashCtx
   cmp?: CompareSpec | null
 }) {
-  const [focused, setFocused] = useState(false)
-  const elRef = useRef<HTMLElement | null>(null)
-  const pending = useRef<number | null>(null)
-  useLayoutEffect(() => {
-    if (focused && pending.current != null && elRef.current) placeCaretAtOffset(elRef.current, pending.current)
-    pending.current = null
-  }, [focused])
   return (
-    <div
-      ref={el => { elRef.current = el; if (el && !el.textContent) el.textContent = value }}
-      contentEditable suppressContentEditableWarning spellCheck={false}
-      className={className} style={style}
-      onMouseDown={e => { if (!focused) pending.current = caretCharOffset(e.currentTarget, e.clientX, e.clientY) }}
-      onFocus={() => setFocused(true)}
-      onBlur={e => { const t = e.currentTarget.textContent ?? ''; e.currentTarget.textContent = ''; onCommit(t); setFocused(false) }}
-      onInput={e => { if (focused) onCommit(e.currentTarget.textContent ?? '') }}>
-      {focused ? null : (flash ? flashInline(value, boldVs, italVs, flash, cmp) : renderInline(value, boldVs, italVs, cmp))}
-    </div>
+    <EditableTextBlock value={value} onCommit={onCommit} className={className} style={style} liveCommit
+      render={v => flash ? flashInline(v, boldVs, italVs, flash, cmp) : renderInline(v, boldVs, italVs, cmp)} />
   )
 }
 
