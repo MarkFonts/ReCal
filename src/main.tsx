@@ -21,7 +21,7 @@ function GlyphPickerDemo() {
   const sets = makeGlyphSets()
   const groups = [
     ...Object.entries(sets).filter(([k]) => k !== 'All').map(([label, chars]) => ({ label, chars: chars.join('') })),
-    { label: 'Stylistic — Humanist a (ss02)', chars: 'aàáâãäåæāăą', feat: 'ss02' },
+    { label: 'Stylistic — Humanist a (ss02)', chars: 'aàáâãäåæāăą', ffs: '"ss02" 1' },
   ]
   // Cal Sans design metrics (vmetrics.ts FONT_METRICS + xHeightAt at defaults).
   const metrics = { upm: 1000, ascender: 720, capHeight: 720, xHeight: 514, descender: -243 }
@@ -32,12 +32,16 @@ function GlyphPickerDemo() {
   return (
     <div style={{ height: '100vh', background: '#161616', padding: 40, boxSizing: 'border-box' }}>
       <GlyphPicker groups={groups} fontFamily="'CalSansVF', sans-serif" metrics={metrics}
-        layout={layout} specimenSpan={specimenSpan} specimenSize={specimenSize} style={{ height: '100%' }} />
+        layout={layout} specimenSpan={specimenSpan} specimenSize={specimenSize} names="both" style={{ height: '100%' }} />
     </div>
   )
 }
 
 const Root = params.get('demo') === 'glyphpicker' ? GlyphPickerDemo : useClassic ? App : InstrumentApp
+
+// Scope marker: App.css's element-level defaults (light button pill etc.) apply ONLY
+// under .classic-ui — they must never leak into the instrument or demo harnesses.
+document.documentElement.classList.add(useClassic ? 'classic-ui' : 'instrument-ui')
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

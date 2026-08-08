@@ -200,6 +200,9 @@
 .feature-row-label { font-size: 11px; color: var(--text-muted); padding-top: 6px; white-space: nowrap; }
 
 /* ── Glyphs ── */
+/* The scene is now the shared GlyphPicker (wm-primitives); full-width, its side
+   column sticks while the grid scrolls with the stage. */
+.stage-pad--glyphs { align-items: stretch; width: 100%; }
 .glyph-block { margin-bottom: 24px; }
 .glyph-block-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
 .glyph-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 10px; width: 100%; }

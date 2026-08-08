@@ -3,9 +3,9 @@
 // are passed in as props; scenes here only read them. Everything renders through
 // effective() (renderVarSettings) — one engine. Models ported from font-proofer.
 import './scenes.css'
-import { useState, useEffect, useLayoutEffect, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
+import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock } from '../../shared/index' // wm-primitives
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -1067,30 +1067,54 @@ function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
   const [ranges, setRanges] = useState<CmapRanges | null>(null)
   useEffect(() => { let alive = true; loadCmap().then(r => { if (alive) setRanges(r) }); return () => { alive = false } }, [])
 
-  // "All" = every cmap codepoint + its aalt alternates (the unencoded variants);
-  // the named sets are curated base-character subsets.
-  const cells: GlyphCell[] = glyphSet === 'All'
-    ? allGlyphsWithAlternates(ranges)
-    : (GLYPH_SETS[glyphSet] ?? []).filter(g => isSupported(g, ranges)).map(ch => ({ ch, aalt: 0 }))
+  const family = "'CalSansPreview', 'CalSansVF', sans-serif"
+  // Live design metrics for the specimen rules — measured off the rendered instance,
+  // so they track wght/opsz/YTAS as the ◆ moves (re-measured per vs change).
+  const [metrics, setMetrics] = useState<GlyphPickerMetrics | undefined>()
+  useEffect(() => {
+    const m = () => { const r = measureGlyphMetrics(family, vs); if (r) setMetrics(r) }
+    m()
+    document.fonts?.ready.then(m).catch(() => {})
+  }, [vs])
+
+  // "All" = every cmap codepoint + its aalt alternates (the unencoded variants) as
+  // explicit pre-scoped cells; the named sets are curated base-character subsets.
+  // aalt/case cells enable 'rclt' too, so their GEOM swap actually renders.
+  const groups: GlyphPickerGroup[] = useMemo(() => glyphSet === 'All'
+    ? [{
+        label: 'All + alternates',
+        cells: allGlyphsWithAlternates(ranges).map(c => ({
+          ch: c.ch,
+          ffs: `${c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}, 'rclt' 1` : featStr}, 'mark' 1, 'mkmk' 1`,
+          note: c.caps ? 'case' : c.aalt ? `aalt ${c.aalt}` : undefined,
+          key: `${cpOf(c.ch)}:${c.aalt}${c.caps ? ':case' : ''}`,
+        })),
+      }]
+    : [{ label: glyphSet, chars: (GLYPH_SETS[glyphSet] ?? []).join(''), ffs: `${featStr}, 'mark' 1, 'mkmk' 1` }],
+  [glyphSet, ranges, featStr])
+
+  // Flash (hold-while-dragging / fade-on-release) any cell whose glyph rclt-swaps —
+  // base OR alternate/compound — via the font-derived map, through the picker's
+  // cellState hook. Named-set cells (no key) flash on their base form.
+  const cellState: GlyphCellState = useCallback(cell => {
+    if (cell.key?.endsWith(':case')) return undefined
+    const k = cell.key ?? `${cpOf(cell.ch)}:0`
+    const fl = flashes[k]
+    if (!fl) return undefined
+    return {
+      className: dragging ? 'geom-flash-hold' : 'geom-flash',
+      style: { ['--flash-color' as string]: fl.color },
+      nonce: fl.nonce,
+      onAnimationEnd: dragging ? undefined : () => clear(k),
+    }
+  }, [flashes, dragging, clear])
+
   return (
-    <div className="stage-pad">
-      <div className="glyph-grid">
-        {cells.map((c, i) => {
-          // aalt/case cells now enable 'rclt' too, so their GEOM swap actually renders.
-          const base = c.caps ? "'case' 1" : c.aalt ? `'aalt' ${c.aalt}, 'rclt' 1` : featStr
-          // Flash (hold-while-dragging / fade-on-release) any cell whose glyph rclt-swaps —
-          // base OR alternate/compound (five.numr.rcltGeo…) — via the font-derived map.
-          const fl = c.caps ? undefined : flashes[`${cpOf(c.ch)}:${c.aalt}`]
-          return (
-            <span key={`${i}-${fl?.nonce ?? 0}`}
-              className={`glyph-cell${fl ? (dragging ? ' geom-flash-hold' : ' geom-flash') : ''}`}
-              onAnimationEnd={fl && !dragging ? () => clear(`${cpOf(c.ch)}:${c.aalt}`) : undefined}
-              style={{ fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: `${base}, 'mark' 1, 'mkmk' 1`, ...(fl && { ['--flash-color' as string]: fl.color }) }}>
-              {c.ch}
-            </span>
-          )
-        })}
-      </div>
+    <div className="stage-pad stage-pad--glyphs">
+      <GlyphPicker
+        groups={groups} ranges={ranges} metrics={metrics}
+        fontFamily={family} fontVariationSettings={vs} fontOpticalSizing={op.optical}
+        cellState={cellState} names="nice" layout="side" />
     </div>
   )
 }
