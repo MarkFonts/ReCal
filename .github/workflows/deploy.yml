@@ -7,6 +7,13 @@ on:
   repository_dispatch:            # fired by wm-primitives on a shared-primitive change
     types: [primitive-updated]
 
+# Serialize deploys: a push-run and a primitive-dispatch run landing together both
+# rewrite the same generated files in wordmark — the loser's rebase-retry hits real
+# content conflicts. Queue instead of race (never cancel a deploy mid-push).
+concurrency:
+  group: deploy-wordmark
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
