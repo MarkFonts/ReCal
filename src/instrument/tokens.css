@@ -54,6 +54,14 @@
      distinguishing ss-frozen from GEOM-driven"). The only warm accent besides the
      A11Y terracotta, kept muted so it reads as "held" rather than an alert. */
   --freeze-gold:     #d9a441;
+
+  /* Status triad — ok / warn / err. Previously three raw literals repeated across
+     coss.css and UiKitBoard.css with no token anywhere, which is why the terracotta
+     family survived here after it was dropped elsewhere. Named now so the palette is
+     a three-line change rather than a grep. */
+  --ok:   #46c07a;
+  --warn: #e0a23a;
+  --err:  #e0603a;
   --freeze-gold-dim: rgba(217, 164, 65, .16);
 
   /* ── Zones (reuse existing exactly) ── */
