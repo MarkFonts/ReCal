@@ -17,6 +17,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v5
         with:
@@ -24,6 +26,26 @@ jobs:
 
       - name: Build against latest wm-primitives (main)
         run: git submodule update --remote shared
+
+      - name: Record the primitives commit that was actually built
+        env:
+          TOKEN: ${{ secrets.WORDMARK_DEPLOY_TOKEN3 }}
+        run: |
+          # The build above uses --remote, i.e. latest wm-primitives main, NOT the pin in
+          # this repo. Without this step the recorded pointer drifts behind what is live,
+          # so `git log` here does not tell you what wordmark.nyc is running and a local
+          # `npm run build` silently builds a different version than production.
+          # Commit the pointer we actually built, so the pin is truthful.
+          if git diff --quiet -- shared; then
+            echo "submodule pointer already matches the build — nothing to record"
+            exit 0
+          fi
+          SHA=$(git -C shared rev-parse --short HEAD)
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add shared
+          git commit -m "Bump wm-primitives to ${SHA} (built by deploy) [skip ci]"
+          git push "https://x-access-token:${TOKEN}@github.com/MarkFonts/${GITHUB_REPOSITORY#*/}.git" HEAD:main
 
       - uses: actions/setup-node@v5
         with:
