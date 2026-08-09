@@ -6,6 +6,12 @@
 :root {
   color-scheme: dark;   /* native form controls (AxisSlider number steppers) render dark */
   /* ── Surfaces (existing dark scale) ── */
+  /* Below --bg, and deliberately outside the surface scale. The VMetrics stage is a
+     PROOFING GROUND, not a UI surface: the big word sits on it and the metric lines are
+     measured against it, so it wants maximum contrast and no tint at all. It is the only
+     place in the app darker than --bg. Do not fold it into --bg or into a surface step
+     during any collapse — a #0f0f0f stage puts a grey cast behind the specimen. */
+  --stage-deep: #000;
   --bg:        #0f0f0f;
   --surface-1: #111;
   --surface-2: #1a1a1a;

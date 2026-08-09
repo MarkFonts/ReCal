@@ -252,11 +252,11 @@
 /* The whole canvas goes black on this tab (under the tabs, EDIT mode and the dock), so the
    letterbox is full-bleed. The stage keeps the normal tab layout, so the specimen centres
    exactly where the Words specimen does and the dock overlays without shifting it. */
-.canvas--vm, .canvas--vm .mode-row, .canvas--vm .canvas-bar { background: #000; }
-.canvas-body--vm { background: #000; }
+.canvas--vm, .canvas--vm .mode-row, .canvas--vm .canvas-bar { background: var(--stage-deep); }
+.canvas-body--vm { background: var(--stage-deep); }
 /* Padding matches the normal scroll box (40 top / 64 bottom) so the band centres exactly
    where the Words specimen does; the black bg paints under the padding, staying full-bleed. */
-.vmetrics-stage { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 40px 0 64px; box-sizing: border-box; overflow: hidden; background: #000; }
+.vmetrics-stage { position: relative; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; padding: 40px 0 64px; box-sizing: border-box; overflow: hidden; background: var(--stage-deep); }
 .vm-svg { display: block; width: 100%; height: auto; }
 .vm-slot { fill: var(--bg); }
 /* editable specimen (inside the SVG via foreignObject, so it scales with the metric lines) */
@@ -271,4 +271,4 @@
 /* The letterbox bars are translucent, not opaque: over empty stage they read as solid black
    (black on black), but a glyph poking into the clip zone shows through dimmed — suggesting
    "this gets clipped" rather than chopping it off. */
-.vm-crop { fill: #000; opacity: .72; }
+.vm-crop { fill: var(--stage-deep); opacity: .72; }
