@@ -48,10 +48,10 @@ function ResetIcon() {
 
 // Instrument zone anchors — each chip pins GEOM to one exact value (owner spec).
 const ZONES = [
-  { label: 'A11y', geom: 0, color: '#c97050' },
-  { label: 'UI', geom: 25, color: '#999' },
-  { label: 'Base', geom: 50, color: '#4a7fd4' },
-  { label: 'Geo', geom: 100, color: '#4aad5c' },
+  { label: 'A11y', geom: 0, color: 'var(--zone-a11y)' },
+  { label: 'UI', geom: 25, color: 'var(--zone-ui)' },
+  { label: 'Base', geom: 50, color: 'var(--zone-base)' },
+  { label: 'Geo', geom: 100, color: 'var(--zone-geo)' },
 ]
 const nearestZoneLabel = (geom: number) =>
   ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
