@@ -3,6 +3,7 @@
 // are passed in as props; scenes here only read them. Everything renders through
 // effective() (renderVarSettings) — one engine. Models ported from font-proofer.
 import './scenes.css'
+import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
@@ -508,7 +509,7 @@ const SWAP_GLYPHS = new Set(GROUP_DEFS.map(d => d.glyph))
 // NFKD handles diacritics + compatibility forms (ª→a); EXTRA_MEMBERS covers
 // non-decomposing look-alikes. Returns undefined for non-swap glyphs.
 // Font-derived swap zone → colour (matches the GROUP_DEFS zone palette). '-'/'U' → none.
-const ZONE_COLOR: Record<string, string> = { A: '#c97050', B: '#4a7fd4', G: '#4aad5c' }
+const ZONE_COLOR = ZONE_COLOR_SHORT
 // Codepoint behind a grid cell's char (skip the ◌ U+25CC carrier on combining marks).
 const cpOf = (ch: string): number => (ch.charCodeAt(0) === 0x25CC ? ch.codePointAt(1)! : ch.codePointAt(0)!)
 // Grid flash entries: every rclt-swap cell (base + aalt compounds) with its thresholds

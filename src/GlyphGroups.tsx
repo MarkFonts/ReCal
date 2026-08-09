@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { ZONE_COLOR } from './zoneColors'
 import { SUBS } from './data/substitutions'
 
 export type VariantLabel = 'A11Y' | 'UI' | 'default' | 'Base' | 'Geo'
@@ -11,11 +12,11 @@ export type GroupDef = {
 }
 
 const V: Record<VariantLabel, Variant> = {
-  A11Y:    { label: 'A11Y',    color: '#c97050' },
-  UI:      { label: 'UI',      color: '#999' },
-  default: { label: 'default', color: '#666' },
-  Base:    { label: 'Base',    color: '#4a7fd4' },
-  Geo:     { label: 'Geo',     color: '#4aad5c' },
+  A11Y:    { label: 'A11Y',    color: ZONE_COLOR.A11Y },
+  UI:      { label: 'UI',      color: ZONE_COLOR.UI },
+  default: { label: 'default', color: ZONE_COLOR.default },
+  Base:    { label: 'Base',    color: ZONE_COLOR.Base },
+  Geo:     { label: 'Geo',     color: ZONE_COLOR.Geo },
 }
 
 // Derived from the canonical substitution table (VISION §7 — src/data/substitutions.json,
@@ -30,22 +31,22 @@ export const GROUP_DEFS: GroupDef[] = SUBS.geomGroups.map(g => ({
 }))
 
 export const LANDING_ZONES = [
-  { label: 'A11Y', start: 0,  end: 10,  mid: 5,  sampleGeom: 3,  color: '#c97050' },
-  { label: 'UI',   start: 15, end: 30,  mid: 22, sampleGeom: 22, color: '#999' },
-  { label: 'Base', start: 40, end: 60,  mid: 50, sampleGeom: 50, color: '#4a7fd4' },
-  { label: 'Geo',  start: 80, end: 100, mid: 90, sampleGeom: 90, color: '#4aad5c' },
+  { label: 'A11Y', start: 0,  end: 10,  mid: 5,  sampleGeom: 3,  color: ZONE_COLOR.A11Y },
+  { label: 'UI',   start: 15, end: 30,  mid: 22, sampleGeom: 22, color: ZONE_COLOR.UI },
+  { label: 'Base', start: 40, end: 60,  mid: 50, sampleGeom: 50, color: ZONE_COLOR.Base },
+  { label: 'Geo',  start: 80, end: 100, mid: 90, sampleGeom: 90, color: ZONE_COLOR.Geo },
 ]
 
 const HATCH = 'repeating-linear-gradient(-45deg, rgba(140,120,0,0.07) 0px, rgba(140,120,0,0.07) 1px, transparent 1px, transparent 10px)'
 
 const ZONE_BG = [
-  { start: 0,  end: 10,  bg: 'rgba(201,112,80,0.06)' },
+  { start: 0,  end: 10,  bg: 'color-mix(in srgb, var(--zone-a11y) 6%, transparent)' },
   { start: 10, end: 15,  bg: HATCH },
-  { start: 15, end: 30,  bg: 'rgba(160,160,160,0.04)' },
+  { start: 15, end: 30,  bg: 'color-mix(in srgb, var(--zone-ui) 4%, transparent)' },
   { start: 30, end: 40,  bg: HATCH },
-  { start: 40, end: 60,  bg: 'rgba(74,127,212,0.05)' },
+  { start: 40, end: 60,  bg: 'color-mix(in srgb, var(--zone-base) 5%, transparent)' },
   { start: 60, end: 80,  bg: HATCH },
-  { start: 80, end: 100, bg: 'rgba(74,173,92,0.05)' },
+  { start: 80, end: 100, bg: 'color-mix(in srgb, var(--zone-geo) 5%, transparent)' },
 ]
 
 const RULER_TICKS = [0, 10, 15, 30, 40, 60, 80, 100]

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { ZONE_COLOR, ZONE_COLOR_FALLBACK, type ZoneLabel } from './zoneColors'
 import './App.css'
 import { Slider } from 'dialkit'
 import 'dialkit/styles.css'
@@ -295,8 +296,7 @@ export default function App() {
           if (!s.tok.isDefault) {
             const saved = [...(glyphThresholdsRef.current[s.tok.glyph] ?? GROUP_DEFS.find(d => d.glyph === s.tok.glyph)?.defaultThresholds ?? [])]
             const sg = variantSampleGeom(s.tok.glyph, s.tok.variantIdx, saved)
-            const varColors: Record<string, string> = { A11Y: '#c97050', UI: '#999', Base: '#4a7fd4', Geo: '#4aad5c' }
-            const col = varColors[s.tok.variantLabel] ?? '#666'
+            const col = ZONE_COLOR[s.tok.variantLabel as ZoneLabel] ?? ZONE_COLOR_FALLBACK
             setTrashedGlyphs(prev => {
               const filtered = prev.filter(t => !(t.glyph === s.tok.glyph && t.variantIdx === s.tok.variantIdx))
               return [...filtered, { glyph: s.tok.glyph, variantIdx: s.tok.variantIdx, variantLabel: s.tok.variantLabel, sourceZone: s.sourceZone, savedThresholds: saved, color: col, sampleGeom: sg }]
@@ -337,8 +337,8 @@ export default function App() {
       const s = dragState
       const savedThresholds = [...(glyphThresholdsRef.current[s.tok.glyph] ?? GROUP_DEFS.find(d => d.glyph === s.tok.glyph)?.defaultThresholds ?? [])]
       const sg = variantSampleGeom(s.tok.glyph, s.tok.variantIdx, savedThresholds)
-      const varColors: Record<string, string> = { A11Y: '#c97050', UI: '#999', Base: '#4a7fd4', Geo: '#4aad5c' }
-      const color = varColors[s.tok.variantLabel] ?? LANDING_ZONES.find(z => z.label === s.sourceZone)?.color ?? '#888'
+      const color = ZONE_COLOR[s.tok.variantLabel as ZoneLabel]
+        ?? LANDING_ZONES.find(z => z.label === s.sourceZone)?.color ?? ZONE_COLOR_FALLBACK
       setTrashedGlyphs(prev => {
         const filtered = prev.filter(t => !(t.glyph === s.tok.glyph && t.variantIdx === s.tok.variantIdx))
         return [...filtered, { glyph: s.tok.glyph, variantIdx: s.tok.variantIdx, variantLabel: s.tok.variantLabel, sourceZone: s.sourceZone, savedThresholds, color, sampleGeom: sg }]
@@ -997,10 +997,10 @@ export default function App() {
                         // default form lives once, in the Default row, rather than being
                         // duplicated (greyed) across every row it lacks a variant for.
                         const ZONE_ROWS: { label: VariantLabel; color: string; geom: number; rclt: boolean }[] = [
-                          { label: 'A11Y',    color: '#c97050', geom: 0,   rclt: true },
+                          { label: 'A11Y',    color: ZONE_COLOR.A11Y, geom: 0,   rclt: true },
                           { label: 'default', color: '#9a9a9a', geom: 25,  rclt: false },
-                          { label: 'Base',    color: '#4a7fd4', geom: 50,  rclt: true },
-                          { label: 'Geo',     color: '#4aad5c', geom: 100, rclt: true },
+                          { label: 'Base',    color: ZONE_COLOR.Base, geom: 50,  rclt: true },
+                          { label: 'Geo',     color: ZONE_COLOR.Geo, geom: 100, rclt: true },
                         ]
                         return (
                           <div className="glyph-strip">
