@@ -16,6 +16,10 @@
   --text-muted: #999;
   --text-dim:   #666;
   --text-faint: #444;
+  /* --text as "R, G, B" for the ink levels in type.css. COMMA-separated on purpose:
+     ink is written rgba(var(--text-rgb), a), and the rgb(... / a) slash form needs
+     space-separated channels, so mixing them drops the colour silently. */
+  --text-rgb: 232, 232, 232;
 
   /* ── Lines ── */
   --border:        #333;
