@@ -214,7 +214,7 @@
   justify-content: center;
   font-size: 30px;
   color: var(--text);
-  background: var(--surface-1);
+  background: var(--surface);
   border-radius: var(--radius);
 }
 /* GEOM swap flash (grid cells + inline text glyphs).

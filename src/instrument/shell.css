@@ -13,7 +13,7 @@
 .rail {
   grid-area: rail;
   border-right: 1px solid var(--border);
-  background: var(--surface-1);
+  background: var(--surface);
   /* No vertical padding: it lives on the header (below) so the sticky seams pin flush
      to the rail's top/bottom edges — padding here would leave a strip above/below a
      stuck seam that scrolling content bleeds through. */
@@ -58,7 +58,7 @@
   padding: 5px 12px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text-muted);
   font-family: var(--ui-font);
   font-size: 12px;
@@ -66,7 +66,7 @@
 }
 /* :not(:disabled) bumps specificity above App.css's global button:hover so the
    fill doesn't go light-on-light — keep dark text on any light fill. */
-.rail-reset:hover:not(:disabled) { background: var(--surface-3); color: var(--text); border-color: var(--text-dim); }
+.rail-reset:hover:not(:disabled) { background: var(--surface-hi); color: var(--text); border-color: var(--text-dim); }
 .rail-reset:disabled { cursor: default; }
 
 /* hold-to-compare — text in the floor beside Download; held = STOCK-hue bold+underline. */
@@ -134,7 +134,7 @@
   flex: 1;
   padding: 6px 0;
   border: 1px solid var(--border);
-  background: var(--surface-2);
+  background: var(--surface);
   color: var(--text-muted);
   border-radius: var(--radius);
   cursor: pointer;
@@ -150,7 +150,7 @@
 .rail-preset {
   width: 100%;
   padding: 7px 10px;
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   color: var(--text);
@@ -271,7 +271,7 @@
 .state-tag {
   padding: 3px 12px;
   border-radius: var(--radius-pill);
-  background: var(--surface-2);
+  background: var(--surface);
   font-size: 12px;
   font-weight: 700;
 }
@@ -370,7 +370,7 @@
   bottom: 0;
   z-index: 3;
   border-top: 1px solid var(--border);
-  background: var(--surface-1);
+  background: var(--surface);
   padding: 12px 24px 14px;
   display: flex;
   flex-direction: column;
@@ -476,7 +476,7 @@
   gap: 14px;
   padding: 12px 24px;
   border-top: 1px solid var(--border);
-  background: var(--surface-2);
+  background: var(--surface);
 }
 .floor-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
 .zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
@@ -499,7 +499,7 @@
   padding: 8px 16px;
   border-radius: var(--radius);
   border: 1px solid var(--border);
-  background: var(--surface-3);
+  background: var(--surface-hi);
   color: var(--text);
   font-family: var(--ui-font);
   font-size: 13px;
@@ -521,7 +521,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   display: flex; align-items: center; gap: 14px;
   padding: 8px 10px 8px 16px;
   border-radius: calc(var(--radius) + 4px);
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
 }
@@ -536,7 +536,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   display: flex; flex-direction: column; gap: 13px;
   padding: 10px 14px 14px;
   border-radius: calc(var(--radius) + 2px);
-  background: var(--surface-2);
+  background: var(--surface);
   border: 1px solid var(--border);
   box-shadow: 0 6px 24px rgba(0, 0, 0, .4);
 }
@@ -558,7 +558,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-btn {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
   padding: 6px 9px; border-radius: var(--radius);
-  background: var(--surface-3); border: 1px solid var(--border);
+  background: var(--surface-hi); border: 1px solid var(--border);
   color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer;
 }
 /* App.css's global button:hover paints buttons white; keep it, but flip the text to
@@ -569,7 +569,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-list {
   position: absolute; top: calc(100% + 4px); left: 0; min-width: 212px; z-index: 60;
   display: flex; flex-direction: column; padding: 4px;
-  border-radius: var(--radius); background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
   box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
 }
 .style-menu-item {
@@ -577,7 +577,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   padding: 6px 8px; border: none; border-radius: 6px; background: none;
   color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer; text-align: left;
 }
-.style-menu-item.on { background: var(--surface-3); }
+.style-menu-item.on { background: var(--surface-hi); }
 .style-menu-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
 .style-menu-item:hover .style-badge { color: var(--bg); border-color: rgba(0, 0, 0, .35); }
 .style-menu-item:hover .style-menu-check { color: var(--bg); }
@@ -640,7 +640,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
      bottom, so a seam stays flush with the viewport while the panel scrolls past — and
      only slides in normal flow once the panel's own edge reaches it. Opaque bg + z so
      the scrolling content passes cleanly behind. */
-  position: sticky; z-index: 4; background: var(--surface-1);
+  position: sticky; z-index: 4; background: var(--surface);
 }
 .rail-seam:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
 .rail-seam-chv { width: 20px; height: 9px; display: block; }
@@ -653,7 +653,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* App.css has a global button:hover that paints buttons white — override it so the
    seam NEVER flashes white in dark mode. :not(:disabled) wins the specificity race. */
 .rail-seam:hover:not(:disabled),
-.rail-seam:focus-visible:not(:disabled) { background: var(--surface-2); }
+.rail-seam:focus-visible:not(:disabled) { background: var(--surface); }
 
 .rail-seam--up { top: 0; color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
 .rail-seam--up:hover:not(:disabled) { color: rgba(232,232,232,.6); }
@@ -670,8 +670,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   font-family: var(--ui-font); font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
   padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer; background: none;
 }
-.freezer-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-3); }
-.freezer-reset:hover:not(:disabled) { background: var(--surface-2); }
+.freezer-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-hi); }
+.freezer-reset:hover:not(:disabled) { background: var(--surface); }
 .freezer-reset:disabled { color: var(--text-faint); font-weight: 400; cursor: default; }
 
 .freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
@@ -685,7 +685,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   width: 100%; padding: 5px 6px; border: none; background: none; cursor: pointer; text-align: left;
   border-radius: 6px;
 }
-.freezer-row:hover { background: var(--surface-2); }
+.freezer-row:hover { background: var(--surface); }
 
 /* before → after aligned around the arrow (Keynote): a fixed before-cell so the before
    glyphs share a left edge, a fixed arrow column so the arrows form a vertical line, and
@@ -713,7 +713,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .freezer-check {
   display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
   width: 18px; height: 18px; border-radius: 5px;
-  background: var(--surface-3); border: 1px solid var(--border); color: transparent;
+  background: var(--surface-hi); border: 1px solid var(--border); color: transparent;
   transition: background var(--dur-fast), border-color var(--dur-fast), color var(--dur-fast);
 }
 .freezer-row:hover .freezer-check { border-color: var(--text-dim); }
@@ -750,8 +750,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 /* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
    as actionable, not the muted header gray. */
-.matrix-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-3); }
-.matrix-reset:hover:not(:disabled) { background: var(--surface-2); }
+.matrix-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-hi); }
+.matrix-reset:hover:not(:disabled) { background: var(--surface); }
 .matrix-reset:disabled { color: var(--text-faint); font-weight: 400; background: none; cursor: default; }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
 .matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: 10px; letter-spacing: .04em; color: rgba(255,255,255,.2); }
@@ -796,7 +796,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-val {
   position: absolute; top: 3px; transform: translateX(-50%);
   font-family: var(--ui-font); font-size: 10px; letter-spacing: .02em; color: var(--text);
-  background: var(--surface-3); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  background: var(--surface-hi); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   pointer-events: none; z-index: 5; white-space: nowrap;
 }
 .matrix-val--geom { top: -2px; }
@@ -820,7 +820,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .vm-row-label { font-size: 13px; color: var(--text-muted); }
 .vm-num {
   width: 84px; text-align: right; font-family: var(--ui-font); font-size: 13px; color: var(--text);
-  background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 9px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 9px;
 }
 
 /* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */

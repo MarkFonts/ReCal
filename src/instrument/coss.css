@@ -44,7 +44,7 @@
   flex-direction: column;
   border: 1px solid var(--border);
   border-radius: 14px;
-  background: var(--surface-2);
+  background: var(--surface);
   overflow: hidden;
 }
 .coss-card-head { padding: 15px 17px 13px; }
@@ -82,7 +82,7 @@
 .ui-label { display: block; font-size: 12px; margin-bottom: 6px; }
 .ui-field {
   border: 1px solid var(--border); border-radius: 8px; padding: 9px 11px;
-  font-size: 13px; color: var(--text); background: var(--surface-1);
+  font-size: 13px; color: var(--text); background: var(--surface);
 }
 .ui-field .ph { color: var(--text-dim); }
 .ui-help { font-size: 11.5px; color: var(--text-dim); margin-top: 6px; }
@@ -104,7 +104,7 @@
   display: flex; align-items: center; justify-content: space-between; gap: 8px;
   padding: 7px 9px; border-radius: 7px; font-size: 13px;
 }
-.ui-item.on { background: var(--surface-3); }
+.ui-item.on { background: var(--surface-hi); }
 .ui-kbd {
   font-size: 11px; padding: 1px 5px; border: 1px solid var(--border); border-radius: 4px;
   color: var(--text-muted); font-feature-settings: 'tnum' 1;
@@ -140,16 +140,16 @@
 .ui-avatar {
   width: 30px; height: 30px; border-radius: 50%; margin-left: -8px;
   display: grid; place-items: center; font-size: 11.5px;
-  background: var(--surface-3); color: var(--text); border: 1.5px solid var(--surface-2);
+  background: var(--surface-hi); color: var(--text); border: 1.5px solid var(--surface);
 }
 .ui-avatar:first-child { margin-left: 0; }
 
 .ui-switch { width: 34px; height: 20px; border-radius: 999px; background: var(--text); position: relative; flex: 0 0 auto; }
 .ui-switch::after { content: ''; position: absolute; width: 15px; height: 15px; border-radius: 50%; background: var(--bg); top: 2.5px; right: 2.5px; }
-.ui-switch--off { background: var(--surface-3); }
+.ui-switch--off { background: var(--surface-hi); }
 .ui-switch--off::after { left: 2.5px; right: auto; background: var(--text-muted); }
 
-.ui-track { width: 100%; height: 5px; border-radius: 3px; background: var(--surface-3); position: relative; }
+.ui-track { width: 100%; height: 5px; border-radius: 3px; background: var(--surface-hi); position: relative; }
 .ui-track-fill { position: absolute; left: 0; top: 0; height: 100%; border-radius: 2px; background: var(--text); }
 .ui-thumb { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: var(--text); transform: translate(-50%, -50%); }
 .ui-track--drag { cursor: grab; touch-action: none; }
@@ -180,7 +180,7 @@
 .ui-delta { font-size: 12px; color: #46c07a; }
 
 .ui-cap { font-size: 11.5px; color: var(--text-dim); text-align: center; margin-top: 8px; }
-.ui-table tr.total td { border-bottom: none; background: var(--surface-3); }
+.ui-table tr.total td { border-bottom: none; background: var(--surface-hi); }
 
 .ui-check { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--border); display: grid; place-items: center; font-size: 11px; color: var(--bg); flex: 0 0 auto; }
 .ui-check.on { background: var(--text); border-color: var(--text); }
@@ -189,7 +189,7 @@
 .ui-opt { display: flex; align-items: center; gap: 9px; font-size: 13px; padding: 4px 0; }
 
 .ui-toast, .ui-dialog {
-  border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; background: var(--surface-1);
+  border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; background: var(--surface);
 }
 .ui-toast { box-shadow: 0 6px 20px rgba(0, 0, 0, .35); }
 .ui-toast-title, .ui-dialog-title { font-size: 13.5px; }
@@ -203,7 +203,7 @@
 
 .ui-nav { display: flex; flex-direction: column; gap: 1px; }
 .ui-nav-item { padding: 8px 10px; border-radius: 8px; font-size: 13px; color: var(--text-muted); }
-.ui-nav-item.on { background: var(--surface-3); color: var(--text); }
+.ui-nav-item.on { background: var(--surface-hi); color: var(--text); }
 .ui-nav-sec { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--text-dim); padding: 6px 10px 2px; }
 
 .ui-empty { text-align: center; padding: 6px 4px; }
@@ -213,7 +213,7 @@
 .ui-sep { height: 1px; background: var(--border-subtle); margin: 5px 0; }
 
 /* Skeleton — the one particle that IS grey bars (a loading placeholder). */
-.ui-sk { background: var(--surface-3); border-radius: 6px; position: relative; overflow: hidden; }
+.ui-sk { background: var(--surface-hi); border-radius: 6px; position: relative; overflow: hidden; }
 .ui-sk::after { content: ''; position: absolute; inset: 0; transform: translateX(-100%);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .07), transparent); animation: coss-sk 1.4s infinite; }
 .ui-sk--circle { border-radius: 50%; flex: 0 0 auto; }
@@ -231,7 +231,7 @@
   position: fixed; z-index: 60; width: max-content;
   display: flex; align-items: center; gap: 9px;
   padding: 8px 14px; border-radius: 999px;
-  background: var(--surface-2); border: 1px solid var(--border); box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 6px 20px rgba(0, 0, 0, .45);
   color: var(--text-muted); font-size: 12.5px;
 }
 
@@ -251,25 +251,25 @@
   transition: background .12s ease, border-color .12s ease, color .12s ease, opacity .12s ease;
 }
 .ui-btn:hover { border-color: var(--text); }
-.ui-btn--ghost:hover { background: var(--surface-3); border-color: transparent; }
+.ui-btn--ghost:hover { background: var(--surface-hi); border-color: transparent; }
 .ui-btn--primary:hover { opacity: .88; }
 .ui-btn:active { transform: translateY(0.5px); }
-.ui-item:hover:not(.on) { background: var(--surface-3); }
-.ui-nav-item:hover:not(.on) { background: var(--surface-3); color: var(--text); }
+.ui-item:hover:not(.on) { background: var(--surface-hi); }
+.ui-nav-item:hover:not(.on) { background: var(--surface-hi); color: var(--text); }
 .ui-tab:hover:not(.on) { color: var(--text); }
 .ui-page:hover:not(.on) { border-color: var(--text); color: var(--text); }
 .ui-opt:hover { color: var(--text); }
 .ui-field:hover { border-color: var(--text-muted); }
-.ui-seg > span:hover:not(.on) { background: var(--surface-3); color: var(--text); }
+.ui-seg > span:hover:not(.on) { background: var(--surface-hi); color: var(--text); }
 
 /* Paginated list panel — a whole column that reads as a real UI surface. */
 .ui-rec { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: background .12s ease; }
-.ui-rec:hover { background: var(--surface-3); }
+.ui-rec:hover { background: var(--surface-hi); }
 .ui-rec-sub { font-size: 11.5px; color: var(--text-dim); }
 
 /* ── More particles ── */
 /* Card */
-.ui-card2 { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--surface-1); }
+.ui-card2 { border: 1px solid var(--border); border-radius: 10px; padding: 12px; background: var(--surface); }
 .ui-card2-h { font-size: 14px; }
 .ui-card2-p { font-size: 12px; color: var(--text-muted); margin-top: 3px; line-height: var(--vm-lh, 1.4); }
 
@@ -278,19 +278,19 @@
 .ui-cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
 .ui-cal-w { font-size: 10.5px; color: var(--text-dim); text-align: center; padding: 2px 0; }
 .ui-cal-d { font-size: 12px; text-align: center; padding: 5px 0; border-radius: 6px; font-feature-settings: 'tnum' 1; color: var(--text-muted); cursor: pointer; transition: background .12s ease; }
-.ui-cal-d:hover { background: var(--surface-3); color: var(--text); }
+.ui-cal-d:hover { background: var(--surface-hi); color: var(--text); }
 .ui-cal-d.on { background: var(--text); color: var(--bg); }
 .ui-cal-d.dim { color: var(--text-faint); }
 
 /* Chart (bars) */
 .ui-chart { display: flex; align-items: flex-end; gap: 7px; height: 88px; }
-.ui-bar { flex: 1; background: var(--surface-3); border-radius: 4px 4px 0 0; }
+.ui-bar { flex: 1; background: var(--surface-hi); border-radius: 4px 4px 0 0; }
 .ui-bar.hi { background: var(--text); }
 .ui-chart-x { display: flex; gap: 7px; margin-top: 6px; }
 .ui-chart-x span { flex: 1; text-align: center; font-size: 10px; color: var(--text-dim); }
 
 /* Code block */
-.ui-code { background: var(--surface-1); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: var(--vm-lh, 1.6); color: var(--text-muted); font-feature-settings: 'tnum' 1; overflow: hidden; }
+.ui-code { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 12px; line-height: var(--vm-lh, 1.6); color: var(--text-muted); font-feature-settings: 'tnum' 1; overflow: hidden; }
 .ui-code .k { color: var(--text); }
 
 /* Kbd shortcut row */
@@ -311,10 +311,10 @@
 .ui-toolbar { display: inline-flex; border: 1px solid var(--border); border-radius: 9px; overflow: hidden; }
 .ui-tool { padding: 7px 11px; font-size: 13px; color: var(--text-muted); border-left: 1px solid var(--border); cursor: pointer; transition: background .12s ease, color .12s ease; }
 .ui-tool:first-child { border-left: none; }
-.ui-tool:hover, .ui-tool.on { background: var(--surface-3); color: var(--text); }
+.ui-tool:hover, .ui-tool.on { background: var(--surface-hi); color: var(--text); }
 
 /* Login / Popover / Hover card panels */
-.ui-panel { border: 1px solid var(--border); border-radius: 10px; padding: 13px; background: var(--surface-1); }
+.ui-panel { border: 1px solid var(--border); border-radius: 10px; padding: 13px; background: var(--surface); }
 .ui-panel-h { font-size: 14px; margin-bottom: 10px; }
 
 /* Stepper */
@@ -335,7 +335,7 @@
 .ui-menu {
   position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
   min-width: 216px; z-index: 60; padding: 5px; border-radius: 11px;
-  background: var(--surface-2); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .55);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0, 0, 0, .55);
 }
 .ui-menu-sec { font-size: 11.5px; color: var(--text-dim); padding: 6px 9px 3px; }
 .ui-menu-item {
@@ -343,7 +343,7 @@
   padding: 7px 9px; border-radius: 7px; font-size: 13.5px; cursor: pointer; white-space: nowrap;
   transition: background .12s ease;
 }
-.ui-menu-item:hover { background: var(--surface-3); }
+.ui-menu-item:hover { background: var(--surface-hi); }
 .ui-menu-del { color: #e0603a; }
 .ui-menu .ui-switch { width: 30px; height: 18px; }
 .ui-menu .ui-switch::after { width: 13px; height: 13px; }

@@ -13,9 +13,12 @@
      during any collapse — a #0f0f0f stage puts a grey cast behind the specimen. */
   --stage-deep: #000;
   --bg:        #0f0f0f;
-  --surface-1: #111;
-  --surface-2: #1a1a1a;
-  --surface-3: #252525;
+  /* Three steps, house-wide (wm-primitives#3). The old four had --surface-1 at #111 —
+     two values above --bg — which is why GlyphPicker's cells were invisible here while
+     they read fine in font-proofer off a hardcoded fallback. #111 is gone; what used it
+     now sits on --surface. --stage-deep is NOT part of this scale, see above. */
+  --surface:    #1a1a1a;   /* raised: panels, cards, cells, inputs */
+  --surface-hi: #252525;   /* hover / active / selected */
 
   /* ── Text (existing scale) ── */
   --text:       #e8e8e8;
@@ -31,7 +34,7 @@
   --border:        #333;
   --border-subtle: #222;
   --edit-rail:     rgba(255, 255, 255, 0.28);  /* "you can type here" left rail */
-  --scrollbar-thumb:       var(--surface-3);   /* house 6px scrollbar (wm-primitives) */
+  --scrollbar-thumb:       var(--surface-hi);   /* house 6px scrollbar (wm-primitives) */
   --scrollbar-thumb-hover: var(--text-dim);
   /* GlyphPicker chrome pin: the UI font is CalSansVF itself, so picker chrome text
      locks to the Text-UI instance instead of inheriting the specimen's axes. */
