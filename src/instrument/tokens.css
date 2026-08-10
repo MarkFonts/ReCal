@@ -38,7 +38,8 @@
   --scrollbar-thumb-hover: var(--text-dim);
   /* GlyphPicker chrome pin: the UI font is CalSansVF itself, so picker chrome text
      locks to the Text-UI instance instead of inheriting the specimen's axes. */
-  --gp-ui-fvs: 'opsz' 10, 'GEOM' 25;
+  /* GlyphPicker chrome: GEOM only. opsz is left to track each element's own size. */
+  --gp-ui-fvs: 'GEOM' 25;
 
   /* ── Accent & origin markers ──
      ◆ baked-default marker takes the site accent; ● preview marker a neutral —
@@ -84,17 +85,21 @@
   --ui-font: 'CalSansVF', sans-serif;
 }
 
-/* The UI-type recipe = the existing chrome instance (opsz 10, GEOM 25); wght is
-   omitted so font-weight still drives bold UI elements. Scoped to the instrument
-   tree so it never collides with the classic App.css `body` rule — both
-   stylesheets are bundled together and always load. */
+/* The UI-type recipe = GEOM 25 (the UI landing) and nothing else. wght is omitted so
+   font-weight still drives bold UI elements, and opsz is omitted so the axis can do its
+   job: every glyph gains sidebearing between opsz 10 and 8, which is precisely the
+   letterfit small chrome needs. This used to pin 'opsz' 10 with optical-sizing:none, which
+   froze the whole tree one step above the floor — 8px labels were being set with 10px
+   letterfit, and the a drawn for opsz 8 could never appear. Scoped to the instrument tree
+   so it never collides with the classic App.css `body` rule — both stylesheets are bundled
+   together and always load. */
 .instrument-root {
   min-height: 100vh;
   background: var(--bg);
   color: var(--text);
   font-family: var(--ui-font);
-  font-optical-sizing: none;
-  font-variation-settings: 'opsz' 10, 'GEOM' 25;
+  font-optical-sizing: auto;
+  font-variation-settings: 'GEOM' 25;
 }
 
 /* Numeric readouts / value columns: Cal Sans + tabular figures, never a mono
