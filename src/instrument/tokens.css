@@ -66,14 +66,21 @@
   --freeze-gold-dim: rgba(217, 164, 65, .16);
 
   /* ── Zones (reuse existing exactly) ── */
-  /* Lifted from the original muted set. The old values sat at 40-62% saturation and, with
-     an .6 opacity on top, the chips read as disabled rather than selectable. Same hue
-     angles, more chroma and lightness. */
-  --zone-a11y:       #e08a63;
-  --zone-ui:         #999;   /* stays neutral: UI is the default, it should not announce */
-  --zone-ui-on-grid: #fff;   /* ...except as a chip, where something is always selected */
-  --zone-base:       #6f9ee8;
-  --zone-geo:        #5fc678;
+  /* The zones as they render in the Type Matrix and the glyph strips: muted, because there
+     they are a wash behind dense content and a background classification, not a control. */
+  --zone-a11y:       #c97050;
+  --zone-ui:         #999;   /* neutral: UI is the default, it should not announce itself */
+  --zone-ui-on-grid: #fff;   /* UI renders white inside the zone grid */
+  --zone-base:       #4a7fd4;
+  --zone-geo:        #4aad5c;
+
+  /* The same four as CHIPS. A chip is a control you press, so it gets the hue at full
+     strength — same hue angles, more chroma and lightness. UI takes the on-grid white,
+     since a chip group always has something selected and grey there reads as disabled. */
+  --zone-a11y-chip:  #e08a63;
+  --zone-ui-chip:    var(--zone-ui-on-grid);
+  --zone-base-chip:  #6f9ee8;
+  --zone-geo-chip:   #5fc678;
 
   /* ── Motion (house spring, spec directive 4) ── */
   --spring:   cubic-bezier(.34, 1.45, .64, 1);
