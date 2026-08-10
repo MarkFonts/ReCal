@@ -41,7 +41,7 @@
   white-space: nowrap;
 }
 .rail--collapsed:hover .rail-collapsed-label { color: var(--text); }
-.rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: 20px; }
+.rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: var(--pad-5, 16px); }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */
 .rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
@@ -55,7 +55,7 @@
 .rail-sub { font-size: 11px; color: var(--text-dim); margin-top: 3px; white-space: nowrap; }
 .rail-reset {
   flex-shrink: 0;
-  padding: 5px 12px;
+  padding: var(--pad-1, 4px) var(--pad-4, 12px);
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -151,7 +151,7 @@
 /* "Start from…" preset dropdown */
 .rail-preset {
   width: 100%;
-  padding: 7px 10px;
+  padding: var(--pad-2, 6px) var(--pad-3, 8px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -168,7 +168,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: 14px;
+  padding-top: var(--pad-4, 12px);
   border-top: 1px solid var(--border-subtle);
 }
 .rail-footer .state-tag { align-self: flex-start; }
@@ -200,13 +200,13 @@
   overflow: hidden;
   /* reserve the collapsed play-bar height so the stage/scene-bar clear it and the
      stage height stays constant whether the play bloom is open or closed */
-  padding-bottom: 54px;
+  padding-bottom: var(--pad-8, 48px);
 }
 /* UI (COSS) has no bottom ● dock, so it reclaims that reserved height (no bottom crop). */
 .canvas-body--full { padding-bottom: 0; }
 /* …and the COSS board manages its own inset, so drop the scroll box's big bottom padding
    (the 64px blank band under the board). */
-.stage-scroll.stage-scroll--flush { padding: 28px 48px 0; }
+.stage-scroll.stage-scroll--flush { padding: var(--pad-6, 24px) var(--pad-8, 48px) 0; }
 /* Vertical Metrics: the letterbox preview is full-bleed — no padding, no scroll gutter. */
 .stage-scroll.stage-scroll--bleed { padding: 0; scrollbar-gutter: auto; overflow: hidden; }
 .canvas-bar {
@@ -224,7 +224,7 @@
   min-height: 42px;            /* = tab-button row (32) + the 10px bottom padding, reserved
                                   with or without a submenu so the label never jumps up on
                                   Words/UI (no controls). box-sizing is border-box. */
-  padding: 0 24px 10px 32px;   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
+  padding: 0 var(--pad-6, 24px) var(--pad-3, 8px) var(--pad-7, 32px);   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
 }
 /* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
    always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
@@ -292,7 +292,7 @@
   overflow-y: auto;      /* the scene content scrolls here; the overlay stays put */
   overflow-x: hidden;    /* Scale bleed clips at the canvas edge — no h-scrollbar */
   scrollbar-gutter: stable;
-  padding: 40px 48px 64px;
+  padding: var(--pad-7, 32px) var(--pad-8, 48px) var(--pad-9, 64px);
 }
 
 /* Scrollbars now come from the shared house scrollbar (wm-primitives scrollbar.css, 6px). */
@@ -326,7 +326,7 @@
   z-index: 4;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: 16px 20px 24px;
+  padding: var(--pad-5, 16px) var(--pad-5, 16px) var(--pad-6, 24px);
   text-align: right;
   --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
@@ -373,7 +373,7 @@
   z-index: 3;
   border-top: 1px solid var(--border);
   background: var(--surface);
-  padding: 12px 24px 14px;
+  padding: var(--pad-4, 12px) var(--pad-6, 24px) var(--pad-4, 12px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -404,7 +404,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 5px 12px;
+  padding: var(--pad-1, 4px) var(--pad-4, 12px);
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background: transparent;
@@ -548,7 +548,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   right: 20px; bottom: 16px;
   z-index: 50;
   display: flex; align-items: center; gap: 14px;
-  padding: 8px 10px 8px 16px;
+  padding: var(--pad-3, 8px) var(--pad-3, 8px) var(--pad-3, 8px) var(--pad-5, 16px);
   border-radius: calc(var(--radius) + 4px);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -563,7 +563,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   z-index: 40;
   width: 178px;
   display: flex; flex-direction: column; gap: 13px;
-  padding: 10px 14px 14px;
+  padding: var(--pad-3, 8px) var(--pad-4, 12px) var(--pad-4, 12px);
   border-radius: calc(var(--radius) + 2px);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -586,7 +586,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu { position: relative; }
 .style-menu-btn {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
-  padding: 6px 9px; border-radius: var(--radius);
+  padding: var(--pad-2, 6px) var(--pad-3, 8px); border-radius: var(--radius);
   background: var(--surface-hi); border: 1px solid var(--border);
   color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer;
 }
@@ -617,7 +617,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-badges { display: flex; gap: 4px; flex-shrink: 0; }
 .style-badge {
   font-size: 10px; color: var(--text-dim); white-space: nowrap;
-  padding: 1px 5px; border-radius: 4px; border: 1px solid var(--border);
+  padding: var(--pad-hair, 1px) var(--pad-1, 4px); border-radius: 4px; border: 1px solid var(--border);
 }
 
 .ofl-check {
@@ -663,7 +663,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-seam {
   all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
-  gap: 10px; cursor: pointer; user-select: none; padding: 20px 16px;
+  gap: 10px; cursor: pointer; user-select: none; padding: var(--pad-5, 16px) var(--pad-5, 16px);
   font-family: var(--ui-font); font-size: 12px; letter-spacing: .18em;
   /* Pin to the rail's scroll edges: the up-seam sticks to the top, the down-seam to the
      bottom, so a seam stays flush with the viewport while the panel scrolls past — and
@@ -692,7 +692,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 /* ── ssXX Freezer (rail group 2) ── Keynote Typography-panel rows: base → variant in
    the live font, name, toggle. Gold = frozen (held off the GEOM continuum). */
-.freezer { display: flex; flex-direction: column; padding: 0 7px; }
+.freezer { display: flex; flex-direction: column; padding: 0 var(--pad-2, 6px); }
 .freezer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .freezer-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .freezer-reset {
@@ -706,12 +706,12 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
 .freezer-section-title {
   font-family: var(--ui-font); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
-  color: var(--text-dim); padding: 10px 4px 4px;
+  color: var(--text-dim); padding: var(--pad-3, 8px) var(--pad-1, 4px) var(--pad-1, 4px);
 }
 .freezer-list { display: flex; flex-direction: column; }
 .freezer-row {
   display: grid; grid-template-columns: auto 1fr 18px; align-items: center; gap: 9px;
-  width: 100%; padding: 5px 6px; border: none; background: none; cursor: pointer; text-align: left;
+  width: 100%; padding: var(--pad-1, 4px) var(--pad-2, 6px); border: none; background: none; cursor: pointer; text-align: left;
   border-radius: 6px;
 }
 .freezer-row:hover { background: var(--surface); }
@@ -770,7 +770,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* ── GEOM swap editor (type matrix), instrument-styled ── */
 /* Horizontal padding insets everything together (bands, shade, axis labels are all
    positioned within this box), so nothing jams the rail edge. */
-.matrix { display: flex; flex-direction: column; padding: 0 7px; }
+.matrix { display: flex; flex-direction: column; padding: 0 var(--pad-2, 6px); }
 .matrix-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .matrix-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
@@ -849,7 +849,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .vm-row-label { font-size: 13px; color: var(--text-muted); }
 .vm-num {
   width: 84px; text-align: right; font-family: var(--ui-font); font-size: 13px; color: var(--text);
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 6px 9px;
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--pad-2, 6px) var(--pad-3, 8px);
 }
 
 /* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */
