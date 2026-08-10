@@ -122,7 +122,12 @@ export function Matrix() {
             ? base.map((v, i) => (i === drag.idx ? drag.value : v))
             : base
           const bounds = [0, ...shown, 100]
-          const activeIdx = bounds.findIndex((b, i) => i < bounds.length - 1 && geom >= b && geom < bounds[i + 1])
+          // Half-open bands [b, next) so a value lands in exactly one — except the last,
+          // which has to include its own upper bound. Without that, geom === 100 matched no
+          // band, findIndex returned -1, and EVERY lane rendered inactive: at 99 the rows
+          // lit up, at 100 the whole editor looked switched off.
+          const activeIdx = bounds.findIndex((b, i) =>
+            i < bounds.length - 1 && geom >= b && (i === bounds.length - 2 ? geom <= bounds[i + 1] : geom < bounds[i + 1]))
           return (
             <div className="matrix-lane" key={def.glyph} ref={el => { laneRefs.current[def.glyph] = el }}>
               {(state.shippedThresholds[def.glyph] ?? []).map((v, i) => (

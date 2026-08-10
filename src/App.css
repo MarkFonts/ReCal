@@ -1205,6 +1205,8 @@ input[type='range'] {
 /* GEOM default handle */
 
 .gg-geom-handle {
+  /* half the handle's own width — the clamp in GlyphGroups keeps it inside the track */
+  --gg-handle-half: 21px;
   position: absolute;
   top: 50%;
   transform: translate(-50%, -50%);

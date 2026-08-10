@@ -515,7 +515,14 @@ export function GlyphGroups({ thresholds, geomDefault, defaults, opszDefault, on
             </span>
           )}
           {/* Draggable GEOM default handle */}
-          <div className="gg-geom-handle" style={{ left: `${geomDefault}%` }} onPointerDown={startGeomDrag}>
+          {/* left is clamped by half the handle's width so it never straddles the track edge.
+              At GEOM 0/100 it used to sit centred on the boundary: the inner half fell on the
+              dark ground and read as nothing, and the outer half was cut off by
+              .stage-scroll's overflow-x, leaving only the arrows — so at the extremes the
+              control looked absent rather than editable. */}
+          <div className="gg-geom-handle"
+               style={{ left: `clamp(var(--gg-handle-half), ${geomDefault}%, calc(100% - var(--gg-handle-half)))` }}
+               onPointerDown={startGeomDrag}>
             <div className="gg-geom-tooltip">{Math.round(geomDefault)}</div>
             <div className="gg-geom-circle">
               <span className="gg-arrow">‹</span>
