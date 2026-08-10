@@ -105,7 +105,8 @@
   text-underline-offset: 4px;
 }
 
-.floor-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.floor-toggle {
+  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
 .floor-toggle input { accent-color: var(--accent); }
 .floor-toggle a { color: var(--text); text-decoration: underline; }
 .rail-group { display: flex; flex-direction: column; gap: 12px; }
@@ -143,7 +144,8 @@
 }
 .stepper button.on { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
 
-.rail-toggle { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.rail-toggle {
+  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
 .rail-toggle input { accent-color: var(--accent); }
 
 /* "Start from…" preset dropdown */
@@ -824,7 +826,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 
 /* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */
-.vm-toggle { display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+.vm-toggle {
+  font-family: var(--ui-font, inherit); display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
 .vm-toggle input { accent-color: var(--accent); margin-top: 2px; flex: none; }
 .vm-toggle-lbl { line-height: 1.4; }
 .vm-warn { display: block; color: var(--text-dim); font-size: 11px; }
