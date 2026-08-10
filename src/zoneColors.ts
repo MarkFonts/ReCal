@@ -31,5 +31,18 @@ export const ZONE_COLOR_SHORT: Record<string, string> = {
   G: ZONE_COLOR.Geo,
 }
 
+/**
+ * The palette for CHIPS specifically. Identical to ZONE_COLOR except UI, which takes
+ * --zone-ui-on-grid. --zone-ui is a neutral grey on purpose — UI is the default landing
+ * and a default should not announce itself — but in a chip group something is always
+ * selected, so grey reads as disabled rather than chosen.
+ */
+export const ZONE_CHIP_COLOR = {
+  A11y: 'var(--zone-a11y)',
+  UI: 'var(--zone-ui-on-grid)',
+  Base: 'var(--zone-base)',
+  Geo: 'var(--zone-geo)',
+} as const
+
 /** Fallback for a label that is not a landing at all. */
 export const ZONE_COLOR_FALLBACK = 'var(--text-dim)'

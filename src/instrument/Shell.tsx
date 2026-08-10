@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus } from '../../shared/index' // wm-primitives (git submodule)
+import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
@@ -48,10 +49,10 @@ function ResetIcon() {
 
 // Instrument zone anchors — each chip pins GEOM to one exact value (owner spec).
 const ZONES = [
-  { label: 'A11y', geom: 0, color: 'var(--zone-a11y)' },
-  { label: 'UI', geom: 25, color: 'var(--zone-ui)' },
-  { label: 'Base', geom: 50, color: 'var(--zone-base)' },
-  { label: 'Geo', geom: 100, color: 'var(--zone-geo)' },
+  { label: 'A11y', geom: 0, color: ZONE_CHIP_COLOR.A11y },
+  { label: 'UI', geom: 25, color: ZONE_CHIP_COLOR.UI },
+  { label: 'Base', geom: 50, color: ZONE_CHIP_COLOR.Base },
+  { label: 'Geo', geom: 100, color: ZONE_CHIP_COLOR.Geo },
 ]
 const nearestZoneLabel = (geom: number) =>
   ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
@@ -161,12 +162,13 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
             return (
               <button key={z.label}
                 className={`zone-chip${on ? ' on' : ''}`}
-                style={on ? { background: z.color } : { color: z.color, opacity: .6 }}
+                style={on ? { background: z.color } : { color: z.color }}
+                data-label={z.label}
                 onClick={() => {
                   dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
                   dispatch({ type: 'clearPreview' })
                 }}>
-                {z.label}
+                <span>{z.label}</span>
               </button>
             )
           })}

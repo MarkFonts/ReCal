@@ -66,11 +66,14 @@
   --freeze-gold-dim: rgba(217, 164, 65, .16);
 
   /* ── Zones (reuse existing exactly) ── */
-  --zone-a11y:       #c97050;
-  --zone-ui:         #999;
-  --zone-ui-on-grid: #fff;   /* UI renders white inside the zone grid */
-  --zone-base:       #4a7fd4;
-  --zone-geo:        #4aad5c;
+  /* Lifted from the original muted set. The old values sat at 40-62% saturation and, with
+     an .6 opacity on top, the chips read as disabled rather than selectable. Same hue
+     angles, more chroma and lightness. */
+  --zone-a11y:       #e08a63;
+  --zone-ui:         #999;   /* stays neutral: UI is the default, it should not announce */
+  --zone-ui-on-grid: #fff;   /* ...except as a chip, where something is always selected */
+  --zone-base:       #6f9ee8;
+  --zone-geo:        #5fc678;
 
   /* ── Motion (house spring, spec directive 4) ── */
   --spring:   cubic-bezier(.34, 1.45, .64, 1);
@@ -80,6 +83,15 @@
   /* ── Shape ── */
   --radius:      8px;
   --radius-pill: 999px;
+  /* Corner geometry. CSS superellipse(k) uses exponent 2^k: k=1 is a circular arc, k=2 is
+     Apple's squircle. At 1.2 a pill keeps its round cap while curvature eases to zero
+     before the straight edge, so the cap no longer meets the side at a G1 break. */
+  --corner-k: 1.2;
+  /* Chip states. Weight is the signal for a primary action; the strokes acknowledge. */
+  --chip-wght-off: 450;
+  --chip-wght-on:  630;
+  --stroke-hover:  1.2px;
+  --stroke-press:  1.8px;
 
   /* ── Type: Cal Sans is the UI typeface for everything ── */
   --ui-font: 'CalSansVF', sans-serif;

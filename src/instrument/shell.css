@@ -482,20 +482,47 @@
 }
 .floor-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
 .zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-/* Text-only; ACTIVE zone keeps a small fill (zone colour IS information). Inactive =
-   zone colour, muted (inline). No weight change → no wiggle. */
+/* The GEOM zones are near-primary actions, so they carry weight, not just colour.
+   ACTIVE zone takes a fill (zone colour IS information); inactive keeps its hue at full
+   strength — the old .6 opacity made them read as disabled.
+   Weight DOES change between states now. It used to be banned to avoid reflow; instead
+   each chip renders its own label a second time at the heavier weight, hidden and stacked
+   underneath, so the box is always sized for the bold form and nothing moves. */
 .zone-chip {
+  display: inline-grid;
   padding: 6px 12px;
   border-radius: var(--radius-pill);
+  corner-shape: superellipse(var(--corner-k, 1.2));
   border: none;
   background: transparent;
   font-family: var(--ui-font);
   font-size: 13px;
+  font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-off, 450);
   cursor: pointer;
 }
-.zone-chip.on { color: var(--bg); }
-.zone-chip:not(.on):hover:not(:disabled) { background: none; box-shadow: inset 0 0 0 1px currentColor; }
-.zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 1.5px var(--accent); }
+.zone-chip > span { grid-area: 1 / 1; }
+.zone-chip::after {
+  content: attr(data-label);
+  grid-area: 1 / 1;
+  visibility: hidden;
+  pointer-events: none;
+  font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-on, 630);
+}
+.zone-chip.on {
+  color: var(--bg);
+  font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-on, 630);
+}
+.zone-chip:not(.on):hover:not(:disabled) {
+  background: none;
+  box-shadow: inset 0 0 0 var(--stroke-hover, 1.2px) currentColor;
+}
+/* Press: the stroke lands before the fill does. Beats .on deliberately — the stroke
+   acknowledges the tap, the fill confirms it on release. */
+.zone-chip:active:not(:disabled) {
+  background: none;
+  box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) currentColor;
+}
+.zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) var(--accent); }
 .floor-spacer { flex: 1; }
 .floor-btn {
   padding: 8px 16px;
