@@ -40,13 +40,17 @@ export const LANDING_ZONES = [
 const HATCH = 'repeating-linear-gradient(-45deg, rgba(140,120,0,0.07) 0px, rgba(140,120,0,0.07) 1px, transparent 1px, transparent 10px)'
 
 const ZONE_BG = [
-  { start: 0,  end: 10,  bg: 'color-mix(in srgb, var(--zone-a11y) 6%, transparent)' },
+  /* Fallbacks are not decoration: this component is rendered by App.tsx (classic UI), which
+     does not import tokens.css — the instrument does. Without the fallback the var is
+     undefined there, color-mix() is invalid, and the whole zone wash silently disappears.
+     The literals are the muted --zone-* values. */
+  { start: 0,  end: 10,  bg: 'color-mix(in srgb, var(--zone-a11y, #c97050) 6%, transparent)' },
   { start: 10, end: 15,  bg: HATCH },
-  { start: 15, end: 30,  bg: 'color-mix(in srgb, var(--zone-ui) 4%, transparent)' },
+  { start: 15, end: 30,  bg: 'color-mix(in srgb, var(--zone-ui, #999) 4%, transparent)' },
   { start: 30, end: 40,  bg: HATCH },
-  { start: 40, end: 60,  bg: 'color-mix(in srgb, var(--zone-base) 5%, transparent)' },
+  { start: 40, end: 60,  bg: 'color-mix(in srgb, var(--zone-base, #4a7fd4) 5%, transparent)' },
   { start: 60, end: 80,  bg: HATCH },
-  { start: 80, end: 100, bg: 'color-mix(in srgb, var(--zone-geo) 5%, transparent)' },
+  { start: 80, end: 100, bg: 'color-mix(in srgb, var(--zone-geo, #4aad5c) 5%, transparent)' },
 ]
 
 const RULER_TICKS = [0, 10, 15, 30, 40, 60, 80, 100]
