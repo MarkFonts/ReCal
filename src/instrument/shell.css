@@ -870,3 +870,32 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 .vm-note { margin: 4px 0 0; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
 .vm-note b { color: var(--text); font-weight: 700; }
+
+/* House press + corner, shared with .zone-chip. Rail and floor controls.
+   PRESS: the stroke lands before the fill — it acknowledges the tap, the fill confirms on
+   release. Applied to :active so it beats whatever selected/filled state is underneath.
+   CORNER: superellipse(--corner-k) so a pill, a rounded rect and a circular button all
+   follow one curvature law. CSS parameterises k as exponent 2^k: 1 is a circular arc. */
+.floor-btn,
+.floor-toggle,
+.rail-preset,
+.rail-toggle,
+.rail-reset,
+.style-menu-btn,
+.matrix-reset,
+.preview-reset,
+.freezer-reset {
+  corner-shape: superellipse(var(--corner-k, 1.2));
+}
+.floor-btn:active:not(:disabled),
+.floor-toggle:active:not(:disabled),
+.rail-preset:active:not(:disabled),
+.rail-toggle:active:not(:disabled),
+.rail-reset:active:not(:disabled),
+.style-menu-btn:active:not(:disabled),
+.matrix-reset:active:not(:disabled),
+.preview-reset:active:not(:disabled),
+.freezer-reset:active:not(:disabled) {
+  background: none;
+  box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) currentColor;
+}
