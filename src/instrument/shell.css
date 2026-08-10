@@ -490,7 +490,9 @@
    underneath, so the box is always sized for the bold form and nothing moves. */
 .zone-chip {
   display: inline-grid;
-  padding: 6px 12px;
+  /* padding-x = the cap radius (half of this pill's 28px height). At 12px the text began
+     inside the curve, where only ~85% of the height exists. See TYPOGRAPHY.md §Space. */
+  padding: 6px 14px;
   border-radius: var(--radius-pill);
   corner-shape: superellipse(var(--corner-k, 1.2));
   border: none;
