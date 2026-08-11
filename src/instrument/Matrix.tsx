@@ -1,7 +1,7 @@
 // GEOM swap editor — the type matrix, ported into the instrument rail with instrument
 // tokens. One horizontal lane per glyph group; every variant is rendered as its own
-// glyph, sitting in the GEOM band where it's active, over a zone-coloured bar (the
-// palette / Rosetta-Stone principle — the colours only mean something next to the
+// glyph, sitting in the GEOM band where it's active, over a zone-colored bar (the
+// palette / Rosetta-Stone principle — the colors only mean something next to the
 // shapes they name). Variant glyphs use the unmodified CalSansVF at each variant's
 // natural GEOM, so their forms stay distinct regardless of the user's thresholds.
 // Drag a boundary to move a swap → dispatch setThresholds → Shell's rebuild effect

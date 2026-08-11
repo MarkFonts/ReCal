@@ -5,7 +5,7 @@
    --text-muted / disabled --text-dim), active carries a 1.5px accent underline.
    Transparent padding keeps hit targets ≥32px. House-style focus, never the UA ring. */
 /* De-chromed canvas controls (right panel): naked text, regular weight when idle;
-   active = full text colour, BOLD + 1.5px accent underline. Rollover = a thin inset
+   active = full text color, BOLD + 1.5px accent underline. Rollover = a thin inset
    rule, never a fill. Scoped under .canvas so it beats App.css's global button rules.
    Transparent padding keeps hit targets ≥32px. House-style focus, never the UA ring. */
 .canvas .mode-btn, .canvas .text-tab, .canvas .chip {
@@ -83,7 +83,7 @@
 /* ── Paragraph ── */
 .text-tabs { display: flex; gap: var(--pad-4, 12px); flex-wrap: wrap; }
 .para-doc { color: var(--text); }
-/* All heading levels + body share one colour — override any leaked App.css h1/h2 rules. */
+/* All heading levels + body share one color — override any leaked App.css h1/h2 rules. */
 .para-block { margin: 0 0 14px; color: var(--text); font-weight: inherit; outline: none; caret-color: var(--text); }
 .para-block--h1, .para-block--h2, .para-block--h3 { margin-top: 10px; }
 .para-block:empty::before { content: '\200b'; color: transparent; }   /* keep empty blocks clickable */
@@ -219,11 +219,11 @@
   border-radius: var(--radius);
 }
 /* GEOM swap flash (grid cells + inline text glyphs).
-   v2 — two states of the same colour, chosen by whether the rail GEOM slider is held:
+   v2 — two states of the same color, chosen by whether the rail GEOM slider is held:
    · geom-flash-hold: while dragging, the glyph HOLDS its zone accent with no
-     transition — crossings hard-switch the colour / hard-off in place (live map).
+     transition — crossings hard-switch the color / hard-off in place (live map).
    · geom-flash: on release (or a one-shot chip/keyboard change) the glyph eases
-     from its zone accent back to the resting colour, then un-wraps. */
+     from its zone accent back to the resting color, then un-wraps. */
 .geom-flash-hold { color: var(--flash-color); transition: none; }
 .geom-flash { animation: glyph-flash .5s ease-out; }
 @keyframes glyph-flash {

@@ -1,21 +1,21 @@
 /* ───────────────────────────────────────────────────────────────────────────────────
-   Holographic text — two effects that share one mechanism: a colour gradient screened
+   Holographic text — two effects that share one mechanism: a color gradient screened
    over a base layer, clipped to the glyphs, its position animated through a registered
    custom property.
 
-     1. Seam tabs (.rail-seam--down .rail-seam-lbl) — a diffraction colour band sweeping
+     1. Seam tabs (.rail-seam--down .rail-seam-lbl) — a diffraction color band sweeping
         over drifting brushed metal, plus the V chevrons and the hover weight.
      2. ✓ Saved   (.mc-word) — a one-shot rainbow over the resting gray, timed to the
-        check's ~0.5s life. The ✓ itself stays green (.mode-check's colour, in shell.css).
+        check's ~0.5s life. The ✓ itself stays green (.mode-check's color, in shell.css).
 
    Tune both from the custom properties in :root below. Imported by Shell.tsx.
    ─────────────────────────────────────────────────────────────────────────────────── */
 
 :root {
   /* ── seam tab ── */
-  --holo-sweep:        14.3s;    /* colour-band sweep + pause cycle (bigger = slower) */
+  --holo-sweep:        14.3s;    /* color-band sweep + pause cycle (bigger = slower) */
   --holo-drift:        3s;       /* metal base drift speed */
-  --holo-band-size:    200%;     /* colour-band width (bigger = wider) */
+  --holo-band-size:    200%;     /* color-band width (bigger = wider) */
   --holo-metal-size:   200%;     /* metal base scale */
   --holo-metal-dark:   #545454;  /* brushed metal: dark ↔ light */
   --holo-metal-light:  #b5b5b5;
@@ -35,7 +35,7 @@
 @property --check-holo { syntax: "<percentage>"; inherits: false; initial-value: 100%; }
 @property --holo-load  { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
 
-/* Shared mechanism: layer 1 (colour) screened over layer 2 (base), clipped to the text. */
+/* Shared mechanism: layer 1 (color) screened over layer 2 (base), clipped to the text. */
 .rail-seam--down .rail-seam-lbl,
 .mc-word,
 .holo-loading {
@@ -44,7 +44,7 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* 1 ─ Seam tab. Colour band = three sub-bands + a white specular (opacities 100/75/100/50),
+/* 1 ─ Seam tab. Color band = three sub-bands + a white specular (opacities 100/75/100/50),
    sweeping left→right then pausing, over a drifting dark↔light metal base. The V chevrons
    sit inside the label, so they ride this one clipped gradient too. */
 .rail-seam--down .rail-seam-lbl {

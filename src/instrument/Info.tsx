@@ -1,6 +1,6 @@
 // Font info — a persistent side panel (not a scene toggle). Real Cal Sans metadata
 // plus the two things only this tool shows: your ◆ deltas and the live construction
-// count. All rows at the UI font size, one translucent A11y colour (owner spec).
+// count. All rows at the UI font size, one translucent A11y color (owner spec).
 import { useInstrument } from './InstrumentProvider'
 import { AXIS_RANGES, changedAxisTags, swapPointCount, glyphsEditedCount } from './store'
 

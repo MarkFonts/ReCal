@@ -2,7 +2,7 @@
 // Previously generated standalone by scripts/gen_rclt_swaps.py; that extractor is now
 // folded into scripts/gen_substitutions.py, and this just projects the canonical cells.
 // Key `cp:aaltIndex` (0 = base cmap glyph). t = GEOM thresholds; z = zone per band
-// (length t+1): A=A11y · B=Base · G=Geo · '-' = default (no colour).
+// (length t+1): A=A11y · B=Base · G=Geo · '-' = default (no color).
 import { SUBS } from '../data/substitutions'
 
 export type CellSwap = { t: number[]; z: string }

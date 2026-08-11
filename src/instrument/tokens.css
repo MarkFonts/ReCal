@@ -1,7 +1,7 @@
 /* Instrument-model design tokens.
    Every value is extracted from the existing ReCal / wordmark.nyc palette
    (docs/control-mapping.md §5, spec directive 2) — no new hues invented, and no
-   terracotta/orange accent. Zone colours reuse the existing four exactly. */
+   terracotta/orange accent. Zone colors reuse the existing four exactly. */
 
 :root {
   color-scheme: dark;   /* native form controls (AxisSlider number steppers) render dark */
@@ -27,7 +27,7 @@
   --text-faint: #444;
   /* --text as "R, G, B" for the ink levels in type.css. COMMA-separated on purpose:
      ink is written rgba(var(--text-rgb), a), and the rgb(... / a) slash form needs
-     space-separated channels, so mixing them drops the colour silently. */
+     space-separated channels, so mixing them drops the color silently. */
   --text-rgb: 232, 232, 232;
 
   /* ── Lines ── */

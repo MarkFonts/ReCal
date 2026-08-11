@@ -8,7 +8,7 @@
 // bake can actually fuse into the cmap — ligature/contextual features (liga, calt, frac,
 // cvXX ligatures) can't be, and offering them would break what-you-preview-is-what-you-get.
 //
-// Gold is the freezer's colour language (its own hue, vs the four GEOM zone colours):
+// Gold is the freezer's color language (its own hue, vs the four GEOM zone colors):
 // the "after" sample marks the frozen form here, and in the specimen the glyphs a freeze
 // governs flash gold when you toggle it or drag GEOM (see useFrozenGold in scenes).
 import { useInstrument } from './InstrumentProvider'

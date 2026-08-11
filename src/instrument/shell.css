@@ -1,4 +1,4 @@
-/* Phase 2 shell — rail / canvas / floor grid. All colour/type from tokens.css. */
+/* Phase 2 shell — rail / canvas / floor grid. All color/type from tokens.css. */
 
 .shell {
   display: grid;
@@ -316,7 +316,7 @@
 }
 
 /* ── Font info — persistent right panel. Uniform UI-size rows, one translucent
-   A11y colour (owner spec). Right-aligned, like the reference. ── */
+   A11y color (owner spec). Right-aligned, like the reference. ── */
 .info-panel {
   position: absolute;              /* overlays .canvas — top-of-screen aligned, covers play */
   top: 0;
@@ -482,8 +482,8 @@
 }
 .floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
 .zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-/* The GEOM zones are near-primary actions, so they carry weight, not just colour.
-   ACTIVE zone takes a fill (zone colour IS information); inactive keeps its hue at full
+/* The GEOM zones are near-primary actions, so they carry weight, not just color.
+   ACTIVE zone takes a fill (zone color IS information); inactive keeps its hue at full
    strength — the old .6 opacity made them read as disabled.
    Weight DOES change between states now. It used to be banned to avoid reflow; instead
    each chip renders its own label a second time at the heavier weight, hidden and stacked

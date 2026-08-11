@@ -62,7 +62,7 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
   const { state, dispatch } = useInstrument()
   const { min, max } = AXIS_RANGES[tag]
   const v = state.defaults.axes[tag]
-  // While this slider is held, GEOM-swap flashes hold their zone colour (live map)
+  // While this slider is held, GEOM-swap flashes hold their zone color (live map)
   // and only fade on release. Window-level pointerup ends it even if released
   // outside the thumb; keyboard changes don't set it (they read as instant jumps).
   const onRangePointerDown = dragSignal

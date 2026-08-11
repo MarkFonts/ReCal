@@ -1,8 +1,8 @@
 /* The GEOM landing palette — one definition, read from the CSS tokens.
  *
- * These four colours were previously written out in seven places: tokens.css, Shell.tsx,
+ * These four colors were previously written out in seven places: tokens.css, Shell.tsx,
  * App.tsx twice, GlyphGroups.tsx twice and scenes.tsx. Same values every time, so changing
- * a zone colour meant finding all seven — and the tokens read as unused because most of
+ * a zone color meant finding all seven — and the tokens read as unused because most of
  * the consumers are TSX, not CSS.
  *
  * Values live in tokens.css. Everything here is a var() reference, which works anywhere the

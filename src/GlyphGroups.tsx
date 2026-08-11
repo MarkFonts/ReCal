@@ -21,7 +21,7 @@ const V: Record<VariantLabel, Variant> = {
 
 // Derived from the canonical substitution table (VISION §7 — src/data/substitutions.json,
 // generated from CalSansVF's own FeatureVariations). Threshold band edges + variant
-// sequence come from the font; colours from V. Non-monotonic reverts (f: default →
+// sequence come from the font; colors from V. Non-monotonic reverts (f: default →
 // Base → default) and the exact onsets are all font-authoritative — no hand values to
 // drift. Regenerate: .venv/bin/python scripts/gen_substitutions.py
 export const GROUP_DEFS: GroupDef[] = SUBS.geomGroups.map(g => ({

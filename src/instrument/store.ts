@@ -48,7 +48,7 @@ export interface InstrumentState {
   defaults: DefaultsLayer
   preview: PreviewLayer
   stockHold: boolean                            // hold-to-compare: effective() → SHIPPED
-  geomDragging: boolean                         // rail GEOM slider held: flash holds colour, fades on release
+  geomDragging: boolean                         // rail GEOM slider held: flash holds color, fades on release
   activePreset: string | null                   // engaged "start from…" entry (§3.3)
   useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
   buildName: string                             // editable export family name (INFO receipt)
