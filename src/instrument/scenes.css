@@ -81,7 +81,7 @@
 .words-edit:focus { outline: none; }
 
 /* ── Paragraph ── */
-.text-tabs { display: flex; gap: 14px; flex-wrap: wrap; }
+.text-tabs { display: flex; gap: var(--pad-4, 12px); flex-wrap: wrap; }
 .para-doc { color: var(--text); }
 /* All heading levels + body share one colour — override any leaked App.css h1/h2 rules. */
 .para-block { margin: 0 0 14px; color: var(--text); font-weight: inherit; outline: none; caret-color: var(--text); }
@@ -144,10 +144,10 @@
 .scene-bar {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--pad-4, 12px);
   padding: var(--pad-nudge, 2px) var(--pad-6, 24px) var(--pad-3, 8px) var(--pad-7, 32px);   /* 32px left → aligns chips/tabs under "Words" */
 }
-.body-pairing { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.body-pairing { display: flex; align-items: center; gap: var(--pad-4, 12px); flex-wrap: wrap; }
 /* 8px inset so the plain text aligns to the tab-text column (buttons get it from padding). */
 .ui-credit { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); padding-left: 8px; }
 .ui-credit-link { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }

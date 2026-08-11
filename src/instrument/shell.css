@@ -22,7 +22,7 @@
   scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: var(--pad-6, 24px);
 }
 
 /* Narrow window collapses the rail to a strip showing just its label; clicking the
@@ -44,7 +44,7 @@
 .rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: var(--pad-5, 16px); }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */
-.rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: var(--pad-3, 8px); }
 .rail-title {
   font-size: var(--type-body-size, 1rem);
   font-weight: 700;
@@ -117,10 +117,10 @@
   color: var(--text-dim);
 }
 /* group header row: label on the left, an inline toggle on the right */
-.rail-group-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.rail-group-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pad-3, 8px); }
 
 /* ◆ pin row: label + value + track */
-.pin { display: flex; flex-direction: column; gap: 5px; }
+.pin { display: flex; flex-direction: column; gap: var(--pad-1, 4px); }
 .pin--off { opacity: .38; }                          /* grayed until Freeze opsz is on */
 .pin--off input[type="range"] { cursor: default; }
 .pin-head { display: flex; justify-content: space-between; align-items: baseline; }
@@ -239,7 +239,7 @@
 .mode-label {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: var(--pad-2, 6px);
   padding: 0 24px 12px 32px;   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
   font-family: var(--ui-font);
   font-size: var(--type-body-size, 1rem);
@@ -449,8 +449,8 @@
   text-transform: uppercase;
   color: var(--text-dim);
 }
-.preview-rows { display: flex; gap: 20px; flex-wrap: wrap; flex: 1; }
-.prow { display: flex; flex-direction: column; gap: 5px; min-width: 118px; }
+.preview-rows { display: flex; gap: var(--pad-5, 16px); flex-wrap: wrap; flex: 1; }
+.prow { display: flex; flex-direction: column; gap: var(--pad-1, 4px); min-width: 118px; }
 /* Compare mode: axes the referent font can't express (see PreviewSurface). */
 .prow--na { opacity: .28; pointer-events: none; }
 .prow-head { display: flex; justify-content: space-between; font-size: var(--type-ui-size, 0.75rem); }
@@ -475,7 +475,7 @@
   grid-area: floor;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: var(--pad-4, 12px);
   padding: 12px 24px;
   border-top: 1px solid var(--border);
   background: var(--surface);
@@ -547,7 +547,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   position: fixed;
   right: 20px; bottom: 16px;
   z-index: 50;
-  display: flex; align-items: center; gap: 14px;
+  display: flex; align-items: center; gap: var(--pad-4, 12px);
   padding: var(--pad-3, 8px) var(--pad-3, 8px) var(--pad-3, 8px) var(--pad-5, 16px);
   border-radius: calc(var(--radius) + 4px);
   background: var(--surface);
@@ -562,7 +562,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   top: 56px; right: 20px;
   z-index: 40;
   width: 178px;
-  display: flex; flex-direction: column; gap: 13px;
+  display: flex; flex-direction: column; gap: var(--pad-4, 12px);
   padding: var(--pad-3, 8px) var(--pad-4, 12px) var(--pad-4, 12px);
   border-radius: calc(var(--radius) + 2px);
   background: var(--surface);
@@ -602,7 +602,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
 }
 .style-menu-item {
-  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  display: flex; align-items: center; justify-content: space-between; gap: var(--pad-3, 8px);
   padding: 6px 8px; border: none; border-radius: 6px; background: none;
   color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer; text-align: left;
 }
@@ -663,7 +663,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-seam {
   all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
-  gap: 10px; cursor: pointer; user-select: none; padding: var(--pad-5, 16px) var(--pad-5, 16px);
+  gap: var(--pad-3, 8px); cursor: pointer; user-select: none; padding: var(--pad-5, 16px) var(--pad-5, 16px);
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: .18em;
   /* Pin to the rail's scroll edges: the up-seam sticks to the top, the down-seam to the
      bottom, so a seam stays flush with the viewport while the panel scrolls past — and
@@ -687,7 +687,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-seam--up { top: 0; color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
 .rail-seam--up:hover:not(:disabled) { color: rgba(232,232,232,.6); }
 
-.rail-matrix, .rail-blank, .rail-freezer, .rail-vmetrics { display: flex; flex-direction: column; gap: 14px; }
+.rail-matrix, .rail-blank, .rail-freezer, .rail-vmetrics { display: flex; flex-direction: column; gap: var(--pad-4, 12px); }
 .rail-blank-body { min-height: 260px; }
 
 /* ── ssXX Freezer (rail group 2) ── Keynote Typography-panel rows: base → variant in
@@ -710,7 +710,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 .freezer-list { display: flex; flex-direction: column; }
 .freezer-row {
-  display: grid; grid-template-columns: auto 1fr 18px; align-items: center; gap: 9px;
+  display: grid; grid-template-columns: auto 1fr 18px; align-items: center; gap: var(--pad-3, 8px);
   width: 100%; padding: var(--pad-1, 4px) var(--pad-2, 6px); border: none; background: none; cursor: pointer; text-align: left;
   border-radius: 6px;
 }
@@ -721,7 +721,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    the after glyph flowing right. No overflow clip — descenders (g/j/y) must show. */
 .freezer-ba {
   display: grid; grid-template-columns: 30px auto auto; align-items: baseline;
-  column-gap: 7px; font-size: var(--type-body-size, 1rem); line-height: 1.4;
+  column-gap: var(--pad-2, 6px); font-size: var(--type-body-size, 1rem); line-height: 1.4;
 }
 /* before right-aligned (hugs the arrow) + after left-aligned, with equal gaps around
    the arrow → arrows sit centered between the pair and still line up down the column. */
@@ -756,7 +756,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
    next rides up from below. Ascend (up-seam): the mirror — current slides DOWN + out,
    next comes from above. Keyed by group index, so each arrival is a fresh mount. */
-.rail-descent { display: flex; flex-direction: column; gap: 22px; }
+.rail-descent { display: flex; flex-direction: column; gap: var(--pad-6, 24px); }
 .rail-descent--fwd  { animation: descend-enter .4s var(--spring); }
 .rail-descent--back { animation: ascend-enter  .4s var(--spring); }
 .rail-descent--fwd.rail-descent--leaving  { animation: descend-leave .15s ease-in forwards; }
@@ -839,13 +839,13 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    dropdown seeds the numbers, an hhea-strategy dropdown re-derives them, then a Line Gap
    field, the Use-Typo toggle, the Ascender (YTAS) pin and a live readout of the three
    metric sets. The note flags (in white/bold) when the win box crops a glyph. */
-.vmetrics-panel .freezer-section { gap: 11px; }
-.vm-head-right { display: flex; align-items: center; gap: 10px; }
+.vmetrics-panel .freezer-section { gap: var(--pad-4, 12px); }
+.vm-head-right { display: flex; align-items: center; gap: var(--pad-3, 8px); }
 .vm-lh { font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .vmetrics-panel .rail-preset { margin-top: 2px; }
 .vm-strategy { color: var(--text-muted); }
 
-.vm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vm-row { display: flex; align-items: center; justify-content: space-between; gap: var(--pad-3, 8px); }
 .vm-row-label { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .vm-num {
   width: 84px; text-align: right; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text);
