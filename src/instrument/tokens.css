@@ -47,7 +47,10 @@
   --accent:         #e8e8e8;        /* primary action + ◆ */
   --marker-default: var(--accent);  /* ◆ YOUR default */
   --marker-preview: #999;           /* ● PREVIEWING */
-  --state-stock:    #c97050;        /* STOCK narrator only (= the A11Y zone hue) */
+  /* STOCK narrator only. It takes the A11Y zone hue BY REFERENCE, not by coincidence:
+     one literal written twice gets changed for one reason and silently breaks the other.
+     If these ever need to diverge, give this its own hex and say why here. */
+  --state-stock:    var(--zone-a11y);
 
   /* ── Freezer (ssXX/cvXX manual override) ──
      Gold marks a glyph pinned off the GEOM continuum by a frozen feature — a
