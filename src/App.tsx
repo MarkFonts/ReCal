@@ -804,13 +804,11 @@ export default function App() {
                   setActivePreset('Circular'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(20); handleSliderChange('GEOM', 25)
                 }}>Circular</button>
-                {/* Gotham preset temporarily disabled
-                <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
+                                <button className={`preset-btn${activePreset === 'Gotham' ? ' preset-btn--active' : ''}`} onClick={() => {
                   setActivePreset('Gotham'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(8); handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 786)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('j', 1, 'UI', t); return t })
                 }}>Gotham</button>
-                */}
                 <button className={`preset-btn${activePreset === 'Geist' ? ' preset-btn--active' : ''}`} onClick={() => {
                   setActivePreset('Geist'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(16); handleSliderChange('GEOM', 50)

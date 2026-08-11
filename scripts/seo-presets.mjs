@@ -186,11 +186,8 @@ export const SEO_PRESETS = [
   {
     slug: 'gotham',
     referent: 'Gotham',
-    // Gotham is deliberately NOT an app preset — the page boots plain Cal Sans
-    // defaults (GEOM 25) with opsz frozen at 10, so the tool never ships a named
-    // "Gotham" preset. Still fully SEO-findable.
-    bootAxes: {},
-    bootFreezeOpsz: 10,
+    // Boots the app's own Gotham preset, so the page and the preset cannot drift.
+    preset: 'Gotham',
     kind: 'paid',
     axes: vs({ opsz: 10 }),
     opticalSizing: false,

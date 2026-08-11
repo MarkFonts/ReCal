@@ -35,6 +35,12 @@ const SPECIMEN = '2160 just Groovy, I’ll Magic'   // exercises I l a g G j y t
 
 function page(p, all) {
   const url = `${ORIGIN}${BASE}/${p.slug}/`
+  // Each landing page gets its own card: the referent set in ReCal Sans at that page's
+  // exact axes. Every page used to share /thumb.png -- the studio wordmark -- so the
+  // pages built to rank for "free <font> alternative" all previewed identically and
+  // told a sharer nothing. It is also the only image Google Images has to work with.
+  const ogImage = `${ORIGIN}${BASE}/og/${p.slug}.jpg`
+  const ogAlt = `The word ${p.referent} set in ReCal Sans, a free open-source variable alternative to ${p.referent}.`
   const others = all.filter(x => x.slug !== p.slug)
   const paid = p.kind === 'paid'
 
@@ -136,11 +142,16 @@ function page(p, all) {
 <meta property="og:title" content="${esc(p.title)}">
 <meta property="og:description" content="${esc(p.description)}">
 <meta property="og:url" content="${url}">
-<meta property="og:image" content="${ORIGIN}/thumb.png">
+<meta property="og:image" content="${ogImage}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="${esc(ogAlt)}">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${esc(p.title)}">
 <meta name="twitter:description" content="${esc(p.description)}">
-<meta name="twitter:image" content="${ORIGIN}/thumb.png">
+<meta name="twitter:image" content="${ogImage}">
+<meta name="twitter:image:alt" content="${esc(ogAlt)}">
 <link rel="icon" type="image/svg+xml" href="${BASE}/favicon.svg">
 <link rel="preload" href="${BASE}/fonts/CalSansVF.ttf" as="font" type="font/ttf" crossorigin>
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
