@@ -41,6 +41,8 @@ function page(p, all) {
   // told a sharer nothing. It is also the only image Google Images has to work with.
   const ogImage = `${ORIGIN}${BASE}/og/${p.slug}.jpg`
   const ogAlt = `The word ${p.referent} set in ReCal Sans, a free open-source variable alternative to ${p.referent}.`
+  const readableAxes = p.axes.replace(/'/g, '').split(', ')
+    .filter(a => !['wght 400', 'YTAS 720', 'SHRP 0'].includes(a)).join(' \u00b7 ')
   const others = all.filter(x => x.slug !== p.slug)
   const paid = p.kind === 'paid'
 
@@ -184,6 +186,9 @@ ${appCss}
   .seo-below h1 { font-size:clamp(30px,5vw,46px); line-height:1.1; letter-spacing:-.01em; margin:0 0 28px; }
   .seo-below .specimen { font-size:clamp(48px,11vw,104px); line-height:1; letter-spacing:-.02em; margin:28px 0 8px;
     font-variation-settings:${JSON.stringify(p.axes).slice(1, -1)}; font-optical-sizing:${p.opticalSizing ? 'auto' : 'none'}; }
+.card-fig{margin:26px 0 32px;max-width:820px}
+.card-fig img{width:100%;height:auto;display:block;border-radius:10px;border:1px solid #262626}
+.card-fig figcaption{margin-top:10px;font-size:14px;color:#8a8a8a}
   .seo-below .specimen-cap { font-size:12px; color:var(--smut); letter-spacing:.04em; text-transform:uppercase; margin-bottom:48px; }
   .seo-below p { font-size:17px; color:#ccc; margin:0 0 20px; }
   .seo-below h2 { font-size:22px; margin:48px 0 16px; }
@@ -206,6 +211,16 @@ ${appCss}
   <nav class="crumb"><a href="${ORIGIN}/">WORDMARK</a> › <a href="${BASE}/">ReCal Sans</a> › ${esc(p.referent)} alternative</nav>
 
   <h1>${esc(p.h1)}</h1>
+
+  <!-- The card as a real <img>, not only an og:image. Image search indexes what is IN the
+       document; an og tag is a share preview, not a ranked image. Explicit width/height so
+       it reserves its box instead of shifting the text under it. -->
+  <figure class="card-fig">
+    <img src="${ogImage}" width="1200" height="630" loading="lazy" decoding="async"
+         alt="${esc(ogAlt)}">
+    <figcaption>${esc(p.referent)} set in ReCal Sans at ${esc(readableAxes)} — free and open source under the OFL.</figcaption>
+  </figure>
+
   <div class="specimen" aria-label="ReCal Sans specimen">${esc(SPECIMEN)}</div>
   <div class="specimen-cap">ReCal Sans — live specimen, tuned toward ${esc(p.referent)}</div>
 
