@@ -1,66 +1,55 @@
 <!doctype html>
-<!-- Source for og/default.png. Re-render with:
-     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
-       --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 \
-       --screenshot=public/og/default.png --allow-file-access-from-files \
-       file://$PWD/public/og/default.source.html
-     Kept beside the PNG so the card can be edited instead of recreated from scratch. -->
-<html><head><meta charset="utf-8">
-<style>
-  @font-face { font-family:"Cal";
-    src:url("../fonts/CalSansVF.ttf") format("truetype"); }
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{width:1200px;height:630px;overflow:hidden}
-  body{background:#0f0f0f;font-family:"Cal",sans-serif;font-optical-sizing:auto;
-       color:#e8e8e8;position:relative;-webkit-font-smoothing:antialiased}
+<!-- Source for og/default.png — the ReCal GEOM control, held at the default.
+     Re-render (font must load, so allow file access):
+       "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
+         --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 \
+         --screenshot=public/og/default.png --allow-file-access-from-files \
+         "file://$PWD/public/og/default.source.html"
+     Opening this file directly in a browser shows Helvetica: Chrome blocks font loads over
+     file:// without that flag. Serve it over http instead to eyeball it. -->
+<html><head><meta charset="utf-8"><style>
+@font-face{font-family:"Cal";src:url("../fonts/CalSansVF.ttf") format("truetype")}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{background:#0f0f0f;font-family:"Cal",sans-serif;font-optical-sizing:auto;color:#e8e8e8;
+position:relative;-webkit-font-smoothing:antialiased}
 
-  .eyebrow{position:absolute;left:72px;top:60px;font-size:17px;letter-spacing:.18em;
-           text-transform:uppercase;font-variation-settings:"GEOM" 100;color:rgba(232,232,232,.38)}
-  .title{position:absolute;right:72px;top:52px;text-align:right}
-  .title .t{font-size:54px;font-variation-settings:"GEOM" 50,"wght" 620;letter-spacing:-.02em}
-  .title .s{margin-top:10px;font-size:19px;color:rgba(232,232,232,.6);
-            font-variation-settings:"GEOM" 25}
-
-  /* The product in one row: the same letter at the four GEOM landings. The a is the glyph
-     that moves most across the axis, so the card demonstrates rather than describes. */
-  .row{position:absolute;left:72px;right:72px;top:196px;display:flex;
-       justify-content:space-between;align-items:baseline}
-  .row span{font-size:250px;line-height:1;display:block;width:230px;text-align:center}
-  .g0{font-variation-settings:"GEOM" 0}
-  .g25{font-variation-settings:"GEOM" 25}
-  .g50{font-variation-settings:"GEOM" 50}
-  .g100{font-variation-settings:"GEOM" 100}
-
-  .axis{position:absolute;left:72px;right:72px;bottom:118px;height:2px;background:rgba(232,232,232,.16)}
-  .axis i{position:absolute;top:-5px;width:1px;height:12px;background:rgba(232,232,232,.3)}
-  .axis b{position:absolute;top:-7px;width:16px;height:16px;border-radius:50%;
-          background:#e8e8e8;margin-left:-8px}
-  .marks{position:absolute;left:72px;right:72px;bottom:74px;height:24px;
-         font-size:17px;letter-spacing:.16em;text-transform:uppercase;
-         font-variation-settings:"GEOM" 100;color:rgba(232,232,232,.42)}
-  .marks span{position:absolute;white-space:nowrap;transform:translateX(-50%)}
-  .marks span.first{transform:none;left:0}
-  .marks span.last{transform:none;right:0;left:auto;color:#e8e8e8}
-</style></head>
-<body>
-  <div class="eyebrow">wordmark.nyc &middot; free under the OFL</div>
-  <div class="title">
-    <div class="t">ReCal Sans</div>
-    <div class="s">Customize a free variable font in the browser</div>
-  </div>
-
-  <div class="row">
-    <span class="g0">a</span><span class="g25">a</span><span class="g50">a</span><span class="g100">a</span>
-  </div>
-
-  <div class="axis">
-    <i style="left:0"></i><i style="left:33.333%"></i><i style="left:66.666%"></i><i style="left:100%"></i>
-    <b style="left:100%"></b>
-  </div>
-  <div class="marks">
-    <span class="first">A11y &middot; 0</span>
-    <span style="left:33.333%">UI &middot; 25</span>
-    <span style="left:66.666%">Base &middot; 50</span>
-    <span class="last">Geo &middot; 100</span>
-  </div>
+/* The UI layer is set larger than the app's own chrome on purpose. This image is scaled
+   down by every service that shows it, so sizes that are right in the product are thin
+   and broken here. */
+.eyebrow{position:absolute;left:72px;top:48px;font-size:21px;letter-spacing:.16em;
+text-transform:uppercase;font-variation-settings:"GEOM" 100,"wght" 500;color:rgba(232,232,232,.46)}
+.name{position:absolute;right:72px;top:40px;font-size:40px;
+font-variation-settings:"GEOM" 50,"wght" 620;letter-spacing:-.02em}
+.word{position:absolute;left:72px;right:72px;top:132px;font-size:222px;line-height:1;
+text-align:center;letter-spacing:-.015em;
+font-variation-settings:"GEOM" 25,"SHRP" 0,"wght" 400}
+.chips{position:absolute;left:72px;top:430px;display:flex;gap:12px;align-items:center}
+.chip{font-size:27px;padding:9px 21px;border-radius:999px;corner-shape:superellipse(1.2);
+font-variation-settings:"GEOM" 25,"wght" 500}
+.chip.on{color:#0f0f0f;font-variation-settings:"GEOM" 25,"wght" 640}
+.chip.hov{box-shadow:inset 0 0 0 1.6px currentColor}   /* the real --stroke-hover */
+.lbl{position:absolute;left:72px;bottom:96px;font-size:27px;
+font-variation-settings:"GEOM" 25,"wght" 450;color:rgba(232,232,232,.8)}
+.val{position:absolute;right:72px;bottom:96px;font-size:27px;font-variant-numeric:tabular-nums;
+font-variation-settings:"GEOM" 25,"wght" 450}
+.track{position:absolute;left:72px;right:72px;bottom:62px;height:3px;background:rgba(232,232,232,.2)}
+.handle{position:absolute;top:-11px;width:25px;height:25px;margin-left:-12px;left:25%;
+background:#e8e8e8;transform:rotate(45deg);border-radius:4px;box-shadow:0 0 0 5px #0f0f0f}
+.cur{position:absolute;left:118px;top:452px;z-index:9}
+</style></head><body>
+<div class="eyebrow">wordmark.nyc &middot; customize a free variable font</div>
+<div class="name">ReCal Sans</div>
+<div class="word">Magic</div>
+<div class="chips"><span class="chip hov" style="color:#e08a63;">A11y</span>
+    <span class="chip on" style="background:#ffffff;">UI</span>
+    <span class="chip" style="color:#6f9ee8;">Base</span>
+    <span class="chip" style="color:#5fc678;">Geo</span>
+    </div>
+<div class="lbl">Geometric form</div>
+<div class="val">GEOM 25</div>
+<div class="track"><i class="handle"></i></div>
+<svg class="cur" width="30" height="39" viewBox="0 0 26 34">
+<path d="M2 2 L2 25 L8.5 19.5 L12.5 28.5 L16.5 26.5 L12.5 18 L21 17.5 Z" fill="#e8e8e8"
+stroke="#0f0f0f" stroke-width="1.6" stroke-linejoin="round"/></svg>
 </body></html>
