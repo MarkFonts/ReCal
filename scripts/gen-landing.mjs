@@ -70,6 +70,10 @@ function page(p, all) {
     {
       '@context': 'https://schema.org',
       '@type': 'WebApplication',
+      // The card, tied to the page entity. Structured data is a second, independent way
+      // for Google to associate this image with this page -- alt text and the sitemap are
+      // the other two, and they do not always agree with each other.
+      image: `${ORIGIN}${BASE}/og/${p.slug}.jpg`,
       name: 'ReCal Sans customizer',
       applicationCategory: 'DesignApplication',
       operatingSystem: 'Web browser',
@@ -216,7 +220,7 @@ ${appCss}
        document; an og tag is a share preview, not a ranked image. Explicit width/height so
        it reserves its box instead of shifting the text under it. -->
   <figure class="card-fig">
-    <img src="${ogImage}" width="1200" height="630" loading="lazy" decoding="async"
+    <img src="${ogImage}" width="1200" height="630" fetchpriority="high" decoding="async"
          alt="${esc(ogAlt)}">
     <figcaption>${esc(p.referent)} set in ReCal Sans at ${esc(readableAxes)} — free and open source under the OFL.</figcaption>
   </figure>
@@ -262,13 +266,28 @@ for (const p of SEO_PRESETS) {
 
 // Section sitemap — served at wordmark.nyc/recalsans/sitemap.xml, listing the app +
 // every landing page. Kept in sync with the generator, indexed by the root sitemap.
-const urls = [
-  `${ORIGIN}${BASE}/`,
-  ...SEO_PRESETS.map(p => `${ORIGIN}${BASE}/${p.slug}/`),
+// Each landing URL declares its card with <image:image>. A page can be crawled without
+// its images ever being picked up; this is what tells Google the image exists, what it
+// shows, and that it belongs to this page.
+const entries = [
+  { loc: `${ORIGIN}${BASE}/`, img: null },
+  ...SEO_PRESETS.map(p => ({
+    loc: `${ORIGIN}${BASE}/${p.slug}/`,
+    img: {
+      loc: `${ORIGIN}${BASE}/og/${p.slug}.jpg`,
+      title: `${p.referent} alternative — ReCal Sans`,
+      caption: `The word ${p.referent} set in ReCal Sans, a free open-source variable alternative to ${p.referent}.`,
+    },
+  })),
 ]
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-${urls.map(u => `  <url><loc>${u}</loc><changefreq>monthly</changefreq></url>`).join('\n')}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+${entries.map(e => `  <url><loc>${e.loc}</loc><changefreq>monthly</changefreq>` + (e.img
+    ? `\n    <image:image><image:loc>${e.img.loc}</image:loc>`
+      + `<image:title>${esc(e.img.title)}</image:title>`
+      + `<image:caption>${esc(e.img.caption)}</image:caption></image:image>\n  `
+    : '') + `</url>`).join('\n')}
 </urlset>
 `
 writeFileSync(join(OUT, 'sitemap.xml'), sitemap)
