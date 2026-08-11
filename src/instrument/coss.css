@@ -35,7 +35,7 @@
   font-style: normal;
   font-variation-settings: var(--vs, normal), 'ital' 1;
 }
-.coss-card-desc { font-size: 12.5px; line-height: var(--vm-lh, 1.35); color: var(--text-muted); margin-top: 5px; }
+.coss-card-desc { font-size: var(--type-ui-size, 0.75rem); line-height: var(--vm-lh, 1.35); color: var(--text-muted); margin-top: 5px; }
 /* contentEditable field — text caret (not the pointer .ui-field would give), min height.
    .ui-field.ui-editable beats the later `.ui-field { cursor: pointer }` interactive rule. */
 .ui-field.ui-editable { cursor: text; outline: none; min-height: 62px; line-height: var(--vm-lh, 1.5); }
@@ -47,7 +47,7 @@
 /* Suspense fallback while the chunk loads on first click. */
 .scene-loading {
   display: flex; align-items: center; justify-content: center;
-  gap: 10px; height: 60vh; color: var(--text-muted); font-size: 15px;
+  gap: 10px; height: 60vh; color: var(--text-muted); font-size: var(--type-body-size, 1rem);
 }
 
 /* Vertical Metrics tab: text slides by the cap-position shift (--vm-shift, an em translate

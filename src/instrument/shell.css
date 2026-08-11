@@ -36,7 +36,7 @@
   writing-mode: vertical-rl;
   transform: rotate(180deg);
   font-family: var(--ui-font);
-  font-size: 15px; font-weight: 600;
+  font-size: var(--type-body-size, 1rem); font-weight: 600;
   color: var(--text-muted);
   white-space: nowrap;
 }
@@ -46,13 +46,13 @@
    below, so it stays one line and never collides with the button. */
 .rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .rail-title {
-  font-size: 15px;
+  font-size: var(--type-body-size, 1rem);
   font-weight: 700;
   letter-spacing: .01em;
 }
 /* One line always — otherwise it re-wraps (and jiggles) as the Reset button
    appears/disappears and squeezes this column's width. */
-.rail-sub { font-size: 11px; color: var(--text-dim); margin-top: 3px; white-space: nowrap; }
+.rail-sub { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); margin-top: 3px; white-space: nowrap; }
 .rail-reset {
   flex-shrink: 0;
   padding: var(--pad-1, 4px) var(--pad-4, 12px);
@@ -61,7 +61,7 @@
   background: var(--surface);
   color: var(--text-muted);
   font-family: var(--ui-font);
-  font-size: 12px;
+  font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
 }
 /* :not(:disabled) bumps specificity above App.css's global button:hover so the
@@ -77,7 +77,7 @@
   color: var(--text-muted);
   font-family: var(--ui-font);
   font-weight: 400;
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
   display: inline-flex;
   flex-direction: column;
@@ -106,12 +106,12 @@
 }
 
 .floor-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
 .floor-toggle input { accent-color: var(--accent); }
 .floor-toggle a { color: var(--text); text-decoration: underline; }
 .rail-group { display: flex; flex-direction: column; gap: 12px; }
 .rail-group-label {
-  font-size: 10px;
+  font-size: var(--type-micro-size, 0.5625rem);
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -124,10 +124,10 @@
 .pin--off { opacity: .38; }                          /* grayed until Freeze opsz is on */
 .pin--off input[type="range"] { cursor: default; }
 .pin-head { display: flex; justify-content: space-between; align-items: baseline; }
-.pin-label { font-size: 13px; }
-.pin-tag { font-size: 10px; color: var(--text-dim); }
-.pin-val { font-size: 13px; color: var(--marker-default); }
-.pin-val::before { content: "◆ "; font-size: 9px; vertical-align: 1px; }
+.pin-label { font-size: var(--type-ui-size, 0.75rem); }
+.pin-tag { font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); }
+.pin-val { font-size: var(--type-ui-size, 0.75rem); color: var(--marker-default); }
+.pin-val::before { content: "◆ "; font-size: var(--type-micro-size, 0.5625rem); vertical-align: 1px; }
 
 /* Stepped opsz-multiplier control */
 .stepper { display: flex; gap: 4px; }
@@ -140,12 +140,12 @@
   border-radius: var(--radius);
   cursor: pointer;
   font-family: var(--ui-font);
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
 }
 .stepper button.on { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
 
 .rail-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: var(--type-ui-size, 0.75rem); cursor: pointer; }
 .rail-toggle input { accent-color: var(--accent); }
 
 /* "Start from…" preset dropdown */
@@ -157,7 +157,7 @@
   border-radius: var(--radius);
   color: var(--text);
   font-family: var(--ui-font);
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
 }
 .rail-preset:hover { border-color: var(--text-dim); }
@@ -173,7 +173,7 @@
 }
 .rail-footer .state-tag { align-self: flex-start; }
 .rail-readout {
-  font-size: 11px;
+  font-size: var(--type-ui-size, 0.75rem);
   line-height: 1.6;
   color: var(--text-dim);
   word-break: break-word;
@@ -242,7 +242,7 @@
   gap: 7px;
   padding: 0 24px 12px 32px;   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
   font-family: var(--ui-font);
-  font-size: 15px;
+  font-size: var(--type-body-size, 1rem);
   color: var(--text-muted);
   /* real ital axis + bold, never a synthesized slant */
   font-style: normal;
@@ -274,7 +274,7 @@
   padding: 3px 12px;
   border-radius: var(--radius-pill);
   background: var(--surface);
-  font-size: 12px;
+  font-size: var(--type-ui-size, 0.75rem);
   font-weight: 700;
 }
 .stage {
@@ -305,7 +305,7 @@
   line-height: 1.02;
   word-break: break-word;
 }
-.specimen-cap { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 28px; }
+.specimen-cap { font-size: var(--type-label-size, 0.75rem); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 28px; }
 .para {
   font-family: var(--ui-font);
   font-optical-sizing: none;
@@ -330,7 +330,7 @@
   text-align: right;
   --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
-  font-size: 13px;                          /* UI font size — every piece the same */
+  font-size: var(--type-ui-size, 0.75rem);                          /* UI font size — every piece the same */
   line-height: 1.5;
   background: var(--bg);           /* opaque — masks whatever is behind it in the canvas */
 }
@@ -350,7 +350,7 @@
 .info-block { color: var(--info-color); }
 .info-nameinput {
   font-family: var(--ui-font);
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   text-align: right;
   background: transparent;
   border: none;
@@ -386,7 +386,7 @@
 .preview-surface-head .preview-surface-cap { flex: 0 0 80px; }
 .preview-surface-cap {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim);
+  font-size: var(--type-label-size, 0.75rem); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim);
   /* real ital axis (never a synthesized slant); animates 0→1 on collapse */
   font-variation-settings: 'ital' 0; font-synthesis: none; font-style: normal;
   transition: font-variation-settings var(--dur) ease;
@@ -410,7 +410,7 @@
   background: transparent;
   color: var(--marker-preview);
   font-family: var(--ui-font);
-  font-size: 12px;
+  font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
   flex-shrink: 0;
   transition: color var(--dur-fast) ease, border-color var(--dur-fast) ease;
@@ -444,7 +444,7 @@
 .play-group-label {
   width: 64px;
   flex-shrink: 0;
-  font-size: 10px;
+  font-size: var(--type-micro-size, 0.5625rem);
   letter-spacing: .12em;
   text-transform: uppercase;
   color: var(--text-dim);
@@ -453,17 +453,17 @@
 .prow { display: flex; flex-direction: column; gap: 5px; min-width: 118px; }
 /* Compare mode: axes the referent font can't express (see PreviewSurface). */
 .prow--na { opacity: .28; pointer-events: none; }
-.prow-head { display: flex; justify-content: space-between; font-size: 11px; }
+.prow-head { display: flex; justify-content: space-between; font-size: var(--type-ui-size, 0.75rem); }
 .prow-label { color: var(--text-muted); }
 .prow-val { color: var(--marker-preview); }
-.prow.on .prow-val::before { content: "● "; font-size: 8px; vertical-align: 1px; }
+.prow.on .prow-val::before { content: "● "; font-size: var(--type-micro-size, 0.5625rem); vertical-align: 1px; }
 /* opsz-auto: tiny "auto" label + native checkbox at .7 opacity, inline with the label */
 .opsz-auto {
   display: inline-flex;
   align-items: center;
   gap: 3px;
   margin-left: 6px;
-  font-size: 10px;
+  font-size: var(--type-micro-size, 0.5625rem);
   color: var(--text-dim);
   opacity: .7;
   cursor: pointer;
@@ -480,7 +480,7 @@
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
-.floor-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+.floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
 .zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 /* The GEOM zones are near-primary actions, so they carry weight, not just colour.
    ACTIVE zone takes a fill (zone colour IS information); inactive keeps its hue at full
@@ -496,7 +496,7 @@
   border: none;
   background: transparent;
   font-family: var(--ui-font);
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-off, 450);
   cursor: pointer;
 }
@@ -531,7 +531,7 @@
   background: var(--surface-hi);
   color: var(--text);
   font-family: var(--ui-font);
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
 }
 .floor-btn:disabled { opacity: .45; cursor: default; }
@@ -554,7 +554,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   border: 1px solid var(--border);
   box-shadow: 0 6px 24px rgba(0, 0, 0, .45);
 }
-.dock-error { font-size: 12px; color: var(--text-muted); }
+.dock-error { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 
 /* Floating TYPE panel — viewport/render controls; draggable by its header. */
 .type-panel {
@@ -571,7 +571,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 .type-panel-title {
   font-family: var(--ui-font);
-  font-size: 10px; letter-spacing: .12em; text-transform: uppercase;
+  font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .12em; text-transform: uppercase;
   color: var(--text-dim);
   margin: -4px -8px 2px;   /* widen the grab target a touch */
   padding: 6px 8px;
@@ -588,13 +588,13 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   width: 100%; display: flex; align-items: center; justify-content: space-between;
   padding: var(--pad-2, 6px) var(--pad-3, 8px); border-radius: var(--radius);
   background: var(--surface-hi); border: 1px solid var(--border);
-  color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer;
+  color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer;
 }
 /* App.css's global button:hover paints buttons white; keep it, but flip the text to
    black so it stays readable (:not(:disabled) beats the global rule's specificity). */
 .style-menu-btn:hover:not(:disabled) { background: var(--text); color: var(--bg); border-color: var(--text); }
 .style-menu-btn:hover:not(:disabled) .style-menu-caret { color: var(--bg); }
-.style-menu-caret { color: var(--text-dim); font-size: 10px; }
+.style-menu-caret { color: var(--text-dim); font-size: var(--type-micro-size, 0.5625rem); }
 .style-menu-list {
   position: absolute; top: calc(100% + 4px); left: 0; min-width: 212px; z-index: 60;
   display: flex; flex-direction: column; padding: 4px;
@@ -604,19 +604,19 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-item {
   display: flex; align-items: center; justify-content: space-between; gap: 10px;
   padding: 6px 8px; border: none; border-radius: 6px; background: none;
-  color: var(--text); font-family: var(--ui-font); font-size: 13px; cursor: pointer; text-align: left;
+  color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer; text-align: left;
 }
 .style-menu-item.on { background: var(--surface-hi); }
 .style-menu-item:hover:not(:disabled) { background: var(--text); color: var(--bg); }
 .style-menu-item:hover .style-badge { color: var(--bg); border-color: rgba(0, 0, 0, .35); }
 .style-menu-item:hover .style-menu-check { color: var(--bg); }
 .style-menu-name { white-space: nowrap; margin-right: auto; }
-.style-menu-check { flex-shrink: 0; width: 12px; font-size: 11px; color: var(--text-dim); }
+.style-menu-check { flex-shrink: 0; width: 12px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); }
 .style-menu-item.on .style-menu-check { color: var(--accent, var(--text)); }
 .style-menu-list--scroll { max-height: 340px; overflow-y: auto; }
 .style-menu-badges { display: flex; gap: 4px; flex-shrink: 0; }
 .style-badge {
-  font-size: 10px; color: var(--text-dim); white-space: nowrap;
+  font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); white-space: nowrap;
   padding: var(--pad-hair, 1px) var(--pad-1, 4px); border-radius: 4px; border: 1px solid var(--border);
 }
 
@@ -624,7 +624,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   color: var(--text-muted);
   cursor: pointer;
 }
@@ -664,7 +664,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
   gap: 10px; cursor: pointer; user-select: none; padding: var(--pad-5, 16px) var(--pad-5, 16px);
-  font-family: var(--ui-font); font-size: 12px; letter-spacing: .18em;
+  font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: .18em;
   /* Pin to the rail's scroll edges: the up-seam sticks to the top, the down-seam to the
      bottom, so a seam stays flush with the viewport while the panel scrolls past — and
      only slides in normal flow once the panel's own edge reaches it. Opaque bg + z so
@@ -694,9 +694,9 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    the live font, name, toggle. Gold = frozen (held off the GEOM continuum). */
 .freezer { display: flex; flex-direction: column; padding: 0 var(--pad-2, 6px); }
 .freezer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.freezer-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.freezer-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .freezer-reset {
-  font-family: var(--ui-font); font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+  font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; text-transform: uppercase;
   padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer; background: none;
 }
 .freezer-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-hi); }
@@ -705,7 +705,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 .freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
 .freezer-section-title {
-  font-family: var(--ui-font); font-size: 10px; letter-spacing: .08em; text-transform: uppercase;
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .08em; text-transform: uppercase;
   color: var(--text-dim); padding: var(--pad-3, 8px) var(--pad-1, 4px) var(--pad-1, 4px);
 }
 .freezer-list { display: flex; flex-direction: column; }
@@ -721,18 +721,18 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    the after glyph flowing right. No overflow clip — descenders (g/j/y) must show. */
 .freezer-ba {
   display: grid; grid-template-columns: 30px auto auto; align-items: baseline;
-  column-gap: 7px; font-size: 15px; line-height: 1.4;
+  column-gap: 7px; font-size: var(--type-body-size, 1rem); line-height: 1.4;
 }
 /* before right-aligned (hugs the arrow) + after left-aligned, with equal gaps around
    the arrow → arrows sit centered between the pair and still line up down the column. */
 .freezer-glyph { color: var(--text-dim); text-align: right; }
 .freezer-glyph--after { color: var(--text-muted); text-align: left; }
 .freezer-glyph--after.on { color: var(--freeze-gold); }
-.freezer-arrow { font-size: 10px; color: var(--text-faint); }
+.freezer-arrow { font-size: var(--type-micro-size, 0.5625rem); color: var(--text-faint); }
 
 /* Single-line name; ellipsis rather than wrap/overlap if a label still runs long. */
 .freezer-name {
-  font-family: var(--ui-font); font-size: 11px; color: var(--text-dim);
+  font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim);
   min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 .freezer-row.on .freezer-name { color: var(--text); }
@@ -750,7 +750,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   background: var(--accent); border-color: var(--accent); color: var(--bg);
 }
 
-.freezer-note { font-size: 11px; color: var(--text-dim); line-height: 1.5; margin-top: 14px; padding: 0 4px; }
+.freezer-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 14px; padding: 0 4px; }
 .freezer-note-gold { color: var(--freeze-gold); font-weight: 600; }
 
 /* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
@@ -772,9 +772,9 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    positioned within this box), so nothing jams the rail edge. */
 .matrix { display: flex; flex-direction: column; padding: 0 var(--pad-2, 6px); }
 .matrix-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.matrix-title { font-family: var(--ui-font); font-size: 12px; letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
-  all: unset; cursor: pointer; font-family: var(--ui-font); font-size: 12px; color: var(--text-muted);
+  all: unset; cursor: pointer; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted);
   padding: 2px 8px; border-radius: 5px; transition: color .12s, background .12s, opacity .12s;
 }
 /* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
@@ -783,7 +783,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-reset:hover:not(:disabled) { background: var(--surface); }
 .matrix-reset:disabled { color: var(--text-faint); font-weight: 400; background: none; cursor: default; }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
-.matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: 10px; letter-spacing: .04em; color: rgba(255,255,255,.2); }
+.matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .04em; color: rgba(255,255,255,.2); }
 .matrix-axis-tick--mid { transform: translateX(-50%); }
 .matrix-axis-tick--end { transform: translateX(-100%); }
 .matrix-rows { display: flex; flex-direction: column; gap: 4px; position: relative; }
@@ -801,7 +801,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-band.on { opacity: 1; }
 .matrix-vglyph {
   position: absolute; top: 1px; transform: translateX(-50%); white-space: nowrap;
-  font-size: 17px; line-height: 1; color: var(--text-dim); opacity: .4; pointer-events: none;
+  font-size: var(--type-body-size, 1rem); line-height: 1; color: var(--text-dim); opacity: .4; pointer-events: none;
   transition: opacity var(--dur-fast), color var(--dur-fast);
 }
 .matrix-vglyph.on { color: var(--text); opacity: 1; }
@@ -819,12 +819,12 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 /* Transparent drag grabber on the hard line where the two shades meet (ew-resize). */
 .matrix-geom { position: absolute; top: 0; bottom: 0; width: 11px; margin-left: -5.5px; z-index: 2; cursor: ew-resize; touch-action: none; }
-.matrix-note { font-size: 11px; color: var(--text-dim); line-height: 1.5; margin-top: 16px; }
+.matrix-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 16px; }
 
 /* Drag-only value chip: rises up from the dial you grabbed, fades down on release. */
 .matrix-val {
   position: absolute; top: 3px; transform: translateX(-50%);
-  font-family: var(--ui-font); font-size: 10px; letter-spacing: .02em; color: var(--text);
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .02em; color: var(--text);
   background: var(--surface-hi); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   pointer-events: none; z-index: 5; white-space: nowrap;
 }
@@ -841,34 +841,34 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    metric sets. The note flags (in white/bold) when the win box crops a glyph. */
 .vmetrics-panel .freezer-section { gap: 11px; }
 .vm-head-right { display: flex; align-items: center; gap: 10px; }
-.vm-lh { font-family: var(--ui-font); font-size: 12px; color: var(--text-muted); }
+.vm-lh { font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .vmetrics-panel .rail-preset { margin-top: 2px; }
 .vm-strategy { color: var(--text-muted); }
 
 .vm-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.vm-row-label { font-size: 13px; color: var(--text-muted); }
+.vm-row-label { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .vm-num {
-  width: 84px; text-align: right; font-family: var(--ui-font); font-size: 13px; color: var(--text);
+  width: 84px; text-align: right; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text);
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--pad-2, 6px) var(--pad-3, 8px);
 }
 
 /* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */
 .vm-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: flex-start; gap: 8px; font-size: 13px; color: var(--text-muted); cursor: pointer; }
+  font-family: var(--ui-font, inherit); display: flex; align-items: flex-start; gap: 8px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
 .vm-toggle input { accent-color: var(--accent); margin-top: 2px; flex: none; }
 .vm-toggle-lbl { line-height: 1.4; }
-.vm-warn { display: block; color: var(--text-dim); font-size: 11px; }
+.vm-warn { display: block; color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
 
 /* the reused Ascender (YTAS) pin gets extra air before and after it */
 .vm-pin { margin: 6px 0; }
 
-.vm-table { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: 12px; }
+.vm-table { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: var(--type-ui-size, 0.75rem); }
 .vm-tr { display: grid; grid-template-columns: 46px 1fr 1fr 1fr; }
 .vm-tr span:first-child { color: var(--text-muted); }
 .vm-tr span:not(:first-child) { text-align: right; color: var(--text); }
 .vm-tr--head span { color: var(--text-dim); }
 
-.vm-note { margin: 4px 0 0; font-size: 12px; line-height: 1.4; color: var(--text-muted); }
+.vm-note { margin: 4px 0 0; font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; color: var(--text-muted); }
 .vm-note b { color: var(--text); font-weight: 700; }
 
 /* House press + corner, shared with .zone-chip. Rail and floor controls.

@@ -16,7 +16,7 @@
   color: var(--text-muted);
   font-family: var(--ui-font);
   font-weight: 400;
-  font-size: 13px;
+  font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
   /* reserve the BOLD width always so active/idle weight never shifts layout */
   display: inline-flex;
@@ -31,10 +31,10 @@
   visibility: hidden;
   pointer-events: none;
 }
-.canvas .mode-btn { font-size: 14px; }
+.canvas .mode-btn { font-size: var(--type-ui-size, 0.75rem); }
 /* OpenType/body chips: one step smaller (secondary tier), tighter side padding.
    Vertical padding keeps the ≥32px tap height; the horizontal gutter is free. */
-.canvas .chip { font-size: 12px; padding: var(--pad-3, 8px) var(--pad-2, 6px); }
+.canvas .chip { font-size: var(--type-ui-size, 0.75rem); padding: var(--pad-3, 8px) var(--pad-2, 6px); }
 .canvas .mode-btn:hover, .canvas .text-tab:hover, .canvas .chip:hover {
   background: none;
   color: var(--text);
@@ -93,14 +93,14 @@
 .compare-caption {
   margin-top: 24px;
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
-  font-size: 15px;
+  font-size: var(--type-body-size, 1rem);
   color: var(--text-muted);
 }
 .compare-caption + .compare-inline { margin-top: 8px; }
 .compare-inline {
   margin-top: 26px;
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
-  font-size: 15px;
+  font-size: var(--type-body-size, 1rem);
   color: var(--text-muted);
 }
 .compare-inline-btn {
@@ -129,8 +129,8 @@
 .compare-svg svg { width: 100%; height: auto; display: block; }
 .drawer-row { display: flex; align-items: center; gap: 12px; max-width: 360px; }
 /* Section labels (not controls) — bold so they read as headers above the chips. */
-.drawer-label { font-size: 12px; font-weight: 700; color: var(--text-muted); width: 90px; }
-.drawer-val { font-size: 12px; color: var(--text-dim); width: 44px; text-align: right; }
+.drawer-label { font-size: var(--type-ui-size, 0.75rem); font-weight: 700; color: var(--text-muted); width: 90px; }
+.drawer-val { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); width: 44px; text-align: right; }
 .feature-chips { display: flex; flex-wrap: wrap; gap: 8px; }
 /* Stylistic-set tokens: 1px gutter (they only surface on the bloomed play bar).
    32px tap height stays via vertical padding; only the horizontal gutter goes tight. */
@@ -149,7 +149,7 @@
 }
 .body-pairing { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 /* 8px inset so the plain text aligns to the tab-text column (buttons get it from padding). */
-.ui-credit { font-size: 13px; color: var(--text-muted); padding-left: 8px; }
+.ui-credit { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); padding-left: 8px; }
 .ui-credit-link { color: var(--text); text-decoration: underline; text-underline-offset: 2px; }
 .ui-credit-link:hover { color: var(--accent); }
 
@@ -190,22 +190,22 @@
    see wm-primitives/src/editRail.css. */
 .tier-block .tier-head { overflow: visible; }
 .tier-label { margin-bottom: 8px; display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
-.tier-token { font-size: 12px; color: var(--text-muted); letter-spacing: .04em; }
+.tier-token { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); letter-spacing: .04em; }
 .tier-px { margin-left: 8px; color: var(--text-faint); }
-.tier-with { font-size: 11px; color: var(--text-dim); }
+.tier-with { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); }
 .tier-head { color: var(--text); line-height: 1.02; white-space: nowrap; outline: none; caret-color: var(--text); }
 .tier-body { color: var(--text); max-width: 46em; margin: 12px 0 0; line-height: 1.5; outline: none; caret-color: var(--text); }
 
 /* OpenType feature chips row inside the play bar */
 .feature-row { display: flex; align-items: flex-start; gap: 12px; }
-.feature-row-label { font-size: 11px; color: var(--text-muted); padding-top: 6px; white-space: nowrap; }
+.feature-row-label { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); padding-top: 6px; white-space: nowrap; }
 
 /* ── Glyphs ── */
 /* The scene is now the shared GlyphPicker (wm-primitives); full-width, its side
    column sticks while the grid scrolls with the stage. */
 .stage-pad--glyphs { align-items: stretch; width: 100%; }
 .glyph-block { margin-bottom: 24px; }
-.glyph-block-label { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+.glyph-block-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
 .glyph-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; margin-top: 10px; width: 100%; }
 .glyph-cell {
   width: 56px;
@@ -213,7 +213,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 30px;
+  font-size: var(--type-title-size, 1.625rem);
   color: var(--text);
   background: var(--surface);
   border-radius: var(--radius);
@@ -266,8 +266,8 @@
 .vm-line { stroke: var(--text-dim); stroke-width: 1; }
 .vm-line.vm-line--base { stroke: var(--text-muted); }
 .vm-line.vm-cropedge { stroke: var(--state-stock); stroke-width: 2; stroke-dasharray: 7 5; }
-.vm-line-lbl { fill: var(--text-muted); font-family: var(--ui-font); font-size: 25px; }
-.vm-crop-lbl { fill: var(--state-stock); font-family: var(--ui-font); font-size: 25px; }
+.vm-line-lbl { fill: var(--text-muted); font-family: var(--ui-font); font-size: var(--type-title-size, 1.625rem); }
+.vm-crop-lbl { fill: var(--state-stock); font-family: var(--ui-font); font-size: var(--type-title-size, 1.625rem); }
 
 /* The letterbox bars are translucent, not opaque: over empty stage they read as solid black
    (black on black), but a glyph poking into the clip zone shows through dimmed — suggesting
