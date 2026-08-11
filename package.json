@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && node scripts/gen-landing.mjs",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint:tokens": "node shared/scripts/lint-tokens.mjs"
   },
   "dependencies": {
     "dialkit": "^1.2.0",
