@@ -1,0 +1,66 @@
+<!doctype html>
+<!-- Source for og/default.png. Re-render with:
+     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu \
+       --hide-scrollbars --force-device-scale-factor=1 --window-size=1200,630 \
+       --screenshot=public/og/default.png --allow-file-access-from-files \
+       file://$PWD/public/og/default.source.html
+     Kept beside the PNG so the card can be edited instead of recreated from scratch. -->
+<html><head><meta charset="utf-8">
+<style>
+  @font-face { font-family:"Cal";
+    src:url("../fonts/CalSansVF.ttf") format("truetype"); }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{background:#0f0f0f;font-family:"Cal",sans-serif;font-optical-sizing:auto;
+       color:#e8e8e8;position:relative;-webkit-font-smoothing:antialiased}
+
+  .eyebrow{position:absolute;left:72px;top:60px;font-size:17px;letter-spacing:.18em;
+           text-transform:uppercase;font-variation-settings:"GEOM" 100;color:rgba(232,232,232,.38)}
+  .title{position:absolute;right:72px;top:52px;text-align:right}
+  .title .t{font-size:54px;font-variation-settings:"GEOM" 50,"wght" 620;letter-spacing:-.02em}
+  .title .s{margin-top:10px;font-size:19px;color:rgba(232,232,232,.6);
+            font-variation-settings:"GEOM" 25}
+
+  /* The product in one row: the same letter at the four GEOM landings. The a is the glyph
+     that moves most across the axis, so the card demonstrates rather than describes. */
+  .row{position:absolute;left:72px;right:72px;top:196px;display:flex;
+       justify-content:space-between;align-items:baseline}
+  .row span{font-size:250px;line-height:1;display:block;width:230px;text-align:center}
+  .g0{font-variation-settings:"GEOM" 0}
+  .g25{font-variation-settings:"GEOM" 25}
+  .g50{font-variation-settings:"GEOM" 50}
+  .g100{font-variation-settings:"GEOM" 100}
+
+  .axis{position:absolute;left:72px;right:72px;bottom:118px;height:2px;background:rgba(232,232,232,.16)}
+  .axis i{position:absolute;top:-5px;width:1px;height:12px;background:rgba(232,232,232,.3)}
+  .axis b{position:absolute;top:-7px;width:16px;height:16px;border-radius:50%;
+          background:#e8e8e8;margin-left:-8px}
+  .marks{position:absolute;left:72px;right:72px;bottom:74px;height:24px;
+         font-size:17px;letter-spacing:.16em;text-transform:uppercase;
+         font-variation-settings:"GEOM" 100;color:rgba(232,232,232,.42)}
+  .marks span{position:absolute;white-space:nowrap;transform:translateX(-50%)}
+  .marks span.first{transform:none;left:0}
+  .marks span.last{transform:none;right:0;left:auto;color:#e8e8e8}
+</style></head>
+<body>
+  <div class="eyebrow">wordmark.nyc &middot; free under the OFL</div>
+  <div class="title">
+    <div class="t">ReCal Sans</div>
+    <div class="s">Customize a free variable font in the browser</div>
+  </div>
+
+  <div class="row">
+    <span class="g0">a</span><span class="g25">a</span><span class="g50">a</span><span class="g100">a</span>
+  </div>
+
+  <div class="axis">
+    <i style="left:0"></i><i style="left:33.333%"></i><i style="left:66.666%"></i><i style="left:100%"></i>
+    <b style="left:100%"></b>
+  </div>
+  <div class="marks">
+    <span class="first">A11y &middot; 0</span>
+    <span style="left:33.333%">UI &middot; 25</span>
+    <span style="left:66.666%">Base &middot; 50</span>
+    <span class="last">Geo &middot; 100</span>
+  </div>
+</body></html>
