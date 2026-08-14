@@ -10,8 +10,8 @@
     },
     {
       "name": "recal-prod",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "dist", "-l", "4173"],
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview"],
       "port": 4173,
       "url": "http://localhost:4173/recalsans/"
     }
