@@ -21,10 +21,14 @@
 //   Paid fonts with no webfont source (Gotham, GT America, Circular, Neutra) get
 //   no compare — we can't legally embed them.
 //
-// vs(): a font-variation-settings string. Defaults: wght 400, YTAS 720, SHRP 0, GEOM 25.
-const vs = ({ GEOM = 25, wght = 400, YTAS = 720, SHRP = 0, opsz }) => {
-  const parts = [`'wght' ${wght}`, `'GEOM' ${GEOM}`, `'YTAS' ${YTAS}`, `'SHRP' ${SHRP}`]
-  if (opsz !== undefined) parts.push(`'opsz' ${opsz}`)
+// vs(): a font-variation-settings string. Only includes axes explicitly passed in.
+const vs = (specified) => {
+  const parts = []
+  if ('wght' in specified) parts.push(`'wght' ${specified.wght}`)
+  if ('GEOM' in specified) parts.push(`'GEOM' ${specified.GEOM}`)
+  if ('YTAS' in specified) parts.push(`'YTAS' ${specified.YTAS}`)
+  if ('SHRP' in specified) parts.push(`'SHRP' ${specified.SHRP}`)
+  if ('opsz' in specified) parts.push(`'opsz' ${specified.opsz}`)
   return parts.join(', ')
 }
 
