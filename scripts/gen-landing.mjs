@@ -15,7 +15,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SEO_PRESETS, ADOBE_KIT } from './seo-presets.mjs'
+import { SEO_PRESETS, ADOBE_KIT, ff } from './seo-presets.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(__dirname, '..', 'dist')
@@ -204,6 +204,15 @@ ${appCss}
   .seo-below nav.crumb a { color:var(--smut); text-decoration:none; }
   .seo-below nav.crumb a:hover { color:var(--sfg); }
   .seo-below h1 { font-size:clamp(30px,5vw,46px); line-height:1.1; letter-spacing:-.01em; margin:0 0 28px; }
+  /* DISPLAY WEARS THE PRESET, PROSE STAYS IN THE UI ZONE. The headline and the section
+     heads are set in this referent's axes -- Neutraface's YTAS, Futura's GEOM 100, and
+     so on down the eight -- so the page speaks in the voice it is arguing for, while the
+     body copy stays at GEOM 25 where a FAQ is comfortable to read.
+     opsz is dropped from the pinned set: it belongs to the specimen's single size, and a
+     46px headline should get its own optical treatment rather than the specimen's. */
+  .seo-below h1, .seo-below h2 { font-variation-settings:${JSON.stringify(p.axes.split(', ').filter(a => !a.startsWith("'opsz'")).join(', ') || "'GEOM' 25")}; font-optical-sizing:auto;${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
+  /* The specimen is the preset in use, so it takes the freezes as well as the axes. */
+  .seo-below .specimen {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
   .seo-below .specimen { font-size:clamp(48px,11vw,104px); line-height:1; letter-spacing:-.02em; margin:28px 0 8px;
     font-variation-settings:${JSON.stringify(p.axes).slice(1, -1)}; font-optical-sizing:${p.opticalSizing ? 'auto' : 'none'}; }
 .card-fig{margin:26px 0 32px;max-width:820px}

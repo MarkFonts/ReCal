@@ -32,6 +32,42 @@ const vs = (specified) => {
   return parts.join(', ')
 }
 
+// GLYPH DECISIONS — what each preset freezes, and what a static page asks for by name.
+// Native rclt is left exactly as the font ships it; this only augments it, through the
+// set-freezing ReCal's rail already does.
+//
+// A SET WHERE THE SET IS EXACT, A CHARACTER VARIANT WHERE IT IS NOT. Verified coverage:
+//   ss16  six nine                                     -- exactly the pair, so use the set
+//   ss02  a (+ae aring)                                -- tight
+//   ss10  C a→ss01 c j t u y (+13 more)                -- a whole geometric cut
+//   ss18  I a g l (+IJ ae aring ldot)                  -- drags three letters with the a
+// So `y` is cv22, not ss10: ss10 would swap seven letters to move one, and its a→a.ss01
+// collides with ss02's a→a.ss02 in any preset naming both -- which one wins depends on
+// lookup order in the font rather than on intent. Same reason `a` is cv02/cv03 and not
+// ss18. The equivalence only ever held for cv26+cv27 === ss16.
+//
+//   cv02 -> a.ss02   (the default 'a', made addressable)
+//   cv03 -> a.ss18       cv11 -> G.ss07       cv22 -> y.ss10
+//
+// FIGURES ARE PAGE-ONLY FOR NOW: ss16 is not in the baker yet, so the landing pages can
+// render it before the customizer above them can.
+const GLYPHS = {
+  'GT America': { sets: ['cv02'] },
+  Gotham:       { sets: ['cv02'] },
+  'Neutra 2':   { sets: ['cv02', 'cv22'] },
+  Geist:        { sets: ['cv03', 'cv11', 'ss16'], pending: ['ss16'] },
+  Poppins:      { sets: ['cv22', 'ss16'],         pending: ['ss16'] },
+  Inter:        { sets: ['ss16'],                 pending: ['ss16'] },
+}
+
+/** The freeze list as a font-feature-settings value, for the pages and the OG cards. */
+export const ff = (presetName) => {
+  const g = GLYPHS[presetName]
+  return g ? g.sets.map(t => `'${t}' 1`).join(', ') : ''
+}
+
+export { GLYPHS }
+
 // Adobe Fonts Web Project id (use.typekit.net/<id>.css). Kit carries Futura PT
 // 300/400/500/600/700(Heavy)/800 + obliques as 'futura-pt' (the separate
 // 'futura-pt-bold' family duplicates 700 — unused).
