@@ -192,7 +192,11 @@ ${appCss}
   /* The letterbox closes the page: full bleed, and the document ends on its last row.
      --lb-bleed grows the canvas upward so repelled glyphs are not cut off, and the same
      amount comes back out of the layout so it costs no space. */
-  .seo-lb { --lb-bleed:180px; background:var(--sbg); overflow:hidden; }
+  /* NOTHING CLIPS. The glyphs are supposed to be able to leave the box -- that is the
+     whole effect -- so there is no overflow:hidden here, and its absence is deliberate.
+     The bleed grows the canvas upward and the negative margin takes the space back, so
+     escaping glyphs have somewhere to go without costing layout height. */
+  .seo-lb { --lb-bleed:180px; background:var(--sbg); }
   .seo-lb canvas { display:block; margin:calc(-1 * var(--lb-bleed)) auto 0; }
   .seo-below .live-note { font-size:13px; color:var(--smut); margin-bottom:40px; }
   .seo-below .live-note a { color:var(--sfg); }
