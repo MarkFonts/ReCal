@@ -210,7 +210,13 @@ ${appCss}
      body copy stays at GEOM 25 where a FAQ is comfortable to read.
      opsz is dropped from the pinned set: it belongs to the specimen's single size, and a
      46px headline should get its own optical treatment rather than the specimen's. */
-  .seo-below h1, .seo-below h2 { font-variation-settings:${JSON.stringify(p.axes.split(', ').filter(a => !a.startsWith("'opsz'")).join(', ') || "'GEOM' 25")}; font-optical-sizing:auto;${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
+  /* Display type in this referent's voice. wght is deliberately NOT pinned: an h1 is
+     bold from the UA sheet, and a variable face holds that bold alongside the preset's
+     other axes -- no preset states a weight, so nothing here should either.
+     Emitted raw: font-variation-settings takes 'TAG' n pairs, and wrapping the list in
+     another pair of quotes makes it one invalid string that the browser drops -- which
+     is what silently left these headings inheriting GEOM 25 and nothing else. */
+  .seo-below h1, .seo-below h2 { font-variation-settings:${p.axes.split(', ').filter(a => !a.startsWith("'opsz'")).join(', ') || "'GEOM' 25"}; font-optical-sizing:auto;${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
   /* The specimen is the preset in use, so it takes the freezes as well as the axes. */
   .seo-below .specimen {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
   .seo-below .specimen { font-size:clamp(48px,11vw,104px); line-height:1; letter-spacing:-.02em; margin:28px 0 8px;
