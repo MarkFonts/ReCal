@@ -9,12 +9,16 @@ public/compare/<slug>.svg. Pitch text is parsed from seo-presets.mjs so it stays
 Design notes:
 - Full 6-decimal precision in every coordinate; no minify, no rounding to ints.
 - fill="currentColor" so the inlined SVG inherits the page's --text (theme-aware).
-- Greedy word-wrap using real glyph advances; kerning is skipped (fine for a specimen).
+- Laid out by HarfBuzz, so the specimen gets the reference font's own kerning, ligatures
+  and default features. It used to stack raw hmtx advances and skip GPOS entirely, which
+  is visible as a gap after any capital with a kern pair -- "Tuned" in Neutraface Display
+  being the obvious one. A specimen of someone else's type has to show their spacing.
 
-Regenerate:  .venv/bin/python scripts/gen_compare_svg.py
+Regenerate:  python3 scripts/gen_compare_svg.py   (needs uharfbuzz)
 """
 import os, re
 
+import uharfbuzz as hb
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
@@ -57,34 +61,45 @@ def ntos(v):
 
 
 def load(name):
-    f = TTFont(os.path.join(REF, name))
-    return f.getBestCmap(), f.getGlyphSet(), f["head"].unitsPerEm
+    """A shaping face + an outline source, from one file. HarfBuzz decides WHERE each
+    glyph goes; fontTools draws WHAT it looks like."""
+    path = os.path.join(REF, name)
+    f = TTFont(path)
+    blob = hb.Blob.from_file_path(path)
+    hbfont = hb.Font(hb.Face(blob))
+    return {
+        "gs": f.getGlyphSet(),
+        "order": f.getGlyphOrder(),
+        "upm": f["head"].unitsPerEm,
+        "hb": hbfont,
+    }
 
 
-def glyph_and_adv(cmap, gs, ch):
-    gn = cmap.get(ord(ch))
-    if gn is None:
-        return None, None
-    g = gs[gn]
-    return g, g.width
+def shape(font, text):
+    """(glyph name, x_offset, y_offset, x_advance) per glyph, in font units."""
+    buf = hb.Buffer()
+    buf.add_str(text)
+    buf.guess_segment_properties()
+    hb.shape(font["hb"], buf)
+    order = font["order"]
+    out = []
+    for info, pos in zip(buf.glyph_infos, buf.glyph_positions):
+        name = order[info.codepoint] if info.codepoint < len(order) else None
+        out.append((name, pos.x_offset, pos.y_offset, pos.x_advance))
+    return out
 
 
-def text_width(cmap, gs, upm, text, size):
-    scale = size / upm
-    _, space_adv = glyph_and_adv(cmap, gs, " ")
-    space_adv = space_adv if space_adv else upm * 0.3
-    w = 0.0
-    for ch in text:
-        _, adv = glyph_and_adv(cmap, gs, ch)
-        w += (adv if adv is not None else space_adv) * scale
-    return w
+def text_width(font, text, size):
+    """Shaped width — so the wrap accounts for kerning rather than guessing past it."""
+    scale = size / font["upm"]
+    return sum(adv for _n, _x, _y, adv in shape(font, text)) * scale
 
 
-def wrap(cmap, gs, upm, text, size, maxw):
+def wrap(font, text, size, maxw):
     lines, cur = [], ""
     for word in text.split(" "):
         trial = word if not cur else cur + " " + word
-        if not cur or text_width(cmap, gs, upm, trial, size) <= maxw:
+        if not cur or text_width(font, trial, size) <= maxw:
             cur = trial
         else:
             lines.append(cur)
@@ -94,40 +109,39 @@ def wrap(cmap, gs, upm, text, size, maxw):
     return lines
 
 
-def render_line(cmap, gs, upm, text, size, baseline, paths):
-    scale = size / upm
-    _, space_adv = glyph_and_adv(cmap, gs, " ")
-    space_adv = space_adv if space_adv else upm * 0.3
+def render_line(font, text, size, baseline, paths):
+    scale = size / font["upm"]
+    gs = font["gs"]
     x = 0.0
-    for ch in text:
-        g, adv = glyph_and_adv(cmap, gs, ch)
-        if g is None:
-            x += space_adv * scale
-            continue
-        pen = SVGPathPen(gs, ntos=ntos)
-        # font units are y-up; flip to SVG y-down and place at (x, baseline)
-        g.draw(TransformPen(pen, (scale, 0.0, 0.0, -scale, x, baseline)))
-        d = pen.getCommands()
-        if d:
-            paths.append(d)
+    for name, xoff, yoff, adv in shape(font, text):
+        if name is not None and name in gs:
+            pen = SVGPathPen(gs, ntos=ntos)
+            # font units are y-up; flip to SVG y-down and place at the shaped position.
+            # x_offset/y_offset carry GPOS placement (marks, and any positioning the
+            # font applies beyond the advance).
+            gs[name].draw(TransformPen(
+                pen, (scale, 0.0, 0.0, -scale, x + xoff * scale, baseline - yoff * scale)))
+            d = pen.getCommands()
+            if d:
+                paths.append(d)
         x += adv * scale
 
 
 def build(slug):
     title, body = parse_pitch(slug)
     bold, book = FONTS[slug]
-    h_cmap, h_gs, h_upm = load(bold)
-    b_cmap, b_gs, b_upm = load(book)
+    hfont = load(bold)
+    bfont = load(book)
 
     paths, y = [], TOP_PAD
-    for ln in wrap(h_cmap, h_gs, h_upm, title, H1_SIZE, WIDTH):
+    for ln in wrap(hfont, title, H1_SIZE, WIDTH):
         y += H1_SIZE * H1_LEADING
-        render_line(h_cmap, h_gs, h_upm, ln, H1_SIZE, y, paths)
+        render_line(hfont, ln, H1_SIZE, y, paths)
     y += PARA_GAP
     for para in body:
-        for ln in wrap(b_cmap, b_gs, b_upm, para, BODY_SIZE, WIDTH):
+        for ln in wrap(bfont, para, BODY_SIZE, WIDTH):
             y += BODY_SIZE * BODY_LEADING
-            render_line(b_cmap, b_gs, b_upm, ln, BODY_SIZE, y, paths)
+            render_line(bfont, ln, BODY_SIZE, y, paths)
         y += PARA_GAP
     height = y + BOTTOM_PAD
 
