@@ -14,6 +14,20 @@ export type Preset = {
   opszMultiplier?: number
   frozenOpsz?: number
   thresholds?: (base: Thresholds) => Thresholds
+  /**
+   * Features the preset freezes — fused into the default cmap on download by the
+   * worker's _freeze_features, and previewed live via font-feature-settings, so what
+   * you see is what you bake. This is the preset's GLYPH half; `thresholds` is its
+   * GEOM half, and the two are different mechanisms: a threshold edit rewrites when
+   * rclt fires, a freeze picks a drawing outright and needs no rebuild to preview.
+   *
+   * A set where the set is exact, a character variant where it is not. ss16 is
+   * precisely six + nine. ss10 would swap seven letters to move the y, and its
+   * a→a.ss01 collides with cv02's a→a.ss02 in any preset naming both — so y is cv22
+   * and a is cv02/cv03. Mirrors scripts/seo-presets.mjs, which states the same
+   * decisions for the static pages that cannot run the baker.
+   */
+  frozen?: string[]
 }
 
 export const PRESETS: Preset[] = [
@@ -23,14 +37,19 @@ export const PRESETS: Preset[] = [
   { name: 'Futura', geom: 100, ytas: 800, shrp: 100, frozenOpsz: 16 },
   {
     name: 'Neutra 2', geom: 25, ytas: 800, shrp: 100, opszMultiplier: 0.625,
+    frozen: ['cv02', 'cv22'],
     thresholds: b => { let t = applyDelete('a', 0, 'A11Y', b); t = applyDrop('y', 2, 'UI', t); return t },
   },
-  { name: 'Inter', geom: 25, opszMultiplier: 0.625 },
+  { name: 'Inter', geom: 25, opszMultiplier: 0.625, frozen: ['ss16'] },
   { name: 'Circular', geom: 25, frozenOpsz: 20 },
-  { name: 'Geist', geom: 50, frozenOpsz: 16, thresholds: b => applyDrop('a', 0, 'Base', b) },
-  { name: 'Poppins', geom: 50, frozenOpsz: 10, thresholds: b => applyDrop('y', 2, 'Base', b) },
-  { name: 'Gotham', geom: 25, frozenOpsz: 10, thresholds: b => applyDelete('a', 0, 'A11Y', b) },
-  { name: 'GT America', geom: 25, frozenOpsz: 8, thresholds: b => applyDelete('a', 0, 'A11Y', b) },
+  { name: 'Geist', geom: 50, frozenOpsz: 16, frozen: ['cv03', 'cv11', 'ss16'],
+    thresholds: b => applyDrop('a', 0, 'Base', b) },
+  { name: 'Poppins', geom: 50, frozenOpsz: 10, frozen: ['cv22', 'ss16'],
+    thresholds: b => applyDrop('y', 2, 'Base', b) },
+  { name: 'Gotham', geom: 25, frozenOpsz: 10, frozen: ['cv02'],
+    thresholds: b => applyDelete('a', 0, 'A11Y', b) },
+  { name: 'GT America', geom: 25, frozenOpsz: 8, frozen: ['cv02'],
+    thresholds: b => applyDelete('a', 0, 'A11Y', b) },
 ]
 
 export function applyPreset(dispatch: (a: Action) => void, p: Preset) {
@@ -44,5 +63,8 @@ export function applyPreset(dispatch: (a: Action) => void, p: Preset) {
     dispatch({ type: 'setFrozenOpszValue', value: p.frozenOpsz })
   }
   if (p.thresholds) dispatch({ type: 'setThresholds', thresholds: p.thresholds(shippedThresholds()) })
+  // resetDefaults above rebuilt state from scratch, so frozenFeatures is empty here and
+  // toggling is the same as setting.
+  for (const tag of p.frozen ?? []) dispatch({ type: 'toggleFrozenFeature', tag })
   dispatch({ type: 'setActivePreset', name: p.name })
 }
