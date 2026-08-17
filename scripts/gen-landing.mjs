@@ -26,6 +26,13 @@ const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 
 // The fused pages load the same hashed bundle as the app root — extract the tags
 // vite wrote into dist/index.html (this script runs after `vite build`).
+// The letterbox is the shared primitive, copied in beside the pages so all eight load
+// one cached module rather than inlining ~18KB into each. Source of truth is the
+// submodule; this is a copy step, not a fork.
+const LB_SRC = join(__dirname, '..', 'shared', 'src', 'letterbox.js')
+if (existsSync(LB_SRC)) writeFileSync(join(OUT, 'letterbox.js'), readFileSync(LB_SRC))
+else console.warn('[seo] shared/src/letterbox.js missing — run `git submodule update --init`')
+
 const appHtml = readFileSync(join(OUT, 'index.html'), 'utf8')
 const appScript = appHtml.match(/<script type="module"[^>]*><\/script>/)?.[0]
 const appCss = appHtml.match(/<link rel="stylesheet"[^>]*>/)?.[0]
@@ -182,6 +189,11 @@ ${appCss}
     font-variation-settings:'GEOM' 25; line-height:1.5; -webkit-font-smoothing:antialiased; }
   @font-face { font-family:'CalSansSEO'; src:url('${BASE}/fonts/CalSansVF.ttf') format('truetype'); font-display:swap; }
   .seo-below .wrap { max-width:760px; margin:0 auto; padding:72px 24px 96px; box-sizing:border-box; }
+  /* The letterbox closes the page: full bleed, and the document ends on its last row.
+     --lb-bleed grows the canvas upward so repelled glyphs are not cut off, and the same
+     amount comes back out of the layout so it costs no space. */
+  .seo-lb { --lb-bleed:180px; background:var(--sbg); overflow:hidden; }
+  .seo-lb canvas { display:block; margin:calc(-1 * var(--lb-bleed)) auto 0; }
   .seo-below .live-note { font-size:13px; color:var(--smut); margin-bottom:40px; }
   .seo-below .live-note a { color:var(--sfg); }
   .seo-below nav.crumb { font-size:13px; color:var(--smut); margin-bottom:40px; }
@@ -251,6 +263,24 @@ ${appCss}
   </footer>
 </div>
 </article>
+<div class="seo-lb"><canvas id="lb-footer" aria-label="ReCal Sans"></canvas></div>
+<script type="module">
+  import { createLetterbox } from '${BASE}/letterbox.js'
+  // The closer is WORDMARK's, not this page's: the studio signs the page, so it is the
+  // house wordmark in plain Cal Sans on every one of the eight. Nothing here varies per
+  // referent -- the specimen above already argues that case.
+  const lb = createLetterbox(document.getElementById('lb-footer'), {
+    words: ['WORDMARK'],
+    largeFontFamily: "'CalSansSEO', system-ui, sans-serif",
+    fillFontFamily:  "'CalSansSEO', system-ui, sans-serif",
+    fillSize: 10, widthFraction: 0.98, minFillSize: 6, bleedTop: 180,
+    ink: '#e8e8e8',
+    signal: 'color(display-p3 0.9333 1 0.2549)',
+    colorSpace: 'display-p3',
+    speckle: { share: 1 / 6, groups: 5 },
+  })
+  if (lb) document.fonts?.ready.then(lb.init) ?? lb.init()
+</script>
 </body>
 </html>
 `
