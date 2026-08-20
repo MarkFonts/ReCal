@@ -6,7 +6,7 @@ import './scenes.css'
 import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -490,6 +490,9 @@ export type SceneProps = {
   source: string; measure: number; pairs: Set<string>; glyphSet: string; opszAuto: boolean
   paraStyles: ParaStyles
   scaleStyles: ScaleStyles; selectedTiers: Set<string>
+  /** Line fitting, from the Type panel. Paragraph only; other scenes ignore it. */
+  textAlign?: string
+  fit?: Partial<FitOptions>
 }
 
 // When opsz-auto is on, omit opsz from the settings and set font-optical-sizing:auto
@@ -876,7 +879,7 @@ function CompareSvg({ url }: { url: string }) {
   return <div className="compare-svg" dangerouslySetInnerHTML={{ __html: markup }} />
 }
 
-function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProps) {
+function Paragraph({ featStr, source, measure, opszAuto, paraStyles, textAlign, fit }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
   const op = opszCss(state.defaults, opszAuto)
@@ -968,8 +971,8 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
 
   return (
     <div className="stage-pad">
-      <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
-        {blocks.map(b => {
+      <div className="para-doc" style={{ maxWidth: `${measure}em`, textAlign: (textAlign ?? 'left') as CSSProperties['textAlign'] }}>
+        {blocks.map((b, i) => {
           const st = paraStyles[b.type]
           const blockVs = renderVarSettings({ ...axes, wght: st.wght }, op.renderOpts)
           const focused = focusedId === b.id
@@ -989,7 +992,14 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles }: SceneProp
                 focus(null)
               }}
               onKeyDown={e => onKeyDown(b.id, e)}>
-              {focused ? null : flashInline(b.text, boldVs, italVs, flash, cmp)}
+              {focused ? null : (() => {
+                const inline = flashInline(b.text, boldVs, italVs, flash, cmp)
+                // Fitting rewrites the text into per-line spans, which cannot carry
+                // inline italic/bold runs, so a marked-up block keeps normal flow.
+                if (!fit || fit.mode === 'off' || !isPlainRun(splitInlineMarkup(b.text))) return inline
+                return <FittedParagraph text={b.text} opts={fit} fallback={inline}
+                  indentPx={i === 0 ? fit.firstIndent ?? 0 : fit.indent ?? 0} />
+              })()}
             </div>
           )
         })}

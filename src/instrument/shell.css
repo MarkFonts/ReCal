@@ -907,3 +907,11 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .preview-reset:active:not(:disabled) {
   background: var(--surface-3, rgba(255, 255, 255, .08));
 }
+
+/* The alignment row inside the floating Type panel. The buttons come from
+   wm-primitives; this is only where they sit. */
+.type-panel-aligns {
+  display: flex;
+  gap: 3px;
+  margin: var(--spacing-04, 12px) 0 0;
+}

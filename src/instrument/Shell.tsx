@@ -6,7 +6,9 @@ import './holo.css'
 import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus } from '../../shared/index' // wm-primitives (git submodule)
+import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
+  AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
+  type FitOptions } from '../../shared/index' // wm-primitives (git submodule)
 import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
@@ -445,7 +447,7 @@ function TierMenu({ selected, toggle, scaleStyles }: {
   )
 }
 
-function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, selectedTiers, toggleTier, scaleStyles }: {
+function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, selectedTiers, toggleTier, scaleStyles, textAlign, setTextAlign, swissRag, setSwissRag, fit, setFit }: {
   mode: SceneMode
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
@@ -453,6 +455,9 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
   measure: number; setMeasure: (n: number) => void
   activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
   selectedTiers: Set<string>; toggleTier: (k: string) => void; scaleStyles: ScaleStyles
+  textAlign: string; setTextAlign: (a: string) => void
+  swissRag: boolean; setSwissRag: (on: boolean) => void
+  fit: Partial<FitOptions>; setFit: (f: Partial<FitOptions>) => void
 }) {
   const rows = TYPE_ROWS[mode] ?? []
   // Draggable by the header. Position persists across sessions; free-drag against the
@@ -519,6 +524,17 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
       {has('measure') && (
         <AxisSlider label="measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
       )}
+      {/* Alignment and line fitting, from wm-primitives — the same controls font-proofer
+          renders in its sidebar. Only the placement is ours. */}
+      {mode === 'paragraph' && (
+        <>
+          <div className="type-panel-aligns">
+            <AlignmentButtons value={textAlign} onChange={setTextAlign} />
+          </div>
+          <FittingControls value={fit} onChange={setFit} mode={fittingMode(textAlign, swissRag)}
+            swissRag={swissRag} onSwissRag={setSwissRag} />
+        </>
+      )}
     </div>
   )
 }
@@ -535,6 +551,11 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
     () => SCENES.find(s => s.mode === BOOT.scene)?.mode ?? 'words')
   const [source, setSource] = useState(BOOT.pitch ? 'Compare' : 'Sample')
   const [measure, setMeasure] = useState(34)
+  // Line fitting: alignment is a scene-level choice, the rag is a switch on top of it,
+  // and the budgets ride along. Same shape as font-proofer, same controls.
+  const [textAlign, setTextAlign] = useState('left')
+  const [swissRag, setSwissRag] = useState(false)
+  const [fit, setFit] = useState<Partial<FitOptions>>(FLATTERSATZ_DEFAULTS)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
   const [glyphSet, setGlyphSet] = useState('All')
@@ -593,7 +614,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
               ? <VMetricsScene />
               : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
                   source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
-                  paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers} />}
+                  paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
+                  textAlign={textAlign}
+                  fit={{ ...fit, mode: fittingMode(textAlign, swissRag), center: textAlign === 'center' }} />}
           </div>
         </div>
         {(mode !== 'ui' || vmActive) && (
@@ -608,7 +631,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
       {!vmActive && <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
         leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
         activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
-        selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles} />}
+        selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
+        textAlign={textAlign} setTextAlign={setTextAlign}
+        swissRag={swissRag} setSwissRag={setSwissRag} fit={fit} setFit={setFit} />}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
