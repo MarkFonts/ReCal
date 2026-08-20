@@ -22,7 +22,7 @@
   scrollbar-gutter: stable;
   display: flex;
   flex-direction: column;
-  gap: var(--pad-6, 24px);
+  gap: var(--spacing-06, 24px);
 }
 
 /* Narrow window collapses the rail to a strip showing just its label; clicking the
@@ -41,10 +41,10 @@
   white-space: nowrap;
 }
 .rail--collapsed:hover .rail-collapsed-label { color: var(--text); }
-.rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: var(--pad-5, 16px); }
+.rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: var(--spacing-05, 16px); }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */
-.rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: var(--pad-3, 8px); }
+.rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-03, 8px); }
 .rail-title {
   font-size: var(--type-body-size, 1rem);
   font-weight: 700;
@@ -55,7 +55,7 @@
 .rail-sub { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); margin-top: 3px; white-space: nowrap; }
 .rail-reset {
   flex-shrink: 0;
-  padding: var(--pad-1, 4px) var(--pad-4, 12px);
+  padding: var(--spacing-01, 4px) var(--spacing-04, 12px);
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface);
@@ -117,10 +117,10 @@
   color: var(--text-dim);
 }
 /* group header row: label on the left, an inline toggle on the right */
-.rail-group-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pad-3, 8px); }
+.rail-group-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03, 8px); }
 
 /* ◆ pin row: label + value + track */
-.pin { display: flex; flex-direction: column; gap: var(--pad-1, 4px); }
+.pin { display: flex; flex-direction: column; gap: var(--spacing-01, 4px); }
 .pin--off { opacity: .38; }                          /* grayed until Freeze opsz is on */
 .pin--off input[type="range"] { cursor: default; }
 .pin-head { display: flex; justify-content: space-between; align-items: baseline; }
@@ -151,7 +151,7 @@
 /* "Start from…" preset dropdown */
 .rail-preset {
   width: 100%;
-  padding: var(--pad-2, 6px) var(--pad-3, 8px);
+  padding: var(--spacing-02, 6px) var(--spacing-03, 8px);
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
@@ -168,7 +168,7 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
-  padding-top: var(--pad-4, 12px);
+  padding-top: var(--spacing-04, 12px);
   border-top: 1px solid var(--border-subtle);
 }
 .rail-footer .state-tag { align-self: flex-start; }
@@ -200,13 +200,13 @@
   overflow: hidden;
   /* reserve the collapsed play-bar height so the stage/scene-bar clear it and the
      stage height stays constant whether the play bloom is open or closed */
-  padding-bottom: var(--pad-8, 48px);
+  padding-bottom: var(--spacing-08, 48px);
 }
 /* UI (COSS) has no bottom ● dock, so it reclaims that reserved height (no bottom crop). */
 .canvas-body--full { padding-bottom: 0; }
 /* …and the COSS board manages its own inset, so drop the scroll box's big bottom padding
    (the 64px blank band under the board). */
-.stage-scroll.stage-scroll--flush { padding: var(--pad-6, 24px) var(--pad-8, 48px) 0; }
+.stage-scroll.stage-scroll--flush { padding: var(--spacing-06, 24px) var(--spacing-08, 48px) 0; }
 /* Vertical Metrics: the letterbox preview is full-bleed — no padding, no scroll gutter. */
 .stage-scroll.stage-scroll--bleed { padding: 0; scrollbar-gutter: auto; overflow: hidden; }
 .canvas-bar {
@@ -224,7 +224,7 @@
   min-height: 42px;            /* = tab-button row (32) + the 10px bottom padding, reserved
                                   with or without a submenu so the label never jumps up on
                                   Words/UI (no controls). box-sizing is border-box. */
-  padding: 0 var(--pad-6, 24px) var(--pad-3, 8px) var(--pad-7, 32px);   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
+  padding: 0 var(--spacing-06, 24px) var(--spacing-03, 8px) var(--spacing-07, 32px);   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
 }
 /* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
    always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
@@ -239,7 +239,7 @@
 .mode-label {
   display: inline-flex;
   align-items: center;
-  gap: var(--pad-2, 6px);
+  gap: var(--spacing-02, 6px);
   padding: 0 24px 12px 32px;   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
   font-family: var(--ui-font);
   font-size: var(--type-body-size, 1rem);
@@ -292,7 +292,7 @@
   overflow-y: auto;      /* the scene content scrolls here; the overlay stays put */
   overflow-x: hidden;    /* Scale bleed clips at the canvas edge — no h-scrollbar */
   scrollbar-gutter: stable;
-  padding: var(--pad-7, 32px) var(--pad-8, 48px) var(--pad-9, 64px);
+  padding: var(--spacing-07, 32px) var(--spacing-08, 48px) var(--spacing-09, 64px);
 }
 
 /* Scrollbars now come from the shared house scrollbar (wm-primitives scrollbar.css, 6px). */
@@ -326,7 +326,7 @@
   z-index: 4;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: var(--pad-5, 16px) var(--pad-5, 16px) var(--pad-6, 24px);
+  padding: var(--spacing-05, 16px) var(--spacing-05, 16px) var(--spacing-06, 24px);
   text-align: right;
   --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
@@ -373,7 +373,7 @@
   z-index: 3;
   border-top: 1px solid var(--border);
   background: var(--surface);
-  padding: var(--pad-4, 12px) var(--pad-6, 24px) var(--pad-4, 12px);
+  padding: var(--spacing-04, 12px) var(--spacing-06, 24px) var(--spacing-04, 12px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -404,7 +404,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: var(--pad-1, 4px) var(--pad-4, 12px);
+  padding: var(--spacing-01, 4px) var(--spacing-04, 12px);
   border-radius: var(--radius-pill);
   border: 1px solid var(--border);
   background: transparent;
@@ -449,8 +449,8 @@
   text-transform: uppercase;
   color: var(--text-dim);
 }
-.preview-rows { display: flex; gap: var(--pad-5, 16px); flex-wrap: wrap; flex: 1; }
-.prow { display: flex; flex-direction: column; gap: var(--pad-1, 4px); min-width: 118px; }
+.preview-rows { display: flex; gap: var(--spacing-05, 16px); flex-wrap: wrap; flex: 1; }
+.prow { display: flex; flex-direction: column; gap: var(--spacing-01, 4px); min-width: 118px; }
 /* Compare mode: axes the referent font can't express (see PreviewSurface). */
 .prow--na { opacity: .28; pointer-events: none; }
 .prow-head { display: flex; justify-content: space-between; font-size: var(--type-ui-size, 0.75rem); }
@@ -475,7 +475,7 @@
   grid-area: floor;
   display: flex;
   align-items: center;
-  gap: var(--pad-4, 12px);
+  gap: var(--spacing-04, 12px);
   padding: 12px 24px;
   border-top: 1px solid var(--border);
   background: var(--surface);
@@ -547,8 +547,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   position: fixed;
   right: 20px; bottom: 16px;
   z-index: 50;
-  display: flex; align-items: center; gap: var(--pad-4, 12px);
-  padding: var(--pad-3, 8px) var(--pad-3, 8px) var(--pad-3, 8px) var(--pad-5, 16px);
+  display: flex; align-items: center; gap: var(--spacing-04, 12px);
+  padding: var(--spacing-03, 8px) var(--spacing-03, 8px) var(--spacing-03, 8px) var(--spacing-05, 16px);
   border-radius: calc(var(--radius) + 4px);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -562,8 +562,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   top: 56px; right: 20px;
   z-index: 40;
   width: 178px;
-  display: flex; flex-direction: column; gap: var(--pad-4, 12px);
-  padding: var(--pad-3, 8px) var(--pad-4, 12px) var(--pad-4, 12px);
+  display: flex; flex-direction: column; gap: var(--spacing-04, 12px);
+  padding: var(--spacing-03, 8px) var(--spacing-04, 12px) var(--spacing-04, 12px);
   border-radius: calc(var(--radius) + 2px);
   background: var(--surface);
   border: 1px solid var(--border);
@@ -586,7 +586,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu { position: relative; }
 .style-menu-btn {
   width: 100%; display: flex; align-items: center; justify-content: space-between;
-  padding: var(--pad-2, 6px) var(--pad-3, 8px); border-radius: var(--radius);
+  padding: var(--spacing-02, 6px) var(--spacing-03, 8px); border-radius: var(--radius);
   background: var(--surface-hi); border: 1px solid var(--border);
   color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer;
 }
@@ -602,7 +602,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
 }
 .style-menu-item {
-  display: flex; align-items: center; justify-content: space-between; gap: var(--pad-3, 8px);
+  display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03, 8px);
   padding: 6px 8px; border: none; border-radius: 6px; background: none;
   color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer; text-align: left;
 }
@@ -617,7 +617,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-badges { display: flex; gap: 4px; flex-shrink: 0; }
 .style-badge {
   font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); white-space: nowrap;
-  padding: var(--pad-hair, 1px) var(--pad-1, 4px); border-radius: 4px; border: 1px solid var(--border);
+  padding: var(--hair, 1px) var(--spacing-01, 4px); border-radius: 4px; border: 1px solid var(--border);
 }
 
 .ofl-check {
@@ -663,7 +663,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-seam {
   all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
-  gap: var(--pad-3, 8px); cursor: pointer; user-select: none; padding: var(--pad-5, 16px) var(--pad-5, 16px);
+  gap: var(--spacing-03, 8px); cursor: pointer; user-select: none; padding: var(--spacing-05, 16px) var(--spacing-05, 16px);
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: .18em;
   /* Pin to the rail's scroll edges: the up-seam sticks to the top, the down-seam to the
      bottom, so a seam stays flush with the viewport while the panel scrolls past — and
@@ -687,12 +687,12 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-seam--up { top: 0; color: rgba(232,232,232,.3); border-bottom: 1px solid var(--border-subtle); }
 .rail-seam--up:hover:not(:disabled) { color: rgba(232,232,232,.6); }
 
-.rail-matrix, .rail-blank, .rail-freezer, .rail-vmetrics { display: flex; flex-direction: column; gap: var(--pad-4, 12px); }
+.rail-matrix, .rail-blank, .rail-freezer, .rail-vmetrics { display: flex; flex-direction: column; gap: var(--spacing-04, 12px); }
 .rail-blank-body { min-height: 260px; }
 
 /* ── ssXX Freezer (rail group 2) ── Keynote Typography-panel rows: base → variant in
    the live font, name, toggle. Gold = frozen (held off the GEOM continuum). */
-.freezer { display: flex; flex-direction: column; padding: 0 var(--pad-2, 6px); }
+.freezer { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
 .freezer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
 .freezer-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .freezer-reset {
@@ -706,12 +706,12 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
 .freezer-section-title {
   font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .08em; text-transform: uppercase;
-  color: var(--text-dim); padding: var(--pad-3, 8px) var(--pad-1, 4px) var(--pad-1, 4px);
+  color: var(--text-dim); padding: var(--spacing-03, 8px) var(--spacing-01, 4px) var(--spacing-01, 4px);
 }
 .freezer-list { display: flex; flex-direction: column; }
 .freezer-row {
-  display: grid; grid-template-columns: auto 1fr 18px; align-items: center; gap: var(--pad-3, 8px);
-  width: 100%; padding: var(--pad-1, 4px) var(--pad-2, 6px); border: none; background: none; cursor: pointer; text-align: left;
+  display: grid; grid-template-columns: auto 1fr 18px; align-items: center; gap: var(--spacing-03, 8px);
+  width: 100%; padding: var(--spacing-01, 4px) var(--spacing-02, 6px); border: none; background: none; cursor: pointer; text-align: left;
   border-radius: 6px;
 }
 .freezer-row:hover { background: var(--surface); }
@@ -721,7 +721,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    the after glyph flowing right. No overflow clip — descenders (g/j/y) must show. */
 .freezer-ba {
   display: grid; grid-template-columns: 30px auto auto; align-items: baseline;
-  column-gap: var(--pad-2, 6px); font-size: var(--type-body-size, 1rem); line-height: 1.4;
+  column-gap: var(--spacing-02, 6px); font-size: var(--type-body-size, 1rem); line-height: 1.4;
 }
 /* before right-aligned (hugs the arrow) + after left-aligned, with equal gaps around
    the arrow → arrows sit centered between the pair and still line up down the column. */
@@ -756,7 +756,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
    next rides up from below. Ascend (up-seam): the mirror — current slides DOWN + out,
    next comes from above. Keyed by group index, so each arrival is a fresh mount. */
-.rail-descent { display: flex; flex-direction: column; gap: var(--pad-6, 24px); }
+.rail-descent { display: flex; flex-direction: column; gap: var(--spacing-06, 24px); }
 .rail-descent--fwd  { animation: descend-enter .4s var(--spring); }
 .rail-descent--back { animation: ascend-enter  .4s var(--spring); }
 .rail-descent--fwd.rail-descent--leaving  { animation: descend-leave .15s ease-in forwards; }
@@ -770,7 +770,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* ── GEOM swap editor (type matrix), instrument-styled ── */
 /* Horizontal padding insets everything together (bands, shade, axis labels are all
    positioned within this box), so nothing jams the rail edge. */
-.matrix { display: flex; flex-direction: column; padding: 0 var(--pad-2, 6px); }
+.matrix { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
 .matrix-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
@@ -839,17 +839,17 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    dropdown seeds the numbers, an hhea-strategy dropdown re-derives them, then a Line Gap
    field, the Use-Typo toggle, the Ascender (YTAS) pin and a live readout of the three
    metric sets. The note flags (in white/bold) when the win box crops a glyph. */
-.vmetrics-panel .freezer-section { gap: var(--pad-4, 12px); }
-.vm-head-right { display: flex; align-items: center; gap: var(--pad-3, 8px); }
+.vmetrics-panel .freezer-section { gap: var(--spacing-04, 12px); }
+.vm-head-right { display: flex; align-items: center; gap: var(--spacing-03, 8px); }
 .vm-lh { font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .vmetrics-panel .rail-preset { margin-top: 2px; }
 .vm-strategy { color: var(--text-muted); }
 
-.vm-row { display: flex; align-items: center; justify-content: space-between; gap: var(--pad-3, 8px); }
+.vm-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03, 8px); }
 .vm-row-label { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .vm-num {
   width: 84px; text-align: right; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text);
-  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--pad-2, 6px) var(--pad-3, 8px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: var(--spacing-02, 6px) var(--spacing-03, 8px);
 }
 
 /* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */

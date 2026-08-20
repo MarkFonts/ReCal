@@ -2,9 +2,9 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import App from './App'
 import InstrumentApp from './instrument/InstrumentApp'
-import '../shared/src/space.css'     // --pad-* scale (wm-primitives). Top-level, not in
+import '../shared/src/space.css'     // --spacing-NN scale (wm-primitives). Top-level, not in
                                      // InstrumentApp with corners/type: the primitives that
-                                     // consume --pad-* also render in the classic UI and the
+                                     // consume --spacing-NN also render in the classic UI and the
                                      // ?demo= harnesses, which never mount InstrumentApp.
 import '../shared/src/scrollbar.css' // house 6px scrollbar (wm-primitives)
 import { GlyphPicker, makeGlyphSets, StyleScopeDropdown, StyleScopeList, AxisSlider } from '../shared/index'
@@ -41,7 +41,7 @@ function GlyphPickerDemo() {
   )
 }
 
-// ?demo=padding — harness for the --pad-* rollout. Mounts the primitives that carry
+// ?demo=padding — harness for the spacing rollout. Mounts the primitives that carry
 // literal padding side by side so a token substitution can be measured, not eyeballed.
 // The vertical guides are the point: a row's text edge has to line up with the trigger
 // button's text edge above it, and that alignment is the sum of nested paddings.

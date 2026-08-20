@@ -47,7 +47,7 @@
 /* Suspense fallback while the chunk loads on first click. */
 .scene-loading {
   display: flex; align-items: center; justify-content: center;
-  gap: var(--pad-3, 8px); height: 60vh; color: var(--text-muted); font-size: var(--type-body-size, 1rem);
+  gap: var(--spacing-03, 8px); height: 60vh; color: var(--text-muted); font-size: var(--type-body-size, 1rem);
 }
 
 /* Vertical Metrics tab: text slides by the cap-position shift (--vm-shift, an em translate
