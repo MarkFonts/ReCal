@@ -518,9 +518,12 @@
 }
 /* Press: the stroke lands before the fill does. Beats .on deliberately — the stroke
    acknowledges the tap, the fill confirms it on release. */
+/* Pressed with a FILL, not the house inset stroke. A box-shadow follows border-radius
+   and not corner-shape, so on a pill — where the whole edge is curved — the ring paints
+   as a rounded rectangle inside the squircle and shows while the tap is held. A
+   background is clipped to the real shape. Noted in corners.css. */
 .zone-chip:active:not(:disabled) {
-  background: none;
-  box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) currentColor;
+  background: var(--surface-3, rgba(255, 255, 255, .08));
 }
 .zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) var(--accent); }
 .floor-spacer { flex: 1; }
@@ -894,8 +897,13 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .rail-reset:active:not(:disabled),
 .style-menu-btn:active:not(:disabled),
 .matrix-reset:active:not(:disabled),
-.preview-reset:active:not(:disabled),
 .freezer-reset:active:not(:disabled) {
   background: none;
   box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) currentColor;
+}
+/* .preview-reset is a PILL (--radius-pill), so it presses with a fill: the inset
+   stroke follows border-radius and not corner-shape, and on a fully curved edge that
+   mismatch is visible while the tap is held. */
+.preview-reset:active:not(:disabled) {
+  background: var(--surface-3, rgba(255, 255, 255, .08));
 }
