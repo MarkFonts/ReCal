@@ -994,11 +994,19 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, textAlign, 
               onKeyDown={e => onKeyDown(b.id, e)}>
               {focused ? null : (() => {
                 const inline = flashInline(b.text, boldVs, italVs, flash, cmp)
-                // Fitting rewrites the text into per-line spans, which cannot carry
-                // inline italic/bold runs, so a marked-up block keeps normal flow.
-                if (!fit || fit.mode === 'off' || !isPlainRun(splitInlineMarkup(b.text))) return inline
+                // A marked-up block used to fall back to browser flow here: a fitted line
+                // was one span and a span cannot carry italic in its middle. Lines are
+                // runs now, so emphasis is measured in its own face and set in it too —
+                // which for this app means the ital axis, not a synthesised slant.
+                if (!fit || fit.mode === 'off') return inline
                 return <FittedParagraph text={b.text} opts={fit} fallback={inline}
-                  indentPx={i === 0 ? fit.firstIndent ?? 0 : fit.indent ?? 0} />
+                  indentPx={i === 0 ? fit.firstIndent ?? 0 : fit.indent ?? 0}
+                  runStyle={kind =>
+                    kind === 'bold'
+                      ? (cmp ? cmpBold(cmp) : { fontVariationSettings: boldVs, fontWeight: 'normal', fontSynthesis: 'none' })
+                      : kind === 'italic'
+                        ? (cmp ? cmpItal(cmp) : { fontVariationSettings: italVs, fontStyle: 'normal', fontSynthesis: 'none' })
+                        : { textDecoration: 'underline' }} />
               })()}
             </div>
           )
