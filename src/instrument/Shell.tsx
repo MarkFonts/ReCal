@@ -613,7 +613,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
             {vmActive
               ? <VMetricsScene />
               : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-                  source={source} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
+                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
                   paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
                   textAlign={textAlign}
                   fit={{ ...fit, mode: fittingMode(textAlign, swissRag), center: textAlign === 'center' }} />}
