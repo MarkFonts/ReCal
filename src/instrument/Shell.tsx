@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
-  AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
+  AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS, type Alignment,
   type FitOptions } from '../../shared/index' // wm-primitives (git submodule)
 import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
@@ -455,7 +455,7 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
   measure: number; setMeasure: (n: number) => void
   activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
   selectedTiers: Set<string>; toggleTier: (k: string) => void; scaleStyles: ScaleStyles
-  textAlign: string; setTextAlign: (a: string) => void
+  textAlign: Alignment; setTextAlign: (a: Alignment) => void
   swissRag: boolean; setSwissRag: (on: boolean) => void
   fit: Partial<FitOptions>; setFit: (f: Partial<FitOptions>) => void
 }) {
@@ -467,6 +467,10 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
   const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
     try { const s = JSON.parse(localStorage.getItem(TYPE_PANEL_POS_KEY) || 'null'); return (s && typeof s.x === 'number') ? s : null } catch { return null }
   })
+  // The paragraph is a pre-made SVG on the compare pages — the same condition the scene
+  // uses to render one — so nothing typeset here can reach it.
+  const { state: instrument } = useInstrument()
+  const comparingSvg = !!(instrument.compareOn && instrument.compare?.svg)
   if (!rows.length) return null
   const has = (k: string) => rows.includes(k)
 
@@ -512,6 +516,21 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
       )}
       {/* Proofing controls (not ◆ defaults) → default AxisSlider variant, matching
           font-proofer's TYPOGRAPHY. No diamond/marker/reference. */}
+      {/* Alignment and line fitting, from wm-primitives — the same controls font-proofer
+          renders in its sidebar, and above size for the same reason it is there: it
+          decides the shape of the column, which the sliders then measure into.
+          Hidden on the compare pages: those set their text as a pre-made SVG, so
+          alignment and fitting have nothing live to act on and would only promise
+          something the page cannot deliver. */}
+      {mode === 'paragraph' && !comparingSvg && (
+        <>
+          <div className="type-panel-aligns">
+            <AlignmentButtons value={textAlign} onChange={setTextAlign} />
+          </div>
+          <FittingControls value={fit} onChange={setFit} mode={fittingMode(textAlign, swissRag)}
+            swissRag={swissRag} onSwissRag={setSwissRag} />
+        </>
+      )}
       {has('size') && (
         <AxisSlider label="size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
       )}
@@ -523,17 +542,6 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
       )}
       {has('measure') && (
         <AxisSlider label="measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
-      )}
-      {/* Alignment and line fitting, from wm-primitives — the same controls font-proofer
-          renders in its sidebar. Only the placement is ours. */}
-      {mode === 'paragraph' && (
-        <>
-          <div className="type-panel-aligns">
-            <AlignmentButtons value={textAlign} onChange={setTextAlign} />
-          </div>
-          <FittingControls value={fit} onChange={setFit} mode={fittingMode(textAlign, swissRag)}
-            swissRag={swissRag} onSwissRag={setSwissRag} />
-        </>
       )}
     </div>
   )
@@ -553,7 +561,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const [measure, setMeasure] = useState(34)
   // Line fitting: alignment is a scene-level choice, the rag is a switch on top of it,
   // and the budgets ride along. Same shape as font-proofer, same controls.
-  const [textAlign, setTextAlign] = useState('left')
+  // Typed as the union, not string: the fitter needs to know which edge is flush, and
+  // 'left' inferred as string cannot tell it. AlignmentButtons already wanted this type.
+  const [textAlign, setTextAlign] = useState<Alignment>('left')
   const [swissRag, setSwissRag] = useState(false)
   const [fit, setFit] = useState<Partial<FitOptions>>(FLATTERSATZ_DEFAULTS)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
@@ -616,7 +626,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
                   source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
                   paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
                   textAlign={textAlign}
-                  fit={{ ...fit, mode: fittingMode(textAlign, swissRag), center: textAlign === 'center' }} />}
+                  fit={{ ...fit, mode: fittingMode(textAlign, swissRag), align: textAlign, center: textAlign === 'center' }} />}
           </div>
         </div>
         {(mode !== 'ui' || vmActive) && (
