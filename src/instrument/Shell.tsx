@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
-  AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS, type Alignment,
+  AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
   type FitOptions } from '../../shared/index' // wm-primitives (git submodule)
 import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
@@ -447,16 +447,15 @@ function TierMenu({ selected, toggle, scaleStyles }: {
   )
 }
 
-function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, selectedTiers, toggleTier, scaleStyles, textAlign, setTextAlign, swissRag, setSwissRag, fit, setFit }: {
+function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, patchPara, selectedTiers, toggleTier, scaleStyles, fit, setFit }: {
   mode: SceneMode
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
   measure: number; setMeasure: (n: number) => void
   activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
+  patchPara: (p: Partial<ParaStyle>) => void
   selectedTiers: Set<string>; toggleTier: (k: string) => void; scaleStyles: ScaleStyles
-  textAlign: Alignment; setTextAlign: (a: Alignment) => void
-  swissRag: boolean; setSwissRag: (on: boolean) => void
   fit: Partial<FitOptions>; setFit: (f: Partial<FitOptions>) => void
 }) {
   const rows = TYPE_ROWS[mode] ?? []
@@ -524,11 +523,20 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
           something the page cannot deliver. */}
       {mode === 'paragraph' && !comparingSvg && (
         <>
+          {/* Alignment, the rag and hyphenation belong to the style the menu above has
+              selected — the same style whose size and leading the sliders below edit.
+              Only the H&J bands in `fit` are the document's, because they are the
+              typeface's. */}
           <div className="type-panel-aligns">
-            <AlignmentButtons value={textAlign} onChange={setTextAlign} />
+            <AlignmentButtons value={paraStyles[activeParaStyle].align}
+              onChange={a => patchPara({ align: a })} />
           </div>
-          <FittingControls value={fit} onChange={setFit} mode={fittingMode(textAlign, swissRag)}
-            swissRag={swissRag} onSwissRag={setSwissRag} />
+          <FittingControls value={fit} onChange={setFit}
+            mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
+            swissRag={paraStyles[activeParaStyle].swissRag}
+            onSwissRag={on => patchPara({ swissRag: on })}
+            hyphenate={paraStyles[activeParaStyle].hyphenate}
+            onHyphenate={on => patchPara({ hyphenate: on })} />
         </>
       )}
       {has('size') && (
@@ -562,9 +570,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   // Line fitting: alignment is a scene-level choice, the rag is a switch on top of it,
   // and the budgets ride along. Same shape as font-proofer, same controls.
   // Typed as the union, not string: the fitter needs to know which edge is flush, and
-  // 'left' inferred as string cannot tell it. AlignmentButtons already wanted this type.
-  const [textAlign, setTextAlign] = useState<Alignment>('left')
-  const [swissRag, setSwissRag] = useState(false)
+  // Only the H&J bands are held here now: alignment, the rag and hyphenation moved into
+  // the paragraph styles, because they are decisions about one style and not about the
+  // document. See DEFAULT_PARA_STYLES.
   const [fit, setFit] = useState<Partial<FitOptions>>(FLATTERSATZ_DEFAULTS)
   const [pairs, setPairs] = useState<Set<string>>(new Set())
   const togglePair = (k: string) => setPairs(s => { const n = new Set(s); n.has(k) ? n.delete(k) : n.add(k); return n })
@@ -625,8 +633,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
               : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
                   source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
                   paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
-                  textAlign={textAlign}
-                  fit={{ ...fit, mode: fittingMode(textAlign, swissRag), align: textAlign, center: textAlign === 'center' }} />}
+                  fit={fit} />}
           </div>
         </div>
         {(mode !== 'ui' || vmActive) && (
@@ -641,9 +648,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
       {!vmActive && <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
         leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
         activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
+        patchPara={patchPara}
         selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
-        textAlign={textAlign} setTextAlign={setTextAlign}
-        swissRag={swissRag} setSwissRag={setSwissRag} fit={fit} setFit={setFit} />}
+        fit={fit} setFit={setFit} />}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>

@@ -6,7 +6,7 @@ import './scenes.css'
 import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, loadSpecimen, specimenChunks, SpecimenNav, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fittingMode, loadSpecimen, specimenChunks, SpecimenNav, type Alignment, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -99,15 +99,23 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
 // style carries size/leading/tracking + a weight (so H1 renders bold). opsz is auto
 // per block (font-optical-sizing tracks the block's size).
 export type ParaStyleKey = 'h1' | 'h2' | 'h3' | 'p'
-export type ParaStyle = { size: number; leading: number; tracking: number; wght: number }
+/* align / swissRag / hyphenate are the style's OWN, like size and leading and unlike the
+   axes, which cascade from the instrument: they inherit nothing. A heading is ranged left
+   and is not hyphenated, and justifying the body text says nothing about the headings
+   above it. The H&J bands those decisions are fitted to stay global — they belong to the
+   typeface, not to the style. */
+export type ParaStyle = {
+  size: number; leading: number; tracking: number; wght: number
+  align: Alignment; swissRag: boolean; hyphenate: boolean
+}
 export type ParaStyles = Record<ParaStyleKey, ParaStyle>
 export const PARA_STYLE_ORDER: ParaStyleKey[] = ['h1', 'h2', 'h3', 'p']
 export const PARA_STYLE_LABEL: Record<ParaStyleKey, string> = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph' }
 export const DEFAULT_PARA_STYLES: ParaStyles = {
-  h1: { size: 57, leading: 1.1, tracking: 0, wght: 700 },
-  h2: { size: 32, leading: 1.2, tracking: 0, wght: 400 },
-  h3: { size: 22, leading: 1.3, tracking: 0, wght: 400 },
-  p: { size: 18, leading: 1.6, tracking: 0, wght: 400 },
+  h1: { size: 57, leading: 1.1, tracking: 0, wght: 700, align: 'left', swissRag: false, hyphenate: false },
+  h2: { size: 32, leading: 1.2, tracking: 0, wght: 400, align: 'left', swissRag: false, hyphenate: false },
+  h3: { size: 22, leading: 1.3, tracking: 0, wght: 400, align: 'left', swissRag: false, hyphenate: false },
+  p: { size: 18, leading: 1.6, tracking: 0, wght: 400, align: 'left', swissRag: false, hyphenate: false },
 }
 
 type Block = { type: ParaStyleKey; text: string }
@@ -197,7 +205,6 @@ export type SceneProps = {
   paraStyles: ParaStyles
   scaleStyles: ScaleStyles; selectedTiers: Set<string>
   /** Line fitting, from the Type panel. Paragraph only; other scenes ignore it. */
-  textAlign?: string
   fit?: Partial<FitOptions>
   /** Paragraph only: the tail's "next specimen" moves the source tab from inside the
    *  document, so a reader who has finished a work can leave without going back up. */
@@ -597,7 +604,7 @@ function CompareSvg({ url }: { url: string }) {
   return <div className="compare-svg" dangerouslySetInnerHTML={{ __html: markup }} />
 }
 
-function Paragraph({ featStr, source, measure, opszAuto, paraStyles, textAlign, fit, setSource }: SceneProps) {
+function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSource }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
   const op = opszCss(state.defaults, opszAuto)
@@ -713,7 +720,9 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, textAlign, 
 
   return (
     <div className="stage-pad">
-      <div className="para-doc" style={{ maxWidth: `${measure}em`, textAlign: (textAlign ?? 'left') as CSSProperties['textAlign'] }}>
+      {/* Alignment is set per BLOCK, from its style — the document has no alignment of
+          its own to inherit from. */}
+      <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
         {blocks.map((b, i) => {
           const st = paraStyles[b.type]
           const blockVs = renderVarSettings({ ...axes, wght: st.wght }, op.renderOpts)
@@ -723,7 +732,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, textAlign, 
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type} edit-rail`}
-              style={{ fontSize: st.size, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
+              style={{ textAlign: st.align, fontSize: st.size, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
@@ -740,8 +749,13 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, textAlign, 
                 // was one span and a span cannot carry italic in its middle. Lines are
                 // runs now, so emphasis is measured in its own face and set in it too —
                 // which for this app means the ital axis, not a synthesised slant.
-                if (!fit || fit.mode === 'off') return inline
-                return <FittedParagraph text={b.text} opts={fit} fallback={inline}
+                // The block answers for itself: its own alignment, rag and hyphenation,
+                // fitted to the bands `fit` carries for the whole typeface.
+                if (!fit) return inline
+                const opts = { ...fit, hyphenate: st.hyphenate, align: st.align,
+                  center: st.align === 'center', mode: fittingMode(st.align, st.swissRag) }
+                if (opts.mode === 'off') return inline
+                return <FittedParagraph text={b.text} opts={opts} fallback={inline}
                   indentPx={i === 0 ? fit.firstIndent ?? 0 : fit.indent ?? 0}
                   runStyle={kind =>
                     kind === 'bold'
