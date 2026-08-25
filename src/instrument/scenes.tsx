@@ -209,6 +209,10 @@ export type SceneProps = {
   /** Paragraph only: the tail's "next specimen" moves the source tab from inside the
    *  document, so a reader who has finished a work can leave without going back up. */
   setSource?: (s: string) => void
+  /** UI scene only: the measured height of the canvas-bar + mode-row nav, which floats
+   *  OVER the full-height board in that mode (see Shell.tsx) — tells UiKitBoard where
+   *  row 0 should rest so it clears the nav on load, same as before the nav overlaid it. */
+  topInset?: number
 }
 
 // When opsz-auto is on, omit opsz from the settings and set font-optical-sizing:auto

@@ -202,13 +202,22 @@
      stage height stays constant whether the play bloom is open or closed */
   padding-bottom: var(--spacing-08, 48px);
 }
-/* UI (COSS) has no bottom ● dock, so it reclaims that reserved height (no bottom crop). */
-.canvas-body--full { padding-bottom: 0; }
+/* UI (COSS) has no bottom ● dock, so it reclaims that reserved height (no bottom crop),
+   AND covers the whole .canvas box (position:absolute, ignoring flex flow) so the board
+   fills the full browser height with .canvas-nav floating over it (z-index) instead of
+   pushing it down. UiKitBoard's own topInset prop (measured from the nav) keeps row 0
+   resting exactly where the old pushed-down layout would have shown it. */
+.canvas-body--full { padding-bottom: 0; position: absolute; inset: 0; z-index: 1; }
 /* …and the COSS board manages its own inset, so drop the scroll box's big bottom padding
-   (the 64px blank band under the board). */
-.stage-scroll.stage-scroll--flush { padding: var(--spacing-06, 24px) var(--spacing-08, 48px) 0; }
+   (the 64px blank band under the board) AND its top padding (topInset replaces it). */
+.stage-scroll.stage-scroll--flush { padding: 0 var(--spacing-08, 48px) 0; }
 /* Vertical Metrics: the letterbox preview is full-bleed — no padding, no scroll gutter. */
 .stage-scroll.stage-scroll--bleed { padding: 0; scrollbar-gutter: auto; overflow: hidden; }
+/* UI tab only: stays in normal flow (still reserves its own height, still lays out
+   canvas-bar/mode-row exactly as before) but gets a stacking context above the now
+   full-height, absolutely-positioned canvas-body--full — no background of its own, so
+   the board shows through underneath as you pan. Every other tab is untouched. */
+.canvas-nav--overlay { position: relative; z-index: 3; }
 .canvas-bar {
   display: flex;
   align-items: center;

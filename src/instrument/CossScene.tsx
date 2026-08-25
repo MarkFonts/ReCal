@@ -12,7 +12,7 @@ import { effectiveLineHeightEm, capShiftEm } from './vmetrics'
 import type { CSSProperties } from 'react'
 import type { SceneProps } from './scenes'
 
-export default function CossScene({ featStr }: SceneProps) {
+export default function CossScene({ featStr, topInset }: SceneProps) {
   const { state } = useInstrument()
   const dax = state.defaults.axes
   const defWght = Math.round(dax.wght ?? 400)
@@ -31,5 +31,5 @@ export default function CossScene({ featStr }: SceneProps) {
       ['--vm-shift' as string]: `${capShiftEm(state.defaults.vmetrics)}em`,
     } : {}),
   }
-  return <UiKitBoard fontStyle={fontStyle} weight={defWght} boldWeight={Math.min(900, defWght + 300)} />
+  return <UiKitBoard fontStyle={fontStyle} weight={defWght} boldWeight={Math.min(900, defWght + 300)} topInset={topInset} />
 }

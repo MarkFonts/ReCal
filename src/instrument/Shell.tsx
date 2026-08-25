@@ -3,7 +3,7 @@
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
 import './holo.css'
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
@@ -609,31 +609,49 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const tSetTracking = isPara ? (v: number) => patchPara({ tracking: v }) : isScale ? (v: number) => patchScale({ tracking: v }) : setTracking
   const tLeading = isPara ? ps.leading : isScale ? sc.leading : leading
   const tSetLeading = isPara ? (v: number) => patchPara({ leading: v }) : isScale ? (v: number) => patchScale({ leading: v }) : setLeading
+  // UI tab: the board fills the whole canvas height and this nav floats OVER it
+  // (transparent, no background of its own) instead of pushing it down — measured so
+  // UiKitBoard knows where row 0 should rest to clear the nav, same as it looked before
+  // the nav overlaid anything. Other tabs are untouched (nav stays in normal flow there).
+  const navRef = useRef<HTMLDivElement>(null)
+  const [navHeight, setNavHeight] = useState(0)
+  const uiOverlay = mode === 'ui' && !vmActive
+  useLayoutEffect(() => {
+    const el = navRef.current
+    if (!el) return
+    const measure = () => setNavHeight(el.getBoundingClientRect().height)
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
 
   return (
     <div className={`canvas${vmActive ? ' canvas--vm' : ''}`}>
-      <div className="canvas-bar">
-        <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
-      </div>
-      {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
-          disappearing never shifts the label (or stage) vertically. */}
-      <div className="mode-row">
-        <ModeLabel />
-        <SceneControls mode={mode} source={source} setSource={setSource}
-          pairs={pairs} togglePair={togglePair}
-          glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+      <div ref={navRef} className={`canvas-nav${uiOverlay ? ' canvas-nav--overlay' : ''}`}>
+        <div className="canvas-bar">
+          <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
+        </div>
+        {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
+            disappearing never shifts the label (or stage) vertically. */}
+        <div className="mode-row">
+          <ModeLabel />
+          <SceneControls mode={mode} source={source} setSource={setSource}
+            pairs={pairs} togglePair={togglePair}
+            glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+        </div>
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
           bottom ● preview/DEMO dock and drops the reserved play-bar padding → full height. */}
-      <div className={`canvas-body${mode === 'ui' && !vmActive ? ' canvas-body--full' : ''}${vmActive ? ' canvas-body--vm' : ''}`}>
+      <div className={`canvas-body${uiOverlay ? ' canvas-body--full' : ''}${vmActive ? ' canvas-body--vm' : ''}`}>
         <div className="stage">
-          <div className={`stage-scroll${mode === 'ui' && !vmActive ? ' stage-scroll--flush' : ''}${vmActive ? ' stage-scroll--bleed' : ''}`}>
+          <div className={`stage-scroll${uiOverlay ? ' stage-scroll--flush' : ''}${vmActive ? ' stage-scroll--bleed' : ''}`}>
             {vmActive
               ? <VMetricsScene />
               : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
                   source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
                   paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
-                  fit={fit} />}
+                  fit={fit} topInset={uiOverlay ? navHeight : 0} />}
           </div>
         </div>
         {(mode !== 'ui' || vmActive) && (
