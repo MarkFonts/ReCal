@@ -85,10 +85,13 @@
   --zone-base-chip:  #6f9ee8;
   --zone-geo-chip:   #5fc678;
 
-  /* ── Motion (house spring, spec directive 4) ── */
+  /* ── Motion (house spring, spec directive 4) ──
+     --dur-fast and --dur-med moved to wm-primitives/src/motion.css, which took THESE
+     numbers as the house scale -- they were specified here, and the primitives' .12s/.22s
+     were only ever inline fallbacks. --dur stays as the local name this app already
+     spends; it is the same 240ms the token now carries. */
   --spring:   cubic-bezier(.34, 1.45, .64, 1);
-  --dur-fast: 140ms;
-  --dur:      240ms;
+  --dur:      var(--dur-med, 240ms);
 
   /* ── Shape ── */
   --radius:      8px;
@@ -137,6 +140,7 @@
   .instrument-root *::after {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
+    /* token-lint: allow -- .001ms is the reduced-motion kill switch, not a duration */
     transition-duration: .001ms !important;
   }
 }

@@ -48,7 +48,7 @@
 .rail-title {
   font-size: var(--type-body-size, 1rem);
   font-weight: 700;
-  letter-spacing: .01em;
+  letter-spacing: 0;
 }
 /* One line always — otherwise it re-wraps (and jiggles) as the Reset button
    appears/disappears and squeezes this column's width. */
@@ -112,7 +112,7 @@
 .rail-group { display: flex; flex-direction: column; gap: 12px; }
 .rail-group-label {
   font-size: var(--type-micro-size, 0.5625rem);
-  letter-spacing: .12em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--text-dim);
 }
@@ -314,7 +314,7 @@
   line-height: 1.02;
   word-break: break-word;
 }
-.specimen-cap { font-size: var(--type-label-size, 0.75rem); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim); margin: 0 0 28px; }
+.specimen-cap { font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); margin: 0 0 28px; }
 .para {
   font-family: var(--ui-font);
   font-optical-sizing: none;
@@ -395,7 +395,7 @@
 .preview-surface-head .preview-surface-cap { flex: 0 0 80px; }
 .preview-surface-cap {
   display: inline-flex; align-items: center; gap: 6px;
-  font-size: var(--type-label-size, 0.75rem); letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim);
+  font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim);
   /* real ital axis (never a synthesized slant); animates 0→1 on collapse */
   font-variation-settings: 'ital' 0; font-synthesis: none; font-style: normal;
   transition: font-variation-settings var(--dur) ease;
@@ -454,7 +454,7 @@
   width: 64px;
   flex-shrink: 0;
   font-size: var(--type-micro-size, 0.5625rem);
-  letter-spacing: .12em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: var(--text-dim);
 }
@@ -489,7 +489,7 @@
   border-top: 1px solid var(--border);
   background: var(--surface);
 }
-.floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .12em; text-transform: uppercase; color: var(--text-dim); }
+.floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); }
 .zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
 /* The GEOM zones are near-primary actions, so they carry weight, not just color.
    ACTIVE zone takes a fill (zone color IS information); inactive keeps its hue at full
@@ -551,7 +551,7 @@
 
 /* Fused SEO pages: the fixed panels fade while reading the article below the app
    (body.past-app is toggled by a scroll effect in Shell; the root page never scrolls). */
-.type-panel, .dock-download { transition: opacity .25s; }
+.type-panel, .dock-download { transition: opacity var(--dur-med, .22s); }
 body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-events: none; }
 
 /* Floating download dock — OFL + Download, bottom-right of the canvas (no floor row). */
@@ -583,7 +583,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 .type-panel-title {
   font-family: var(--ui-font);
-  font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .12em; text-transform: uppercase;
+  font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim);
   margin: -4px -8px 2px;   /* widen the grab target a touch */
   padding: 6px 8px;
@@ -676,7 +676,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: center;
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
   gap: var(--spacing-03, 8px); cursor: pointer; user-select: none; padding: var(--spacing-05, 16px) var(--spacing-05, 16px);
-  font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: .18em;
+  font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: var(--track-caps);
   /* Pin to the rail's scroll edges: the up-seam sticks to the top, the down-seam to the
      bottom, so a seam stays flush with the viewport while the panel scrolls past — and
      only slides in normal flow once the panel's own edge reaches it. Opaque bg + z so
@@ -706,9 +706,9 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    the live font, name, toggle. Gold = frozen (held off the GEOM continuum). */
 .freezer { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
 .freezer-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
-.freezer-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.freezer-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); color: var(--text-muted); text-transform: uppercase; }
 .freezer-reset {
-  font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; text-transform: uppercase;
+  font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer; background: none;
 }
 .freezer-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-hi); }
@@ -717,7 +717,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 .freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
 .freezer-section-title {
-  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .08em; text-transform: uppercase;
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim); padding: var(--spacing-03, 8px) var(--spacing-01, 4px) var(--spacing-01, 4px);
 }
 .freezer-list { display: flex; flex-direction: column; }
@@ -784,10 +784,10 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    positioned within this box), so nothing jams the rail edge. */
 .matrix { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
 .matrix-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
-.matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: .04em; color: var(--text-muted); text-transform: uppercase; }
+.matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
   all: unset; cursor: pointer; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted);
-  padding: 2px 8px; border-radius: 5px; transition: color .12s, background .12s, opacity .12s;
+  padding: 2px 8px; border-radius: 5px; transition: color var(--dur-fast, .12s), background var(--dur-fast, .12s), opacity var(--dur-fast, .12s);
 }
 /* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
    as actionable, not the muted header gray. */
@@ -795,7 +795,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-reset:hover:not(:disabled) { background: var(--surface); }
 .matrix-reset:disabled { color: var(--text-faint); font-weight: 400; background: none; cursor: default; }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
-.matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .04em; color: rgba(255,255,255,.2); }
+.matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: rgba(255,255,255,.2); }
 .matrix-axis-tick--mid { transform: translateX(-50%); }
 .matrix-axis-tick--end { transform: translateX(-100%); }
 .matrix-rows { display: flex; flex-direction: column; gap: 4px; position: relative; }
@@ -836,7 +836,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Drag-only value chip: rises up from the dial you grabbed, fades down on release. */
 .matrix-val {
   position: absolute; top: 3px; transform: translateX(-50%);
-  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: .02em; color: var(--text);
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text);
   background: var(--surface-hi); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   pointer-events: none; z-index: 5; white-space: nowrap;
 }

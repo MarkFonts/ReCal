@@ -2,6 +2,7 @@
 import './tokens.css'
 import '../../shared/src/corners.css'
 import '../../shared/src/type.css'
+import '../../shared/src/motion.css'   // --dur-* (wm-primitives)
 import '../../shared/src/editRail.css' // canonical edit-rail affordance (wm-primitives)
 import { InstrumentProvider } from './InstrumentProvider'
 import Shell from './Shell'
