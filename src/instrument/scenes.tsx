@@ -6,7 +6,7 @@ import './scenes.css'
 import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fittingMode, loadSpecimen, specimenChunks, SpecimenNav, type Alignment, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
+import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fitOptionsFor, PARA_STYLE_DEFAULTS, PARA_STYLE_ORDER, PARA_STYLE_LABEL, loadSpecimen, specimenChunks, SpecimenNav, type ParaStyleBase, type ParaStyleKey, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -98,24 +98,19 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
 // Editable per-block styles (ported from font-proofer's DEFAULT_PARA_STYLES). Each
 // style carries size/leading/tracking + a weight (so H1 renders bold). opsz is auto
 // per block (font-optical-sizing tracks the block's size).
-export type ParaStyleKey = 'h1' | 'h2' | 'h3' | 'p'
-/* align / swissRag / hyphenate are the style's OWN, like size and leading and unlike the
-   axes, which cascade from the instrument: they inherit nothing. A heading is ranged left
-   and is not hyphenated, and justifying the body text says nothing about the headings
-   above it. The H&J bands those decisions are fitted to stay global — they belong to the
-   typeface, not to the style. */
-export type ParaStyle = {
-  size: number; leading: number; tracking: number; wght: number
-  align: Alignment; swissRag: boolean; hyphenate: boolean
-}
+/* The keys, labels and shared fields are wm-primitives' (src/paraStyles.ts) -- both
+   paragraph views show the same four styles. What is this app's is the one field it
+   draws with: a wght off the instrument. */
+export type { ParaStyleKey } from '../../shared/index'
+/* Shell imports the order and labels from here, where they have always been. */
+export { PARA_STYLE_ORDER, PARA_STYLE_LABEL }
+export type ParaStyle = ParaStyleBase & { wght: number }
 export type ParaStyles = Record<ParaStyleKey, ParaStyle>
-export const PARA_STYLE_ORDER: ParaStyleKey[] = ['h1', 'h2', 'h3', 'p']
-export const PARA_STYLE_LABEL: Record<ParaStyleKey, string> = { h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3', p: 'Paragraph' }
 export const DEFAULT_PARA_STYLES: ParaStyles = {
-  h1: { size: 57, leading: 1.1, tracking: 0, wght: 700, align: 'left', swissRag: false, hyphenate: false },
-  h2: { size: 32, leading: 1.2, tracking: 0, wght: 400, align: 'left', swissRag: false, hyphenate: false },
-  h3: { size: 22, leading: 1.3, tracking: 0, wght: 400, align: 'left', swissRag: false, hyphenate: false },
-  p: { size: 18, leading: 1.6, tracking: 0, wght: 400, align: 'left', swissRag: false, hyphenate: false },
+  h1: { ...PARA_STYLE_DEFAULTS.h1, wght: 700 },
+  h2: { ...PARA_STYLE_DEFAULTS.h2, wght: 400 },
+  h3: { ...PARA_STYLE_DEFAULTS.h3, wght: 400 },
+  p:  { ...PARA_STYLE_DEFAULTS.p,  wght: 400 },
 }
 
 type Block = { type: ParaStyleKey; text: string }
@@ -756,8 +751,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSou
                 // The block answers for itself: its own alignment, rag and hyphenation,
                 // fitted to the bands `fit` carries for the whole typeface.
                 if (!fit) return inline
-                const opts = { ...fit, hyphenate: st.hyphenate, align: st.align,
-                  center: st.align === 'center', mode: fittingMode(st.align, st.swissRag) }
+                const opts = fitOptionsFor(st, fit)
                 if (opts.mode === 'off') return inline
                 return <FittedParagraph text={b.text} opts={opts} fallback={inline}
                   indentPx={i === 0 ? fit.firstIndent ?? 0 : fit.indent ?? 0}
