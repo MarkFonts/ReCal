@@ -114,7 +114,7 @@
   text-decoration: underline;
   text-decoration-style: dotted;
   text-underline-offset: 3px;
-  transition: color var(--dur-fast, .12s);
+  transition: color var(--dur-fast, 140ms);
 }
 .compare-inline-btn:hover { color: var(--accent); }
 /* Disabled compare (no embeddable webfont) — grayed, non-interactive. */

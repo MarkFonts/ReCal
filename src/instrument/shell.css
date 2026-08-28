@@ -551,7 +551,7 @@
 
 /* Fused SEO pages: the fixed panels fade while reading the article below the app
    (body.past-app is toggled by a scroll effect in Shell; the root page never scrolls). */
-.type-panel, .dock-download { transition: opacity var(--dur-med, .22s); }
+.type-panel, .dock-download { transition: opacity var(--dur-med, 240ms); }
 body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-events: none; }
 
 /* Floating download dock — OFL + Download, bottom-right of the canvas (no floor row). */
@@ -787,7 +787,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
   all: unset; cursor: pointer; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted);
-  padding: 2px 8px; border-radius: 5px; transition: color var(--dur-fast, .12s), background var(--dur-fast, .12s), opacity var(--dur-fast, .12s);
+  padding: 2px 8px; border-radius: 5px; transition: color var(--dur-fast, 140ms), background var(--dur-fast, 140ms), opacity var(--dur-fast, 140ms);
 }
 /* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
    as actionable, not the muted header gray. */
