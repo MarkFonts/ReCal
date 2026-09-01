@@ -38,7 +38,18 @@ const appScript = appHtml.match(/<script type="module"[^>]*><\/script>/)?.[0]
 const appCss = appHtml.match(/<link rel="stylesheet"[^>]*>/)?.[0]
 if (!appScript || !appCss) throw new Error('[seo] could not find app asset tags in dist/index.html')
 
-const SPECIMEN = '2160 just Groovy, I’ll Magic'   // exercises I l a g G j y t + figures
+// 4 weights x roman/italic = 8 slots. Zipped against each preset's p.words (also 8,
+// one per slot) so every landing page shows its full style range, not one static line.
+const STYLES = [
+  { wght: 400, ital: 0, label: 'Regular' },
+  { wght: 400, ital: 1, label: 'Regular Italic' },
+  { wght: 500, ital: 0, label: 'Medium' },
+  { wght: 500, ital: 1, label: 'Medium Italic' },
+  { wght: 600, ital: 0, label: 'Semibold' },
+  { wght: 600, ital: 1, label: 'Semibold Italic' },
+  { wght: 700, ital: 0, label: 'Bold' },
+  { wght: 700, ital: 1, label: 'Bold Italic' },
+]
 
 function page(p, all) {
   const url = `${ORIGIN}${BASE}/${p.slug}/`
@@ -53,19 +64,26 @@ function page(p, all) {
   const others = all.filter(x => x.slug !== p.slug)
   const paid = p.kind === 'paid'
 
+  // THE FIRST TWO ANSWERS ARE PER-REFERENT, IN seo-presets.mjs. They were templates with
+  // the name swapped in, and across eight pages that made ~88 words of every page byte-
+  // identical to its siblings -- the near-duplicate shape Google's scaled-content policy
+  // describes. p.faqWhy / p.faqDiff carry copy written for THIS face; the templates below
+  // survive only as a fallback so a newly added preset still generates before its copy is
+  // written. A new preset that ships on the fallback is a page that reads as scaled content
+  // -- write the two answers.
   const faq = [
     paid
       ? {
           q: `Is there a free alternative to ${p.referent}?`,
-          a: `Yes. ReCal Sans is free and open-source (SIL Open Font License). It is a variable font you tune in the browser — set the geometric, weight, optical-size and ascender axes to taste — then download a static TTF. No account, no cost, no license fee.`,
+          a: p.faqWhy ?? `Yes. ReCal Sans is free and open-source (SIL Open Font License). It is a variable font you tune in the browser — set the geometric, weight, optical-size and ascender axes to taste — then download a static TTF. No account, no cost, no license fee.`,
         }
       : {
           q: `${p.referent} is already free — why use ReCal Sans instead?`,
-          a: `Because of control, not cost. ${p.referent} ships fixed; ReCal Sans is variable and customizable — a GEOM axis from accessibility-optimized to geometric forms, a real optical-size axis, and adjustable ascender height. You set the defaults in the browser and download a font with those decisions baked in.`,
+          a: p.faqWhy ?? `Because of control, not cost. ${p.referent} ships fixed; ReCal Sans is variable and customizable — a GEOM axis from accessibility-optimized to geometric forms, a real optical-size axis, and adjustable ascender height. You set the defaults in the browser and download a font with those decisions baked in.`,
         },
     {
       q: `How is ReCal Sans different from ${p.referent}?`,
-      a: `${p.referent} ships fixed. ReCal Sans is variable and customizable: a single GEOM axis moves letterforms from accessibility-optimized through clean UI to geometric display, and a real optical-size axis keeps the design honest across sizes. You bake your own settings into the exported font.`,
+      a: p.faqDiff ?? `${p.referent} ships fixed. ReCal Sans is variable and customizable: a single GEOM axis moves letterforms from accessibility-optimized through clean UI to geometric display, and a real optical-size axis keeps the design honest across sizes. You bake your own settings into the exported font.`,
     },
     {
       q: `Can I use ReCal Sans commercially?`,
@@ -217,10 +235,23 @@ ${appCss}
      another pair of quotes makes it one invalid string that the browser drops -- which
      is what silently left these headings inheriting GEOM 25 and nothing else. */
   .seo-below h1, .seo-below h2 { font-variation-settings:${p.axes.split(', ').filter(a => !a.startsWith("'opsz'")).join(', ') || "'GEOM' 25"}; font-optical-sizing:auto;${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
-  /* The specimen is the preset in use, so it takes the freezes as well as the axes. */
-  .seo-below .specimen {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
-  .seo-below .specimen { font-size:clamp(48px,11vw,104px); line-height:1; letter-spacing:-.02em; margin:28px 0 8px;
-    font-variation-settings:${JSON.stringify(p.axes).slice(1, -1)}; font-optical-sizing:${p.opticalSizing ? 'auto' : 'none'}; }
+  /* The specimen grid is the preset in use, so it takes the freezes as well as the axes.
+     Each row adds this preset's own 'wght'/'ital' on top of p.axes -- wght is never in
+     p.axes itself (see the h1/h2 rule above for why). opsz is dropped from the pinned
+     set for the same reason it's dropped from h1/h2: these rows render at their own
+     display size, not the preset's specimen size, so they get their own optical
+     treatment (auto) instead of inheriting a pinned opsz meant for a different size. */
+  .seo-below .specimen-grid { margin:28px 0 48px; }
+  .seo-below .specimen-row {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''}
+    font-size:clamp(32px,6.4vw,58px); line-height:1.15; letter-spacing:-.01em; font-style:normal;
+    font-optical-sizing:auto; padding:18px 0; border-bottom:1px solid var(--sline); }
+  .seo-below .specimen-row:first-child { padding-top:0; }
+  .seo-below .specimen-row .style-cap { display:block; font-size:13px; color:var(--smut);
+    /* letter-spacing does NOT re-relativize on inherit -- it's the parent's resolved px
+       value (-.01em of the ~40-58px specimen) that would otherwise land here verbatim,
+       reading as roughly -3% tracking on 13px text. Reset it for this element's own size. */
+    letter-spacing:normal;
+    font-variation-settings:'GEOM' 25, 'wght' 400, 'ital' 0; font-style:normal; margin-bottom:6px; }
 .card-fig{margin:26px 0 32px;max-width:820px}
 .card-fig img{width:100%;height:auto;display:block;border-radius:10px;border:1px solid #262626}
 .card-fig figcaption{margin-top:10px;font-size:14px;color:#8a8a8a}
@@ -256,8 +287,18 @@ ${appCss}
     <figcaption>${esc(p.referent)} set in ReCal Sans at ${esc(readableAxes)} — free and open source under the OFL.</figcaption>
   </figure>
 
-  <div class="specimen" aria-label="ReCal Sans specimen">${esc(SPECIMEN)}</div>
-  <div class="specimen-cap">ReCal Sans — live specimen, tuned toward ${esc(p.referent)}</div>
+  <!-- THE CAPS ARE STYLE NAMES, NOTHING MORE. They used to read "ReCal Sans Bold Italic,
+       reconfigured and inspired by <referent> Bold Italic" on all eight rows -- 80 words
+       identical on every one of the eight pages after swapping the name, and 8 of the ~20
+       mentions of the referent on the page. The comparison is made ONCE, in the caption
+       below the grid; repeating it per row bought no meaning and read as stuffing. -->
+  <div class="specimen-grid" aria-label="ReCal Sans specimen, all weights and italics, tuned toward ${esc(p.referent)}">
+    ${(() => {
+      const rowAxes = p.axes.split(', ').filter(a => a && !a.startsWith("'opsz'")).join(', ')
+      return STYLES.map((s, i) => `<div class="specimen-row" style="font-variation-settings:${JSON.stringify(`${rowAxes ? rowAxes + ', ' : ''}'wght' ${s.wght}, 'ital' ${s.ital}`).slice(1, -1)}"><span class="style-cap">${esc(s.label)}</span>${esc(p.words[i])}</div>`).join('\n    ')
+    })()}
+  </div>
+  <div class="specimen-cap">ReCal Sans — all 8 weights &amp; italics, tuned toward ${esc(p.referent)}</div>
 
   ${p.body.map(par => `<p>${esc(par)}</p>`).join('\n  ')}
 
