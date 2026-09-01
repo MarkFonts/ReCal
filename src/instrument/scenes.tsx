@@ -765,11 +765,13 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSou
             </div>
           )
         })}
+        {/* Compare is the SEO landing pages' one-off referent-tuned pitch, not a specimen
+            in the Sample/Tale/Kern King rotation -- it has no "next" to cycle to. */}
         <SpecimenNav
           more={!!spec && spec.loaded < specimenChunks(spec.slug)}
           onMore={readMore}
-          nextLabel={setSource ? TEXT_SOURCES[(TEXT_SOURCES.indexOf(source) + 1) % TEXT_SOURCES.length] : undefined}
-          onNext={setSource ? () => setSource(TEXT_SOURCES[(TEXT_SOURCES.indexOf(source) + 1) % TEXT_SOURCES.length]) : undefined}
+          nextLabel={setSource && source !== 'Compare' ? TEXT_SOURCES[(TEXT_SOURCES.indexOf(source) + 1) % TEXT_SOURCES.length] : undefined}
+          onNext={setSource && source !== 'Compare' ? () => setSource(TEXT_SOURCES[(TEXT_SOURCES.indexOf(source) + 1) % TEXT_SOURCES.length]) : undefined}
         />
         <CompareCaption />
         <CompareInline />

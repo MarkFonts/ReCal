@@ -41,12 +41,18 @@ export const PRESETS: Preset[] = [
     thresholds: b => { let t = applyDelete('a', 0, 'A11Y', b); t = applyDrop('y', 2, 'UI', t); return t },
   },
   { name: 'Inter', geom: 25, opszMultiplier: 0.625, frozen: ['ss16'] },
-  { name: 'Circular', geom: 25, frozenOpsz: 20 },
+  {
+    name: 'Circular', geom: 25, frozenOpsz: 20, frozen: ['cv30', 'cv31'],
+    // Keep only y's Geo-zone rclt swap (y.rcltGeo); nuke the Base-zone one (y.rcltBase)
+    // by collapsing its range to a 1-unit sliver right after default, per applyDelete's
+    // middle-non-default case.
+    thresholds: b => applyDelete('y', 1, 'Base', b),
+  },
   { name: 'Geist', geom: 50, frozenOpsz: 16, frozen: ['cv03', 'cv11', 'ss16'],
     thresholds: b => applyDrop('a', 0, 'Base', b) },
   { name: 'Poppins', geom: 50, frozenOpsz: 10, frozen: ['cv22', 'ss16'],
     thresholds: b => applyDrop('y', 2, 'Base', b) },
-  { name: 'Gotham', geom: 25, frozenOpsz: 10, frozen: ['cv02'],
+  { name: 'Gotham', geom: 25, frozenOpsz: 10, frozen: ['cv02', 'ss16'],
     thresholds: b => applyDelete('a', 0, 'A11Y', b) },
   { name: 'GT America', geom: 25, frozenOpsz: 8, frozen: ['cv02'],
     thresholds: b => applyDelete('a', 0, 'A11Y', b) },
