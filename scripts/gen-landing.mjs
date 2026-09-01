@@ -287,13 +287,15 @@ ${appCss}
     <figcaption>${esc(p.referent)} set in ReCal Sans at ${esc(readableAxes)} — free and open source under the OFL.</figcaption>
   </figure>
 
-  <!-- THE CAPS ARE STYLE NAMES, NOTHING MORE. They used to read "ReCal Sans Bold Italic,
-       reconfigured and inspired by <referent> Bold Italic" on all eight rows -- 80 words
-       identical on every one of the eight pages after swapping the name, and 8 of the ~20
-       mentions of the referent on the page. The comparison is made ONCE, in the caption
-       below the grid; repeating it per row bought no meaning and read as stuffing. -->
   <div class="specimen-grid" aria-label="ReCal Sans specimen, all weights and italics, tuned toward ${esc(p.referent)}">
     ${(() => {
+      // THE CAPS ARE STYLE NAMES, NOTHING MORE. They used to read "ReCal Sans Bold
+      // Italic, reconfigured and inspired by <referent> Bold Italic" on all eight rows --
+      // 80 words identical on every page once the name is swapped, and 8 of the ~20
+      // mentions of the referent on it. The comparison is made ONCE, in the caption below
+      // the grid and in the grid's aria-label; repeating it per row bought no meaning and
+      // read as keyword stuffing. Keep this comment on THIS side of the template literal:
+      // written into the emitted HTML it shipped the removed string to all eight pages.
       const rowAxes = p.axes.split(', ').filter(a => a && !a.startsWith("'opsz'")).join(', ')
       return STYLES.map((s, i) => `<div class="specimen-row" style="font-variation-settings:${JSON.stringify(`${rowAxes ? rowAxes + ', ' : ''}'wght' ${s.wght}, 'ital' ${s.ital}`).slice(1, -1)}"><span class="style-cap">${esc(s.label)}</span>${esc(p.words[i])}</div>`).join('\n    ')
     })()}
