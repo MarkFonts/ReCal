@@ -249,6 +249,8 @@ ${appCss}
      set for the same reason it's dropped from h1/h2: these rows render at their own
      display size, not the preset's specimen size, so they get their own optical
      treatment (auto) instead of inheriting a pinned opsz meant for a different size. */
+.card-fig{margin:26px 0 32px;max-width:820px}
+.card-fig img{width:100%;height:auto;display:block;border-radius:10px;border:1px solid #262626}
   .seo-below .specimen-grid { margin:28px 0 48px; }
   /* THE SPECIMEN SHOWS THE PRESET, OPTICAL SIZE INCLUDED. opsz used to be stripped from
      these rows in favour of font-optical-sizing:auto, which at 58px resolved to opsz ~58 --
@@ -260,7 +262,13 @@ ${appCss}
      states both so the reader knows this is a choice. font-optical-sizing:none stops the UA
      from re-deriving opsz from font-size and overriding the pin. */
   .seo-below .specimen-row {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''}
-    font-size:clamp(32px,6.4vw,58px); line-height:1.15; letter-spacing:-.03em; font-style:normal;
+    /* TRACKING FOLLOWS THE PIN, NOT THE ROW. -.03em is the manual correction a SMALL pinned
+       opsz asks for when it is shown at display size. Inter and Neutra pin nothing, so their
+       rows ride font-optical-sizing:auto -- which clamps to the axis maximum of 45, already
+       the tightest-fitting end of the design. Tracking those in another 3% tightened what
+       was tight to begin with. Auto rows get no correction; the font is doing the work. */
+    font-size:clamp(32px,6.4vw,58px); line-height:1.15; font-style:normal;
+    letter-spacing:${p.axes.includes("'opsz'") ? '-.03em' : 'normal'};
     font-optical-sizing:${p.axes.includes("'opsz'") ? 'none' : 'auto'}; padding:18px 0; border-bottom:1px solid var(--sline); }
   .seo-below .specimen-row:first-child { padding-top:0; }
   .seo-below .specimen-row .style-cap { display:block; font-size:13px; color:var(--smut);
@@ -269,9 +277,6 @@ ${appCss}
        reading as roughly -3% tracking on 13px text. Reset it for this element's own size. */
     letter-spacing:normal;
     font-variation-settings:'GEOM' 25, 'wght' 400, 'ital' 0; font-style:normal; margin-bottom:6px; }
-.card-fig{margin:26px 0 32px;max-width:820px}
-.card-fig img{width:100%;height:auto;display:block;border-radius:10px;border:1px solid #262626}
-.card-fig figcaption{margin-top:10px;font-size:14px;color:#8a8a8a}
   .seo-below .specimen-cap { font-size:12px; color:var(--smut); letter-spacing:.04em; text-transform:uppercase; margin-bottom:48px; }
   .seo-below p { font-size:17px; color:#ccc; margin:0 0 20px; }
   .seo-below h2 { font-size:22px; margin:48px 0 16px; }
@@ -298,13 +303,16 @@ ${appCss}
 
   <h1>${esc(p.h1)}</h1>
 
-  <!-- The card as a real <img>, not only an og:image. Image search indexes what is IN the
-       document; an og tag is a share preview, not a ranked image. Explicit width/height so
-       it reserves its box instead of shifting the text under it. -->
+
+  <!-- The card as a real <img>, not only an og:image: Image search indexes what is IN the
+       document, and an og tag is a share preview, not a ranked image. Explicit width/height
+       so it reserves its box instead of shifting the text under it.
+       THE JPG IS BAKED, SO IT GOES STALE SILENTLY. It is rendered by scripts/render-og-cards.mjs,
+       which npm run build does NOT call -- re-run it whenever a preset's axes or freezes change,
+       and commit public/og/*.jpg with them. -->
   <figure class="card-fig">
     <img src="${ogImage}" width="1200" height="630" fetchpriority="high" decoding="async"
          alt="${esc(ogAlt)}">
-    <figcaption>${esc(p.referent)} set in ReCal Sans at ${esc(readableAxes)} — free and open source under the OFL.</figcaption>
   </figure>
 
   <div class="specimen-grid" aria-label="ReCal Sans specimen, all weights and italics, tuned toward ${esc(p.referent)}">
@@ -325,7 +333,7 @@ ${appCss}
   <!-- The caption carries the settings the specimen is actually rendered at, tracking
        included. The pinned opsz is a small drawing shown large on purpose; saying so is
        what separates a peak target from a mistake. -->
-  <div class="specimen-cap">ReCal Sans — all 8 weights &amp; italics, tuned toward ${esc(p.referent)} · ${esc(readableAxes)}${p.axes.includes("'opsz'") ? '' : ' &middot; optical sizing auto'} · tracking &minus;0.03em</div>
+  <div class="specimen-cap">ReCal Sans — all 8 weights &amp; italics, tuned toward ${esc(p.referent)} · ${esc(readableAxes)}${p.axes.includes("'opsz'") ? ' &middot; tracking &minus;0.03em' : ' &middot; optical sizing auto'}</div>
 
   ${p.body.map(par => `<p>${esc(par)}</p>`).join('\n  ')}
 
@@ -346,9 +354,6 @@ ${appCss}
   <p>${esc(p.swapNote ?? `Close stylistically, not a drop-in: the copyfit differs. WORDMARK builds metrically compatible versions on request — mark@wordmark.nyc.`)}</p>
   <p>${esc(p.xheight)} Measured on the cap-height-normalized comparison, ${esc(p.xhPct)}.</p>
 
-  <h2>Why the specimen is frozen where it is</h2>
-  <p>A frozen optical size is the reference face’s sweet spot in Cal Sans’ terms — mostly letterfit.</p>
-  <p>${esc(p.opszWhy)}</p>
 ${(() => {
     const g = GLYPHS[p.preset]
     if (!g) return ''

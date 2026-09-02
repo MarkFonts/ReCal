@@ -129,8 +129,6 @@ export const SEO_PRESETS = [
       'The honest loss is in the turned glyphs: the crunched centre spine of Poppins\' S and s is not duplicated here, and it looks good where Poppins puts it. The honest win runs the other way. Poppins cuts every terminal at 90° to its stroke and square to the baseline; Cal Sans keeps the perpendicular cut but angles most terminals off the baseline to open the counterforms — which is what Poppins gives up at small sizes.',
     xheight:
       'At the same point size Poppins feels bigger — it carries more of its body above the baseline.',
-    opszWhy:
-      'Frozen at opsz 10: a fairly loose fit, so set it much larger than caption size and it wants tracking in — the −0.03em on the specimen above is exactly that correction.',
     pitch: {
       title: 'Tuned toward Poppins',
       paragraphs: [
@@ -185,8 +183,6 @@ export const SEO_PRESETS = [
       'Inter cuts almost every terminal at 90° to its stroke and square to the baseline; the a is one of the few exceptions. Cal Sans holds the perpendicular cut but tilts most terminals off the baseline to open the counterforms. That is the trade: less of Inter\'s even grey, more room inside the letter where small sizes need it.',
     xheight:
       'At the same point size Inter feels the same, though the two are not the same: Cal Sans is wider and carries more curved tops, which compensates for a real difference in x-height.',
-    opszWhy:
-      'This preset does not freeze an optical size — it asks for automatic optical sizing, the one case of the eight where the axis is left live.',
     pitch: {
       title: 'Tuned toward Inter',
       paragraphs: [
@@ -236,8 +232,6 @@ export const SEO_PRESETS = [
       'The same terminal trade as Inter, plus one thing Cal Sans simply cannot do: Geist\'s dots are square, and there is no swap here that makes a round dot square. Beyond that, Geist cuts nearly every terminal square to the baseline where Cal Sans angles most of them to open the counters — gaining at small sizes what it gives up in evenness.',
     xheight:
       'At the same point size Geist feels identical.',
-    opszWhy:
-      'Frozen at opsz 16: a middle fit, near where Geist itself is comfortable. Set it far larger and it still wants a little tracking in, which is what the specimen above shows.',
     pitch: {
       title: 'Tuned toward Geist',
       paragraphs: [
@@ -311,7 +305,11 @@ export const SEO_PRESETS = [
     preset: 'Neutra 2',
     kind: 'paid',
     words: ['Yesterday Study', 'Runaway Season', 'Highway Habitat', 'Getaway Notes', 'Everyday Canvas', 'Halfway Draft', 'Layaway Cabinet', 'Anyway Statement'],
-    axes: vs({ GEOM: 25, YTAS: 800, SHRP: 100 }),
+    // opsz 8, frozen like GT America's. Left unpinned, the specimen rode
+    // font-optical-sizing:auto up to the axis ceiling of 45 -- and Cal Sans grows rounder
+    // and lifts its x-height as opsz rises, which is precisely what YTAS 800 is here to
+    // fight. cv02 in GLYPHS holds the humanist 'a' against the swap GEOM 25 + opsz 8 trips.
+    axes: vs({ GEOM: 25, YTAS: 800, SHRP: 100, opsz: 8 }),
     opticalSizing: false,
     compare: { label: 'Neutraface', family: 'sans-serif', italic: false },
     title: 'ReCal Sans — a free variable alternative to Neutra',
@@ -346,8 +344,6 @@ export const SEO_PRESETS = [
       'This is the clearest loss of the eight. Cal Sans\' x-height does not hold a candle to Neutra\'s tiny one, or to the proud, tall caps above it. The ascender axis reaches the proportion by a different route and does not fully arrive.',
     xheight:
       'At the same point size Neutra is smaller by a wide margin, which is the point of the design.',
-    opszWhy:
-      'This preset does not freeze an optical size — the ascender and sharpness axes are doing the work, and the optical-size axis is left automatic.',
     pitch: {
       title: 'Tuned toward Neutra',
       paragraphs: [
@@ -396,8 +392,6 @@ export const SEO_PRESETS = [
       'Frankly: Circular\'s a is better than the one here, and I like it more. Copying it outright was not something I could sleep on, so this preset gets close and then stops.',
     xheight:
       'At the same point size Circular feels a little smaller.',
-    opszWhy:
-      'Frozen at opsz 20, the tightest fit of the eight: Circular is clearly mastered to be happiest around 20pt with tight letters, and 20 is the closest comparable optical size in the Cal Sans build. Below that size this preset — and Circular itself — wants tracking out.',
     pitch: {
       title: 'Tuned toward Circular',
       paragraphs: [
@@ -448,8 +442,6 @@ export const SEO_PRESETS = [
       'The baseline curvature in n and o is masterful, with decades of Frere-Jones in it: the n\'s shoulder rides higher and further toward the top right than a plain arch, and the O carries two-unit flat sections at the midpoint of every piece — microscopic decisions that give the whole face a deliberate, disarming naivety. Cal Sans arrives twenty years later and is smoother and sleeker for it. That is a difference of intent, and Gotham\'s is the more considered drawing.',
     xheight:
       'At the same point size Gotham feels the same.',
-    opszWhy:
-      'Frozen at opsz 10: a fairly loose fit. Set it at display size and it wants tracking in — the −0.03em above is that correction, made explicit.',
     pitch: {
       title: 'Tuned toward Gotham',
       paragraphs: [
