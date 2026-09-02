@@ -15,7 +15,7 @@
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { SEO_PRESETS, ADOBE_KIT, ff } from './seo-presets.mjs'
+import { SEO_PRESETS, ADOBE_KIT, ff, GLYPHS, FEATURE_LABELS } from './seo-presets.mjs'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT = join(__dirname, '..', 'dist')
@@ -87,7 +87,7 @@ function page(p, all) {
     },
     {
       q: `Can I use ReCal Sans commercially?`,
-      a: `Yes — the SIL Open Font License permits commercial use, embedding, and modification. The font ReCal produces is yours to ship.`,
+      a: `Yes — the SIL Open Font License permits commercial use, embedding and modification. The font is yours to ship.`,
     },
   ]
 
@@ -99,11 +99,19 @@ function page(p, all) {
       // for Google to associate this image with this page -- alt text and the sitemap are
       // the other two, and they do not always agree with each other.
       image: `${ORIGIN}${BASE}/og/${p.slug}.jpg`,
-      name: 'ReCal Sans customizer',
+      // EACH PAGE IS ITS OWN ENTITY, AT ITS OWN URL. All eight used to name the same
+      // `url` (the app root) and the same `name`, so eight pages asserted eight different
+      // descriptions about ONE thing -- a machine-readable instruction to consolidate onto
+      // /recalsans/, which is exactly the single page Search Console kept. The @id makes
+      // the identity explicit rather than inferred, and `mainEntityOfPage` ties the entity
+      // to THIS document. Do not point either back at the app root.
+      '@id': `${url}#app`,
+      name: `ReCal Sans customizer — ${p.referent} preset`,
       applicationCategory: 'DesignApplication',
       operatingSystem: 'Web browser',
       offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      url: `${ORIGIN}${BASE}/`,
+      url,
+      mainEntityOfPage: url,
       description: p.description,
       isAccessibleForFree: true,
       license: 'https://opensource.org/license/ofl-1-1',
@@ -242,9 +250,18 @@ ${appCss}
      display size, not the preset's specimen size, so they get their own optical
      treatment (auto) instead of inheriting a pinned opsz meant for a different size. */
   .seo-below .specimen-grid { margin:28px 0 48px; }
+  /* THE SPECIMEN SHOWS THE PRESET, OPTICAL SIZE INCLUDED. opsz used to be stripped from
+     these rows in favour of font-optical-sizing:auto, which at 58px resolved to opsz ~58 --
+     so /gotham/ captioned itself "opsz 10" above a specimen rendering at nothing of the
+     kind, and every page's specimen was a preset the preset does not describe.
+     A small opsz shown large is a deliberate peak target, not a bug: plenty of families
+     freeze one drawing and let the designer track in by hand at display size. That is what
+     the -.03em is -- the manual correction the pinned opsz asks for -- and the caption
+     states both so the reader knows this is a choice. font-optical-sizing:none stops the UA
+     from re-deriving opsz from font-size and overriding the pin. */
   .seo-below .specimen-row {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''}
-    font-size:clamp(32px,6.4vw,58px); line-height:1.15; letter-spacing:-.01em; font-style:normal;
-    font-optical-sizing:auto; padding:18px 0; border-bottom:1px solid var(--sline); }
+    font-size:clamp(32px,6.4vw,58px); line-height:1.15; letter-spacing:-.03em; font-style:normal;
+    font-optical-sizing:${p.axes.includes("'opsz'") ? 'none' : 'auto'}; padding:18px 0; border-bottom:1px solid var(--sline); }
   .seo-below .specimen-row:first-child { padding-top:0; }
   .seo-below .specimen-row .style-cap { display:block; font-size:13px; color:var(--smut);
     /* letter-spacing does NOT re-relativize on inherit -- it's the parent's resolved px
@@ -265,6 +282,9 @@ ${appCss}
   .seo-below .also { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
   .seo-below .also a { font-size:14px; color:var(--sfg); border:1px solid var(--sline); border-radius:999px; padding:6px 14px; text-decoration:none; }
   .seo-below .also a:hover { border-color:var(--sfg); }
+  .seo-below ul.freezes { list-style:none; margin:0 0 20px; padding:0; }
+  .seo-below ul.freezes li { font-size:16px; color:#ccc; padding:7px 0; border-bottom:1px solid var(--sline); }
+  .seo-below ul.freezes code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:14px; color:var(--sfg); }
   .seo-below footer { margin-top:72px; padding-top:24px; border-top:1px solid var(--sline); font-size:13px; color:var(--smut); }
   .seo-below footer a { color:var(--smut); }
 </style>
@@ -273,7 +293,7 @@ ${appCss}
 <div id="root"></div>
 <article class="seo-below" id="about">
 <div class="wrap">
-  <div class="live-note">▲ The customizer above is live — it loaded with the ${esc(p.referent)} preset already applied. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></div>
+  <div class="live-note">▲ Live above, already set to ${esc(p.referent)}. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></div>
   <nav class="crumb"><a href="${ORIGIN}/">WORDMARK</a> › <a href="${BASE}/">ReCal Sans</a> › ${esc(p.referent)} alternative</nav>
 
   <h1>${esc(p.h1)}</h1>
@@ -296,18 +316,52 @@ ${appCss}
       // the grid and in the grid's aria-label; repeating it per row bought no meaning and
       // read as keyword stuffing. Keep this comment on THIS side of the template literal:
       // written into the emitted HTML it shipped the removed string to all eight pages.
-      const rowAxes = p.axes.split(', ').filter(a => a && !a.startsWith("'opsz'")).join(', ')
+      // opsz stays in. It is part of the preset, and dropping it was what made the
+      // specimen disagree with its own caption.
+      const rowAxes = p.axes.split(', ').filter(Boolean).join(', ')
       return STYLES.map((s, i) => `<div class="specimen-row" style="font-variation-settings:${JSON.stringify(`${rowAxes ? rowAxes + ', ' : ''}'wght' ${s.wght}, 'ital' ${s.ital}`).slice(1, -1)}"><span class="style-cap">${esc(s.label)}</span>${esc(p.words[i])}</div>`).join('\n    ')
     })()}
   </div>
-  <div class="specimen-cap">ReCal Sans — all 8 weights &amp; italics, tuned toward ${esc(p.referent)}</div>
+  <!-- The caption carries the settings the specimen is actually rendered at, tracking
+       included. The pinned opsz is a small drawing shown large on purpose; saying so is
+       what separates a peak target from a mistake. -->
+  <div class="specimen-cap">ReCal Sans — all 8 weights &amp; italics, tuned toward ${esc(p.referent)} · ${esc(readableAxes)}${p.axes.includes("'opsz'") ? '' : ' &middot; optical sizing auto'} · tracking &minus;0.03em</div>
 
   ${p.body.map(par => `<p>${esc(par)}</p>`).join('\n  ')}
 
   <a class="cta" href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Customize it above ↑</a>
 
-  <h2>How it compares to ${esc(p.referent)}</h2>
-  <p>ReCal Sans doesn't imitate ${esc(p.referent)} — it gives you the axes to land in the same neighborhood and then keep going, honestly${paid ? ' and for free' : ''}. What you preview is what you download: a static, deployable TTF with your decisions baked in.</p>
+  <!-- THE FOUR SECTIONS BELOW ARE WHY THESE PAGES ARE NOT EACH OTHER. Everything above
+       argues for ReCal Sans in general; this is the part that only makes sense on THIS
+       page -- the giveaway glyph, the place ReCal Sans honestly loses, a measured x-height
+       figure, and what the frozen optical size actually encodes. Written from the type
+       designer's own notes. If a future preset ships without them it ships as a duplicate. -->
+  <h2>The tell: what gives ${esc(p.referent)} away</h2>
+  <p>${esc(p.tell)}</p>
+
+  <h2>Where ReCal Sans loses</h2>
+  <p>${esc(p.loses)}</p>
+
+  <h2>Will it drop into a ${esc(p.referent)} layout?</h2>
+  <p>${esc(p.swapNote ?? `Close stylistically, not a drop-in: the copyfit differs. WORDMARK builds metrically compatible versions on request — mark@wordmark.nyc.`)}</p>
+  <p>${esc(p.xheight)} Measured on the cap-height-normalized comparison, ${esc(p.xhPct)}.</p>
+
+  <h2>Why the specimen is frozen where it is</h2>
+  <p>A frozen optical size is the reference face’s sweet spot in Cal Sans’ terms — mostly letterfit.</p>
+  <p>${esc(p.opszWhy)}</p>
+${(() => {
+    const g = GLYPHS[p.preset]
+    if (!g) return ''
+    // The labels are the font's own, read from CalSansVF's name table -- not a map kept
+    // in this repo, of which there are two and they disagree.
+    const items = g.sets.map(t => `<li><code>${t}</code> — ${esc(FEATURE_LABELS[t] ?? t)}</li>`).join('\n      ')
+    return `
+  <h2>What this preset freezes</h2>
+  <p>Baked into the font you download, named as CalSansVF declares them:</p>
+  <ul class="freezes">
+      ${items}
+  </ul>`
+  })()}
 
   <h2>Frequently asked</h2>
   <dl class="faq">

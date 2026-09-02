@@ -67,6 +67,15 @@ export const ff = (presetName) => {
   return g ? g.sets.map(t => `'${t}' 1`).join(', ') : ''
 }
 
+/** Feature labels exactly as CalSansVF's name table declares them -- not the repo's maps,
+ *  which disagree with each other. Regenerate with fontTools if the font's names change. */
+export const FEATURE_LABELS = {
+  cv02: 'Humanist a', cv03: 'Accessible/tailed a', cv11: 'Humanist G',
+  cv22: 'Geometric y', cv30: 'Open-aperture 6', cv31: 'Open-aperture 9',
+  ss16: 'Humanist/Grotesk 6 and 9', ss02: 'Humanist a', ss10: 'Futura alternatives',
+  ss18: 'A11Y I l a',
+}
+
 export { GLYPHS }
 
 // Adobe Fonts Web Project id (use.typekit.net/<id>.css). Kit carries Futura PT
@@ -105,6 +114,23 @@ export const SEO_PRESETS = [
       'Because of control, not cost. Poppins ships one drawing for every size — the same circles at 12px and at 120px, with no optical-size axis to reconcile them. ReCal Sans gives you a GEOM axis that runs from accessibility-optimized shapes to fully geometric ones, a real opsz axis, and an export that bakes your position on both into the file.',
     faqDiff:
       'Poppins is a fixed design that varies only in weight: its circles are the same circles at every size. ReCal Sans varies the shapes themselves — GEOM moves the letterforms between accessibility-optimized and geometric, opsz adjusts the drawing to the size it is set at, and the exported static file keeps whatever you chose.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Poppins runs about 10% taller',
+    tell:
+      'Poppins gives itself away with the single-storey a — a Futura-descended circle and stem — and with flat terminations cut perpendicular to the stroke through t, f and j. Cal Sans draws those flat cuts natively at its base, so this preset borrows them rather than imitating them, and takes the humanist 6 and 9 whose apostrophe-like terminals Poppins shares.',
+    loses:
+      'The honest loss is in the turned glyphs: the crunched centre spine of Poppins\' S and s is not duplicated here, and it looks good where Poppins puts it. The honest win runs the other way. Poppins cuts every terminal at 90° to its stroke and square to the baseline; Cal Sans keeps the perpendicular cut but angles most terminals off the baseline to open the counterforms — which is what Poppins gives up at small sizes.',
+    xheight:
+      'At the same point size Poppins feels bigger — it carries more of its body above the baseline.',
+    opszWhy:
+      'Frozen at opsz 10: a fairly loose fit, so set it much larger than caption size and it wants tracking in — the −0.03em on the specimen above is exactly that correction.',
     pitch: {
       title: 'Tuned toward Poppins',
       paragraphs: [
@@ -139,6 +165,28 @@ export const SEO_PRESETS = [
       'Because of voice, not cost. Inter is an excellent screen face and it already carries an optical-size axis — what it does not carry is a way out of its own register. ReCal Sans adds a GEOM axis that moves the letterforms from accessibility-optimized through clean UI to geometric display, covering ground Inter deliberately does not.',
     faqDiff:
       'Inter varies weight, optical size and slant inside one deliberately neutral design. ReCal Sans varies the design itself: GEOM travels from accessibility-optimized shapes through clean UI to geometric display, so a single file can be a UI face on one screen and a display face on the next.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Inter runs about 10% taller',
+    // Inter is the one referent with a real substitution story: Cal.com moved directly
+    // off it, so copyfit cooperation was part of the brief. Every other page gets the
+    // generic answer, which is honest -- they are not drop-in replacements.
+    swapNote:
+      'ReCal Sans was built to be as seamless as possible for the Cal.com team, who pivoted directly off Inter — identical x-height performance and similar, though not identical, copyfit. The brief was functional cooperativeness while still making something new, not a clone with tweaks. It is not an Arial-to-Helvetica metric clone and was never meant to be.',
+    tell:
+      'Inter\'s tell is that it has none, and that is the design. It is drawn to blend — to temper a spicier display face, a loud palette, a busy layout — and it succeeds by refusing a signature. Cal Sans\' neutral UI base does the same job, which is why this preset is the plainest of the eight: the mise en place, not the dish. Both take the humanist 6 and 9.',
+    loses:
+      'Inter cuts almost every terminal at 90° to its stroke and square to the baseline; the a is one of the few exceptions. Cal Sans holds the perpendicular cut but tilts most terminals off the baseline to open the counterforms. That is the trade: less of Inter\'s even grey, more room inside the letter where small sizes need it.',
+    xheight:
+      'At the same point size Inter feels the same, though the two are not the same: Cal Sans is wider and carries more curved tops, which compensates for a real difference in x-height.',
+    opszWhy:
+      'This preset does not freeze an optical size — it asks for automatic optical sizing, the one case of the eight where the axis is left live.',
     pitch: {
       title: 'Tuned toward Inter',
       paragraphs: [
@@ -173,6 +221,23 @@ export const SEO_PRESETS = [
       'Because of range, not cost. Geist is drawn tight around developer tooling — one register, sized by you rather than by the font. ReCal Sans adds a real optical-size axis and a GEOM axis you set yourself, then bakes both into a static file you ship.',
     faqDiff:
       'Geist ships as fixed families drawn for one register, with no optical-size axis to adapt them. ReCal Sans is a single variable file: GEOM re-draws the letterforms between accessibility-optimized and geometric, opsz keeps the drawing honest from body copy to headline, and you freeze your settings in before you ship.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Geist runs about 4% taller',
+    tell:
+      'Geist follows Inter and adds spice: the tailed a, and flat terminations cut perpendicular to the stroke on t, f and j. This preset names both by their labels in the font — cv03, the accessible tailed a, and cv11, the humanist G — alongside the humanist 6 and 9.',
+    loses:
+      'The same terminal trade as Inter, plus one thing Cal Sans simply cannot do: Geist\'s dots are square, and there is no swap here that makes a round dot square. Beyond that, Geist cuts nearly every terminal square to the baseline where Cal Sans angles most of them to open the counters — gaining at small sizes what it gives up in evenness.',
+    xheight:
+      'At the same point size Geist feels identical.',
+    opszWhy:
+      'Frozen at opsz 16: a middle fit, near where Geist itself is comfortable. Set it far larger and it still wants a little tracking in, which is what the specimen above shows.',
     pitch: {
       title: 'Tuned toward Geist',
       paragraphs: [
@@ -216,6 +281,23 @@ export const SEO_PRESETS = [
       'Yes. ReCal Sans is free and open-source under the SIL Open Font License. Push GEOM to 100 and raise the ascender axis and you reach the circles-first construction and above-cap-height extenders Futura established in 1927 — plus an optical-size axis no metal-era design was ever drawn with. Tune it in the browser, download a static TTF, pay nothing.',
     faqDiff:
       'Futura is a 1927 design distributed as static styles: what the foundry drew is what you set. ReCal Sans reaches the same geometric territory through axes instead — GEOM for the construction, an ascender axis for those characteristic tall extenders, terminal sharpness, and an optical-size axis the original never had.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Futura runs about 13% shorter',
+    tell:
+      'The Bauhaus original, 1927 — the far bookend of the GEOM axis and the face an entire genre of geometrics descends from. It is also the one Cal Sans was drawn in argument with, and its designer\'s scruples about it are part of the project. Divisive and authoritative. Futura keeps humanist t, f and j rather than flat constructions, but takes the crossed t, the spurless u and the entirely flat y.',
+    loses:
+      'Cal Sans gets close here — closer than anywhere else on this list. What it does not have is Futura\'s trajanic proportion: the narrow R, A and S. Cal Sans pulled that punch, deliberately, and the difference shows most in caps.',
+    xheight:
+      'At the same point size Futura feels smaller — the low x-height under those long extenders is the whole effect.',
+    opszWhy:
+      'Frozen at opsz 16: a middle fit. Cal Sans grows rounder and lifts its x-height very slightly as optical size rises, and 16 is where this preset\'s geometry sits closest to Futura\'s.',
     pitch: {
       title: 'Tuned toward Futura',
       paragraphs: [
@@ -249,6 +331,23 @@ export const SEO_PRESETS = [
       'Yes. ReCal Sans is free and open-source under the SIL Open Font License. Its ascender and terminal-sharpness axes reach the tall-extender, flat-cut architectural register Neutra is loved for, and you decide where to stop rather than picking a cut someone else stopped at. No per-seat license, no web tier.',
     faqDiff:
       'Neutra ships fixed, in the optical sizes its foundry chose to draw. ReCal Sans hands you those decisions as controls: ascender height, terminal sharpness, and a continuous optical-size axis — so you set the register instead of choosing between cut names.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Neutra runs about 14% shorter',
+    tell:
+      'Drawn after Richard Neutra\'s building numbering and signage — an architect\'s lettering, amateur and auteur at once. Sharp corners in the Futura and Erbar line, and the shortest apparent x-height this designspace can reach, arrived at by pushing the ascenders tall rather than the x-height down. Humanist t, f and j, with the crossed t, spurless u and flat y.',
+    loses:
+      'This is the clearest loss of the eight. Cal Sans\' x-height does not hold a candle to Neutra\'s tiny one, or to the proud, tall caps above it. The ascender axis reaches the proportion by a different route and does not fully arrive.',
+    xheight:
+      'At the same point size Neutra is smaller by a wide margin, which is the point of the design.',
+    opszWhy:
+      'This preset does not freeze an optical size — the ascender and sharpness axes are doing the work, and the optical-size axis is left automatic.',
     pitch: {
       title: 'Tuned toward Neutra',
       paragraphs: [
@@ -282,6 +381,23 @@ export const SEO_PRESETS = [
       'Yes. ReCal Sans is free and open-source under the SIL Open Font License. The warm, rounded geometric register Circular is licensed for is a GEOM setting here, and the licensing question disappears with it: no pageview tiers, no renewals, no counting seats.',
     faqDiff:
       'Circular ships fixed, and its web license is metered by traffic. ReCal Sans is a variable file under the OFL: GEOM sets how geometric the letterforms are, opsz adapts the drawing to size, and the static font you export is yours to deploy anywhere without counting anything.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Circular runs about 5% shorter',
+    tell:
+      'Futura\'s logic redrawn with a precision only smooth displays and vector processing made possible — and, like Futura, an inspiration to Cal Sans rather than a target. This preset accentuates those details through optical size, takes the open-aperture 6 and 9, and uses the simplified, entirely straight y.',
+    loses:
+      'Frankly: Circular\'s a is better than the one here, and I like it more. Copying it outright was not something I could sleep on, so this preset gets close and then stops.',
+    xheight:
+      'At the same point size Circular feels a little smaller.',
+    opszWhy:
+      'Frozen at opsz 20, the tightest fit of the eight: Circular is clearly mastered to be happiest around 20pt with tight letters, and 20 is the closest comparable optical size in the Cal Sans build. Below that size this preset — and Circular itself — wants tracking out.',
     pitch: {
       title: 'Tuned toward Circular',
       paragraphs: [
@@ -317,6 +433,23 @@ export const SEO_PRESETS = [
       'Yes. ReCal Sans is free and open-source under the SIL Open Font License. Hold GEOM in the upright, even-stroked middle and freeze the optical size small, and you land near the confident American geometry Gotham made a branding default — in a file you own outright.',
     faqDiff:
       'Gotham ships as a large fixed family: you pick a cut, then a weight, and the drawing is settled. ReCal Sans ships as one variable file you tune — GEOM for the construction, a real optical-size axis for the size it will be used at — and freezes your choices into a static TTF on export.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'Gotham runs about 3.5% taller',
+    tell:
+      'Drawn from real lettering: New York City signage, and the Port Authority Bus Terminal. The giveaway is the three-stroke capital G — one curve and two straight segments — which happens to be Cal Sans\' default drawing. Humanist t, f and j, and the humanist 6 and 9.',
+    loses:
+      'The baseline curvature in n and o is masterful, with decades of Frere-Jones in it: the n\'s shoulder rides higher and further toward the top right than a plain arch, and the O carries two-unit flat sections at the midpoint of every piece — microscopic decisions that give the whole face a deliberate, disarming naivety. Cal Sans arrives twenty years later and is smoother and sleeker for it. That is a difference of intent, and Gotham\'s is the more considered drawing.',
+    xheight:
+      'At the same point size Gotham feels the same.',
+    opszWhy:
+      'Frozen at opsz 10: a fairly loose fit. Set it at display size and it wants tracking in — the −0.03em above is that correction, made explicit.',
     pitch: {
       title: 'Tuned toward Gotham',
       paragraphs: [
@@ -350,6 +483,23 @@ export const SEO_PRESETS = [
       'Yes. ReCal Sans is free and open-source under the SIL Open Font License. GT America answers the grotesque question by drawing it out across widths and weights; ReCal Sans answers it with axes — one variable file whose GEOM axis runs from accessibility-optimized to geometric, exported static once you have decided.',
     faqDiff:
       'GT America solves range by drawing it: many widths and weights, every one of them fixed. ReCal Sans solves it with axes — a single file whose GEOM axis runs from accessibility-optimized to geometric and whose opsz axis adapts the drawing to the size, exported static when you are done.',
+    // TYPE-DESIGNER COPY, one page's worth. These four are the only reason the eight
+    // pages differ as TYPEFACE arguments rather than as marketing: the giveaway glyph,
+    // the place ReCal Sans honestly loses, the x-height relationship, and what the
+    // frozen optical size actually encodes. Written from the designer's own notes --
+    // do not paraphrase them into something safer, the specificity is the whole value.
+    // Cap-height-normalized x-height, referent vs ReCal Sans at this preset, measured
+    // off the bar pair in ref/Asset 25.svg -- not estimated. ref/ is gitignored, so the
+    // number lives here rather than being recomputed at build time.
+    xhPct: 'the two match exactly — the bars are the same height to four decimals',
+    tell:
+      'The name says it: the American\'s grotesque, in the Franklin Gothic and News Gothic line. This preset reaches for the most compact constructions Cal Sans offers, and keeps humanist t, f and j rather than flat ones.',
+    loses:
+      'GT America wins on letter economy outright. Every letter is narrower than the Cal Sans shape beside it, and no axis here closes that gap.',
+    xheight:
+      'At the same point size GT America feels the same.',
+    opszWhy:
+      'Frozen at opsz 8, the loosest fit of the eight: GT America is generously spaced, comparable to Cal Sans\' own fit. Anything larger than caption size wants tracking in, which is precisely what the −0.03em on the specimen is doing.',
     pitch: {
       title: 'Tuned toward GT America',
       paragraphs: [
