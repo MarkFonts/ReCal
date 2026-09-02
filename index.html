@@ -37,9 +37,47 @@
       gtag('js', new Date());
       gtag('config', 'G-MZ4M1P8P1P');
     </script>
+  <style>
+      /* The app owns the first viewport; the link rail sits below it in normal flow. */
+      #root { min-height: 100vh; }
+      /* WHY THIS IS NOT IN <noscript>: it used to be. Googlebot renders with JavaScript
+         ON, so a <noscript> block is inert markup it never sees -- which left all eight
+         comparison pages with ZERO inbound internal links in the rendered DOM, reachable
+         only from the sitemap. Search Console collected them and indexed one. Real links,
+         below #root and outside React's tree, are the fix: the same shape the landing
+         pages use for their article. Never move these back inside <noscript>. */
+      .seo-rail { background:#0f0f0f; color:#999; font-family:system-ui,sans-serif;
+        border-top:1px solid #262626; padding:40px 24px 56px; }
+      .seo-rail .in { max-width:760px; margin:0 auto; }
+      .seo-rail h2 { font-size:13px; letter-spacing:.06em; text-transform:uppercase;
+        color:#777; margin:0 0 14px; font-weight:500; }
+      .seo-rail ul { list-style:none; margin:0; padding:0; display:flex; flex-wrap:wrap; gap:10px; }
+      .seo-rail a { display:inline-block; font-size:14px; color:#e8e8e8; text-decoration:none;
+        border:1px solid #333; border-radius:999px; padding:6px 14px; }
+      .seo-rail a:hover { border-color:#e8e8e8; }
+      .seo-rail p { font-size:13px; margin:18px 0 0; color:#777; }
+      .seo-rail p a { border:0; padding:0; color:#999; text-decoration:underline; }
+    </style>
   </head>
   <body>
     <div id="root"></div>
+    <nav class="seo-rail" aria-label="Comparison pages">
+      <div class="in">
+        <h2>Compare ReCal Sans with</h2>
+        <ul>
+          <li><a href="/recalsans/poppins/">Poppins alternative</a></li>
+          <li><a href="/recalsans/inter/">Inter alternative</a></li>
+          <li><a href="/recalsans/geist/">Geist alternative</a></li>
+          <li><a href="/recalsans/futura/">Futura alternative</a></li>
+          <li><a href="/recalsans/neutra/">Neutra alternative</a></li>
+          <li><a href="/recalsans/circular/">Circular alternative</a></li>
+          <li><a href="/recalsans/gotham/">Gotham alternative</a></li>
+          <li><a href="/recalsans/gt-america/">GT America alternative</a></li>
+        </ul>
+        <p>Each one boots the customizer into that preset. ReCal Sans is produced by
+          <a href="https://wordmark.nyc/">WORDMARK</a>, free under the SIL Open Font License.</p>
+      </div>
+    </nav>
     <noscript>
       <p>ReCal Sans is a browser-based customizer for Cal Sans, a free variable font by WORDMARK. Tune the geometric (GEOM), optical-size, weight, ascender and sharpness axes, remap the glyph-swap thresholds, and download a static TTF with your decisions baked in — free under the SIL Open Font License. The customizer needs JavaScript; the fonts it produces do not.</p>
       <p>Comparison pages: <a href="/recalsans/poppins/">Poppins alternative</a> · <a href="/recalsans/gotham/">Gotham alternative</a> · <a href="/recalsans/gt-america/">GT America alternative</a></p>
