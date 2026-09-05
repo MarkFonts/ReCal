@@ -45,7 +45,17 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add shared
           git commit -m "Bump wm-primitives to ${SHA} (built by deploy) [skip ci]"
-          git push "https://x-access-token:${TOKEN}@github.com/MarkFonts/${GITHUB_REPOSITORY#*/}.git" HEAD:main
+          # A queued second run checks out before the first run's bump commit lands, so a
+          # bare push is rejected non-fast-forward -- and because this step sits ahead of
+          # the build, that bookkeeping failure skipped every remaining step, deploy
+          # included. Nothing shipped. Same retry-on-rebase the wordmark push below uses.
+          n=0
+          until git push "https://x-access-token:${TOKEN}@github.com/MarkFonts/${GITHUB_REPOSITORY#*/}.git" HEAD:main; do
+            n=$((n+1)); [ $n -ge 5 ] && { echo "push failed after 5 attempts"; exit 1; }
+            echo "push rejected (attempt $n) -- rebasing on origin/main..."
+            git pull --rebase origin main
+            sleep $((RANDOM % 5 + 3))
+          done
 
       - uses: actions/setup-node@v5
         with:
