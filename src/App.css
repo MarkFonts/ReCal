@@ -1,7 +1,19 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+/* Layer order, declared here because the FIRST @layer statement wins and App.css is the
+   first stylesheet this app evaluates (App.tsx imports it before anything reaches a
+   primitive). app.base sits BELOW the primitives: a bare `*` or element selector in an
+   unlayered reset outranks every class rule a primitive writes, whatever its specificity.
+   That is not theoretical -- `* { padding: 0 }` flattened AxisSlider's value slot here, so
+   the unit printed on top of the number.
+   Anything unlayered still beats all of these, which is where this app's own component
+   rules live and where a real override belongs. */
+@layer app.base, wm.color, wm.type, wm.controls;
+
+@layer app.base {
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 }
 
 body {
