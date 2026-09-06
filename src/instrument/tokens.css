@@ -19,6 +19,11 @@
      now sits on --surface. --stage-deep is NOT part of this scale, see above. */
   --surface:    #1a1a1a;   /* raised: panels, cards, cells, inputs */
   --surface-hi: #252525;   /* hover / active / selected */
+  /* Pressed. A translucent lift, not a step -- like --stage-deep it sits OUTSIDE the
+     three-step scale, so it darkens with whatever it is over instead of pinning a
+     fourth grey. Was var(--surface-3, ...), a name from the old four-step ramp that
+     no file ever declared: it rendered on its fallback and always would have. */
+  --surface-press: rgba(255, 255, 255, .08);
 
   /* ── Text (existing scale) ── */
   --text:       #e8e8e8;

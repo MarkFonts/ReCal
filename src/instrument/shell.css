@@ -532,7 +532,7 @@
    as a rounded rectangle inside the squircle and shows while the tap is held. A
    background is clipped to the real shape. Noted in corners.css. */
 .zone-chip:active:not(:disabled) {
-  background: var(--surface-3, rgba(255, 255, 255, .08));
+  background: var(--surface-press);
 }
 .zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) var(--accent); }
 .floor-spacer { flex: 1; }
@@ -914,7 +914,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    stroke follows border-radius and not corner-shape, and on a fully curved edge that
    mismatch is visible while the tap is held. */
 .preview-reset:active:not(:disabled) {
-  background: var(--surface-3, rgba(255, 255, 255, .08));
+  background: var(--surface-press);
 }
 
 /* The alignment row inside the floating Type panel. The buttons come from

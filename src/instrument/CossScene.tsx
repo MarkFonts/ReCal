@@ -23,6 +23,10 @@ export default function CossScene({ featStr, topInset }: SceneProps) {
   const fontStyle: CSSProperties = {
     fontFamily: "'CalSansVF', sans-serif",
     fontVariationSettings: bodyVs,
+    // Also as a custom property: the italic rule in coss.css OVERRIDES
+    // font-variation-settings to add 'ital' 1, which drops everything inherited. It
+    // rebuilds from var(--vs), so without this line italics lost GEOM/YTAS/SHRP.
+    ['--vs' as string]: bodyVs,
     fontOpticalSizing: 'auto',
     fontFeatureSettings: featStr,
     // On the Vertical Metrics tab the board re-spaces and slides caps from these vars.

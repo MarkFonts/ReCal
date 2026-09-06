@@ -4,5 +4,20 @@
   ],
   "exempt": [
     "src/App.css"
+  ],
+  "_tokenSources": "Where the tokens these files read are DECLARED. roots is src, but the tokens live in the submodule, so without this every var() into shared reads as undefined.",
+  "tokenSources": [
+    "shared/src"
+  ],
+  "_runtimeTokens": "Set by JS as an inline style on the element itself, so no stylesheet declares them: the zone/tab colours and --labels-w from App.tsx + GlyphGroups.tsx, --flash-color from scenes.tsx, and --vs/--vm-lh/--vm-shift from CossScene.tsx.",
+  "runtimeTokens": [
+    "--flash-color",
+    "--labels-w",
+    "--tab-color",
+    "--vm-lh",
+    "--vm-shift",
+    "--vs",
+    "--zone-active-bg",
+    "--zone-color"
   ]
 }
