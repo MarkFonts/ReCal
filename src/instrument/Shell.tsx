@@ -540,16 +540,16 @@ function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLea
         </>
       )}
       {has('size') && (
-        <AxisSlider label="size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
+        <AxisSlider variant="track" label="size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
       )}
       {has('tracking') && (
-        <AxisSlider label="tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
+        <AxisSlider variant="track" label="tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
       )}
       {has('leading') && (
-        <AxisSlider label="leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
+        <AxisSlider variant="track" label="leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
       )}
       {has('measure') && (
-        <AxisSlider label="measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
+        <AxisSlider variant="track" label="measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
       )}
     </div>
   )
