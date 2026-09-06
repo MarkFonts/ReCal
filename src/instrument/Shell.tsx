@@ -786,7 +786,11 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
               return (
                 <AxisSlider
                   key={tag}
-                  variant="skeletal"
+                  /* 01, the default. The preview bar is a rail you READ as much as drive,
+                     so it wants the label line and the track under it -- the same anatomy
+                     as everywhere else, at the same size. `skeletal` was a thinner drawing
+                     of the same control, which is a difference the reader has to account
+                     for without being told why. */
                   label={tag}
                   value={v}
                   min={min}
