@@ -459,25 +459,6 @@
   color: var(--text-dim);
 }
 .preview-rows { display: flex; gap: var(--spacing-05, 16px); flex-wrap: wrap; flex: 1; }
-.prow { display: flex; flex-direction: column; gap: var(--spacing-01, 4px); min-width: 118px; }
-/* Compare mode: axes the referent font can't express (see PreviewSurface). */
-.prow--na { opacity: .28; pointer-events: none; }
-.prow-head { display: flex; justify-content: space-between; font-size: var(--type-ui-size, 0.75rem); }
-.prow-label { color: var(--text-muted); }
-.prow-val { color: var(--marker-preview); }
-.prow.on .prow-val::before { content: "● "; font-size: var(--type-micro-size, 0.5625rem); vertical-align: 1px; }
-/* opsz-auto: tiny "auto" label + native checkbox at .7 opacity, inline with the label */
-.opsz-auto {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  margin-left: 6px;
-  font-size: var(--type-micro-size, 0.5625rem);
-  color: var(--text-dim);
-  opacity: .7;
-  cursor: pointer;
-}
-.opsz-auto input { width: 11px; height: 11px; margin: 0; accent-color: var(--marker-preview); }
 
 /* ── Floor — the transaction ── */
 .floor {
@@ -592,7 +573,6 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   user-select: none;
 }
 .type-panel-title:active { cursor: grabbing; }
-.type-panel .prow { min-width: 0; }
 
 /* Paragraph style menu (which style the TYPE controls target) */
 .style-menu { position: relative; }
@@ -646,24 +626,18 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Shared slider look (native range on tokens) */
 .shell input[type="range"] { width: 100%; accent-color: var(--accent); }
 
-/* Skeletal play sliders: 1px track, small ● thumb. */
-.preview-surface input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 1px;
-  background: var(--border);
-  cursor: pointer;
-}
-.preview-surface input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 9px; height: 9px; border-radius: 50%; background: var(--marker-preview);
-}
-.preview-surface input[type="range"]::-moz-range-thumb {
-  width: 9px; height: 9px; border: none; border-radius: 50%; background: var(--marker-preview);
-}
-.preview-surface input[type="range"]:hover::-webkit-slider-thumb,
-.preview-surface .prow.on input[type="range"]::-webkit-slider-thumb { background: var(--text); }
+/* The play rail is dense on purpose -- six axes over a preview, read as much as driven.
+   It used to get that by setting the range input to height:1px, which bought the row
+   back by deleting the pointer target: press-anywhere-on-the-track against a 1px box.
+   --dial-track-h is the primitive's own knob for the same thing. It sets what the ROW
+   pays; the input keeps its full 24px target, centred over it and out of flow. */
+.preview-surface { --dial-track-h: 14px; --dial-thumb: 9px; }
+/* Size the thumb through the primitive's own knob, not by overriding its pseudo-element:
+   the override carried the size and left the centring margin behind, so the ● sat 2.5px
+   above its rail on all six rows. */
+.preview-surface input[type="range"]::-webkit-slider-thumb { background: var(--marker-preview); }
+.preview-surface input[type="range"]::-moz-range-thumb { background: var(--marker-preview); }
+.preview-surface input[type="range"]:hover::-webkit-slider-thumb { background: var(--text); }
 .preview-surface input[type="range"]:focus-visible { outline: none; }
 .preview-surface input[type="range"]:focus-visible::-webkit-slider-thumb {
   background: var(--text); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 40%, transparent);

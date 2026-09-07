@@ -99,7 +99,15 @@ const Root = params.get('demo') === 'glyphpicker' ? GlyphPickerDemo
 // under .classic-ui — they must never leak into the instrument or demo harnesses.
 document.documentElement.classList.add(useClassic ? 'classic-ui' : 'instrument-ui')
 
-createRoot(document.getElementById('root')!).render(
+/* Vite re-evaluates this module on HMR -- any edit that invalidates it, including the
+   CSS imported above -- and createRoot() on a container that already has a root does not
+   replace it: you get two roots rendering into one DOM node, React logs "already been
+   passed to createRoot", and the UI stops responding to anything. It looks exactly like
+   a hang, and it took two of them in one session to place. Cache the root so a
+   re-evaluation re-renders instead of re-mounting. */
+const _w = window as unknown as { __recalRoot?: ReturnType<typeof createRoot> }
+const _root = _w.__recalRoot ?? (_w.__recalRoot = createRoot(document.getElementById('root')!))
+_root.render(
   <StrictMode>
     <Root />
   </StrictMode>

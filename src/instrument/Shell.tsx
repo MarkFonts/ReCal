@@ -757,7 +757,6 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
           <div className="preview-rows">
             {DOCK_AXES.map(tag => {
               const { min, max } = AXIS_RANGES[tag]
-              const on = tag in state.preview
               const v = merged[tag]
               // Compare mode: gray out axes the referent font can't express. A static
               // SVG specimen (no live font) grays everything; a live webfont keeps
@@ -766,23 +765,14 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
               const cmp = state.compareOn ? state.compare : null
               const na = !!cmp && (!!cmp.svg || !cmp.css ||
                 !(tag === 'wght' || (tag === 'ital' && cmp.italic) || (tag === 'opsz' && !!cmp.opszRange)))
-              if (tag === 'opsz') {
-                // opsz-auto: handle tracks the sample size; value reads "auto".
-                // Moving the handle disengages auto and reports the number.
-                return (
-                  <div className={`prow${on && !opszAuto ? ' on' : ''}${na ? ' prow--na' : ''}`} key={tag}>
-                    <div className="prow-head">
-                      <span className="prow-label">opsz
-                        <label className="opsz-auto">auto
-                          <input type="checkbox" checked={opszAuto} disabled={na} onChange={e => setOpszAuto(e.target.checked)} /></label>
-                      </span>
-                      <span className="prow-val tnum">{na ? '—' : opszAuto ? 'auto' : Math.round(v)}</span>
-                    </div>
-                    <input type="range" min={min} max={max} step={1} value={opszAuto ? autoOpsz : v} disabled={na}
-                      onChange={e => { setOpszAuto(false); dispatch({ type: 'setPreview', tag: 'opsz', value: +e.target.value }) }} />
-                  </div>
-                )
-              }
+              /* opsz is the one axis with a second state: it can follow the sample size
+                 instead of holding a number. That used to be a checkbox in a hand-built
+                 row -- the LAST row in this rail that was not the primitive -- so the
+                 axis with the extra affordance was also the one drawn differently from
+                 its five neighbours. `allowAuto` is the primitive's own version of the
+                 same thing: the dot-and-word control, the `a` keystroke, and typing the
+                 word, all of which this row never had. */
+              const isOpsz = tag === 'opsz'
               return (
                 <AxisSlider
                   key={tag}
@@ -792,12 +782,24 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
                      of the same control, which is a difference the reader has to account
                      for without being told why. */
                   label={tag}
-                  value={v}
+                  value={isOpsz && opszAuto ? 'auto' : v}
                   min={min}
                   max={max}
                   step={tag === 'ital' ? 0.01 : 1}
                   disabled={na}
-                  onChange={val => dispatch({ type: 'setPreview', tag, value: val as number })}
+                  allowAuto={isOpsz}
+                  /* Where the handle sits while auto is on: the opsz this sample size
+                     derives, not the axis default -- the same number the renderer uses,
+                     so the track is not describing a different font from the canvas. */
+                  autoValue={isOpsz ? autoOpsz : undefined}
+                  display={na ? '\u2014' : undefined}
+                  onChange={val => {
+                    if (isOpsz) {
+                      setOpszAuto(val === 'auto')
+                      if (val === 'auto') return
+                    }
+                    dispatch({ type: 'setPreview', tag, value: val as number })
+                  }}
                 />
               )
             })}
