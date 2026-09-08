@@ -6,7 +6,15 @@
    the unit printed on top of the number.
    Anything unlayered still beats all of these, which is where this app's own component
    rules live and where a real override belongs. */
-@layer app.base, wm.color, wm.type, wm.controls;
+@layer app.base, wm.color, wm.type, wm.controls, wm.icon;
+
+/* AFTER the statement, never before it: a layer's position is fixed when it is first
+   CREATED, so an @import that pulls in `@layer wm.icon` ahead of the ordering line puts
+   wm.icon first and the statement can no longer move it. See DIAL.md section 6.
+   icon.css also carries the @font-face for Material Symbols, self-hosted in the package,
+   so importing it is the whole of what a consumer has to do -- there is no <link> to
+   forget, which is what would have made every mark here render as its own name in words. */
+@import '../shared/src/icon.css';
 
 @layer app.base {
   * {
