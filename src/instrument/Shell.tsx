@@ -56,6 +56,56 @@ const ZONES = [
   { label: 'Base', geom: 50, color: ZONE_CHIP_COLOR.Base },
   { label: 'Geo', geom: 100, color: ZONE_CHIP_COLOR.Geo },
 ]
+/* WHERE THE LIGHT IS. The chosen chip's HDR ramp is panned by --mx/--my, written straight
+   to the DOM rather than through state: this runs on every pointermove and a setState per
+   move would re-render the rail. rAF-coalesced for the same reason -- several moves per
+   frame, one write.
+   Listening on the WINDOW, not the chip, because the glow should build as you approach:
+   a light you only see once you are already on top of it is not a light, it is a hover
+   style. Coordinates are per-chip and local, so the bright spot lands on the real cursor
+   however the row is laid out -- the same registration lesson the hero's field taught,
+   just at one element instead of a headline. */
+function useChipGlow(ref: React.RefObject<HTMLDivElement | null>) {
+  useEffect(() => {
+    const host = ref.current
+    if (!host) return
+    if (window.matchMedia('(pointer: coarse)').matches) return   // no cursor to follow
+    let frame = 0
+    let last: PointerEvent | null = null
+    const paint = () => {
+      frame = 0
+      if (!last) return
+      /* EVERY chip, each with its own local coordinates -- that is what makes one light
+         travel across the row instead of four private ones. Same registration lesson the
+         hero's field taught: a shared source, offset per element by its own corner. */
+      for (const on of Array.from(host.querySelectorAll<HTMLElement>('.zone-chip'))) {
+      const r = on.getBoundingClientRect()
+      /* NO CLAMP. There was one, to stop the ramp's square edge crossing the chip, and it
+         was both unnecessary and broken: the hard seam it was written for turned out to be
+         a unit bug in background-position, and its range [size-R, R] is only valid while
+         the element is NARROWER than the ramp. Once the reach dropped to 96px on a ~100px
+         chip that range inverted and collapsed to a single value, pinning the light in
+         place -- a clamp that stopped the thing it was meant to protect from moving.
+         Unclamped, the ramp simply travels with the cursor and meets the flat colour at
+         its rim, which is the same hue at 203 nits. That IS the intended edge. */
+      const R = (parseFloat(getComputedStyle(on).getPropertyValue('--glow-size')) || 256) / 2
+      /* Clamped so the image always covers the element -- valid now, and it was not before:
+         the range [size-R, R] needs the ramp to be WIDER than the chip, and at a 40px reach
+         on a ~100px chip it inverted and pinned the light in place. At 512 there is ~156px
+         of slack, so this only bites when the cursor is well off the chip, where the light
+         has already faded to nothing anyway. */
+      const cl = (v: number, size: number) => Math.max(size - R, Math.min(R, v))
+      const x = Math.round(cl(last.clientX - r.left, r.width)) - R
+      const y = Math.round(cl(last.clientY - r.top, r.height)) - R
+      on.style.setProperty('--glow-pos', `${x}px ${y}px`)
+      }
+    }
+    const onMove = (e: PointerEvent) => { last = e; if (!frame) frame = requestAnimationFrame(paint) }
+    window.addEventListener('pointermove', onMove, { passive: true })
+    return () => { window.removeEventListener('pointermove', onMove); if (frame) cancelAnimationFrame(frame) }
+  }, [ref])
+}
+
 const nearestZoneLabel = (geom: number) =>
   ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
 
@@ -93,6 +143,8 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
 
 function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
+  const railRef = useRef<HTMLDivElement>(null)
+  useChipGlow(railRef)
   // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = Freezer · 3 = Vertical Metrics.
   // Lives in the store so the canvas can swap to the metrics preview on group 3.
   const group = state.railGroup
@@ -117,7 +169,8 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.
   return (
-    <div className={`rail${state.recalMode === 'demo' ? ' rail--demo' : ''}${collapsed ? ' rail--collapsed' : ''}`}
+    <div ref={railRef}
+      className={`rail${state.recalMode === 'demo' ? ' rail--demo' : ''}${collapsed ? ' rail--collapsed' : ''}`}
       onPointerDown={() => { if (!collapsed && state.recalMode !== 'edit') dispatch({ type: 'setRecalMode', mode: 'edit' }) }}
       onClick={collapsed ? onToggle : undefined}>
       <div className="rail-collapsed-label">ReCal Builder</div>
@@ -157,7 +210,9 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
             return (
               <button key={z.label}
                 className={`zone-chip${on ? ' on' : ''}`}
-                style={on ? { background: z.color } : { color: z.color }}
+                /* No inline background when on: the HDR swatch lives in CSS (an inline
+                   style would win over it and flatten the chip back to SDR). */
+                style={on ? undefined : { color: z.color }}
                 data-label={z.label}
                 onClick={() => {
                   dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })

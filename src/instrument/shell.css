@@ -518,13 +518,123 @@
   pointer-events: none;
   font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-on, 630);
 }
+/* THE LIGHT CROSSES THE WHOLE ROW, not just the chosen chip. Every chip carries the same
+   ramp at the same moment -- the only difference is what lets it through: an inactive chip
+   reveals it through its LETTERS and its outline, the active one through its whole body.
+   So activating a chip is the same light filling a larger opening, rather than one
+   treatment being swapped for another, which is what made the change read as a jump. */
+.zone-chip {
+  position: relative;
+  /* THE REACH OF THE LIGHT, and the only number to turn. The swatch is baked at 256px but
+     its size on screen is this -- scaling one image is free, where re-baking per reach is
+     not. Smaller reads as a specular hit that follows the cursor; larger reads as a wash
+     the chip sits inside. The JS clamp derives its radius from this, so the two cannot
+     drift. */
+  /* The IMAGE is 512px; the bright core inside it is ~40px. They are different numbers on
+     purpose. The image has to cover the chip at all times -- an image edge inside the chip
+     is an SDR/HDR seam, and no nit value hides one, because on macOS EDR the level a flat
+     colour composites to follows the brightness slider. At 512 the light can travel ~156px
+     past the chip before the edge could reach it, so panning fast runs out of screen
+     before it runs out of image. */
+  --glow-size: 512px;
+  /* The ramp's resting place is OFF the element, not `center`. A cursor-driven light that
+     is already on before the cursor arrives is not a light -- and at a 40px reach the
+     default parked a bright disc in the middle of every label, so "START" was lit and
+     "FROM" was not. It reads as a defect, which is exactly what it is. Off-canvas until
+     the pointer writes a real position, so at rest everything is simply its flat colour. */
+    background-image: var(--zone-chip-hdr, none);
+  background-size: var(--glow-size) var(--glow-size);
+  background-position: var(--glow-pos, -9999px -9999px);
+  background-repeat: no-repeat;
+  dynamic-range-limit: no-limit;
+}
+/* Inactive: the ramp is clipped to the glyphs. The chip's own hue stays underneath as the
+   SDR fallback, so on a non-HDR display it is exactly the flat colour it always was. */
+.zone-chip:not(.on) {
+  /* THE HUE UNDER THE RAMP, or the label disappears. With background-clip:text the glyphs
+     are painted by the BACKGROUND and nothing else -- text-fill-color is transparent -- so
+     a 40px ramp paints a 40px disc of the word and leaves the rest of it invisible. At the
+     old 256px reach the ramp covered the whole chip and this was hidden; shrinking it to a
+     cursor-sized specular is what exposed it. background-color is clipped to the text too,
+     so it fills every glyph with the flat zone colour and the image only brightens the
+     part the cursor is near. */
+  background-color: var(--zone-chip-flat);
+  color: var(--zone-chip-flat);
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
 .zone-chip.on {
   color: var(--bg);
   font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-on, 630);
+  /* THE CHOSEN CHIP IS PAINTED ABOVE SDR WHITE. The fill already carries the information
+     -- zone colour IS the state -- so the boost is not decoration, it is that statement
+     said louder. No mask needed here: the pill is the shape, so the swatch is simply its
+     background, unlike a mark where the glyph has to clip it.
+     Each hue is its OWN swatch, baked per channel. A white swatch would have flattened
+     these to white; the sRGB hex is linearised, gained so its brightest channel lands on
+     1216 nits, then PQ-encoded per channel -- which preserves hue and saturation exactly
+     while pushing the colour as far above reference white as it goes. 1216 is the same
+     figure the marks use (field-247's own peak), so a chip cannot outshine a headline.
+     background-color stays underneath as the SDR fallback: on a non-HDR display, in a
+     screenshot, or if the data URI ever fails, the chip is still its flat zone colour. */
+  background-color: var(--zone-chip-flat, transparent);
+  background-image: var(--zone-chip-hdr, none);
+  /* THE BOOST FOLLOWS THE CURSOR. The swatch is a baked RADIAL ramp -- the hue at 1216
+     nits in the centre falling to its 203-nit SDR level at the rim -- panned under the
+     chip so its bright spot sits wherever the pointer is. A CSS radial-gradient() cannot
+     do this: every CSS colour syntax clamps at reference white.
+     The image is larger than the chip on purpose; the chip is a window onto it, and what
+     shows through is a slice of the ramp rather than the whole thing. Beyond the image the
+     background-color takes over, so a chip the cursor is nowhere near is simply its own
+     flat colour -- which is what makes the glow read as proximity rather than as state. */
+  background-size: var(--glow-size) var(--glow-size);
+  /* ONE property holding the whole position, defaulting to `center` -- NOT a percentage
+     minus a length. A percentage background-position resolves against (box - image), so
+     on a 100px chip under a 256px ramp `50%` is already -78px; subtracting a further 128
+     put the image at -206 and dropped its right edge at mid-chip, which is the hard
+     vertical seam you get before the pointer has moved. Mixing the two units was the bug;
+     `center` centres the ramp with no arithmetic at all. */
+  background-position: var(--glow-pos, -9999px -9999px);
+  background-repeat: no-repeat;
+  dynamic-range-limit: no-limit;
+}
+.zone-chip[data-label="A11y"] { --zone-chip-flat: var(--zone-a11y-chip); --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hJMhlrw/rk8neqXGuhocc+d1yg8if+dFMa1VS6mN4TiTvLafrpsbr7VHggtwpGO9rkBpA3zorwwQOc7EUwEYMRy6jcB4PHgDacWbhwZHAQ2v39tlcYM5iuRRiivlIYHaETinSQq0eW4M+Vj/d8S8SMxsKzyd5WpuBkWzk1b9xNrgmHxuJu8uIXou3Ns02ehZ79lsnbsLS3iaY9AhRqdwAWK5z5+k'); }
+.zone-chip[data-label="UI"]   { --zone-chip-flat: var(--zone-ui-chip);   --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hGLDZLsPI/TfPL+ddSiGEPi+eoE6UD4j3aKHM03vSb2zZ9qquF7osjdobEweHIKFlzBr0Jpq8RMj2DX1ObMIWLlXw4EiZTXFKV88wQnStBG89mjD146LbDpkGlZafKkFDsUyxVDzIMJ9hyMPCvmZCoKF0tyt9hHftuzQU/f2aEnHEHwMEokPCW7Mtt38Ei+//8Eu8y7OYJ5cnhZm3Y6WFMLryidm'); }
+.zone-chip[data-label="Base"] { --zone-chip-flat: var(--zone-base-chip); --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMcAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARkAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAysgEQAYSABhhhiPS5K3Gq2+EwqHui6wk4h9XLVX3qeNb2RPdyVfdwmwkJJQKQ3jsVteZGwm1XOQH3Nm3+rRdouSexP40bBhTbytJdke3imHNaBf62iQEERzcn6dLbRNnbXnevUbXN413QEk61BfbttxNuqnAvBHAWJU0dLgHkuqBYVVGfWtmQsXaeQi/heQoTHzwnd2qaK63+Y9xR5cOks07dR1C+DQbRBd/1zrnk6X9WH1QQ'); }
+.zone-chip[data-label="Geo"]  { --zone-chip-flat: var(--zone-geo-chip);  --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMoAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARwAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAytQEQAYSABhhhiPS5hIa2va1T3o+EdcaRkWZc/sSI69aSmYJjo85Uu8R167RwWh0RaLtCCeLcqow6MvQ/zW9xhaJiW+ejcmRmBvLbQTrWc0irljEfQrF0ZE60WM1oArK0HjD6Obp9xLghNBaJ33tYQ2ZWQRHLTAf2kboSWyyf59rfiSlmqqkWT533SlXanEZ2EghKQHia7oKxTWfI+R7GHNmcQrXlkjAQX0f7ZGDZkm9vw+589aT0'); }
+/* THE OUTLINE IS THE ZONE COLOUR WITH THE RAMP ON TOP OF IT. Two layers in one ring: the
+   flat hue draws the border everywhere, and the PQ gradient rides over it, brightening the
+   stretch nearest the cursor. That ordering matters -- image over colour, not instead of
+   it -- because at a 40px reach the ramp only covers a short arc, and a ring made of the
+   image alone was invisible everywhere else. That was the broken outline.
+   box-shadow cannot do this: it takes a colour, never an image. So the border is a masked
+   pseudo-element -- two rounded rects, one inset by the stroke width, composited to leave
+   just the ring. */
+.zone-chip:not(.on)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  corner-shape: inherit;
+  padding: var(--stroke-hover, 1.2px);
+  background-color: var(--zone-chip-flat);
+    background-image: var(--zone-chip-hdr, none);
+  background-size: var(--glow-size) var(--glow-size);
+  background-position: var(--glow-pos, -9999px -9999px);
+  background-repeat: no-repeat;
+  dynamic-range-limit: no-limit;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
 .zone-chip:not(.on):hover:not(:disabled) {
-  background: none;
-  box-shadow: inset 0 0 0 var(--stroke-hover, 1.2px) currentColor;
+  /* No box-shadow here any more -- ::before IS the border now, and two would double it.
+     NOT `background: none` either, as the original had: an inactive chip carries the
+     travelling ramp in its letters, and that shorthand would put the light out exactly
+     when you reach for the chip. */
 }
 /* Press: the stroke lands before the fill does. Beats .on deliberately — the stroke
    acknowledges the tap, the fill confirms it on release. */
@@ -818,6 +928,31 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   box-shadow: 0 0 0 1px var(--bg); cursor: ew-resize; touch-action: none; z-index: 3;
 }
 .matrix-handle:hover { background: #fff; }
+
+/* THE ACTIVE BAND IS PAINTED ABOVE SDR WHITE, same argument as the zone chips: the colour
+   IS the state, so the boost is that statement said louder rather than decoration. The
+   band is a plain rectangle, so the swatch is simply its background -- no mask, unlike a
+   mark where the glyph has to clip it.
+   These are the MUTED zone colours, not the chips' -- ZONE_COLOR is a wash behind dense
+   content while ZONE_CHIP_COLOR is a control you press -- so they get their own four
+   swatches at their own hues. Each is linearised from its hex, gained so the brightest
+   channel lands on 1216 nits, then PQ-encoded per channel, which holds the hue exactly
+   instead of washing it toward white as it brightens.
+   background-color stays under the image as the SDR fallback, so a non-HDR display, a
+   screenshot, or a failed data URI still shows the band in its own colour. `default` is
+   deliberately flat: a neutral grey has nothing to say by glowing. */
+.matrix-band.on {
+  background-color: var(--band-flat, transparent);
+  background-image: var(--band-hdr, none);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  dynamic-range-limit: no-limit;
+}
+.matrix-band.on[data-zone="A11Y"]    { --band-flat: var(--zone-a11y); --band-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAEAAAABAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQBMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAACsAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAAH0AAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAQKADAAQAAAABAAAAQAAAAAASAAoNAAAAAq//n/8KEiADCDIYEAGSABhhhiC0VMtcMo7mJ3kWgi+QyiA4'); }
+.matrix-band.on[data-zone="UI"]      { --band-flat: var(--zone-ui);   --band-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAEAAAABAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQBMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAACIAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAAHQAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAQKADAAQAAAABAAAAQAAAAAASAAoNAAAAAq//n/8KEiADCDIPEAGSABhhhiC0VMsL0Ia0'); }
+.matrix-band.on[data-zone="Base"]    { --band-flat: var(--zone-base); --band-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAEAAAABAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQBMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAACgAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAAHoAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAQKADAAQAAAABAAAAQAAAAAASAAoNAAAAAq//n/8KEiADCDIVEAGSABhhhiC0VM79cdRmDGKPWbtA'); }
+.matrix-band.on[data-zone="Geo"]     { --band-flat: var(--zone-geo);  --band-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAEAAAABAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQBMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAACoAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAAHwAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAQKADAAQAAAABAAAAQAAAAAASAAoNAAAAAq//n/8KEiADCDIXEAGSABhhhiC0VMvLet7m3cDLkFddd0A='); }
+.matrix-band.on[data-zone="default"] { --band-flat: var(--text-dim); }
 /* Cal Sans shipped default — a ghostly ● behind the track; stays put when you drag ◆ away. */
 .matrix-shipped {
   position: absolute; top: 23px; width: 8px; height: 8px; margin-left: -4px; border-radius: 1px;

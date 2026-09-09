@@ -140,7 +140,12 @@ export function Matrix() {
                 return (
                   <div key={vi}>
                     <div className={`matrix-band${on ? ' on' : ''}`}
-                      style={{ left: `${a}%`, width: `${b - a}%`, background: variant.color }} />
+                      data-zone={variant.label}
+                      /* No inline background while ON: the HDR swatch is in CSS, and an
+                         inline colour would win over it and flatten the band to SDR. */
+                      style={on
+                        ? { left: `${a}%`, width: `${b - a}%` }
+                        : { left: `${a}%`, width: `${b - a}%`, background: variant.color }} />
                     <span className={`matrix-vglyph${on ? ' on' : ''}`}
                       style={{ left: `${mid}%`, ...glyphStyle(variant.label) }}
                       title={`${variant.label} · GEOM ${a}–${b}`}>{def.glyph}</span>
