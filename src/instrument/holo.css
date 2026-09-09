@@ -47,7 +47,8 @@
 /* 1 ─ Seam tab. Color band = three sub-bands + a white specular (opacities 100/75/100/50),
    sweeping left→right then pausing, over a drifting dark↔light metal base. The V chevrons
    sit inside the label, so they ride this one clipped gradient too. */
-.rail-seam--down .rail-seam-lbl {
+.rail-seam--down .rail-seam-lbl,
+.rail-seam--down .rail-seam-chv-t {
   background-image:
     linear-gradient(90deg,
       transparent 0 40%,
@@ -73,13 +74,36 @@
 .rail-seam-lbl { font-weight: var(--holo-weight); transition: font-weight var(--holo-hover-ease) ease; }
 .rail-seam:hover .rail-seam-lbl { font-weight: var(--holo-weight-hover); }
 .rail-seam-chv-t {
-  /* a capital V at max SHRP is the chevron, two em-spaces off the word. No transform — it
-     would drop the shared clip fill and the V vanishes; kept inline to ride the gradient. */
-  margin: 0 2em; letter-spacing: 0;
-  font-variation-settings: 'wght' var(--holo-weight), 'SHRP' 100;
-  transition: font-variation-settings var(--holo-hover-ease) ease;
+  /* MASKED TO THE SVG, not clipped to a glyph. The label rides background-clip:text, which
+     clips to GLYPHS -- that is the only reason this was ever a capital V, and why the old
+     note here forbade even a transform. A mask does the same job for an arbitrary shape:
+     this element carries the IDENTICAL gradient stack and animation as the label beside it
+     (see the selector above), and the chevron is simply what lets it through. Same
+     mechanism as the stepper's press flash.
+     The path is HOUSE geometry -- chevronGeometry's 0.69 slope at 20x9 -- so it is the same
+     chevron as every other one in the system, just thicker: stroke 3 with BUTT terminals,
+     because at this size it has to hold a colour band rather than only read as a direction. */
+  /* THE SAME BOX AS THE LABEL, so registration is automatic rather than computed. A
+     background is sized and positioned against its OWN element, so a 20px chevron beside a
+     189px label was running a private 40px copy of a 378px band -- 9.4x off, and at a
+     different phase, which is exactly the bug the hero's gloss had. Sharing the box means
+     sharing the coordinate space: identical size, identical position, nothing to keep in
+     sync. The MASK then says where the chevron appears, which is the one thing that should
+     differ between the two ends. */
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 11'%3E%3Cpath d='M1 1.4 10 7.61 19 1.4' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='butt' stroke-linejoin='miter' stroke-miterlimit='4'/%3E%3C/svg%3E"); mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-1 -1 22 11'%3E%3Cpath d='M1 1.4 10 7.61 19 1.4' fill='none' stroke='%23fff' stroke-width='3' stroke-linecap='butt' stroke-linejoin='miter' stroke-miterlimit='4'/%3E%3C/svg%3E");
+  -webkit-mask-size: 20px 9px; mask-size: 20px 9px;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: left center; mask-position: left center;
 }
-.rail-seam:hover .rail-seam-chv-t { font-variation-settings: 'wght' var(--holo-weight-hover), 'SHRP' 100; }
+/* One at each end of the word; the label reserves their gutters. */
+.rail-seam-chv-t:last-child { -webkit-mask-position: right center; mask-position: right center; }
+.rail-seam-lbl { position: relative; padding: 0 32px; }
+/* An --up seam has no holo stack, so its chevron needs ink of its own to reveal. */
+.rail-seam--up .rail-seam-chv-t { background: currentColor; }
 
 /* 2 ─ ✓ Saved word. A green-free rainbow (no cyan/teal, which read green) tiled over its
    gray base so there's no rainbow edge cutting into it; sweeps once as the check appears. */

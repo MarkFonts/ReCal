@@ -19,6 +19,7 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings } from './render'
+import { Chevron } from '../../shared/index'
 import {
   VM_PRESETS, FONT_METRICS, lineHeight, matchAll, centerCapAll, winToBounds,
   presetById, xHeightAt, type VMetrics,
@@ -47,12 +48,16 @@ export function VMetricsPanel({ ytasPin }: { ytasPin?: ReactNode }) {
           </span>
         </div>
 
+        <span className="rail-preset-wrap">
         <select className="rail-preset" value={vm.preset === 'custom' ? 'custom' : vm.preset}
           onChange={e => { const p = presetById(e.target.value as VMetrics['preset']); if (p) set({ preset: p.id, ...p.metrics }) }}>
           {vm.preset === 'custom' && <option value="custom">Custom{active ? '' : ' (edited)'}</option>}
           {VM_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
         </select>
+          <Chevron dir={-1} width={12} height={7} />
+        </span>
 
+        <span className="rail-preset-wrap">
         <select className="rail-preset vm-strategy" value=""
           onChange={e => {
             if (e.target.value === 'match') set(matchAll(vm))
@@ -64,6 +69,8 @@ export function VMetricsPanel({ ytasPin }: { ytasPin?: ReactNode }) {
           <option value="center">Match hhea &amp; win to center cap</option>
           <option value="bounds">Match hhea &amp; typo, win = yMax/yMin</option>
         </select>
+          <Chevron dir={-1} width={12} height={7} />
+        </span>
 
         <div className="vm-row">
           <span className="vm-row-label">Line Gap</span>

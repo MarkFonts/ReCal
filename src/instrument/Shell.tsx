@@ -8,7 +8,7 @@ import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
-  type FitOptions } from '../../shared/index' // wm-primitives (git submodule)
+  type FitOptions, Chevron } from '../../shared/index' // wm-primitives (git submodule)
 import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
@@ -82,7 +82,7 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
       min={min}
       max={max}
       step={tag === 'ital' ? 0.01 : 1}
-      variant="diamond"
+      variant="track"
       reference={state.shipped[tag]}
       onRangePointerDown={onRangePointerDown}
       onChange={val => dispatch({ type: 'setDefaultAxis', tag, value: val as number })}
@@ -90,16 +90,6 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
   )
 }
 
-// Down chevron for the descent seams. Both seams point down: clicking the holo one
-// travels down into the matrix; clicking the muted one pushes the matrix back down.
-function SeamChevron() {
-  return (
-    <svg className="rail-seam-chv" viewBox="0 0 22 10" aria-hidden="true">
-      <path d="M1 1.5 11 8.5 21 1.5" fill="none" stroke="currentColor" strokeWidth="2.2"
-        strokeLinecap="round" strokeLinejoin="round" />
-    </svg>
-  )
-}
 
 function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
@@ -145,6 +135,7 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 0 && (<>
       <div className="rail-group">
         <div className="rail-group-label">Start from</div>
+        <span className="rail-preset-wrap">
         <select className="rail-preset" value={state.activePreset ?? ''}
           onChange={e => {
             const p = PRESETS.find(x => x.name === e.target.value)
@@ -154,6 +145,8 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
           <option value="">Cal Sans (default)</option>
           {PRESETS.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
         </select>
+          <Chevron dir={-1} width={12} height={7} />
+        </span>
       </div>
 
       <div className="rail-group">
@@ -191,7 +184,7 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
             size (auto); on = pin the opsz axis to this value for a fixed display size. */}
         {/* opsz uses the canonical allowAuto affordance: field shows "auto" until you
             edit it (type a value to freeze, `a` to go auto); the Freeze checkbox stays
-            in sync. Diamond thumb + burned stock reference like the other rail axes. */}
+            in sync. Track variant + burned stock reference like the other rail axes. */}
         <AxisSlider
           label="Optical size"
           tag="opsz"
@@ -201,7 +194,7 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
           step={1}
           allowAuto
           autoValue={state.defaults.frozenOpszValue ?? 14}
-          variant="diamond"
+          variant="track"
           disabled={!state.defaults.freezeOpsz}
           reference={state.shipped.opsz}
           onChange={val => {
@@ -247,18 +240,18 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       </div>
 
       <button className="rail-seam rail-seam--down" onClick={() => go(1, 'fwd')}>
-        <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>TYPE MATRIX<span className="rail-seam-chv-t">V</span></span>
+        <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />TYPE MATRIX<span className="rail-seam-chv-t" aria-hidden="true" /></span>
       </button>
       </>)}
 
       {group === 1 && (
       <div className="rail-matrix">
         <button className="rail-seam rail-seam--up" onClick={() => go(0, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>TYPE MATRIX<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />TYPE MATRIX<span className="rail-seam-chv-t" aria-hidden="true" /></span>
         </button>
         <Matrix />
         <button className="rail-seam rail-seam--down" onClick={() => go(2, 'fwd')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>FREEZER<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />FREEZER<span className="rail-seam-chv-t" aria-hidden="true" /></span>
         </button>
       </div>
       )}
@@ -266,11 +259,11 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 2 && (
       <div className="rail-freezer">
         <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>FREEZER<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />FREEZER<span className="rail-seam-chv-t" aria-hidden="true" /></span>
         </button>
         <Freezer />
         <button className="rail-seam rail-seam--down" onClick={() => go(3, 'fwd')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>VERTICAL METRICS<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />VERTICAL METRICS<span className="rail-seam-chv-t" aria-hidden="true" /></span>
         </button>
       </div>
       )}
@@ -278,13 +271,13 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       {group === 3 && (
       <div className="rail-vmetrics">
         <button className="rail-seam rail-seam--up" onClick={() => go(2, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span>VERTICAL METRICS<span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />VERTICAL METRICS<span className="rail-seam-chv-t" aria-hidden="true" /></span>
         </button>
         <VMetricsPanel ytasPin={<Pin tag="YTAS" label="Ascender" />} />
         {/* Vertical Metrics is the last section — no down-seam (its rule + chevrons removed).
             Restore this button if a section is ever added below it.
         <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t">V</span><span className="rail-seam-chv-t">V</span></span>
+          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" /><span className="rail-seam-chv-t" aria-hidden="true" /></span>
         </button> */}
       </div>
       )}

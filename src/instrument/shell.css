@@ -159,8 +159,28 @@
   font-family: var(--ui-font);
   font-size: var(--type-ui-size, 0.75rem);
   cursor: pointer;
+  /* The native arrow is Chrome's, not ours -- a fixed grey that ignores the theme and sits
+     at a different weight and terminal from every other chevron in the app. Removing it and
+     hanging a real Chevron off a wrapper is the same fix font-proofer's .instance-select
+     uses; a background-image cannot follow the ink, and a mask on the <select> itself would
+     mask the option text with it. */
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: var(--spacing-06, 24px);
 }
 .rail-preset:hover { border-color: var(--text-dim); }
+
+/* The wrapper exists only to hang the mark off; the select still owns its own box. */
+.rail-preset-wrap { position: relative; display: block; }
+.rail-preset-wrap .wm-chevron {
+  position: absolute;
+  right: var(--spacing-03, 8px);
+  top: 50%;
+  transform: translateY(-50%);
+  /* The select is what you are clicking; the mark is decoration on top of it. */
+  pointer-events: none;
+  color: var(--text-muted);
+}
 
 /* Bottom of the rail: state tag + CSS readout (moved out of the canvas bar) */
 .rail-footer {
