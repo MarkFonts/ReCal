@@ -8,11 +8,17 @@ import '../shared/src/space.css'     // --spacing-NN scale (wm-primitives). Top-
                                      // ?demo= harnesses, which never mount InstrumentApp.
 import '../shared/src/scrollbar.css' // house 6px scrollbar (wm-primitives)
 import { GlyphPicker, makeGlyphSets, StyleScopeDropdown, StyleScopeList, AxisSlider } from '../shared/index'
+import calSansUrl from '../shared/fonts/CalSansVF.ttf?url'
 
-// CSS url() with an absolute path ignores the vite base, so inject the
-// font-face here where BASE_URL is available.
+/* The face comes from the SUBMODULE, imported rather than fetched by path. shared/ IS
+   wm-primitives, and deploy.yml already advances its pointer on every `primitive-updated`
+   dispatch -- so the font follows a bump with no sync step and no second copy to go
+   stale. public/fonts/CalSansVF.ttf was that second copy, and it sat at 2.000 while the
+   package shipped 2.001.
+   Importing also retires the BASE_URL dance: Vite emits a hashed, base-correct URL, which
+   is what the hand-built string was working around. */
 const _s = document.createElement('style')
-_s.textContent = `@font-face { font-family: 'CalSansVF'; src: url('${import.meta.env.BASE_URL}fonts/CalSansVF.ttf') format('truetype'); font-display: swap; }`
+_s.textContent = `@font-face { font-family: 'CalSansVF'; src: url('${calSansUrl}') format('truetype'); font-display: swap; }`
 document.head.insertBefore(_s, document.head.firstChild)
 
 // Instrument-model UI is now the default; the classic app stays reachable at

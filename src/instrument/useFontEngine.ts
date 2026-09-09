@@ -8,6 +8,8 @@
 // signals download intent via `init()`, so pure-preview visitors never pay for it.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { VMetrics } from './vmetrics'
+import calSansUrl from '../../shared/fonts/CalSansVF.ttf?url'
+import calSansFlexUrl from '../../shared/fonts/CalSansFlexVF.ttf?url'
 
 export interface ExportConfig {
   axisDefaults: Record<string, number>   // ◆ axis defaults, EXCLUDING opsz
@@ -31,9 +33,12 @@ export interface PreviewConfig {
   autoAscender: boolean
 }
 
-const fontUrl = (hoi: boolean) =>
-  `${import.meta.env.BASE_URL}fonts/${hoi ? 'CalSansFlexVF' : 'CalSansVF'}.ttf`
-const flexUrl = `${import.meta.env.BASE_URL}fonts/CalSansFlexVF.ttf`
+/* Imported from the shared submodule, not built from BASE_URL. Worth noting how this
+   one hid: the filename was INTERPOLATED, so a grep for 'fonts/CalSansVF.ttf' never
+   matched it -- it would have 404'd at runtime after the public/ copy went, and the build
+   would still have been green. */
+const fontUrl = (hoi: boolean) => (hoi ? calSansFlexUrl : calSansUrl)
+const flexUrl = calSansFlexUrl
 
 function postPreview(w: Worker, cfg: PreviewConfig) {
   w.postMessage({

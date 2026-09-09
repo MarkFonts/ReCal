@@ -5,6 +5,8 @@ import { Slider } from 'dialkit'
 import 'dialkit/styles.css'
 import { GlyphGroups, GROUP_DEFS, LANDING_ZONES, PREVIEW_WORDS, getZoneTokens, applyDrop, applyDelete, applyDefaultDrop, type ZoneToken, type VariantLabel } from './GlyphGroups'
 import { Letterbox } from './Letterbox'
+import calSansUrl from '../shared/fonts/CalSansVF.ttf?url'
+import calSansFlexUrl from '../shared/fonts/CalSansFlexVF.ttf?url'
 
 export type AxisInfo = { tag: string; name: string; min: number; default: number; max: number }
 
@@ -22,8 +24,8 @@ const OPSZ_CONTEXT = [
 ] as const
 
 const FONT_URLS = {
-  hoi: `${import.meta.env.BASE_URL}fonts/CalSansFlexVF.ttf`,
-  standard: `${import.meta.env.BASE_URL}fonts/CalSansVF.ttf`,
+  hoi: calSansFlexUrl,    // from the shared submodule -- see main.tsx
+  standard: calSansUrl,   // from the shared submodule -- see main.tsx
 }
 
 // Reset glyph (circular arrow) lifted from font-proofer's ResetIcon

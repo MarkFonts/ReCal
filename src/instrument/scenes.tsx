@@ -15,6 +15,7 @@ import { GRID_SWAPS } from './rcltSwaps'
 import { SUBS } from '../data/substitutions'
 import { BOOT, type CompareSpec } from './boot'
 import { effectiveLineHeightEm, capShiftEm } from './vmetrics'
+import calSansUrl from '../../shared/fonts/CalSansVF.ttf?url'
 
 export type SceneMode = 'words' | 'paragraph' | 'scale' | 'glyphs' | 'ui'
 export const SCENES: { mode: SceneMode; label: string }[] = [
@@ -834,7 +835,7 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
 let cmapPromise: Promise<CmapRanges | null> | null = null
 function loadCmap(): Promise<CmapRanges | null> {
   if (!cmapPromise) {
-    cmapPromise = fetch(`${import.meta.env.BASE_URL}fonts/CalSansVF.ttf`)
+    cmapPromise = fetch(calSansUrl)
       .then(r => r.arrayBuffer()).then(parseCmapRanges).catch(() => null)
   }
   return cmapPromise
