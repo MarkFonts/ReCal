@@ -537,6 +537,14 @@
      past the chip before the edge could reach it, so panning fast runs out of screen
      before it runs out of image. */
   --glow-size: 512px;
+  /* DECLARED here even though JS is what writes it. The pointer handler sets --glow-pos
+     per frame, so the stylesheet only ever READ it -- and a property read in three places
+     and declared in none is exactly what the token lint is for: it cannot tell a live
+     JS-driven value from a typo. Declaring the resting state fixes that and documents the
+     default where someone reading the CSS would look.
+     Off-element, not centred: a cursor-driven light that is lit before the cursor arrives
+     is not a light, it is a blob parked in the middle of the word. */
+  --glow-pos: -9999px -9999px;
   /* The ramp's resting place is OFF the element, not `center`. A cursor-driven light that
      is already on before the cursor arrives is not a light -- and at a 40px reach the
      default parked a bright disc in the middle of every label, so "START" was lit and
@@ -544,7 +552,7 @@
      the pointer writes a real position, so at rest everything is simply its flat colour. */
     background-image: var(--zone-chip-hdr, none);
   background-size: var(--glow-size) var(--glow-size);
-  background-position: var(--glow-pos, -9999px -9999px);
+  background-position: var(--glow-pos);
   background-repeat: no-repeat;
   dynamic-range-limit: no-limit;
 }
@@ -595,7 +603,7 @@
      put the image at -206 and dropped its right edge at mid-chip, which is the hard
      vertical seam you get before the pointer has moved. Mixing the two units was the bug;
      `center` centres the ramp with no arithmetic at all. */
-  background-position: var(--glow-pos, -9999px -9999px);
+  background-position: var(--glow-pos);
   background-repeat: no-repeat;
   dynamic-range-limit: no-limit;
 }
@@ -621,7 +629,7 @@
   background-color: var(--zone-chip-flat);
     background-image: var(--zone-chip-hdr, none);
   background-size: var(--glow-size) var(--glow-size);
-  background-position: var(--glow-pos, -9999px -9999px);
+  background-position: var(--glow-pos);
   background-repeat: no-repeat;
   dynamic-range-limit: no-limit;
   -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
