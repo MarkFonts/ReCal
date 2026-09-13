@@ -16,14 +16,14 @@ export type AxisMap = Record<string, number>
 // Stock CalSansVF fvar defaults. Phase 2 replaces this seed with live axisInfo from
 // the worker — the shape is identical, so `init` just swaps the numbers in.
 export const SHIPPED_AXES: Readonly<AxisMap> = Object.freeze({
-  opsz: 14, GEOM: 25, wght: 400, YTAS: 720, SHRP: 0, ital: 0,
+  opsz: 14, GEOM: 25, wght: 400, YTAS: 1440, SHRP: 0, ital: 0,
 })
 
 export const AXIS_RANGES: Readonly<Record<string, { min: number; max: number }>> = Object.freeze({
   opsz: { min: 8, max: 45 },
   GEOM: { min: 0, max: 100 },
   wght: { min: 400, max: 700 },
-  YTAS: { min: 720, max: 800 },
+  YTAS: { min: 1440, max: 1600 },
   SHRP: { min: 0, max: 100 },
   ital: { min: 0, max: 1 },
 })

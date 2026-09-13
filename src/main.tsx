@@ -34,7 +34,7 @@ function GlyphPickerDemo() {
     { label: 'Stylistic — Humanist a (ss02)', chars: 'aàáâãäåæāăą', ffs: '"ss02" 1' },
   ]
   // Cal Sans design metrics (vmetrics.ts FONT_METRICS + xHeightAt at defaults).
-  const metrics = { upm: 1000, ascender: 720, capHeight: 720, xHeight: 514, descender: -243 }
+  const metrics = { upm: 2000, ascender: 1440, capHeight: 1440, xHeight: 1030, descender: -487 }
   const p = new URLSearchParams(window.location.search)
   const layout = p.get('layout') === 'bottom' ? 'bottom' as const : 'side' as const
   const specimenSpan = p.get('span') === '2' ? 2 as const : 1 as const

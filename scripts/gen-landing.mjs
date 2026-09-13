@@ -60,7 +60,7 @@ function page(p, all) {
   const ogImage = `${ORIGIN}${BASE}/og/${p.slug}.jpg`
   const ogAlt = `The word ${p.referent} set in ReCal Sans, a free open-source variable alternative to ${p.referent}.`
   const readableAxes = p.axes.replace(/'/g, '').split(', ')
-    .filter(a => !['wght 400', 'YTAS 720', 'SHRP 0'].includes(a)).join(' \u00b7 ')
+    .filter(a => !['wght 400', 'YTAS 1440', 'SHRP 0'].includes(a)).join(' \u00b7 ')
   const others = all.filter(x => x.slug !== p.slug)
   const paid = p.kind === 'paid'
 

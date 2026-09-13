@@ -7,29 +7,31 @@
 // (below): WORDMARK's current shipping numbers, ArrowType's center-the-cap recommendation
 // (Stephen Nixon's vertical-metrics talk), and Google Fonts' clear-the-accent recipe.
 
-// CalSansVF design constants, in font units (UPM 1000). Read straight off the outlines:
+// CalSansVF design constants, in font units (UPM 2000). Read straight off the outlines:
 // cap = /H top, xHeight = /x top, accentTop = /Abreveacute (Ắ) top — the tallest thing a
 // Latin ascent has to clear — and descender = /g bottom, the deepest.
 // The Ascender line reads YTAS directly and x-height is interpolated (xHeightAt), so
 // neither is a fixed constant here.
 export const FONT_METRICS = {
-  upm: 1000,
-  cap: 720,
-  accentTop: 993,   // Ắ — the ceiling the ascent is measured against
-  descender: -243,  // /g bottom
-  yMax: 1036,       // head.yMax / yMin — the font's true ink bounds (for win = yMax/yMin)
-  yMin: -276,
+  upm: 2000,
+  cap: 1440,
+  accentTop: 1986,  // Ắ — the ceiling the ascent is measured against
+  descender: -487,  // /g bottom
+  yMax: 2058,       // head.yMax / yMin — the font's true ink bounds (for win = yMax/yMin)
+  yMin: -720,
 } as const
 
 // x-height (top of /x) interpolated from the design masters — it moves with weight and
 // optical size only (GEOM/YTAS/SHRP/ital don't touch it; caps/descenders don't shift). The
 // corners are additive, and opsz 8→10 is a flat plateau (x-height only starts rising above
 // opsz 10):
-//   w400: 514 · w700: 529 (+15 for weight) · opsz10: 514 · opsz45: 520 (+6 for opsz)
+//   w400: 1030 · w700: 1058 (+28 for weight) · opsz10: 1030 · opsz45: 1040 (+10 for opsz)
 // → the line tracks the live instance the way the outline does, no ink-measuring needed.
+// The model is additive, so the far corner (w700 + opsz45) reads 1068 against a measured
+// 1070 — the same two-unit slack it carried at UPM 1000.
 const clamp01 = (t: number) => Math.min(1, Math.max(0, t))
 export function xHeightAt(wght = 400, opsz = 14): number {
-  return 514 + 15 * clamp01((wght - 400) / 300) + 6 * clamp01((opsz - 10) / (45 - 10))
+  return 1030 + 28 * clamp01((wght - 400) / 300) + 10 * clamp01((opsz - 10) / (45 - 10))
 }
 
 export interface MetricSet { asc: number; desc: number; gap: number }
@@ -61,7 +63,7 @@ export const effectiveLineHeightEm = (v: VMetrics): number =>
 // is what "center the cap" moves (buttons/labels ride up or down); it's 0 at the default
 // and grows as you edit toward a centred cap. Line gap is symmetric leading, so it doesn't
 // enter here — it only opens space between lines (that's effectiveLineHeightEm's job).
-const SHIPPED_LINE_ASYM = 655   // WORDMARK hhea 900 + (−245) — the loaded preview font's value
+const SHIPPED_LINE_ASYM = 1310  // WORDMARK hhea 1800 + (−490) — the loaded preview font's value
 export const capShiftEm = (v: VMetrics): number =>
   ((v.useTypo ? v.typo : v.hhea).asc + (v.useTypo ? v.typo : v.hhea).desc - SHIPPED_LINE_ASYM) / 2 / FONT_METRICS.upm
 
@@ -85,9 +87,9 @@ export const VM_PRESETS: VMetricsPreset[] = [
     label: 'WORDMARK default',
     blurb: 'What the font ships today.',
     metrics: {
-      hhea: { asc: 900, desc: -245, gap: 0 },
-      typo: { asc: 900, desc: -245, gap: 0 },
-      win: { asc: 1024, desc: 245 },
+      hhea: { asc: 1800, desc: -490, gap: 0 },
+      typo: { asc: 1800, desc: -490, gap: 0 },
+      win: { asc: 2048, desc: 490 },
       useTypo: false,
     },
   },
@@ -98,22 +100,22 @@ export const VM_PRESETS: VMetricsPreset[] = [
     // the typo line-height match hhea; don't use typo metrics. May clip the tallest accent.
     blurb: 'Center the cap. You decide line height; may clip accents.',
     metrics: {
-      hhea: { asc: 960, desc: -240, gap: 0 },
-      typo: { asc: 720, desc: -240, gap: 240 },
-      win: { asc: 960, desc: 240 },
+      hhea: { asc: 1920, desc: -480, gap: 0 },
+      typo: { asc: 1440, desc: -480, gap: 480 },
+      win: { asc: 1920, desc: 480 },
       useTypo: false,
     },
   },
   {
     id: 'googlefonts',
     label: 'Google Fonts spec',
-    // Ascent clears Ắ (993→1000); descent makes cap−ascent symmetric (−280); hhea = typo =
+    // Ascent clears Ắ (1986→2000); descent makes cap−ascent symmetric (−560); hhea = typo =
     // win; use typo metrics. ~1.28 em, simple and consistent, avoids most clipping.
     blurb: 'Clear the accent, match all three, use typo. Avoids clipping.',
     metrics: {
-      hhea: { asc: 1000, desc: -280, gap: 0 },
-      typo: { asc: 1000, desc: -280, gap: 0 },
-      win: { asc: 1000, desc: 280 },
+      hhea: { asc: 2000, desc: -560, gap: 0 },
+      typo: { asc: 2000, desc: -560, gap: 0 },
+      win: { asc: 2000, desc: 560 },
       useTypo: true,
     },
   },
