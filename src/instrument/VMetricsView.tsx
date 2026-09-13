@@ -133,8 +133,8 @@ export function VMetricsScene() {
   const editRef = useRef<HTMLDivElement>(null)
   useEffect(() => { if (editRef.current && !editRef.current.textContent) editRef.current.textContent = SPECIMEN }, [])
   const yOf = (u: number) => BASE - (u / FONT_METRICS.upm) * FS
-  // The Ascender line IS the YTAS value (the ascender-height axis) — at the 720 default it
-  // coincides exactly with Cap Height (720), so their rules share one line (no gap); raising
+  // The Ascender line IS the YTAS value (the ascender-height axis) — at the 1440 default it
+  // coincides exactly with Cap Height (1440), so their rules share one line (no gap); raising
   // YTAS lifts it above the cap. The rest are the font's recorded design metrics. Win
   // descent is a positive integer (usWinDescent).
   const ascU = axes.YTAS ?? FONT_METRICS.cap
@@ -185,7 +185,7 @@ export function VMetricsScene() {
             <text className="vm-line-lbl" x={XL} y={l.y} textAnchor="end" dominantBaseline="middle">{l.label}</text>
           </g>
         ))}
-        {/* Ascender = YTAS; at the 720 default its rule coincides with Cap Height's (one
+        {/* Ascender = YTAS; at the 1440 default its rule coincides with Cap Height's (one
             line, no gap). The label tucks one line above Cap Height and rides up with YTAS. */}
         <line className="vm-line" x1={LINE_L} y1={ascY} x2={LINE_R} y2={ascY} />
         <text className="vm-line-lbl" x={XL} y={ascY - 25} textAnchor="end" dominantBaseline="middle">Ascender</text>

@@ -80,7 +80,7 @@ def main():
     # question; what each variant looks like is not, so the shapes are drawn at one place
     # and the thresholds are stated as numbers.
     inst = instantiateVariableFont(
-        font, {"GEOM": 50, "opsz": 16, "wght": 400, "YTAS": 720, "SHRP": 0, "ital": 0},
+        font, {"GEOM": 50, "opsz": 16, "wght": 400, "YTAS": 1440, "SHRP": 0, "ital": 0},
         inplace=False)
     gset, glyf = inst.getGlyphSet(), inst["glyf"]
     order = set(inst.getGlyphOrder())

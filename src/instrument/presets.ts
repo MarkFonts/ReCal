@@ -37,7 +37,7 @@ export const PRESETS: Preset[] = [
   { name: 'Futura', geom: 100, ytas: 800, shrp: 100, frozenOpsz: 16 },
   {
     // opsz frozen at 8, not multiplied: Cal Sans grows rounder and lifts its x-height as
-    // optical size rises, which fights the tall-ascender proportion YTAS 800 is here for.
+    // optical size rises, which fights the tall-ascender proportion YTAS 1600 is here for.
     // Matches the landing page's specimen, which pins the same 8.
     name: 'Neutra 2', geom: 25, ytas: 800, shrp: 100, frozenOpsz: 8,
     frozen: ['cv02', 'cv22'],

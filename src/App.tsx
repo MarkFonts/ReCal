@@ -784,12 +784,12 @@ export default function App() {
                 <button className={`preset-btn${activePreset === 'Futura' ? ' preset-btn--active' : ''}`} onClick={() => {
                   setActivePreset('Futura'); resetConditions(); setScaledOpsz(false)
                   setFrozenOpszValue(16)
-                  handleSliderChange('GEOM', 100); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
+                  handleSliderChange('GEOM', 100); handleSliderChange('YTAS', 1600); handleSliderChange('SHRP', 100)
                 }}>Futura</button>
                 <button className={`preset-btn preset-btn--bifamily${activePreset === 'Neutra 2' ? ' preset-btn--active' : ''}`} onClick={() => {
                   setActivePreset('Neutra 2'); resetConditions(); setScaledOpsz(true); setOpszMultiplier(0.625)
                   setFrozenOpszValue(null)
-                  handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 800); handleSliderChange('SHRP', 100)
+                  handleSliderChange('GEOM', 25); handleSliderChange('YTAS', 1600); handleSliderChange('SHRP', 100)
                   setGlyphThresholds(prev => { let t = applyDelete('a', 0, 'A11Y', prev); t = applyDrop('y', 2, 'UI', t); return t })
                 }}>
                   <span>Neutra 2</span>

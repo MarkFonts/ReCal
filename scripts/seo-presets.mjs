@@ -247,7 +247,7 @@ export const SEO_PRESETS = [
     // No frozen glyph set for this referent (not in GLYPHS) -- words lean on Futura's
     // own story (Paul Renner, 1927 German Bauhaus) instead, and double as a diacritic check.
     words: ['Neue Form', 'Klare Linie', 'Bauhaus Kreis', 'Reine Geometrie', 'Kühne Zukunft', 'Cercle Parfait', 'Nouvelle Ère', 'Círculo Perfecto'],
-    axes: vs({ GEOM: 100, YTAS: 800, SHRP: 100, opsz: 16 }),
+    axes: vs({ GEOM: 100, YTAS: 1600, SHRP: 100, opsz: 16 }),
     opticalSizing: false,
     adobe: true,
     compare: {
@@ -307,9 +307,9 @@ export const SEO_PRESETS = [
     words: ['Yesterday Study', 'Runaway Season', 'Highway Habitat', 'Getaway Notes', 'Everyday Canvas', 'Halfway Draft', 'Layaway Cabinet', 'Anyway Statement'],
     // opsz 8, frozen like GT America's. Left unpinned, the specimen rode
     // font-optical-sizing:auto up to the axis ceiling of 45 -- and Cal Sans grows rounder
-    // and lifts its x-height as opsz rises, which is precisely what YTAS 800 is here to
+    // and lifts its x-height as opsz rises, which is precisely what YTAS 1600 is here to
     // fight. cv02 in GLYPHS holds the humanist 'a' against the swap GEOM 25 + opsz 8 trips.
-    axes: vs({ GEOM: 25, YTAS: 800, SHRP: 100, opsz: 8 }),
+    axes: vs({ GEOM: 25, YTAS: 1600, SHRP: 100, opsz: 8 }),
     opticalSizing: false,
     compare: { label: 'Neutraface', family: 'sans-serif', italic: false },
     title: 'ReCal Sans — a free variable alternative to Neutra',

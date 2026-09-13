@@ -11,7 +11,7 @@ const META = {
   style: 'Regular',
   filename: 'CalSansVF.ttf',
   format: 'TrueType',
-  upm: 1000,
+  upm: 2000,
   glyphs: 1543,
   version: '1.998',
   uniqueId: '1998-CalSansWORD-2026-06-15',
