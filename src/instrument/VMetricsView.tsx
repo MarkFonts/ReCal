@@ -10,7 +10,7 @@
 //                             values — the ascender tracking YTAS, the axis that raises it —
 //                             on the LEFT, the editable win box on the RIGHT. Black bars top
 //                             & bottom show how some apps crop to the win box: tighten the
-//                             ascent below Ắ's 993 and the top bar bites the accent.
+//                             ascent below Ắ's 1986 and the top bar bites the accent.
 //
 // Reference lines are analytic, not measured: SVG getBBox returns the em/ascent box, not
 // per-glyph ink (every normal glyph reports the same top), so the recorded design metrics

@@ -245,7 +245,7 @@
 /* ── Vertical Metrics preview (canvas, on the Vertical Metrics rail tab) ─────────
    "Ắ Match fpv" with reference lines measured live off the current instance (SVG
    getBBox honours the variation settings), plus black bars showing how some apps
-   crop to the win box — tighten the ascent below Ắ's 993 and the top bar bites it. */
+   crop to the win box — tighten the ascent below Ắ's 1986 and the top bar bites it. */
 /* The black stage IS the letterbox: it fills the whole preview, and the content band is
    flex-centred within it (like the Words specimen), so the specimen sits at the vertical
    centre and the black reaches every edge. The band's width is 100% at a fixed viewBox

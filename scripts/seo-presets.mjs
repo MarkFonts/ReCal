@@ -318,7 +318,7 @@ export const SEO_PRESETS = [
     h1: 'A free, tunable alternative to Neutra',
     body: [
       'Neutra (and Neutraface after it) channels Richard Neutra’s mid-century architectural modernism: long elegant ascenders, low waists, flat sharp terminals — typography as signage. It is beautiful, distinctive, and commercially licensed.',
-      'ReCal Sans can be tuned into that architectural register: raise the ascender axis to 800, push terminal sharpness to full, and keep the construction clean. The result is free (OFL), variable, and optically sized — and the exported file bakes your proportions in, no styling required at the call site.',
+      'ReCal Sans can be tuned into that architectural register: raise the ascender axis to 1600, push terminal sharpness to full, and keep the construction clean. The result is free (OFL), variable, and optically sized — and the exported file bakes your proportions in, no styling required at the call site.',
     ],
     // Per-referent FAQ copy. These two answers used to be one shared template with the
     // name swapped in -- the single largest duplicated block across the eight pages, and
