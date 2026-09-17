@@ -88,3 +88,31 @@ jobs:
             git pull --rebase origin main
             sleep $((RANDOM % 5 + 3))
           done
+
+      # EVAL.md D4 + D5: pushed is not shipped. The push above lands in a repo; Pages
+      # builds it later, or not, and nothing here used to notice. This waits for the
+      # site to serve the bundle THIS run built, and records which wm-primitives commit
+      # it was built from, so the run log is the answer to "what is live?".
+      - name: The site serves what this run built
+        run: |
+          want=$(grep -o 'assets/index-[A-Za-z0-9_-]*\.js' dist/index.html | head -1)
+          pin=$(git -C shared rev-parse --short HEAD)
+          echo "built $want from wm-primitives $pin"
+          for i in $(seq 1 30); do
+            got=$(curl -fsS "https://wordmark.nyc/recalsans/?v=$GITHUB_SHA-$i" | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1 || true)
+            if [ "$got" = "$want" ]; then
+              echo "live after ~$((i*20))s: $want" | tee -a "$GITHUB_STEP_SUMMARY"
+              echo "built from wm-primitives $pin" >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            # A later run of this app may already have replaced ours in the repo. That
+            # is not a failure of this run -- but it must be said, not passed silently.
+            repo=$(curl -fsS "https://raw.githubusercontent.com/MarkFonts/wordmark/main/recalsans/index.html?v=$GITHUB_SHA-$i" | grep -o 'assets/index-[A-Za-z0-9_-]*\.js' | head -1 || true)
+            if [ -n "$repo" ] && [ "$repo" != "$want" ]; then
+              echo "::notice::superseded: wordmark carries $repo, newer than this run's $want"
+              exit 0
+            fi
+            sleep 20
+          done
+          echo "::error::10 minutes after the push, wordmark.nyc/recalsans/ serves ${got:-nothing}; this run built $want. Pushed is not shipped."
+          exit 1
