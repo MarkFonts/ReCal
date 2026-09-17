@@ -418,7 +418,7 @@ function StyleMenu({ active, setActive, paraStyles }: {
   return (
     <div className="style-menu" ref={ref}>
       <button className="style-menu-btn" onClick={() => setOpen(o => !o)}>
-        {PARA_STYLE_LABEL[active]}<span className="style-menu-caret">▾</span>
+        {PARA_STYLE_LABEL[active]}<Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
       </button>
       {open && (
         <div className="style-menu-list">
@@ -465,7 +465,7 @@ function TierMenu({ selected, toggle, scaleStyles }: {
   return (
     <div className="style-menu" ref={ref}>
       <button className="style-menu-btn" onClick={() => setOpen(o => !o)}>
-        {label}<span className="style-menu-caret">▾</span>
+        {label}<Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
       </button>
       {open && (
         <div className="style-menu-list style-menu-list--scroll">
