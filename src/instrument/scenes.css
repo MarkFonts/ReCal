@@ -82,7 +82,12 @@
 
 /* ── Paragraph ── */
 .text-tabs { display: flex; gap: var(--spacing-04, 12px); flex-wrap: wrap; }
-.para-doc { color: var(--text); }
+/* width: 100%, bounded by the inline max-width the measure dial sets. Without it the
+   doc is a shrink-to-fit flex child whose content is FittedParagraph's pre-broken lines
+   (white-space: nowrap), so its width was whatever the lines were last broken at: raising
+   the measure gave it room it never took, the ResizeObserver saw no change, nothing
+   relaid. It could only ever get narrower. */
+.para-doc { color: var(--text); width: 100%; }
 /* All heading levels + body share one color — override any leaked App.css h1/h2 rules. */
 .para-block { margin: 0 0 14px; color: var(--text); font-weight: inherit; outline: none; caret-color: var(--text); }
 .para-block--h1, .para-block--h2, .para-block--h3 { margin-top: 10px; }
