@@ -7,6 +7,8 @@ import '../shared/src/space.css'     // --spacing-NN scale (wm-primitives). Top-
                                      // consume --spacing-NN also render in the classic UI and the
                                      // ?demo= harnesses, which never mount InstrumentApp.
 import '../shared/src/scrollbar.css' // house 6px scrollbar (wm-primitives)
+import '../shared/src/button.css'    // .wm-btn, the boxed button (CHROME.md)
+import '../shared/src/select.css'    // .wm-select, a native select wearing the house chevron
 import { GlyphPicker, makeGlyphSets, StyleScopeDropdown, StyleScopeList, AxisSlider } from '../shared/index'
 import calSansUrl from '../shared/fonts/CalSansVF.ttf?url'
 

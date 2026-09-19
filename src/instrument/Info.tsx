@@ -86,7 +86,7 @@ export default function Info() {
           return (
             <Row key={tag} label={`${name} (${tag})`} value={
               <>{min}–{max}, default {Math.round(shipped[tag])}
-                {on && <span className="info-yours"> · yours ◆ {yours}</span>}</>
+                {on && <span className="info-yours"> · yours {yours}</span>}</>
             } />
           )
         })}

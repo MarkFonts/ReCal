@@ -48,8 +48,8 @@ export function VMetricsPanel({ ytasPin }: { ytasPin?: ReactNode }) {
           </span>
         </div>
 
-        <span className="rail-preset-wrap">
-        <select className="rail-preset" value={vm.preset === 'custom' ? 'custom' : vm.preset}
+        <span className="wm-select-wrap">
+        <select className="wm-select" value={vm.preset === 'custom' ? 'custom' : vm.preset}
           onChange={e => { const p = presetById(e.target.value as VMetrics['preset']); if (p) set({ preset: p.id, ...p.metrics }) }}>
           {vm.preset === 'custom' && <option value="custom">Custom{active ? '' : ' (edited)'}</option>}
           {VM_PRESETS.map(p => <option key={p.id} value={p.id}>{p.label}</option>)}
@@ -57,8 +57,8 @@ export function VMetricsPanel({ ytasPin }: { ytasPin?: ReactNode }) {
           <Chevron dir={-1} width={12} height={7} />
         </span>
 
-        <span className="rail-preset-wrap">
-        <select className="rail-preset vm-strategy" value=""
+        <span className="wm-select-wrap">
+        <select className="wm-select vm-strategy" value=""
           onChange={e => {
             if (e.target.value === 'match') set(matchAll(vm))
             else if (e.target.value === 'center') set(centerCapAll(vm))

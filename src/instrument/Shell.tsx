@@ -29,7 +29,7 @@ import { Freezer } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
-  YOUR: { label: 'YOUR ◆', color: 'var(--marker-default)' },
+  YOUR: { label: 'YOURS', color: 'var(--marker-default)' },
   PREVIEWING: { label: 'PREVIEWING ●', color: 'var(--marker-preview)' },
   STOCK: { label: 'STOCK — original Cal Sans', color: 'var(--state-stock)' },
 }
@@ -181,15 +181,15 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
             disabled={!defaultsDirty(state)}
             onClick={() => dispatch({ type: 'resetDefaults' })}>Reset</button>
         </div>
-        <div className="rail-sub">◆ your defaults — baked into the export</div>
+        <div className="rail-sub">your defaults — baked into the export</div>
       </div>
 
       <div key={group} className={`rail-descent rail-descent--${dir}${leaving ? ' rail-descent--leaving' : ''}`}>
       {group === 0 && (<>
       <div className="rail-group">
         <div className="rail-group-label">Start from</div>
-        <span className="rail-preset-wrap">
-        <select className="rail-preset" value={state.activePreset ?? ''}
+        <span className="wm-select-wrap">
+        <select className="wm-select" value={state.activePreset ?? ''}
           onChange={e => {
             const p = PRESETS.find(x => x.name === e.target.value)
             if (p) applyPreset(dispatch, p)

@@ -127,7 +127,7 @@
 .pin-label { font-size: var(--type-ui-size, 0.75rem); }
 .pin-tag { font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); }
 .pin-val { font-size: var(--type-ui-size, 0.75rem); color: var(--marker-default); }
-.pin-val::before { content: "◆ "; font-size: var(--type-micro-size, 0.5625rem); vertical-align: 1px; }
+/* the ◆ prefix went with the diamond thumb (CHANGELOG 2026-09-13); the value is the value */
 
 /* Stepped opsz-multiplier control */
 .stepper { display: flex; gap: 4px; }
@@ -149,38 +149,8 @@
 .rail-toggle input { accent-color: var(--accent); }
 
 /* "Start from…" preset dropdown */
-.rail-preset {
-  width: 100%;
-  padding: var(--spacing-02, 6px) var(--spacing-03, 8px);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  color: var(--text);
-  font-family: var(--ui-font);
-  font-size: var(--type-ui-size, 0.75rem);
-  cursor: pointer;
-  /* The native arrow is Chrome's, not ours -- a fixed grey that ignores the theme and sits
-     at a different weight and terminal from every other chevron in the app. Removing it and
-     hanging a real Chevron off a wrapper is the same fix font-proofer's .instance-select
-     uses; a background-image cannot follow the ink, and a mask on the <select> itself would
-     mask the option text with it. */
-  appearance: none;
-  -webkit-appearance: none;
-  padding-right: var(--spacing-06, 24px);
-}
-.rail-preset:hover { border-color: var(--text-dim); }
-
-/* The wrapper exists only to hang the mark off; the select still owns its own box. */
-.rail-preset-wrap { position: relative; display: block; }
-.rail-preset-wrap .wm-chevron {
-  position: absolute;
-  right: var(--spacing-03, 8px);
-  top: 50%;
-  transform: translateY(-50%);
-  /* The select is what you are clicking; the mark is decoration on top of it. */
-  pointer-events: none;
-  color: var(--text-muted);
-}
+/* The preset selects are the house select now (shared/src/select.css): .wm-select-wrap +
+   .wm-select. The rules that lived here were that pattern with this app's numbers. */
 
 /* Bottom of the rail: state tag + CSS readout (moved out of the canvas bar) */
 .rail-footer {
@@ -995,7 +965,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .vmetrics-panel .freezer-section { gap: var(--spacing-04, 12px); }
 .vm-head-right { display: flex; align-items: center; gap: var(--spacing-03, 8px); }
 .vm-lh { font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
-.vmetrics-panel .rail-preset { margin-top: 2px; }
+.vmetrics-panel .wm-select { margin-top: 2px; }
 .vm-strategy { color: var(--text-muted); }
 
 .vm-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03, 8px); }
@@ -1031,7 +1001,6 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    follow one curvature law. CSS parameterises k as exponent 2^k: 1 is a circular arc. */
 .floor-btn,
 .floor-toggle,
-.rail-preset,
 .rail-toggle,
 .rail-reset,
 .style-menu-btn,
@@ -1042,7 +1011,6 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 .floor-btn:active:not(:disabled),
 .floor-toggle:active:not(:disabled),
-.rail-preset:active:not(:disabled),
 .rail-toggle:active:not(:disabled),
 .rail-reset:active:not(:disabled),
 .style-menu-btn:active:not(:disabled),
