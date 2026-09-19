@@ -709,7 +709,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSou
   if (svgUrl) {
     return (
       <div className="stage-pad">
-        <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
+        <div className="para-doc" style={{ maxWidth: `${measure}em`, fontSize: paraStyles.p.size }}>
           <CompareSvg url={svgUrl} />
           <CompareCaption />
           <CompareInline />
@@ -721,8 +721,10 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSou
   return (
     <div className="stage-pad">
       {/* Alignment is set per BLOCK, from its style — the document has no alignment of
-          its own to inherit from. */}
-      <div className="para-doc" style={{ maxWidth: `${measure}em` }}>
+          its own to inherit from. Its font-size is the body style's, so the measure dial's
+          `em` is a body em, not the page's 16px (wm-primitives NEXT.md D, 2026-09-19);
+          every block sets its own size below, so nothing else changes. */}
+      <div className="para-doc" style={{ maxWidth: `${measure}em`, fontSize: paraStyles.p.size }}>
         {blocks.map((b, i) => {
           const st = paraStyles[b.type]
           const blockVs = renderVarSettings({ ...axes, wght: st.wght }, op.renderOpts)
