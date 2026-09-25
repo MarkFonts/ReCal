@@ -304,7 +304,7 @@
   line-height: 1.02;
   word-break: break-word;
 }
-.specimen-cap { font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); margin: 0 0 28px; }
+.specimen-cap { font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); margin: 0 0 24px; }
 .para {
   font-family: var(--ui-font);
   font-optical-sizing: none;
@@ -433,9 +433,10 @@
 /* Features + Sets are one OpenType block — no vertical gutter between the two rows. */
 .play-opentype { display: flex; flex-direction: column; gap: 0; }
 /* Pull the chip rows left by the chip's side padding so the first chip's TEXT
-   ("Ligatures" / "ss01") aligns with the slider labels ("size" / "wght"). */
-.play-group .feature-chips { margin-left: -6px; }
-.play-group .ss-chips { margin-left: -5px; }
+   ("Ligatures" / "ss01") aligns with the slider labels ("size" / "wght"). The
+   paddings are scenes.css's: --spacing-02 on a chip, --spacing-01 on a set chip. */
+.play-group .feature-chips { margin-left: calc(-1 * var(--spacing-02, 6px)); }
+.play-group .ss-chips { margin-left: calc(-1 * var(--spacing-01, 4px)); }
 
 /* Differentiated groups: Type · Axes · OpenType, each with a small left label.
    Baseline-aligned so the label sits on the same baseline as the first control's text. */
@@ -848,7 +849,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   background: var(--accent); border-color: var(--accent); color: var(--bg);
 }
 
-.freezer-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 14px; padding: 0 4px; }
+.freezer-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 16px; padding: 0 4px; }
 .freezer-note-gold { color: var(--freeze-gold); font-weight: 600; }
 
 /* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
@@ -941,7 +942,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   background: var(--text-muted); opacity: .28; pointer-events: none; transform: rotate(45deg); /* rhombus, mirrors the handle */
 }
 /* Transparent drag grabber on the hard line where the two shades meet (ew-resize). */
-.matrix-geom { position: absolute; top: 0; bottom: 0; width: 11px; margin-left: -5.5px; z-index: 2; cursor: ew-resize; touch-action: none; }
+.matrix-geom { --geom-w: 11px; position: absolute; top: 0; bottom: 0; width: var(--geom-w); margin-left: calc(var(--geom-w) / -2); z-index: 2; cursor: ew-resize; touch-action: none; }
 .matrix-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 16px; }
 
 /* Drag-only value chip: rises up from the dial you grabbed, fades down on release. */
