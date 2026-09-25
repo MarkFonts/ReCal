@@ -692,10 +692,14 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 /* Paragraph style menu (which style the TYPE controls target) */
 .style-menu { position: relative; }
+/* The same box as the slider rows it sits above (AxisSlider.css, .slider-row--track
+   .slider-label): 32px tall, 12px text inset, a 1px --border on the panel's own ground.
+   It was 28px, inset 8, and filled with --surface-hi -- a raised button in a column of
+   outlined rows, and its text 4px left of theirs. */
 .style-menu-btn {
-  width: 100%; display: flex; align-items: center; justify-content: space-between;
-  padding: var(--spacing-02, 6px) var(--spacing-03, 8px); border-radius: var(--radius);
-  background: var(--surface-hi); border: 1px solid var(--border);
+  width: 100%; min-height: 32px; display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--spacing-04, 12px); border-radius: var(--radius);
+  background: none; border: 1px solid var(--border);
   color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer;
 }
 /* App.css's global button:hover paints buttons white; keep it, but flip the text to
