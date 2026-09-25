@@ -41,7 +41,7 @@
   white-space: nowrap;
 }
 .rail--collapsed:hover .rail-collapsed-label { color: var(--text); }
-.rail-header { display: flex; flex-direction: column; gap: 3px; padding-top: var(--spacing-05, 16px); }
+.rail-header { display: flex; flex-direction: column; gap: var(--spacing-01, 4px); padding-top: var(--spacing-05, 16px); }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */
 .rail-header-top { display: flex; justify-content: space-between; align-items: center; gap: var(--spacing-03, 8px); }
@@ -52,7 +52,7 @@
 }
 /* One line always — otherwise it re-wraps (and jiggles) as the Reset button
    appears/disappears and squeezes this column's width. */
-.rail-sub { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); margin-top: 3px; white-space: nowrap; }
+.rail-sub { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); margin-top: var(--spacing-03, 8px); white-space: nowrap; }
 .rail-reset {
   flex-shrink: 0;
   padding: var(--spacing-01, 4px) var(--spacing-04, 12px);
@@ -211,24 +211,31 @@
 .canvas-bar {
   display: flex;
   align-items: center;
-  padding: 12px 24px;
+  padding: 12px 24px 0;
 }
 
-/* Mode label + its per-mode submenu on one baseline-aligned row, single left inset so
-   they line up under "Words" and nothing jumps when the submenu shows/hides. */
+/* Mode label + its per-mode submenu on ONE BASELINE, in every mode. The row aligns its
+   children on their baselines, and the label carries the same 8px top padding a tab
+   button does, so the label's baseline sits 8px + its ascent below the row's top whether
+   the submenu is tab buttons (Paragraph), bare labels (Scale), a sentence (UI) or
+   nothing (Words). Before this the row centred its children: a submenu of padded
+   buttons made the row taller and the label dropped 4px on Paragraph only.
+   Single left inset so everything lines up under "Words" and nothing jumps when the
+   submenu shows/hides. */
 .mode-row {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   gap: 0;
-  min-height: 42px;            /* = tab-button row (32) + the 10px bottom padding, reserved
-                                  with or without a submenu so the label never jumps up on
-                                  Words/UI (no controls). box-sizing is border-box. */
+  min-height: 42px;            /* = a tab button (30) + its row's 12px; reserved with or
+                                  without a submenu so the stage never moves between modes; the UI scene measures
+                                  this nav's height and floats it over the board, so the
+                                  height may not depend on the submenu either */
   padding: 0 var(--spacing-06, 24px) var(--spacing-03, 8px) var(--spacing-07, 32px);   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
 }
 /* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
    always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
-.mode-row .mode-label { padding: 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }
-.mode-row .scene-bar { flex-direction: row; align-items: center; gap: 12px; padding: 0; }
+.mode-row .mode-label { padding: 8px 0 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }   /* 8px = a tab button's top padding (scenes.css) */
+.mode-row .scene-bar { flex-direction: row; align-items: baseline; gap: 12px; padding: 0; }
 /* The Body-pairing label has no button padding; inset it 8px so its text lines up with
    the tab-text column (tab buttons inset their own text by 8px). */
 .mode-row .body-pairing { padding-left: 8px; }
