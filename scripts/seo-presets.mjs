@@ -132,7 +132,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Poppins',
       paragraphs: [
-        'The geometric axis raised toward the circular, monolinear feel Poppins is loved for — and a real optical-size axis Poppins doesn’t have. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Poppins itself, then download the font with your settings baked in.',
+        'The geometric axis raised toward the circular, monolinear feel Poppins is loved for — and a real optical-size axis Poppins doesn’t have. Everything here is live: drag the axes, edit this text, press compare to see it in Poppins itself, then download the font with your settings baked in.',
       ],
     },
   },
@@ -186,7 +186,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Inter',
       paragraphs: [
-        'A clean UI register — the screen-native neutrality Inter is famous for, plus a geometric axis Inter doesn’t carry. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Inter itself, then download the font with your settings baked in.',
+        'A clean UI register — the screen-native neutrality Inter is famous for, plus a geometric axis Inter doesn’t carry. Everything here is live: drag the axes, edit this text, press compare to see it in Inter itself, then download the font with your settings baked in.',
       ],
     },
   },
@@ -235,7 +235,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward Geist',
       paragraphs: [
-        'Crisp and geometric — the developer-tool sharpness Geist is known for, with optical sizing and italics Geist doesn’t ship. Everything here is live: drag the axes, edit this text, press ⇄ to see it in Geist itself, then download the font with your settings baked in.',
+        'Crisp and geometric — the developer-tool sharpness Geist is known for, with optical sizing and italics Geist doesn’t ship. Everything here is live: drag the axes, edit this text, press compare to see it in Geist itself, then download the font with your settings baked in.',
       ],
     },
   },
