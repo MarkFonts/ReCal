@@ -2,9 +2,7 @@
   "roots": [
     "src"
   ],
-  "exempt": [
-    "src/App.css"
-  ],
+  "exempt": [],
   "_tokenSources": "Where the tokens these files read are DECLARED. roots is src, but the tokens live in the submodule, so without this every var() into shared reads as undefined.",
   "tokenSources": [
     "shared/src"
