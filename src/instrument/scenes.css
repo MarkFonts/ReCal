@@ -122,6 +122,9 @@
   transition: color var(--dur-fast, 140ms);
 }
 .compare-inline-btn:hover { color: var(--accent); }
+/* The ⇄ is Material's sync_alt, in the place of the text arrow it replaced. Inline, not
+   the icon's inline-block, so the button's dotted underline runs on under it unbroken. */
+.compare-inline-mark { display: inline; vertical-align: -0.2em; color: inherit; }
 /* Disabled compare (no embeddable webfont) — grayed, non-interactive. */
 .compare-inline--disabled { color: var(--text-muted); }
 .compare-inline--disabled .compare-inline-btn { color: var(--text-dim); cursor: default; text-decoration-style: dotted; }

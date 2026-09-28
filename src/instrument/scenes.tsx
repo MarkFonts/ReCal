@@ -6,7 +6,7 @@ import './scenes.css'
 import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fitOptionsFor, PARA_STYLE_DEFAULTS, PARA_STYLE_ORDER, PARA_STYLE_LABEL, loadSpecimen, specimenChunks, SpecimenNav, type ParaStyleBase, type ParaStyleKey, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
+import { Icon, placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fitOptionsFor, PARA_STYLE_DEFAULTS, PARA_STYLE_ORDER, PARA_STYLE_LABEL, loadSpecimen, specimenChunks, SpecimenNav, type ParaStyleBase, type ParaStyleKey, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
 import { effectiveAxes, effectiveThresholds } from './store'
 import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -550,7 +550,7 @@ const presetBlocks = (source: string): EBlock[] => {
 
 // Compare-page font swap, sitting under the paragraph like a line of text (fused SEO
 // pages only — state.compare comes from BOOT). The target name renders in the font
-// you'd switch TO, so "compare to (Geist ⇄)" already shows what Geist looks like.
+// you'd switch TO, so "compare to (Geist ⇄)" -- the ⇄ is Material's sync_alt -- already shows what Geist looks like.
 function CompareInline() {
   const { state, dispatch } = useInstrument()
   const cmp = state.compare
@@ -562,7 +562,7 @@ function CompareInline() {
     return (
       <div className="compare-inline compare-inline--disabled"
         title={`${cmp.label} webfont currently not available to ReCal — the specimen above is Cal Sans tuned to resemble it`}>
-        compare to <span className="compare-inline-btn" aria-disabled="true">({cmp.label} ⇄)</span>
+        compare to <span className="compare-inline-btn" aria-disabled="true">({cmp.label} <Icon name="sync_alt" size={16} className="compare-inline-mark" />)</span>
         <span className="compare-inline-note"> — webfont currently not available to ReCal</span>
       </div>
     )
@@ -577,7 +577,7 @@ function CompareInline() {
         style={{ fontFamily: on || !cmp.css ? "'CalSansPreview', 'CalSansVF', sans-serif" : cmp.family }}
         title={on ? 'Back to ReCal Sans' : `Show this text in ${cmp.label}`}
         onClick={() => dispatch({ type: 'setCompareOn', on: !on })}>
-        ({on ? 'ReCal Sans' : cmp.label} ⇄)
+        ({on ? 'ReCal Sans' : cmp.label} <Icon name="sync_alt" size={16} className="compare-inline-mark" />)
       </button>
     </div>
   )
