@@ -39,7 +39,7 @@ body {
 .app {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 48px 24px;
 }
 
 /* Controls hamburger — only under 450px */
@@ -53,7 +53,7 @@ body {
     align-items: center;
     gap: 8px;
     width: 100%;
-    padding: 12px 14px;
+    padding: 12px 16px;
     background: #1a1a1a;
     border: 1px solid #2a2a2a;
     border-radius: 10px;
@@ -85,7 +85,7 @@ body {
   .app {
     max-width: 100%;
     padding: 32px 24px;
-    transition: padding 0.2s ease;
+    transition: padding var(--dur-med) ease;
   }
 
   .main-layout {
@@ -100,7 +100,7 @@ body {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
-    gap: 24px 40px;
+    gap: 24px 48px;
   }
 
   .controls .control-group {
@@ -110,7 +110,7 @@ body {
 }
 
 header {
-  margin-bottom: 40px;
+  margin-bottom: 48px;
   display: grid;
   /* First column matches the sidebar width (main-layout: 280px 1fr, gap 48) so the
      attribution lines up with the preview column — PRESETS + zone tabs. */
@@ -122,15 +122,8 @@ header {
 @media (max-width: 700px) {
   header {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 24px;
   }
-}
-
-.preset-buttons {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
-  margin-bottom: 10px;
 }
 
 /* Presets above zone columns — 2:1 ratio, compact */
@@ -149,15 +142,14 @@ header {
   color: #ccc;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 10px;
+  padding: 12px;
   line-height: 1.3;
-  transition: border-color 0.15s, background 0.15s, color 0.15s;
+  transition: border-color var(--dur-fast), background var(--dur-fast), color var(--dur-fast);
 }
 
 .preset-btn:not(:disabled):hover {
@@ -179,7 +171,6 @@ header {
 h1 {
   font-size: 1.5rem;
   font-weight: 700;
-  letter-spacing: -0.02em;
 }
 
 .subtitle {
@@ -217,9 +208,9 @@ h2 {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-caps);
   color: #666;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 /* Loading */
@@ -227,7 +218,7 @@ h2 {
 .loading {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .spinner {
@@ -297,7 +288,7 @@ h2 {
     overflow-x: visible;
   }
   .zone-col {
-    padding: 10px 6px 12px;
+    padding: 12px 6px 12px;
   }
   .zone-col-header-inner {
     flex-direction: column;
@@ -342,7 +333,7 @@ h2 {
 }
 
 .zone-col {
-  padding: 14px 0 16px;
+  padding: 16px 0 16px;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -362,7 +353,7 @@ h2 {
 }
 
 .zone-col-header {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   user-select: none;
   /* All tabs the same height regardless of how the eyebrow wraps */
   display: flex;
@@ -371,7 +362,7 @@ h2 {
 }
 
 .zone-col--active .zone-col-header {
-  margin: 0 0 10px;
+  margin: 0 0 12px;
   background: var(--zone-active-bg, var(--zone-color));
 }
 
@@ -396,7 +387,7 @@ h2 {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 14px 6px;
+  padding: 8px 16px 6px;
 }
 
 .zone-col-icon {
@@ -411,7 +402,7 @@ h2 {
 }
 
 .zone-col--active .zone-col-header-inner {
-  padding: 8px 14px 6px;
+  padding: 8px 16px 6px;
 }
 
 .zone-col-header-text {
@@ -423,7 +414,7 @@ h2 {
 .zone-col-sublabel {
   font-size: 0.625rem; /* 10px — eyebrow tier below the 12px floor */
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: #555;
   line-height: 1;
@@ -438,7 +429,6 @@ h2 {
   font-weight: 700;
   color: var(--zone-color);
   line-height: 1.1;
-  letter-spacing: -0.01em;
 }
 
 .zone-col--active .zone-col-name {
@@ -447,22 +437,6 @@ h2 {
 
 .zone-swatch-row {
   display: none;
-}
-
-.zone-col-preview-word {
-  display: inline-block;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
-  color: #0f0f0f;
-  background: var(--zone-color);
-  border-radius: 3px;
-  padding: 1px 6px;
-  cursor: pointer;
-  opacity: 0.35;
-  transition: opacity 0.12s;
-  vertical-align: middle;
 }
 
 .zone-col-preview-word:hover {
@@ -485,14 +459,6 @@ h2 {
   opacity: 1;
 }
 
-.zone-col-words {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  margin-bottom: 14px;
-  overflow: hidden;
-}
-
 .zone-col-word {
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
   font-optical-sizing: none;
@@ -503,7 +469,7 @@ h2 {
   white-space: nowrap;
   overflow: hidden;
   opacity: 0.6;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--dur-fast) ease;
 }
 
 .zone-col--active .zone-col-word {
@@ -517,8 +483,8 @@ h2 {
   /* Stretch so both blocks share a height → descriptor labels line up at the bottom */
   align-items: stretch;
   /* Sits below the preview box now → give breathing room before the glyph strip */
-  margin-top: 20px;
-  margin-bottom: clamp(16px, 4vh, 44px);
+  margin-top: 24px;
+  margin-bottom: clamp(16px, 4vh, 48px);
 }
 
 .zone-preview-block {
@@ -552,7 +518,7 @@ h2 {
   flex-direction: column;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: #444;
   /* Pin to the bottom of the (equal-height) block so both labels align */
@@ -623,12 +589,12 @@ h2 {
 }
 
 .glyph-strip-token {
-  font-size: 28px;
+  font-size: 28px;  /* token-lint: allow -- a specimen glyph drawn at its own size, not UI text */
   line-height: 1;
   cursor: default;
   padding: 2px 4px;
   border-radius: 4px;
-  transition: opacity 0.12s;
+  transition: opacity var(--dur-fast);
 }
 
 .glyph-strip-token--active {
@@ -644,11 +610,11 @@ h2 {
   /* Inset, rounded "live preview" box holding the samples + pills + tester.
      Groups them as a preview of the preset/defaults and separates the region
      from the glyph strip + Type Matrix + Reset below. */
-  padding: 22px 24px 24px;
+  padding: 24px 24px 24px;
   border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 14px;
   /* Flexible top/bottom breathing room scaled to viewport height; top pulled up 20px */
-  margin: calc(clamp(16px, 4vh, 44px) - 20px) 0 clamp(16px, 4vh, 44px);
+  margin: calc(clamp(16px, 4vh, 48px) - 24px) 0 clamp(16px, 4vh, 48px);
   animation: preview-throb 3.2s ease-in-out infinite;
 }
 
@@ -666,24 +632,6 @@ h2 {
 
 @media (prefers-reduced-motion: reduce) {
   .zone-full-preview { animation: none; }
-}
-
-.zone-swatch-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-
-.zone-swatch {
-  width: 28px;
-  height: 11px;
-  border-radius: 2px;
-  flex-shrink: 0;
-  background: var(--zone-color);
-  opacity: 0.3;
-  transition: opacity 0.15s;
 }
 
 .zone-col--active .zone-swatch {
@@ -711,16 +659,6 @@ h2 {
   text-decoration-color: var(--zone-color);
 }
 
-.zone-rosetta-bin {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px 6px;
-  background: rgba(255, 255, 255, 0.10);
-  border-radius: 8px;
-  padding: 8px 10px;
-  overflow: hidden;
-}
-
 .zone-col--drag-target .zone-rosetta-bin {
   background: rgba(255, 255, 255, 0.22);
 }
@@ -728,23 +666,23 @@ h2 {
 /* Dim the live preview box (not the zone-picker header) while the font rebuilds */
 .zone-full-preview--rebuilding {
   opacity: 0.2;
-  transition: opacity 0.1s ease;
+  transition: opacity var(--dur-fast) ease;
 }
 
 .zone-full-preview:not(.zone-full-preview--rebuilding) {
   opacity: 1;
-  transition: opacity 0.25s ease;
+  transition: opacity var(--dur-med) ease;
 }
 
 .zone-token {
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
   font-optical-sizing: none;
   font-feature-settings: 'rclt' 1;
-  font-size: 68px;
+  font-size: 68px;  /* token-lint: allow -- a specimen glyph drawn at its own size, not UI text */
   line-height: 1.1;
   color: var(--zone-color);
   display: inline-block;
-  transition: transform 0.12s ease;
+  transition: transform var(--dur-fast) ease;
   transform-origin: 50% 45%;
   user-select: none;
   cursor: grab;
@@ -785,7 +723,7 @@ h2 {
 }
 
 .drag-ghost-token {
-  font-size: 52px;
+  font-size: 52px;  /* token-lint: allow -- a specimen glyph drawn at its own size, not UI text */
   line-height: 1;
   transform: scale(1.15);
   filter: drop-shadow(0 4px 20px rgba(0, 0, 0, 0.6));
@@ -794,7 +732,6 @@ h2 {
 .drag-ghost-label {
   font-size: 0.75rem;
   color: rgba(255, 255, 255, 0.45);
-  letter-spacing: 0.06em;
   white-space: nowrap;
   font-family: ui-monospace, monospace;
 }
@@ -810,8 +747,8 @@ h2 {
   z-index: -1;
   width: 100vw;
   margin-left: calc(-50vw + 50%);
-  margin-top: -280px;
-  margin-bottom: -40px;
+  margin-top: -280px;  /* token-lint: allow -- overlap offset for the WORDMARK breakout, not spacing */
+  margin-bottom: -40px;  /* token-lint: allow -- overlap offset for the WORDMARK breakout, not spacing */
   pointer-events: none;
 }
 
@@ -828,15 +765,15 @@ h2 {
 
 /* Site footer (contact links + credit), sits above the WORDMARK band */
 .site-footer {
-  margin-top: 56px;
+  margin-top: 64px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .site-footer-links {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   font-size: 0.875rem;
 }
 
@@ -865,8 +802,8 @@ h2 {
 .trash-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 8px 14px;
+  gap: 12px;
+  padding: 8px 16px;
   background: rgba(220, 80, 60, 0.06);
   border: 1px solid rgba(220, 80, 60, 0.18);
   border-radius: 8px;
@@ -877,17 +814,17 @@ h2 {
 .trash-bar-label {
   font-size: 0.75rem;
   color: rgba(220, 80, 60, 0.55);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   flex-shrink: 0;
   margin-right: 2px;
 }
 
 .trash-token {
-  font-size: 36px !important;
+  font-size: 36px !important;  /* token-lint: allow -- a specimen glyph drawn at its own size, not UI text */
   cursor: pointer;
   opacity: 0.55;
-  transition: opacity 0.15s, transform 0.15s;
+  transition: opacity var(--dur-fast), transform var(--dur-fast);
 }
 
 .trash-token:hover {
@@ -912,20 +849,15 @@ h2 {
   border: 1px solid #333;
   color: #888;
   font-size: 0.75rem;
-  padding: 5px 14px;
+  padding: 6px 16px;
   border-radius: 4px;
   cursor: pointer;
-  letter-spacing: 0.04em;
 }
 
 .xray-toggle-btn:hover:not(:disabled) {
   background: #252525;
   border-color: #555;
   color: #bbb;
-}
-
-.axis-row {
-  margin-bottom: 20px;
 }
 
 .axis-header {
@@ -938,15 +870,6 @@ h2 {
 .axis-name {
   font-size: 0.875rem;
   color: #ccc;
-}
-
-.axis-tag {
-  font-size: 0.75rem;
-  font-family: monospace;
-  color: #555;
-  background: #1a1a1a;
-  padding: 1px 5px;
-  border-radius: 3px;
 }
 
 .axis-value {
@@ -983,14 +906,6 @@ input[type='range'] {
   overflow-x: auto;
 }
 
-.zone-preview-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  transition: opacity 0.15s ease;
-  flex-shrink: 0;
-}
-
 .zone-preview-line {
   color: #e8e8e8;
   line-height: 1.2;
@@ -1006,24 +921,10 @@ input[type='range'] {
   letter-spacing: 0;
 }
 
-.preview-samples {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  margin-bottom: 32px;
-}
-
 .preview-row {
   display: flex;
   flex-direction: column;
   gap: 4px;
-}
-
-.preview-size-label {
-  font-size: 10px;
-  color: #444;
-  font-family: monospace;
-  letter-spacing: 0.04em;
 }
 
 .preview-samples p {
@@ -1047,7 +948,7 @@ input[type='range'] {
   display: flex;
   align-items: center;
   min-height: 28px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 .control-note {
@@ -1095,13 +996,6 @@ input[type='range'] {
   border-color: #e8e8e8;
 }
 
-.preview-size-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
 .preview-px-label {
   font-size: 0.75rem;
   font-family: monospace;
@@ -1109,7 +1003,6 @@ input[type='range'] {
   color: #aaa;
   min-width: 34px;
 }
-
 
 /* Glyph swap groups (Phase 3) */
 
@@ -1146,7 +1039,7 @@ input[type='range'] {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  transition: opacity 0.15s ease;
+  transition: opacity var(--dur-fast) ease;
 }
 
 .gg-preview-word {
@@ -1177,7 +1070,7 @@ input[type='range'] {
 .gg-geom-axis-label {
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--track-caps);
   color: #444;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
@@ -1192,7 +1085,7 @@ input[type='range'] {
   background: var(--zone-color);
   opacity: 0.35;
   cursor: pointer;
-  transition: opacity 0.12s;
+  transition: opacity var(--dur-fast);
 }
 
 .gg-zone-bar:hover { opacity: 0.55; }
@@ -1205,7 +1098,7 @@ input[type='range'] {
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-caps);
   pointer-events: none;
 }
 
@@ -1247,7 +1140,7 @@ input[type='range'] {
   font-variation-settings: 'opsz' 10, 'GEOM' 0;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'zero' 1, 'tnum' 1;
-  padding: 1px 5px;
+  padding: 1px 6px;
   border-radius: 3px;
   line-height: 1.6;
 }
@@ -1313,13 +1206,13 @@ input[type='range'] {
   flex-direction: column;
   align-items: flex-end;
   justify-content: space-around;
-  padding-right: 5px;
+  padding-right: 6px;
 }
 
 .gg-label {
-  font-size: 14px;
+  font-size: 14px;  /* token-lint: allow -- a specimen glyph drawn at its own size, not UI text */
   opacity: 0.25;
-  transition: opacity 0.1s;
+  transition: opacity var(--dur-fast);
   line-height: 1;
 }
 
@@ -1356,7 +1249,7 @@ input[type='range'] {
   cursor: ew-resize;
   transform: translateX(-50%);
   z-index: 2;
-  transition: background 0.1s;
+  transition: background var(--dur-fast);
 }
 
 .gg-handle::before {
@@ -1369,7 +1262,7 @@ input[type='range'] {
 
 .classic-ui button {
   display: inline-block;
-  padding: 9px 18px;
+  padding: 8px 16px;
   background: #e8e8e8;
   color: #0f0f0f;
   border: none;
@@ -1400,7 +1293,7 @@ input[type='range'] {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: 12px;
   flex-shrink: 0;
 }
 
@@ -1446,7 +1339,6 @@ input[type='range'] {
   100% { transform: translateX(0); }
 }
 
-
 /* Auto-controlled axis (grayed out) */
 
 .axis-row--auto {
@@ -1471,7 +1363,7 @@ input[type='range'] {
   background: #111;
   border: 1px solid #2a2a2a;
   border-radius: 12px;
-  padding: 28px;
+  padding: 32px;
   max-width: 520px;
   width: 100%;
   max-height: 80vh;
@@ -1490,7 +1382,7 @@ input[type='range'] {
   border: 1px solid #2a2a2a;
   color: #888;
   font-size: 0.75rem;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 4px;
   cursor: pointer;
 }
@@ -1551,7 +1443,7 @@ input[type='range'] {
   border: 1px solid #2a2a2a;
   color: #666;
   font-size: 0.75rem;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 4px;
   margin-top: 8px;
   cursor: pointer;
@@ -1594,10 +1486,10 @@ input[type='range'] {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 22px 0;
+  padding: 16px 24px 0;
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: #555;
 }
@@ -1619,14 +1511,14 @@ input[type='range'] {
 .pm-top-row {
   display: flex;
   gap: 32px;
-  padding: 16px 22px 14px;
+  padding: 16px 24px 16px;
   border-bottom: 1px solid #1e1e1e;
 }
 
 .pm-ctrl {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 6px;
   flex: 1;
   min-width: 100px;
 }
@@ -1644,7 +1536,7 @@ input[type='range'] {
 .pm-val {
   color: #ccc;
   font-variant-numeric: tabular-nums;
-  margin-left: 5px;
+  margin-left: 6px;
 }
 
 .pm-ctrl input[type='range'] {
@@ -1657,8 +1549,8 @@ input[type='range'] {
 .pm-axes-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px 32px;
-  padding: 16px 22px 14px;
+  gap: 24px 32px;
+  padding: 16px 24px 16px;
   border-bottom: 1px solid #1e1e1e;
 }
 
@@ -1679,11 +1571,10 @@ input[type='range'] {
   color: #555;
   font-size: 0.75rem;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border-radius: 4px;
   cursor: pointer;
-  transition: background 0.1s, color 0.1s;
-  letter-spacing: 0.04em;
+  transition: background var(--dur-fast), color var(--dur-fast);
 }
 
 .pm-zone-tab:hover:not(:disabled) {
@@ -1700,7 +1591,7 @@ input[type='range'] {
 
 .preview-modal-text {
   flex: 1;
-  padding: 28px 28px;
+  padding: 32px 32px;
   font-family: 'CalSansPreview', 'CalSansVF', sans-serif;
   font-optical-sizing: none;
   color: #e8e8e8;
@@ -1715,15 +1606,6 @@ input[type='range'] {
   content: attr(data-placeholder);
   color: #333;
   pointer-events: none;
-}
-
-/* Canonical opsz preview (opszDynamic = false) */
-.preview-mode-header {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  margin-bottom: 12px;
-  flex-wrap: nowrap;
 }
 
 /* ── Dialkit Slider overrides ─────────────────────────────────── */
@@ -1759,7 +1641,7 @@ input[type='range'] {
 
 .pill-rows-caption {
   font-size: 0.75rem;
-  letter-spacing: 0.06em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: #666;
 }
@@ -1776,7 +1658,7 @@ input[type='range'] {
   padding: 0;
   border-radius: 999px;
   cursor: pointer;
-  transition: color 0.12s, border-color 0.12s;
+  transition: color var(--dur-fast), border-color var(--dur-fast);
 }
 
 .pill-reset-btn:hover {
@@ -1898,7 +1780,7 @@ input[type='range'] {
   content: '●';
   font-size: 0.5em;
   color: #4a7fd4;
-  margin-left: 5px;
+  margin-left: 6px;
   vertical-align: middle;
 }
 
@@ -1929,7 +1811,7 @@ input[type='range'] {
 .pill-slider .dialkit-slider-label {
   left: 0;
   right: 0;
-  padding: 0 14px;
+  padding: 0 16px;
   text-align: left;
   text-transform: lowercase;
   color: #111;
@@ -1966,27 +1848,8 @@ input[type='range'] {
   overflow-y: auto;
 }
 
-.palette-row {
-  display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  padding: 5px 0;
-  border-bottom: 1px solid #1a1a1a;
-}
-
 .palette-row:last-child {
   border-bottom: none;
-}
-
-.palette-token {
-  font-size: 22px;
-  line-height: 1.15;
-  display: inline-block;
-  user-select: none;
-  border-radius: 4px;
-  padding: 1px 2px;
-  transition: background 0.1s, opacity 0.1s;
-  font-optical-sizing: none;
 }
 
 .palette-token--active {
@@ -1997,32 +1860,10 @@ input[type='range'] {
   background: rgba(255, 255, 255, 0.07);
 }
 
-/* Trash zone at bottom of palette */
-.palette-trash {
-  border-top: 1px solid #1e1e1e;
-  padding: 6px 0 4px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-  align-items: center;
-  min-height: 36px;
-  border-radius: 4px;
-  transition: background 0.15s;
-}
-
 .palette-trash--active {
   background: rgba(220, 80, 60, 0.12);
   outline: 1px dashed rgba(220, 80, 60, 0.4);
   outline-offset: 2px;
-}
-
-.palette-trash-label {
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #333;
-  width: 100%;
-  margin-bottom: 2px;
 }
 
 /* Zone grid no longer has standalone margin-bottom (handled by wrap) */
@@ -2050,16 +1891,6 @@ input[type='range'] {
   background: rgba(255, 255, 255, 0.04);
 }
 
-/* Preview size slider at bottom */
-.preview-size-row--bottom {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 0 6px;
-  border-top: 1px solid #1a1a1a;
-  margin-top: 10px;
-}
-
 /* Palette row — more vertical breathing room */
 .palette-row {
   padding: 6px 0 !important;
@@ -2078,19 +1909,6 @@ input[type='range'] {
   margin-bottom: 12px;
 }
 
-.preset-add-btn {
-  width: 36px;
-  flex-shrink: 0;
-  align-self: stretch;
-  background: #111;
-  border: 1px dashed #333;
-  border-radius: 10px;
-  color: #555;
-  font-size: 1.2rem;
-  cursor: pointer;
-  transition: border-color 0.15s, color 0.15s;
-}
-
 .preset-add-btn:not(:disabled):hover {
   border-color: #666;
   color: #aaa;
@@ -2106,14 +1924,14 @@ input[type='range'] {
   display: flex;
   align-items: center;
   gap: 6px;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 /* Match the sidebar section headers (h2) so PRESETS reads as a peer header */
 .presets-label {
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--track-caps);
   text-transform: uppercase;
   color: #666;
   flex-shrink: 0;
@@ -2122,7 +1940,7 @@ input[type='range'] {
 
 .presets-row .preset-btn {
   aspect-ratio: unset;
-  padding: 5px 12px;
+  padding: 6px 12px;
   font-size: 0.75rem;
   border-radius: 6px;
   height: 28px;
@@ -2150,7 +1968,6 @@ input[type='range'] {
   font-size: 0.75rem;
   font-weight: 500;
   opacity: 0.5;
-  letter-spacing: 0.02em;
 }
 
 .preset-btn--more {
@@ -2167,18 +1984,6 @@ input[type='range'] {
 .preset-variant-pills {
   display: flex;
   gap: 4px;
-}
-
-.preset-variant-pill {
-  padding: 3px 10px;
-  border-radius: 4px;
-  border: 1px solid #333;
-  background: transparent;
-  color: #555;
-  font-size: 0.75rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: border-color 0.12s, color 0.12s;
 }
 
 .preset-variant-pill:hover { color: #999; border-color: #555; }
@@ -2206,20 +2011,6 @@ input[type='range'] {
   gap: 8px;
   cursor: pointer;
   margin-bottom: 6px;
-}
-
-.zone-col-radio-row input[type="radio"] {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  border-radius: 50%;
-  border: 2px solid #444;
-  background: transparent;
-  cursor: pointer;
-  position: relative;
-  transition: border-color 0.15s;
 }
 
 .zone-col-radio-row input[type="radio"]:checked {
@@ -2265,10 +2056,6 @@ input[type='range'] {
 .preview-size-row--off {
   opacity: 0.3;
   pointer-events: none;
-}
-
-.zone-col-canonical-small {
-  margin-bottom: 10px;
 }
 
 .zone-col-canonical-large {

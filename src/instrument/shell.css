@@ -211,7 +211,10 @@
 .canvas-bar {
   display: flex;
   align-items: center;
-  padding: 12px 24px 0;
+  /* +2px: "Words" (12px, in an 8px-padded button) shares a baseline with the rail's
+     "ReCal Builder" (16px bold under the header's 16px). Measured, and held by the
+     alignment spec's baseline pairs -- change either side and it fails. */
+  padding: calc(var(--spacing-04, 12px) + 2px) 24px 0;
 }
 
 /* Mode label + its per-mode submenu on ONE BASELINE, in every mode. The row aligns its
@@ -234,7 +237,7 @@
 }
 /* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
    always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
-.mode-row .mode-label { padding: 8px 0 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }   /* 8px = a tab button's top padding (scenes.css) */
+.mode-row .mode-label { padding: calc(var(--spacing-03, 8px) - 3px) 0 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }   /* a tab button's 8px top padding, less 3px so the label's baseline meets the rail caption's (spec baseline pair) */
 .mode-row .scene-bar { flex-direction: row; align-items: baseline; gap: 12px; padding: 0; }
 /* The Body-pairing label has no button padding; inset it 8px so its text lines up with
    the tab-text column (tab buttons inset their own text by 8px). */
@@ -881,7 +884,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Horizontal padding insets everything together (bands, shade, axis labels are all
    positioned within this box), so nothing jams the rail edge. */
 .matrix { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
-.matrix-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+/* The 6px is the rows'; the head steps back out so its title sits on the rail's 16 with every other label. */
+.matrix-head { display: flex; align-items: center; justify-content: space-between; margin: 0 calc(-1 * var(--spacing-02, 6px)) 16px; }
 .matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
   all: unset; cursor: pointer; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted);
