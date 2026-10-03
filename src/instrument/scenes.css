@@ -9,7 +9,7 @@
    rule, never a fill. Scoped under .canvas so it beats App.css's global button rules.
    Transparent padding keeps hit targets ≥32px. House-style focus, never the UA ring. */
 .canvas .mode-btn, .canvas .text-tab, .canvas .chip {
-  padding: 8px 8px;
+  padding: var(--spacing-03, 8px) var(--spacing-03, 8px);
   border: none;
   background: none;
   border-radius: var(--radius);
@@ -65,7 +65,7 @@
   text-underline-offset: 5px;
 }
 
-.modebar { display: flex; gap: 4px; }
+.modebar { display: flex; gap: var(--spacing-01, 4px); }
 
 /* Every scene's content is a horizontally-centered column. */
 .stage-pad {
@@ -139,10 +139,10 @@
 /* Section labels (not controls) — bold so they read as headers above the chips. */
 .drawer-label { font-size: var(--type-ui-size, 0.75rem); font-weight: 700; color: var(--text-muted); width: 90px; }
 .drawer-val { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); width: 44px; text-align: right; }
-.feature-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.feature-chips { display: flex; flex-wrap: wrap; gap: round(up, var(--spacing-03, 8px), var(--bl, 3px)) var(--spacing-03, 8px); }   /* rows of chips are lines of type: the 8 step, rounded up onto the 3px line */
 /* Stylistic-set tokens: 1px gutter (they only surface on the bloomed play bar).
    32px tap height stays via vertical padding; only the horizontal gutter goes tight. */
-.ss-chips { gap: 1px; }
+.ss-chips { gap: var(--hair, 1px); }
 .canvas .ss-chips .chip { padding: var(--spacing-03, 8px) var(--spacing-01, 4px); }
 
 /* Persistent per-scene control bar — lives in the canvas above the stage, so it

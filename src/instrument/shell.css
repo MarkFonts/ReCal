@@ -1,23 +1,66 @@
 /* Phase 2 shell — rail / canvas / floor grid. All color/type from tokens.css. */
 
+/* ── ONE RAIL (identical in ReCal shell.css and font-proofer App.css; change both) ──
+   The two apps drew the same dial at two sizes: ReCal's rail 264px with a 105px name
+   column, font-proofer's 260px with 125px; ReCal's play rail a 14px track and a 9px thumb,
+   font-proofer's 24 and 14; track rows 32px tall in both, which is off the 3px line, so a
+   column of them drifted a pixel a row. Mark (2026-10-03): one rail, and not too small --
+   so every number is the LARGER host's, rounded UP onto the 3px unit, never down:
+     name column  126  font-proofer's 125, up to the unit
+     track row     33  the primitive's 32, up to the unit (11 lines)
+     default rail  24  font-proofer's --dial-track-h, which is DIAL.md's own default
+     thumb         14  font-proofer's, which is the primitive's own default (15 would put
+                       its centre on a half pixel over the 2px track: (2 - 15) / 2)
+     row gap       12  ReCal's (font-proofer's was 6)
+     track inset   16  font-proofer's: the visible thumb clears the ends of a default rail
+   The rail's WIDTH is its columns: 6 of 24 from 1280, 8 of 24 from 1024, 5 of 12 below --
+   never under the 231px of row ReCal had. tests/render/rows.spec.ts asserts these numbers
+   are equal in both hosts. */
+:root {
+  --axis-label-w: 126px;
+  --dial-track-h: 24px;
+  --dial-thumb: 14px;
+  --rail-gap: 12px;
+  --rail-span: 6;
+}
+@media (max-width: 1279px) { :root { --rail-span: 8; } }
+@media (max-width: 1023px) { :root { --rail-span: 5; } }
+/* Fine pointers only: on touch the row is the primitive's 48 (16 lines) and its bar grows
+   from 32 to 48 when engaged -- an unlayered 33 here would pin it and stop the growth. */
+@media (pointer: fine) { .slider-row--track .slider-label { min-height: 33px; } }
+.slider-row:not(.slider-row--track) .slider-track-wrap { padding: 0 16px; }
+/* A dial row is a component: it moves whole, by its first line, so the words stay on
+   their bar (grid.css, --snap-unit). */
+.slider-row { --snap-unit: 1; }
+
+
+/* THE APP IS ON THE HOUSE GRID (wm-primitives grid.css): the 24 columns (12 below 1024)
+   with the house margin and gutter. The rail spans --rail-span of them (the ONE RAIL
+   block below says how many, and why never fewer than 231px of row), the canvas takes
+   what is left. The rail's ground runs out to the window's edge through the margin (its
+   box-shadow, below); its contents start ON the margin. */
 .shell {
   display: grid;
-  grid-template-columns: 264px 1fr;
-  grid-template-areas: "rail canvas";
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gutter);
+  padding-inline: var(--grid-margin);
   height: 100vh;
   overflow: hidden;
-  transition: grid-template-columns var(--dur) ease;
 }
 
 /* ── Rail — the font mutator (◆ file layer) ── */
 .rail {
-  grid-area: rail;
+  grid-column: 1 / span var(--rail-span);
+  /* the ground, out through the margin to the window's edge: a shadow the rail's own size,
+     moved left by the margin, so nothing in the layout has to know about it */
+  box-shadow: calc(-1 * var(--grid-margin)) 0 0 var(--surface);
   border-right: 1px solid var(--border);
   background: var(--surface);
   /* No vertical padding: it lives on the header (below) so the sticky seams pin flush
      to the rail's top/bottom edges — padding here would leave a strip above/below a
      stuck seam that scrolling content bleeds through. */
-  padding: 0 16px;
+  /* left 0: the rail's text starts on the page margin, the column line */
+  padding: 0 var(--spacing-05, 16px) 0 0;
   overflow-y: auto;
   scrollbar-gutter: stable;
   display: flex;
@@ -28,8 +71,12 @@
 /* Narrow window collapses the rail to a strip showing just its label; clicking the
    strip expands it. Width-only, independent of edit/demo mode. No chevron. */
 .rail-collapsed-label { display: none; }
-.shell--rail-collapsed { grid-template-columns: 44px 1fr; }
-.rail--collapsed { padding: 16px 0; gap: 0; overflow: hidden; cursor: pointer; align-items: center; }
+/* Collapsed: a strip two columns wide. Opened by hand on a narrow window, the rail takes
+   the columns its rows need (8 of 12, 10 of 12 on a phone) and the canvas the rest. */
+.shell--rail-collapsed { --rail-span: 2; }
+@media (max-width: 800px) { .shell:not(.shell--rail-collapsed) { --rail-span: 8; } }
+@media (max-width: 599px) { .shell:not(.shell--rail-collapsed) { --rail-span: 10; } }
+.rail--collapsed { padding: var(--spacing-05, 16px) 0; gap: 0; overflow: hidden; cursor: pointer; align-items: center; }
 .rail--collapsed > *:not(.rail-collapsed-label) { display: none; }
 .rail--collapsed .rail-collapsed-label {
   display: block;
@@ -71,7 +118,7 @@
 
 /* hold-to-compare — text in the floor beside Download; held = STOCK-hue bold+underline. */
 .hold-text {
-  padding: 8px 8px;
+  padding: var(--spacing-03, 8px) var(--spacing-03, 8px);
   border: none;
   background: none;
   color: var(--text-muted);
@@ -106,10 +153,10 @@
 }
 
 .floor-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
+  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: var(--spacing-03, 8px); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
 .floor-toggle input { accent-color: var(--accent); }
 .floor-toggle a { color: var(--text); text-decoration: underline; }
-.rail-group { display: flex; flex-direction: column; gap: 12px; }
+.rail-group { display: flex; flex-direction: column; gap: var(--rail-gap, 12px); }
 .rail-group-label {
   font-size: var(--type-micro-size, 0.5625rem);
   letter-spacing: var(--track-caps);
@@ -130,7 +177,7 @@
 /* the ◆ prefix went with the diamond thumb (CHANGELOG 2026-09-13); the value is the value */
 
 /* Stepped opsz-multiplier control */
-.stepper { display: flex; gap: 4px; }
+.stepper { display: flex; gap: var(--spacing-01, 4px); }
 .stepper button {
   flex: 1;
   padding: 6px 0;
@@ -145,7 +192,7 @@
 .stepper button.on { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
 
 .rail-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: var(--type-ui-size, 0.75rem); cursor: pointer; }
+  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: var(--spacing-03, 8px); font-size: var(--type-ui-size, 0.75rem); cursor: pointer; }
 .rail-toggle input { accent-color: var(--accent); }
 
 /* "Start from…" preset dropdown */
@@ -157,21 +204,21 @@
   margin-top: auto;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: round(up, var(--spacing-03, 8px), var(--bl, 3px));   /* stacked lines of text: the 8 step, rounded onto the 3px line */
   padding-top: var(--spacing-04, 12px);
   border-top: 1px solid var(--border-subtle);
 }
 .rail-footer .state-tag { align-self: flex-start; }
 .rail-readout {
   font-size: var(--type-ui-size, 0.75rem);
-  line-height: 1.6;
+  line-height: 18px;   /* was 1.6 (19.2): the nearest whole lines */
   color: var(--text-dim);
   word-break: break-word;
 }
 
 /* ── Canvas — the dominant stage (shows the baked ◆ default at rest) ── */
 .canvas {
-  grid-area: canvas;
+  grid-column: calc(var(--rail-span) + 1) / -1;
   position: relative;   /* anchors the Font info overlay to the top of the screen */
   display: flex;
   flex-direction: column;
@@ -211,10 +258,17 @@
 .canvas-bar {
   display: flex;
   align-items: center;
-  /* +2px: "Words" (12px, in an 8px-padded button) shares a baseline with the rail's
-     "ReCal Builder" (16px bold under the header's 16px). Measured, and held by the
-     alignment spec's baseline pairs -- change either side and it fails. */
-  padding: calc(var(--spacing-04, 12px) + 2px) 24px 0;
+  /* 12 + 2 = 14 put "Words" (12px, in an 8px-padded button) on the rail's "ReCal Builder"
+     baseline by hand. On the grid both land on the 3px line (gridSnap.js), and 12 is what
+     puts Words on the SAME line as the title -- 14 snapped it one line lower. The alignment
+     spec's baseline pairs hold the two together. */
+  /* Inline 0, less the first tab's own 8px: "Words" -- the TEXT -- starts on the canvas's
+     first column line, and the mode label under it (.mode-row, no inset) on the same line. */
+  padding: var(--spacing-04, 12px) 0 0;
+  margin-inline-start: calc(-1 * var(--spacing-03, 8px));
+  /* six tabs do not fit a phone's canvas: the bar scrolls sideways rather than spill */
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 
 /* Mode label + its per-mode submenu on ONE BASELINE, in every mode. The row aligns its
@@ -226,6 +280,10 @@
    Single left inset so everything lines up under "Words" and nothing jumps when the
    submenu shows/hides. */
 .mode-row {
+  /* ONE ROW, MOVED WHOLE: its items already share a baseline by layout (align-items:
+     baseline), so the grid moves the row by the label's first line and touches nothing
+     inside it -- snapping each submenu item on its own pulled them 2px off the label. */
+  --snap-unit: 1;
   display: flex;
   align-items: baseline;
   gap: 0;
@@ -233,11 +291,11 @@
                                   without a submenu so the stage never moves between modes; the UI scene measures
                                   this nav's height and floats it over the board, so the
                                   height may not depend on the submenu either */
-  padding: 0 var(--spacing-06, 24px) var(--spacing-03, 8px) var(--spacing-07, 32px);   /* 32px = canvas-bar 24 + mode-btn 8 → aligns with "Words" */
+  padding: 0 0 var(--spacing-03, 8px);   /* no inset: the label's text is on the column line, under "Words" (canvas-bar) */
 }
 /* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
    always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
-.mode-row .mode-label { padding: calc(var(--spacing-03, 8px) - 3px) 0 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }   /* a tab button's 8px top padding, less 3px so the label's baseline meets the rail caption's (spec baseline pair) */
+.mode-row .mode-label { padding: var(--spacing-02, 6px) 0 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }   /* the 6 step, two 3px lines (it was a tab button's 8 less 3): on the grid that lands the label's baseline on the rail caption's line in every mode (spec baseline pair) */
 .mode-row .scene-bar { flex-direction: row; align-items: baseline; gap: 12px; padding: 0; }
 /* The Body-pairing label has no button padding; inset it 8px so its text lines up with
    the tab-text column (tab buttons inset their own text by 8px). */
@@ -310,7 +368,7 @@
   font-optical-sizing: none;
   font-feature-settings: 'rclt' 1;
   color: var(--text);
-  margin: 0 0 8px;
+  margin: 0 0 var(--spacing-03, 8px);
   line-height: 1.02;
   word-break: break-word;
 }
@@ -321,7 +379,7 @@
   font-feature-settings: 'rclt' 1;
   color: var(--text);
   max-width: 34em;
-  margin: 32px 0 0;
+  margin: var(--spacing-07, 32px) 0 0;
 }
 
 /* ── Font info — persistent right panel. Uniform UI-size rows, one translucent
@@ -340,10 +398,10 @@
   --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
   font-size: var(--type-ui-size, 0.75rem);                          /* UI font size — every piece the same */
-  line-height: 1.5;
+  line-height: 18px;                                                  /* 1.5 at 12px, on the 3px line */
   background: var(--bg);           /* opaque — masks whatever is behind it in the canvas */
 }
-.info-sec { margin-bottom: 16px; }
+.info-sec { margin-bottom: round(down, var(--spacing-05, 16px), var(--bl, 3px)); }
 .info-h { font-weight: 700; color: rgba(201, 112, 80, .85); margin-bottom: 3px; }
 .info-row {
   display: flex;
@@ -365,7 +423,7 @@
   border: none;
   border-bottom: 1px solid rgba(201, 112, 80, .35);
   color: var(--marker-default);
-  padding: 1px 0;
+  padding: var(--hair, 1px) 0;
   min-width: 90px;
   max-width: 150px;
 }
@@ -382,10 +440,11 @@
   z-index: 3;
   border-top: 1px solid var(--border);
   background: var(--surface);
-  padding: var(--spacing-04, 12px) var(--spacing-06, 24px) var(--spacing-04, 12px);
+  /* inline 0: the caption and the play rail start on the canvas's first column line */
+  padding: var(--spacing-04, 12px) 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--spacing-03, 8px);
 }
 /* Caption far-left; it holds exactly the group-label column (64px + 16px gap) so
    the Reset button's left edge lines up with the "size" control below it. */
@@ -439,7 +498,7 @@
 /* EDIT mode: the play bloom only surfaces at .2 opacity (you're building, not previewing) */
 .preview-surface--dim.open .preview-body { opacity: .2; }
 @media (prefers-reduced-motion: reduce) { .preview-body { transition: none; } }
-.preview-body { display: flex; flex-direction: column; gap: 8px; }
+.preview-body { display: flex; flex-direction: column; gap: round(up, var(--spacing-03, 8px), var(--bl, 3px)); }
 /* Features + Sets are one OpenType block — no vertical gutter between the two rows. */
 .play-opentype { display: flex; flex-direction: column; gap: 0; }
 /* Pull the chip rows left by the chip's side padding so the first chip's TEXT
@@ -450,7 +509,7 @@
 
 /* Differentiated groups: Type · Axes · OpenType, each with a small left label.
    Baseline-aligned so the label sits on the same baseline as the first control's text. */
-.play-group { display: flex; align-items: baseline; gap: 16px; }
+.play-group { display: flex; align-items: baseline; gap: var(--spacing-05, 16px); }
 .play-group-label {
   width: 64px;
   flex-shrink: 0;
@@ -472,7 +531,7 @@
   background: var(--surface);
 }
 .floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); }
-.zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
+.zone-chips { display: flex; gap: var(--spacing-01, 4px); flex-wrap: wrap; }
 /* The GEOM zones are near-primary actions, so they carry weight, not just color.
    ACTIVE zone takes a fill (zone color IS information); inactive keeps its hue at full
    strength — the old .6 opacity made them read as disabled.
@@ -637,7 +696,7 @@
 .zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) var(--accent); }
 .floor-spacer { flex: 1; }
 .floor-btn {
-  padding: 8px 16px;
+  padding: var(--spacing-03, 8px) var(--spacing-05, 16px);
   border-radius: var(--radius);
   border: 1px solid var(--border);
   background: var(--surface-hi);
@@ -657,7 +716,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Floating download dock — OFL + Download, bottom-right of the canvas (no floor row). */
 .dock-download {
   position: fixed;
-  right: 20px; bottom: 16px;
+  right: var(--grid-margin); bottom: 16px;   /* its right edge on the page margin, with the canvas's */
   z-index: 50;
   display: flex; align-items: center; gap: var(--spacing-04, 12px);
   padding: var(--spacing-03, 8px) var(--spacing-03, 8px) var(--spacing-03, 8px) var(--spacing-05, 16px);
@@ -671,7 +730,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Floating TYPE panel — viewport/render controls; draggable by its header. */
 .type-panel {
   position: fixed;
-  top: 56px; right: 20px;
+  top: 56px; right: var(--grid-margin);   /* on the page margin until it is dragged */
   z-index: 40;
   width: 178px;
   display: flex; flex-direction: column; gap: var(--spacing-04, 12px);
@@ -685,7 +744,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   font-family: var(--ui-font);
   font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim);
-  margin: -4px -8px 2px;   /* widen the grab target a touch */
+  margin: round(nearest, calc(-1 * var(--spacing-01, 4px)), var(--bl, 3px)) calc(-1 * var(--spacing-03, 8px)) var(--nudge, 2px);   /* widen the grab target a touch */
   padding: 6px 8px;
   cursor: grab;
   touch-action: none;
@@ -716,7 +775,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-caret { color: var(--text-dim); margin-left: var(--spacing-02, 6px); vertical-align: middle; }
 .style-menu-list {
   position: absolute; top: calc(100% + 4px); left: 0; min-width: 212px; z-index: 60;
-  display: flex; flex-direction: column; padding: 4px;
+  display: flex; flex-direction: column; padding: var(--spacing-01, 4px);
   border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
   box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
 }
@@ -733,7 +792,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .style-menu-check { flex-shrink: 0; width: 12px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); }
 .style-menu-item.on .style-menu-check { color: var(--accent, var(--text)); }
 .style-menu-list--scroll { max-height: 340px; overflow-y: auto; }
-.style-menu-badges { display: flex; gap: 4px; flex-shrink: 0; }
+.style-menu-badges { display: flex; gap: var(--spacing-01, 4px); flex-shrink: 0; }
 .style-badge {
   font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); white-space: nowrap;
   padding: var(--hair, 1px) var(--spacing-01, 4px); border-radius: 4px; border: 1px solid var(--border);
@@ -758,7 +817,8 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    back by deleting the pointer target: press-anywhere-on-the-track against a 1px box.
    --dial-track-h is the primitive's own knob for the same thing. It sets what the ROW
    pays; the input keeps its full 24px target, centred over it and out of flow. */
-.preview-surface { --dial-track-h: 14px; --dial-thumb: 9px; }
+/* (It set --dial-track-h: 14px and --dial-thumb: 9px here. The ONE RAIL block at the top of
+   this file sets both for the whole app now, at font-proofer's 24 and 14.) */
 /* Size the thumb through the primitive's own knob, not by overriding its pseudo-element:
    the override carried the size and left the centring margin behind, so the ● sat 2.5px
    above its rail on all six rows. */
@@ -816,7 +876,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .freezer-reset:hover:not(:disabled) { background: var(--surface); }
 .freezer-reset:disabled { color: var(--text-faint); font-weight: 400; cursor: default; }
 
-.freezer-section { display: flex; flex-direction: column; margin-bottom: 4px; }
+.freezer-section { display: flex; flex-direction: column; margin-bottom: 3px; }
 .freezer-section-title {
   font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim); padding: var(--spacing-03, 8px) var(--spacing-01, 4px) var(--spacing-01, 4px);
@@ -834,7 +894,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    the after glyph flowing right. No overflow clip — descenders (g/j/y) must show. */
 .freezer-ba {
   display: grid; grid-template-columns: 30px auto auto; align-items: baseline;
-  column-gap: var(--spacing-02, 6px); font-size: var(--type-body-size, 1rem); line-height: 1.4;
+  column-gap: var(--spacing-02, 6px); font-size: var(--type-body-size, 1rem); line-height: var(--lead-body, 24px);
 }
 /* before right-aligned (hugs the arrow) + after left-aligned, with equal gaps around
    the arrow → arrows sit centered between the pair and still line up down the column. */
@@ -863,7 +923,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
   background: var(--accent); border-color: var(--accent); color: var(--bg);
 }
 
-.freezer-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 16px; padding: 0 4px; }
+.freezer-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 18px; margin-top: round(down, var(--spacing-05, 16px), var(--bl, 3px)); padding: 0 var(--spacing-01, 4px); }
 .freezer-note-gold { color: var(--freeze-gold); font-weight: 600; }
 
 /* Descent transition, direction-aware. Descend (down-seam): current slides UP + out,
@@ -885,22 +945,22 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
    positioned within this box), so nothing jams the rail edge. */
 .matrix { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
 /* The 6px is the rows'; the head steps back out so its title sits on the rail's 16 with every other label. */
-.matrix-head { display: flex; align-items: center; justify-content: space-between; margin: 0 calc(-1 * var(--spacing-02, 6px)) 16px; }
+.matrix-head { display: flex; align-items: center; justify-content: space-between; margin: 0 calc(-1 * var(--spacing-02, 6px)) round(down, var(--spacing-05, 16px), var(--bl, 3px)); }
 .matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); color: var(--text-muted); text-transform: uppercase; }
 .matrix-reset {
   all: unset; cursor: pointer; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted);
-  padding: 2px 8px; border-radius: 5px; transition: color var(--dur-fast, 140ms), background var(--dur-fast, 140ms), opacity var(--dur-fast, 140ms);
+  padding: var(--nudge, 2px) var(--spacing-03, 8px); border-radius: 5px; transition: color var(--dur-fast, 140ms), background var(--dur-fast, 140ms), opacity var(--dur-fast, 140ms);
 }
 /* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
    as actionable, not the muted header gray. */
 .matrix-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-hi); }
 .matrix-reset:hover:not(:disabled) { background: var(--surface); }
 .matrix-reset:disabled { color: var(--text-faint); font-weight: 400; background: none; cursor: default; }
-.matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
+.matrix-axis { position: relative; height: 12px; margin-bottom: round(up, var(--spacing-03, 8px), var(--bl, 3px)); }
 .matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: rgba(255,255,255,.2); }
 .matrix-axis-tick--mid { transform: translateX(-50%); }
 .matrix-axis-tick--end { transform: translateX(-100%); }
-.matrix-rows { display: flex; flex-direction: column; gap: 4px; position: relative; }
+.matrix-rows { display: flex; flex-direction: column; gap: 3px; position: relative; }
 /* Fade the shade in/out vertically so the band eases in at the top and out at the
    bottom instead of hard-cutting at the first / last lane. */
 .matrix-geom-shade {
@@ -958,13 +1018,13 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 }
 /* Transparent drag grabber on the hard line where the two shades meet (ew-resize). */
 .matrix-geom { --geom-w: 11px; position: absolute; top: 0; bottom: 0; width: var(--geom-w); margin-left: calc(var(--geom-w) / -2); z-index: 2; cursor: ew-resize; touch-action: none; }
-.matrix-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 16px; }
+.matrix-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 18px; margin-top: round(down, var(--spacing-05, 16px), var(--bl, 3px)); }
 
 /* Drag-only value chip: rises up from the dial you grabbed, fades down on release. */
 .matrix-val {
   position: absolute; top: 3px; transform: translateX(-50%);
   font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text);
-  background: var(--surface-hi); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  background: var(--surface-hi); padding: var(--hair, 1px) var(--spacing-02, 6px); border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   pointer-events: none; z-index: 5; white-space: nowrap;
 }
 .matrix-val--geom { top: -2px; }
@@ -981,7 +1041,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .vmetrics-panel .freezer-section { gap: var(--spacing-04, 12px); }
 .vm-head-right { display: flex; align-items: center; gap: var(--spacing-03, 8px); }
 .vm-lh { font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
-.vmetrics-panel .wm-select { margin-top: 2px; }
+.vmetrics-panel .wm-select { margin-top: var(--nudge, 2px); }
 .vm-strategy { color: var(--text-muted); }
 
 .vm-row { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03, 8px); }
@@ -993,9 +1053,9 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 
 /* toggle: checkbox + a single text run so the label flows as one block (no per-word scrunch) */
 .vm-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: flex-start; gap: 8px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
-.vm-toggle input { accent-color: var(--accent); margin-top: 2px; flex: none; }
-.vm-toggle-lbl { line-height: 1.4; }
+  font-family: var(--ui-font, inherit); display: flex; align-items: flex-start; gap: var(--spacing-03, 8px); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
+.vm-toggle input { accent-color: var(--accent); margin-top: var(--nudge, 2px); flex: none; }
+.vm-toggle-lbl { line-height: 18px; }
 .vm-warn { display: block; color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
 
 /* the reused Ascender (YTAS) pin gets extra air before and after it */
@@ -1007,7 +1067,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 .vm-tr span:not(:first-child) { text-align: right; color: var(--text); }
 .vm-tr--head span { color: var(--text-dim); }
 
-.vm-note { margin: 4px 0 0; font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; color: var(--text-muted); }
+.vm-note { margin: 3px 0 0; font-size: var(--type-ui-size, 0.75rem); line-height: 18px; color: var(--text-muted); }
 .vm-note b { color: var(--text); font-weight: 700; }
 
 /* House press + corner, shared with .zone-chip. Rail and floor controls.

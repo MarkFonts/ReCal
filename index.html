@@ -60,7 +60,9 @@
     </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!-- wm-lines: the app is the page's grid root (wm-primitives grid.css + gridSnap.js, imported
+         by InstrumentApp.tsx): its chrome text sits on the 3px line, its stages are data-nosnap. -->
+    <div id="root" class="wm-lines"></div>
     <nav class="seo-rail" aria-label="Comparison pages">
       <div class="in">
         <h2>Compare ReCal Sans with</h2>

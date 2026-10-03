@@ -8,11 +8,13 @@
     "shared/src"
   ],
   "_runtimeTokens": "Set by JS as an inline style on the element itself, so no stylesheet declares them: the zone/tab colours and --labels-w from App.tsx + GlyphGroups.tsx, --flash-color from scenes.tsx, and --vs/--vm-lh/--vm-shift from CossScene.tsx.",
-  "_lines": "On the house grid (wm-primitives GRID.md): the compare pages' article, written into dist/landing.css by scripts/gen-landing.mjs. linesSkip names what in it is not on the line: the specimen (data-nosnap in the page, its rows the preset at its own size and leading) and the letterbox, which sits outside the .wm-lines root and pulls its canvas up by the bleed.",
+  "_lines": "On the house grid (wm-primitives GRID.md). The APP: src/instrument/shell.css (the rail, the canvas bar, the mode row, the play rail, the panels) and src/instrument/scenes.css (the scene bars) -- since #root is .wm-lines. And the compare pages' article, src/landing.css, written into dist/landing.css by scripts/gen-landing.mjs. linesSkip names what in them is not on the line: the stages (data-nosnap in the page, their type the user's) -- the specimen and the paragraph scene (.specimen, .para), the Scale tiers (.tier-*), the glyph grid, the compare inline; in the article, the specimen rows, the style cap and the letterbox, which sits outside the .wm-lines root and pulls its canvas up by the bleed.",
   "lines": [
-    "src/landing.css"
+    "src/landing.css",
+    "src/instrument/shell.css",
+    "src/instrument/scenes.css"
   ],
-  "linesSkip": "\\.specimen-(?:grid|row)|\\.style-cap|\\.seo-lb",
+  "linesSkip": "\\.specimen-(?:grid|row)|\\.style-cap|\\.seo-lb|\\.specimen\\b|\\.para\\b|\\.tier-|\\.glyph-grid|\\.compare-",
   "runtimeTokens": [
     "--flash-color",
     "--labels-w",

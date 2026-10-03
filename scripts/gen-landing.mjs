@@ -227,7 +227,8 @@ ${appScript}
 ${appCss}
 <link rel="stylesheet" href="${BASE}/grid.css">
 <link rel="stylesheet" href="${BASE}/landing.css">
-<script src="${BASE}/gridSnap.js" defer></script>
+<!-- gridSnap.js rides in the app bundle now (InstrumentApp.tsx imports it, the app is on the
+     grid too); a second copy here would run twice and draw ?grid twice. -->
 <style>
   /* What varies per page. The rest is ${BASE}/landing.css (src/landing.css). */
   @font-face { font-family:'CalSansSEO'; src:url('${CAL_SANS}') format('truetype'); font-display:swap; }
@@ -262,9 +263,9 @@ ${appCss}
 </style>
 </head>
 <body>
-<div id="root"></div>
+<div id="root" class="wm-lines"></div>
 <!-- The article is the page's one grid root: .wm-lines puts its text on the 3px line, .wm-grid
-     its column on the 24 with the house margin. The app above is outside it, in its own room. -->
+     its column on the 24 with the house margin. The app above is its own root (#root.wm-lines). -->
 <main class="seo-below wm-lines" id="about">
 <article class="wrap wm-grid">
 <div class="seo-col">

@@ -106,6 +106,9 @@ const Root = params.get('demo') === 'glyphpicker' ? GlyphPickerDemo
 // Scope marker: App.css's element-level defaults (light button pill etc.) apply ONLY
 // under .classic-ui — they must never leak into the instrument or demo harnesses.
 document.documentElement.classList.add(useClassic ? 'classic-ui' : 'instrument-ui')
+// #root is the house grid's root (.wm-lines in index.html) for the instrument only: the
+// classic app and the ?demo= harnesses predate the grid, and grid.css would re-lead their text.
+document.getElementById('root')!.classList.toggle('wm-lines', Root === InstrumentApp)
 
 /* Vite re-evaluates this module on HMR -- any edit that invalidates it, including the
    CSS imported above -- and createRoot() on a container that already has a root does not

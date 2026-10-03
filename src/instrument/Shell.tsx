@@ -15,6 +15,7 @@ import {
 } from './store'
 import { renderVarSettings, opszForSize } from './render'
 import { BOOT } from './boot'
+import { snapGrid } from './snapGrid'
 import {
   Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, SCENES, type SceneMode,
   DEFAULT_PARA_STYLES, PARA_STYLE_ORDER, PARA_STYLE_LABEL,
@@ -154,6 +155,8 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
   // Ascend (up-seam): the opposite — current slides down + out, next comes from above.
   const go = (i: number, d: 'fwd' | 'back') => { setDir(d); setLeaving(true); setTimeout(() => { dispatch({ type: 'setRailGroup', group: i }); setLeaving(false) }, 150) }
   const tag = TAG_TEXT[stateTag(state)]
+  // a new panel (Type Matrix, Freezer, Vertical Metrics) is new chrome text for the grid
+  useEffect(() => { snapGrid() }, [group, collapsed, state.recalMode])
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -232,7 +235,7 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
           <label className="rail-toggle">
             <input type="checkbox" checked={state.defaults.freezeOpsz}
               onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
-            Freeze opsz
+            <span>Freeze opsz</span>
           </label>
         </div>
         {/* Optical size — only meaningful when frozen: off = the browser scales opsz to
@@ -285,12 +288,12 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         <label className="rail-toggle">
           <input type="checkbox" checked={state.useHoi}
             onChange={e => dispatch({ type: 'setUseHoi', value: e.target.checked })} />
-          HOI interpolation
+          <span>HOI interpolation</span>
         </label>
         <label className="rail-toggle">
           <input type="checkbox" checked={state.defaults.autoAscender}
             onChange={e => dispatch({ type: 'setAutoAscender', value: e.target.checked })} />
-          Auto ascender (YTAS tracks opsz)
+          <span>Auto ascender (YTAS tracks opsz)</span>
         </label>
       </div>
 
@@ -385,9 +388,9 @@ function ModeLabel() {
   const editing = state.recalMode === 'edit'
   return (
     <div className={`mode-label${phase ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
-      {phase?.kind === 'spin' ? <><span className="mode-throb" aria-hidden /> {phase.spin}</>
+      {phase?.kind === 'spin' ? <><span className="mode-throb" aria-hidden /> <span>{phase.spin}</span></>
         : phase?.kind === 'check' ? <span className="mode-check">✓ <span className="mc-word">{phase.check}</span></span>
-          : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
+          : <span>{editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}</span>}
     </div>
   )
 }
@@ -631,6 +634,8 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   // other scenes stay themselves (so you can see the metrics' effect in a real paragraph/UI).
   const { state: inst } = useInstrument()
   const vmActive = inst.railGroup === 3 && mode === 'words'
+  // a mode is a new submenu in the mode row: put its text back on the line
+  useEffect(() => { snapGrid() }, [mode, vmActive, showInfo])
 
   // Editable per-block paragraph styles + which one the TYPE controls target.
   const [paraStyles, setParaStyles] = useState<ParaStyles>(DEFAULT_PARA_STYLES)
@@ -692,7 +697,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
           bottom ● preview/DEMO dock and drops the reserved play-bar padding → full height. */}
       <div className={`canvas-body${uiOverlay ? ' canvas-body--full' : ''}${vmActive ? ' canvas-body--vm' : ''}`}>
-        <div className="stage">
+        {/* A STAGE (data-nosnap): its type is the user's -- the specimen at whatever size and
+            leading they dial -- so the grid leaves it alone (grid.css, gridSnap.js, the spec). */}
+        <div className="stage" data-nosnap="">
           <div className={`stage-scroll${uiOverlay ? ' stage-scroll--flush' : ''}${vmActive ? ' stage-scroll--bleed' : ''}`}>
             {vmActive
               ? <VMetricsScene />
@@ -790,7 +797,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
       onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
       <div className="preview-surface-head">
         <span className={`preview-surface-cap${open ? '' : ' preview-surface-cap--collapsed'}`}>
-          <span className="preview-dot" aria-hidden="true" />Preview
+          <span className="preview-dot" aria-hidden="true" /><span>Preview</span>
         </span>
         {open && (
           <button className="preview-reset" disabled={!canReset} title="Reset preview"
@@ -860,7 +867,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
             <div className="feature-chips">
               {FEATURE_CHIPS.map(f => (
                 <button key={f.tag} data-label={f.label} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
-                  onClick={() => toggleFeat(f.tag)}>{f.label}</button>
+                  onClick={() => toggleFeat(f.tag)}><span>{f.label}</span></button>
               ))}
             </div>
           </div>
@@ -870,7 +877,7 @@ function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLead
               {SS_FEATURES.map(f => (
                 <button key={f.tag} data-label={f.tag} className={`chip${feats.has(f.tag) ? ' on' : ''}`}
                   title={`${f.tag} · ${f.name}`} aria-label={`${f.tag} ${f.name}`}
-                  onClick={() => toggleFeat(f.tag)}>{f.tag}</button>
+                  onClick={() => toggleFeat(f.tag)}><span>{f.tag}</span></button>
               ))}
             </div>
           </div>
@@ -965,9 +972,9 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
       <label className="floor-toggle">
         <input type="checkbox" checked={oflAgreed}
           onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) prefetch(true) }} />
-        I accept the{' '}
+        <span>I accept the{' '}
         <a href="https://openfontlicense.org/open-font-license-official-text/"
-          target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
+          target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a></span>
       </label>
       <button className="floor-btn floor-btn--primary"
         disabled={!oflAgreed || engine.building || (!engine.ready && !devFake)}
@@ -1104,7 +1111,7 @@ export default function Shell() {
   const emphItalVs = renderVarSettings({ ...effectiveAxes(state), ital: 1 }, {})
   const emphBoldVs = renderVarSettings({ ...effectiveAxes(state), wght: 700 }, {})
   return (
-    <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
+    <main className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
       <Rail collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
       <Canvas
         size={size} setSize={setSize}
@@ -1119,6 +1126,6 @@ export default function Shell() {
         italicLabelStyle={{ fontFamily: "'CalSansVF'", fontVariationSettings: emphItalVs, fontStyle: 'normal', fontSynthesis: 'none' }}
         boldLabelStyle={{ fontFamily: "'CalSansVF'", fontVariationSettings: emphBoldVs, fontWeight: 'normal', fontSynthesis: 'none' }}
       />
-    </div>
+    </main>
   )
 }

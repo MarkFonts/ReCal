@@ -36,10 +36,10 @@ export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
     <div className="modebar">
       {SCENES.map(s => (
         <button key={s.mode} data-label={s.label} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
-          onClick={() => setMode(s.mode)}>{s.label}</button>
+          onClick={() => setMode(s.mode)}><span>{s.label}</span></button>
       ))}
       <button data-label="Info" className={`mode-btn${showInfo ? ' on' : ''}`}
-        aria-pressed={showInfo} onClick={toggleInfo}>Info</button>
+        aria-pressed={showInfo} onClick={toggleInfo}><span>Info</span></button>
     </div>
   )
 }
