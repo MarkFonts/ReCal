@@ -1,0 +1,147 @@
+/* landing.css -- the article under the app on the eight compare pages (scripts/gen-landing.mjs).
+ *
+ * ON THE HOUSE GRID (wm-primitives GRID.md, step 3b of the roll-out). The article is the one
+ * .wm-lines root; the app above it is outside it and keeps its own room. One column of copy,
+ * centred on the 24: columns 6-19 at 1440, which is the 760px measure the page had before to
+ * the pixel. Columns 2-11 of the 12 below 1024, and all 12 on a phone.
+ *
+ * Everything that carries text leads on the 3px line, and every vertical space between text
+ * blocks is a whole number of units AND a step of the pad scale -- the two laws meet at
+ * 3, 6, 12, 24 and 48, which is why the old 20s, 28s and 40s moved. Hairline rules are drawn
+ * with an inset shadow, not a border, so a 1px rule costs no height and the next line is
+ * still on the line without the snapper's help.
+ *
+ * Stages: the specimen grid is data-nosnap in the page and named in .tokenlint.json's
+ * linesSkip. Its rows are set at the preset's own size and leading; they are the argument,
+ * not the copy. The letterbox canvas sits outside the root altogether.
+ *
+ * The per-page parts -- the preset's axes on h1/h2, the specimen's tracking and optical
+ * sizing, the @font-face (its URL is Vite's hashed copy, so it changes per build) -- stay
+ * inline in each page, emitted raw. See the quoting trap in gen-landing.mjs. */
+
+/* The app owns the first viewport; reserve it pre-mount so the article never jumps. */
+#root { min-height: 100vh; }
+
+/* Article styles -- everything scoped under .seo-below so nothing leaks into the app. */
+.seo-below {
+  --sbg: #0f0f0f; --sfg: #e8e8e8; --smut: #999; --sline: #333;
+  background: var(--sbg); color: var(--sfg);
+  font-family: 'CalSansSEO', system-ui, sans-serif;
+  font-variation-settings: 'GEOM' 25;
+  /* body sets opsz 10 and turns optical sizing off for the app's chrome; the article's
+     text is not chrome, so opsz follows the size here */
+  font-optical-sizing: auto;
+  font-size: var(--type-body-size, 16px);
+  line-height: var(--lh);
+  -webkit-font-smoothing: antialiased;
+}
+/* The columns and the house margin are .wm-grid's: nothing here may set padding-inline on it.
+   Unlayered, this would beat the layered margin and put the copy at the window edge -- the
+   wordmark homepage's trap. Only the block axis is ours.
+   token-lint: allow -- 72 and 96 are 24 and 32 units; the pad scale stops at 64, off the line */
+.seo-below .wrap { padding-block: 72px 96px; }
+.seo-below .seo-col { --start: 6; --span: 14; --start-md: 2; --span-md: 10; }
+@media (max-width: 680px) { .seo-below .seo-col { --start-md: 1; --span-md: 12; } }
+
+/* The letterbox closes the page: full bleed, and the document ends on its last row.
+   NOTHING CLIPS. The glyphs are supposed to be able to leave the box -- that is the whole
+   effect -- so there is no overflow:hidden here, and its absence is deliberate. The bleed
+   grows the canvas upward and the negative margin takes the space back, so escaping glyphs
+   have somewhere to go without costing layout height. */
+.seo-lb { --lb-bleed: 180px; background: var(--sbg); }
+.seo-lb canvas { display: block; margin: calc(-1 * var(--lb-bleed)) auto 0; }
+
+/* The small print: the ui role, 12/15. These are not elements grid.css leads (a div, a nav,
+   the footer), so they set line-height themselves -- inherited, it would be the 24px the
+   article resolved, not this --lh. */
+.seo-below :is(.live-note, nav.crumb, footer) {
+  font-size: var(--type-ui-size, 12px); --lh: var(--lead-ui); line-height: var(--lh); color: var(--smut);
+}
+.seo-below .live-note { margin-bottom: 48px; }
+.seo-below .live-note a { color: var(--sfg); }
+.seo-below nav.crumb { margin-bottom: 48px; }
+.seo-below nav.crumb a { color: var(--smut); text-decoration: none; }
+.seo-below nav.crumb a:hover { color: var(--sfg); }
+
+/* The headline: display, 45/51; title on a phone. letter-spacing is not set -- opsz does
+   the tightening a display size wants, and the house never tracks in by hand. */
+.seo-below h1 {
+  font-size: var(--type-display-size, 45px); --lh: var(--lead-display);
+  margin: 0 0 24px;
+}
+@media (max-width: 599px) {
+  .seo-below h1 { font-size: var(--type-title-size, 26px); --lh: var(--lead-title); }
+}
+/* Section heads: title, 26/30, sentence case at full ink. App.css's bare `h2` (12px muted
+   tracked caps, the classic app's panel heads) reached in here and set these as grey
+   capitals; the preset these heads wear reads at a size, not in a label. */
+.seo-below h2 {
+  font-size: var(--type-title-size, 26px); --lh: var(--lead-title);
+  text-transform: none; letter-spacing: normal; color: var(--sfg);
+  margin: 48px 0 12px;
+}
+
+.seo-below .card-fig { margin: 24px 0 0; max-width: 820px; }
+.seo-below .card-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid #262626; }
+
+/* THE SPECIMEN IS A STAGE (data-nosnap, linesSkip). Its rows are the preset at a display
+   size with their own leading; the copy below it goes back on the line by the snapper. */
+.seo-below .specimen-grid { margin: 48px 0; }
+.seo-below .specimen-row {
+  /* token-lint: allow -- the specimen is a stage: its size is the specimen's, fluid between 32 and 58 */
+  font-size: clamp(32px, 6.4vw, 58px);
+  line-height: 1.15; font-style: normal;
+  padding: 16px 0; border-bottom: 1px solid var(--sline);
+}
+.seo-below .specimen-row:first-child { padding-top: 0; }
+.seo-below .specimen-row .style-cap {
+  display: block; font-size: var(--type-ui-size, 12px); color: var(--smut);
+  /* letter-spacing does NOT re-relativize on inherit -- it's the parent's resolved px value
+     (-.03em of the ~32-58px specimen) that would otherwise land here verbatim, reading as
+     roughly -3% tracking on 12px text. Reset it for this element's own size. */
+  letter-spacing: normal;
+  font-variation-settings: 'GEOM' 25, 'wght' 400, 'ital' 0; font-style: normal; margin-bottom: 6px;
+}
+.seo-below .specimen-cap {
+  font-size: var(--type-ui-size, 12px); --lh: var(--lead-ui); line-height: var(--lh); color: var(--smut);
+  letter-spacing: var(--track-caps, .12em); text-transform: uppercase; margin-bottom: 48px;
+}
+
+/* The prose: lede, 18/27, at the column's 14-column measure (the page had 17/25.5, which
+   sat between lines). The FAQ answers are the same voice and take the same size. */
+.seo-below p { font-size: var(--type-lede-size, 18px); --lh: var(--lead-lede); color: #ccc; margin: 0 0 24px; }
+.seo-below .faq :is(dt, dd) { font-size: var(--type-lede-size, 18px); --lh: var(--lead-lede); line-height: var(--lh); }
+.seo-below .faq dt { font-weight: 600; margin-top: 24px; }
+.seo-below .faq dd { margin: 6px 0 0; color: #ccc; }
+
+/* The CTA is a component: 12 + 24 + 12 = 48, sixteen units, and it moves whole. A block
+   sized to its label, not inline-block: gridSnap reads text inside inline children as their
+   parent's own, so an inline-block CTA made the whole column one "text block" and nothing
+   else in it was measured. */
+.seo-below .cta {
+  --snap-unit: 1;
+  display: block; width: fit-content; margin: 12px 0 6px; padding: 12px 24px; line-height: 24px;
+  background: var(--sfg); color: var(--sbg); text-decoration: none; border-radius: 8px;
+  font-size: var(--type-body-size, 16px); font-weight: 600;
+}
+
+/* The cross-links are pills on the chip's height, 27px, nine units: a wrapped row of them is
+   two lines of type with a 12px gap, and the row moves whole. */
+.seo-below .also { --snap-unit: 1; display: flex; flex-wrap: wrap; gap: 12px; margin-top: 12px; }
+.seo-below .also a {
+  display: inline-flex; align-items: center; box-sizing: border-box; min-height: 27px;
+  padding: 0 12px; line-height: 15px; font-size: var(--type-ui-size, 12px);
+  color: var(--sfg); border: 1px solid var(--sline); border-radius: 999px; text-decoration: none;
+}
+.seo-below .also a:hover { border-color: var(--sfg); }
+
+/* The frozen sets: body, 16/24, 6px above and below -- 36px a row, the rule an inset shadow. */
+.seo-below ul.freezes { list-style: none; margin: 0 0 24px; padding: 0; }
+.seo-below ul.freezes li {
+  font-size: var(--type-body-size, 16px); --lh: var(--lead-body); color: #ccc;
+  padding: 6px 0; box-shadow: inset 0 -1px 0 var(--sline);
+}
+.seo-below ul.freezes code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .875em; color: var(--sfg); }
+
+.seo-below footer { margin-top: 48px; padding-top: 24px; box-shadow: inset 0 1px 0 var(--sline); }
+.seo-below footer a { color: var(--smut); }

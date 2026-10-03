@@ -12,7 +12,7 @@
 //
 // Copy is kind-aware: 'paid' referents get the "free alternative" angle; 'free'
 // (OFL) referents get the variable/customizable angle — never price.
-import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs'
+import { mkdirSync, writeFileSync, readFileSync, existsSync, readdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { SEO_PRESETS, ADOBE_KIT, ff, GLYPHS, FEATURE_LABELS } from './seo-presets.mjs'
@@ -32,6 +32,25 @@ const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 const LB_SRC = join(__dirname, '..', 'shared', 'src', 'letterbox.js')
 if (existsSync(LB_SRC)) writeFileSync(join(OUT, 'letterbox.js'), readFileSync(LB_SRC))
 else console.warn('[seo] shared/src/letterbox.js missing — run `git submodule update --init`')
+// THE HOUSE GRID, copied the same way: grid.css (24/12 columns, the margin, the 3px line)
+// and gridSnap.js (what CSS cannot place). The article's own sheet is src/landing.css --
+// a real file so the token lint can read it (.tokenlint.json `lines`); only what varies
+// per page stays inline below.
+for (const f of ['grid.css', 'gridSnap.js']) {
+  const src = join(__dirname, '..', 'shared', 'src', f)
+  if (!existsSync(src)) throw new Error(`[seo] shared/src/${f} missing — run \`git submodule update --init\``)
+  writeFileSync(join(OUT, f), readFileSync(src))
+}
+writeFileSync(join(OUT, 'landing.css'), readFileSync(join(__dirname, '..', 'src', 'landing.css')))
+
+// THE ARTICLE'S FACE IS THE APP'S FILE. It pointed at /recalsans/fonts/CalSansVF.ttf, which
+// stopped existing when main.tsx moved the face into the submodule and Vite started emitting
+// it hashed -- so on all eight pages the article, the specimen and the letterbox were set in
+// system-ui, and every preset axis on them did nothing. Vite's copy, by its hashed name: one
+// file for the app and the article, fetched once.
+const calSansFile = readdirSync(join(OUT, 'assets')).find(f => /^CalSansVF-[\w-]+\.ttf$/.test(f))
+if (!calSansFile) throw new Error('[seo] no hashed CalSansVF-*.ttf in dist/assets -- did main.tsx stop importing it?')
+const CAL_SANS = `${BASE}/assets/${calSansFile}`
 
 const appHtml = readFileSync(join(OUT, 'index.html'), 'utf8')
 const appScript = appHtml.match(/<script type="module"[^>]*><\/script>/)?.[0]
@@ -192,7 +211,7 @@ function page(p, all) {
 <meta name="twitter:image" content="${ogImage}">
 <meta name="twitter:image:alt" content="${esc(ogAlt)}">
 <link rel="icon" type="image/svg+xml" href="${BASE}/favicon.svg">
-<link rel="preload" href="${BASE}/fonts/CalSansVF.ttf" as="font" type="font/ttf" crossorigin>
+<link rel="preload" href="${CAL_SANS}" as="font" type="font/ttf" crossorigin>
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=${GA_ID}"></script>
@@ -206,30 +225,12 @@ gtag('config', '${GA_ID}');
 <script>window.__RECAL_BOOT = ${JSON.stringify(boot)};</script>
 ${appScript}
 ${appCss}
+<link rel="stylesheet" href="${BASE}/grid.css">
+<link rel="stylesheet" href="${BASE}/landing.css">
+<script src="${BASE}/gridSnap.js" defer></script>
 <style>
-  /* The app owns the first viewport; reserve it pre-mount so the article never jumps. */
-  #root { min-height: 100vh; }
-  /* Article styles — everything scoped under .seo-below so nothing leaks into the app. */
-  .seo-below { --sbg:#0f0f0f; --sfg:#e8e8e8; --smut:#999; --sline:#333;
-    background:var(--sbg); color:var(--sfg); font-family:'CalSansSEO',system-ui,sans-serif;
-    font-variation-settings:'GEOM' 25; line-height:1.5; -webkit-font-smoothing:antialiased; }
-  @font-face { font-family:'CalSansSEO'; src:url('${BASE}/fonts/CalSansVF.ttf') format('truetype'); font-display:swap; }
-  .seo-below .wrap { max-width:760px; margin:0 auto; padding:72px 24px 96px; box-sizing:border-box; }
-  /* The letterbox closes the page: full bleed, and the document ends on its last row.
-     --lb-bleed grows the canvas upward so repelled glyphs are not cut off, and the same
-     amount comes back out of the layout so it costs no space. */
-  /* NOTHING CLIPS. The glyphs are supposed to be able to leave the box -- that is the
-     whole effect -- so there is no overflow:hidden here, and its absence is deliberate.
-     The bleed grows the canvas upward and the negative margin takes the space back, so
-     escaping glyphs have somewhere to go without costing layout height. */
-  .seo-lb { --lb-bleed:180px; background:var(--sbg); }
-  .seo-lb canvas { display:block; margin:calc(-1 * var(--lb-bleed)) auto 0; }
-  .seo-below .live-note { font-size:13px; color:var(--smut); margin-bottom:40px; }
-  .seo-below .live-note a { color:var(--sfg); }
-  .seo-below nav.crumb { font-size:13px; color:var(--smut); margin-bottom:40px; }
-  .seo-below nav.crumb a { color:var(--smut); text-decoration:none; }
-  .seo-below nav.crumb a:hover { color:var(--sfg); }
-  .seo-below h1 { font-size:clamp(30px,5vw,46px); line-height:1.1; letter-spacing:-.01em; margin:0 0 28px; }
+  /* What varies per page. The rest is ${BASE}/landing.css (src/landing.css). */
+  @font-face { font-family:'CalSansSEO'; src:url('${CAL_SANS}') format('truetype'); font-display:swap; }
   /* DISPLAY WEARS THE PRESET, PROSE STAYS IN THE UI ZONE. The headline and the section
      heads are set in this referent's axes -- Neutraface's YTAS, Futura's GEOM 100, and
      so on down the eight -- so the page speaks in the voice it is arguing for, while the
@@ -243,15 +244,6 @@ ${appCss}
      another pair of quotes makes it one invalid string that the browser drops -- which
      is what silently left these headings inheriting GEOM 25 and nothing else. */
   .seo-below h1, .seo-below h2 { font-variation-settings:${p.axes.split(', ').filter(a => !a.startsWith("'opsz'")).join(', ') || "'GEOM' 25"}; font-optical-sizing:auto;${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''} }
-  /* The specimen grid is the preset in use, so it takes the freezes as well as the axes.
-     Each row adds this preset's own 'wght'/'ital' on top of p.axes -- wght is never in
-     p.axes itself (see the h1/h2 rule above for why). opsz is dropped from the pinned
-     set for the same reason it's dropped from h1/h2: these rows render at their own
-     display size, not the preset's specimen size, so they get their own optical
-     treatment (auto) instead of inheriting a pinned opsz meant for a different size. */
-.card-fig{margin:26px 0 32px;max-width:820px}
-.card-fig img{width:100%;height:auto;display:block;border-radius:10px;border:1px solid #262626}
-  .seo-below .specimen-grid { margin:28px 0 48px; }
   /* THE SPECIMEN SHOWS THE PRESET, OPTICAL SIZE INCLUDED. opsz used to be stripped from
      these rows in favour of font-optical-sizing:auto, which at 58px resolved to opsz ~58 --
      so /gotham/ captioned itself "opsz 10" above a specimen rendering at nothing of the
@@ -260,44 +252,22 @@ ${appCss}
      freeze one drawing and let the designer track in by hand at display size. That is what
      the -.03em is -- the manual correction the pinned opsz asks for -- and the caption
      states both so the reader knows this is a choice. font-optical-sizing:none stops the UA
-     from re-deriving opsz from font-size and overriding the pin. */
+     from re-deriving opsz from font-size and overriding the pin.
+     TRACKING FOLLOWS THE PIN, NOT THE ROW. Inter and Neutra pin nothing, so their rows ride
+     font-optical-sizing:auto -- which clamps to the axis maximum of 45, already the
+     tightest-fitting end of the design. Auto rows get no correction; the font does the work. */
   .seo-below .specimen-row {${ff(p.preset) ? ` font-feature-settings:${ff(p.preset)};` : ''}
-    /* TRACKING FOLLOWS THE PIN, NOT THE ROW. -.03em is the manual correction a SMALL pinned
-       opsz asks for when it is shown at display size. Inter and Neutra pin nothing, so their
-       rows ride font-optical-sizing:auto -- which clamps to the axis maximum of 45, already
-       the tightest-fitting end of the design. Tracking those in another 3% tightened what
-       was tight to begin with. Auto rows get no correction; the font is doing the work. */
-    font-size:clamp(32px,6.4vw,58px); line-height:1.15; font-style:normal;
     letter-spacing:${p.axes.includes("'opsz'") ? '-.03em' : 'normal'};
-    font-optical-sizing:${p.axes.includes("'opsz'") ? 'none' : 'auto'}; padding:18px 0; border-bottom:1px solid var(--sline); }
-  .seo-below .specimen-row:first-child { padding-top:0; }
-  .seo-below .specimen-row .style-cap { display:block; font-size:13px; color:var(--smut);
-    /* letter-spacing does NOT re-relativize on inherit -- it's the parent's resolved px
-       value (-.01em of the ~40-58px specimen) that would otherwise land here verbatim,
-       reading as roughly -3% tracking on 13px text. Reset it for this element's own size. */
-    letter-spacing:normal;
-    font-variation-settings:'GEOM' 25, 'wght' 400, 'ital' 0; font-style:normal; margin-bottom:6px; }
-  .seo-below .specimen-cap { font-size:12px; color:var(--smut); letter-spacing:.04em; text-transform:uppercase; margin-bottom:48px; }
-  .seo-below p { font-size:17px; color:#ccc; margin:0 0 20px; }
-  .seo-below h2 { font-size:22px; margin:48px 0 16px; }
-  .seo-below .cta { display:inline-block; margin:12px 0 8px; padding:14px 26px; background:var(--sfg); color:var(--sbg);
-    text-decoration:none; border-radius:8px; font-size:16px; font-weight:600; }
-  .seo-below .faq dt { font-weight:600; margin-top:22px; }
-  .seo-below .faq dd { margin:6px 0 0; color:#ccc; }
-  .seo-below .also { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
-  .seo-below .also a { font-size:14px; color:var(--sfg); border:1px solid var(--sline); border-radius:999px; padding:6px 14px; text-decoration:none; }
-  .seo-below .also a:hover { border-color:var(--sfg); }
-  .seo-below ul.freezes { list-style:none; margin:0 0 20px; padding:0; }
-  .seo-below ul.freezes li { font-size:16px; color:#ccc; padding:7px 0; border-bottom:1px solid var(--sline); }
-  .seo-below ul.freezes code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:14px; color:var(--sfg); }
-  .seo-below footer { margin-top:72px; padding-top:24px; border-top:1px solid var(--sline); font-size:13px; color:var(--smut); }
-  .seo-below footer a { color:var(--smut); }
+    font-optical-sizing:${p.axes.includes("'opsz'") ? 'none' : 'auto'}; }
 </style>
 </head>
 <body>
 <div id="root"></div>
-<article class="seo-below" id="about">
-<div class="wrap">
+<!-- The article is the page's one grid root: .wm-lines puts its text on the 3px line, .wm-grid
+     its column on the 24 with the house margin. The app above is outside it, in its own room. -->
+<main class="seo-below wm-lines" id="about">
+<article class="wrap wm-grid">
+<div class="seo-col">
   <div class="live-note">▲ Live above, already set to ${esc(p.referent)}. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></div>
   <nav class="crumb"><a href="${ORIGIN}/">WORDMARK</a> › <a href="${BASE}/">ReCal Sans</a> › ${esc(p.referent)} alternative</nav>
 
@@ -315,7 +285,7 @@ ${appCss}
          alt="${esc(ogAlt)}">
   </figure>
 
-  <div class="specimen-grid" aria-label="ReCal Sans specimen, all weights and italics, tuned toward ${esc(p.referent)}">
+  <div class="specimen-grid" data-nosnap aria-label="ReCal Sans specimen, all weights and italics, tuned toward ${esc(p.referent)}">
     ${(() => {
       // THE CAPS ARE STYLE NAMES, NOTHING MORE. They used to read "ReCal Sans Bold
       // Italic, reconfigured and inspired by <referent> Bold Italic" on all eight rows --
@@ -384,6 +354,7 @@ ${(() => {
   </footer>
 </div>
 </article>
+</main>
 <div class="seo-lb"><canvas id="lb-footer" aria-label="ReCal Sans"></canvas></div>
 <script type="module">
   import { createLetterbox } from '${BASE}/letterbox.js'
