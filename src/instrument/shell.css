@@ -13,17 +13,27 @@
                        its centre on a half pixel over the 2px track: (2 - 15) / 2)
      row gap       12  ReCal's (font-proofer's was 6)
      track inset   16  font-proofer's: the visible thumb clears the ends of a default rail
-   The rail's WIDTH is its columns: 6 of 24 from 1280, 8 of 24 from 1024, 5 of 12 below --
-   never under the 231px of row ReCal had. tests/render/rows.spec.ts asserts these numbers
+   The rail's WIDTH is its columns, on the bleed grid (no margin: Mark 2026-10-04, "no
+   margins ever" for the two tools): 5 of 24 at Mark's 1440 (281px), and never under the
+   264px ReCal's rail was live, so the span widens as the columns narrow --
+     5 of 24 from 1360   281 at 1440, 264 at 1360
+     6 of 24 from 1128   302 at 1280, 264 at 1128
+     7 of 24 from 1024   282 at 1024
+     5 of 12 below       320 at 800
+   (5 of 24 at 1280 would be 248.) A row is the rail's columns less the one-gutter pad on
+   the window side: 257 at 1440, never under the 231 of row ReCal had. Its rule sits in
+   the middle of the gutter, so Reset and the rows end ON the rail's last column line and
+   the stage's text starts on its first. tests/render/rows.spec.ts asserts these numbers
    are equal in both hosts. */
 :root {
   --axis-label-w: 126px;
   --dial-track-h: 24px;
   --dial-thumb: 14px;
   --rail-gap: 12px;
-  --rail-span: 6;
+  --rail-span: 5;
 }
-@media (max-width: 1279px) { :root { --rail-span: 8; } }
+@media (max-width: 1359px) { :root { --rail-span: 6; } }
+@media (max-width: 1127px) { :root { --rail-span: 7; } }
 @media (max-width: 1023px) { :root { --rail-span: 5; } }
 /* Fine pointers only: on touch the row is the primitive's 48 (16 lines) and its bar grows
    from 32 to 48 when engaged -- an unlayered 33 here would pin it and stop the growth. */
@@ -34,33 +44,42 @@
 .slider-row { --snap-unit: 1; }
 
 
-/* THE APP IS ON THE HOUSE GRID (wm-primitives grid.css): the 24 columns (12 below 1024)
-   with the house margin and gutter. The rail spans --rail-span of them (the ONE RAIL
-   block below says how many, and why never fewer than 231px of row), the canvas takes
-   what is left. The rail's ground runs out to the window's edge through the margin (its
-   box-shadow, below); its contents start ON the margin. */
+/* THE APP IS ON THE HOUSE GRID (wm-primitives grid.css), AS A TOOL: main is
+   .wm-grid.wm-grid--bleed (Shell.tsx), so the 24 columns (12 below 1024) run edge to edge
+   with the gutter and no margin -- Mark, 2026-10-04: a tool fills the window, no margin,
+   ever. The rail spans --rail-span of them (the ONE RAIL block above), the canvas takes
+   what is left. Text never sits flush against the window: grid.css pads a box that touches
+   an edge by one gutter, worked out from its --start / --span, so each edge box states
+   them (.rail, .canvas). */
 .shell {
-  display: grid;
-  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
-  column-gap: var(--grid-gutter);
-  padding-inline: var(--grid-margin);
   height: 100vh;
   overflow: hidden;
+  /* .wm-grid makes main a size container (for --grid-col's cqw). That would also make it
+     the containing block of the fixed Type panel and download dock, which then scroll
+     away with main on the fused SEO pages. Nothing here measures in cqw, and without a
+     container cqw is the viewport, which is main's width anyway. */
+  container-type: normal;
 }
 
 /* ── Rail — the font mutator (◆ file layer) ── */
 .rail {
   grid-column: 1 / span var(--rail-span);
-  /* the ground, out through the margin to the window's edge: a shadow the rail's own size,
-     moved left by the margin, so nothing in the layout has to know about it */
-  box-shadow: calc(-1 * var(--grid-margin)) 0 0 var(--surface);
+  /* On the window's left edge: column 1, its columns. grid.css pads it one gutter on that
+     side from these (the rail's text starts 24px in, never flush). */
+  --start: 1; --span: var(--rail-span); --start-md: 1; --span-md: var(--rail-span);
+  /* Its ground and rule run half the gutter past its last column, so the rule sits in the
+     middle of the gutter: the rail's contents (Reset, every row) end ON its last column
+     line, and the stage's text starts on its first, 12px either side of the rule. */
+  margin-inline-end: calc(var(--grid-gutter) / -2);
   border-right: 1px solid var(--border);
   background: var(--surface);
   /* No vertical padding: it lives on the header (below) so the sticky seams pin flush
      to the rail's top/bottom edges — padding here would leave a strip above/below a
      stuck seam that scrolling content bleeds through. */
-  /* left 0: the rail's text starts on the page margin, the column line */
-  padding: 0 var(--spacing-05, 16px) 0 0;
+  /* No inline-start here: that is grid.css's one-gutter pad (an unlayered padding-left
+     would replace it). Inline-end: the half gutter to the rule, less the rule's own 1px. */
+  padding-block: 0;
+  padding-inline-end: calc(var(--grid-gutter) / 2 - 1px);
   overflow-y: auto;
   scrollbar-gutter: stable;
   display: flex;
@@ -219,6 +238,14 @@
 /* ── Canvas — the dominant stage (shows the baked ◆ default at rest) ── */
 .canvas {
   grid-column: calc(var(--rail-span) + 1) / -1;
+  /* On the window's right edge: from the column after the rail to the last. grid.css would
+     pad it one gutter on that side from these; the canvas holds a STAGE (data-nosnap, its
+     own room), which runs to the window's edge, so the pad goes on the chrome rows inside
+     it instead (.canvas-bar, .mode-row, .preview-surface, .info-panel) and the canvas
+     itself keeps none. */
+  --start: calc(var(--rail-span) + 1); --span: calc(var(--grid-cols) - var(--rail-span));
+  --start-md: calc(var(--rail-span) + 1); --span-md: calc(var(--grid-cols) - var(--rail-span));
+  padding-inline-end: 0;
   position: relative;   /* anchors the Font info overlay to the top of the screen */
   display: flex;
   flex-direction: column;
@@ -264,7 +291,7 @@
      spec's baseline pairs hold the two together. */
   /* Inline 0, less the first tab's own 8px: "Words" -- the TEXT -- starts on the canvas's
      first column line, and the mode label under it (.mode-row, no inset) on the same line. */
-  padding: var(--spacing-04, 12px) 0 0;
+  padding: var(--spacing-04, 12px) var(--grid-gutter) 0 0;   /* right: one gutter from the window edge (the canvas has no pad) */
   margin-inline-start: calc(-1 * var(--spacing-03, 8px));
   /* six tabs do not fit a phone's canvas: the bar scrolls sideways rather than spill */
   overflow-x: auto;
@@ -291,7 +318,7 @@
                                   without a submenu so the stage never moves between modes; the UI scene measures
                                   this nav's height and floats it over the board, so the
                                   height may not depend on the submenu either */
-  padding: 0 0 var(--spacing-03, 8px);   /* no inset: the label's text is on the column line, under "Words" (canvas-bar) */
+  padding: 0 var(--grid-gutter) var(--spacing-03, 8px) 0;   /* no inset: the label's text is on the column line, under "Words" (canvas-bar); one gutter from the window on the right */
 }
 /* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
    always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
@@ -393,7 +420,8 @@
   z-index: 4;
   overflow-y: auto;
   scrollbar-gutter: stable;
-  padding: var(--spacing-05, 16px) var(--spacing-05, 16px) var(--spacing-06, 24px);
+  /* right: one gutter from the window's edge, where the panel ends */
+  padding: var(--spacing-05, 16px) var(--grid-gutter) var(--spacing-06, 24px) var(--spacing-05, 16px);
   text-align: right;
   --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
@@ -440,8 +468,9 @@
   z-index: 3;
   border-top: 1px solid var(--border);
   background: var(--surface);
-  /* inline 0: the caption and the play rail start on the canvas's first column line */
-  padding: var(--spacing-04, 12px) 0;
+  /* inline-start 0: the caption and the play rail start on the canvas's first column line;
+     inline-end one gutter: its right edge is the window's */
+  padding: var(--spacing-04, 12px) var(--grid-gutter) var(--spacing-04, 12px) 0;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-03, 8px);
@@ -716,7 +745,10 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Floating download dock — OFL + Download, bottom-right of the canvas (no floor row). */
 .dock-download {
   position: fixed;
-  right: var(--grid-margin); bottom: 16px;   /* its right edge on the page margin, with the canvas's */
+  right: var(--grid-gutter); bottom: 16px;   /* no margin in a tool: one gutter from the window's edge, with the chrome rows' */
+  /* and never past a gutter from the left one: on a phone it is wider than the canvas and
+     ran to x=0 */
+  max-width: calc(100vw - 2 * var(--grid-gutter));
   z-index: 50;
   display: flex; align-items: center; gap: var(--spacing-04, 12px);
   padding: var(--spacing-03, 8px) var(--spacing-03, 8px) var(--spacing-03, 8px) var(--spacing-05, 16px);
@@ -730,7 +762,7 @@ body.past-app .type-panel, body.past-app .dock-download { opacity: 0; pointer-ev
 /* Floating TYPE panel — viewport/render controls; draggable by its header. */
 .type-panel {
   position: fixed;
-  top: 56px; right: var(--grid-margin);   /* on the page margin until it is dragged */
+  top: 56px; right: var(--grid-gutter);   /* one gutter from the window's edge until it is dragged */
   z-index: 40;
   width: 178px;
   display: flex; flex-direction: column; gap: var(--spacing-04, 12px);

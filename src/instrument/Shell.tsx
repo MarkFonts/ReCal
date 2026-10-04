@@ -687,7 +687,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
         </div>
         {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
             disappearing never shifts the label (or stage) vertically. */}
-        <div className="mode-row">
+        {/* wm-baselines: the label and its submenu sit side by side, so they share a baseline
+            (the row moves whole, --snap-unit; the grid spec checks the row meets). */}
+        <div className="mode-row wm-baselines">
           <ModeLabel />
           <SceneControls mode={mode} source={source} setSource={setSource}
             pairs={pairs} togglePair={togglePair}
@@ -1111,7 +1113,9 @@ export default function Shell() {
   const emphItalVs = renderVarSettings({ ...effectiveAxes(state), ital: 1 }, {})
   const emphBoldVs = renderVarSettings({ ...effectiveAxes(state), wght: 700 }, {})
   return (
-    <main className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
+    // .wm-grid.wm-grid--bleed: the house columns with no margin -- a tool fills the window
+    // (wm-primitives GRID.md, "Pages and tools"); shell.css says what each edge box pads.
+    <main className={`shell wm-grid wm-grid--bleed${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
       <Rail collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
       <Canvas
         size={size} setSize={setSize}

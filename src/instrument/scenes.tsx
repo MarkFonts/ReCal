@@ -33,7 +33,8 @@ export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
   showInfo: boolean; toggleInfo: () => void
 }) {
   return (
-    <div className="modebar">
+    // wm-baselines: the tabs are one row of words, so they share one baseline (gridSnap.js)
+    <div className="modebar wm-baselines">
       {SCENES.map(s => (
         <button key={s.mode} data-label={s.label} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
           onClick={() => setMode(s.mode)}><span>{s.label}</span></button>
