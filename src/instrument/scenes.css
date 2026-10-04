@@ -21,7 +21,10 @@
   /* reserve the BOLD width always so active/idle weight never shifts layout */
   display: inline-flex;
   flex-direction: column;
-  align-items: center;
+  /* the words start at the padding edge, not centred in the bold width: an idle tab's
+     text sat (bold - regular) / 2 right of its line -- "Words" 1.4px off the stage's
+     column line while Paragraph was the active tab. The spare width goes to the right. */
+  align-items: flex-start;
 }
 .canvas .mode-btn::after, .canvas .text-tab::after, .canvas .chip::after {
   content: attr(data-label);

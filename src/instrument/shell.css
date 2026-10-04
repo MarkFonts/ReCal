@@ -328,9 +328,13 @@
                                   height may not depend on the submenu either */
   padding: 0 var(--grid-gutter) var(--spacing-03, 8px) 0;   /* no inset: the label's text is on the column line, under "Words" (canvas-bar); one gutter from the window on the right */
 }
-/* Fixed 154px box = distance from "Words" to "Scale", so the submenu after the label
-   always sits under the "Scale" tab and never jumps as the label swaps DEMO/EDIT/Saved. */
-.mode-row .mode-label { padding: var(--spacing-02, 6px) 0 0; width: 154px; flex: 0 0 auto; white-space: nowrap; }   /* the 6 step, two 3px lines (it was a tab button's 8 less 3): on the grid that lands the label's baseline on the rail caption's line in every mode (spec baseline pair) */
+/* A fixed box, so the submenu after the label never jumps as the label swaps DEMO / EDIT /
+   Saved: at least 154px (the widest label), rounded UP to whole columns so the submenu's
+   first WORD -- every submenu item insets its text 8px (a tab's padding, .body-pairing,
+   .ui-credit) -- starts on a column line of the stage: 3 columns on from the stage's first
+   at 1440 (305 + 3 x 61 = 488). It used to be 154 flat, which put the picker at 467, on
+   no line and under no tab. --grid-col is grid.css's column as a length. */
+.mode-row .mode-label { padding: var(--spacing-02, 6px) 0 0; width: calc(round(up, 154px + var(--spacing-03, 8px), var(--grid-col) + var(--grid-gutter)) - var(--spacing-03, 8px)); flex: 0 0 auto; white-space: nowrap; }   /* the 6 step, two 3px lines (it was a tab button's 8 less 3): on the grid that lands the label's baseline on the rail caption's line in every mode (spec baseline pair) */
 .mode-row .scene-bar { flex-direction: row; align-items: baseline; gap: 12px; padding: 0; }
 /* The Body-pairing label has no button padding; inset it 8px so its text lines up with
    the tab-text column (tab buttons inset their own text by 8px). */
