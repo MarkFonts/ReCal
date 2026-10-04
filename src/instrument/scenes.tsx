@@ -57,7 +57,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
     <div className="scene-bar">
       <div className="text-tabs">
         {GLYPH_SET_KEYS.map(k => (
-          <button key={k} data-label={k} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
+          <button key={k} data-label={k} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}><span>{k}</span></button>
         ))}
       </div>
     </div>
@@ -66,7 +66,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
     <div className="scene-bar">
       <div className="text-tabs">
         {TEXT_SOURCES.map(k => (
-          <button key={k} data-label={k} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>
+          <button key={k} data-label={k} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}><span>{k}</span></button>
         ))}
       </div>
     </div>
@@ -77,7 +77,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
         <span className="drawer-label">Body pairing</span>
         <div className="feature-chips">
           {BODY_TIERS.map(t => (
-            <button key={t.key} data-label={t.key} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}>{t.key}</button>
+            <button key={t.key} data-label={t.key} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}><span>{t.key}</span></button>
           ))}
         </div>
       </div>

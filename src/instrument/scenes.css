@@ -38,16 +38,26 @@
 /* OpenType/body chips: one step smaller (secondary tier), tighter side padding.
    Vertical padding keeps the ≥32px tap height; the horizontal gutter is free. */
 .canvas .chip { font-size: var(--type-ui-size, 0.75rem); padding: var(--spacing-03, 8px) var(--spacing-02, 6px); }
+/* THE MARKS ARE ON THE WORD, NOT THE BUTTON. The button is the hit target and reserves the
+   bold width (::after), and its words start at its padding edge so the first tab's glyphs
+   sit on the stage's column line -- which leaves the reserved width as dead space on the
+   right. So the rollover rule, the focus ring and the active underline are drawn on the
+   word itself (the label's <span>), sized to the text at its current weight. */
+.canvas :is(.mode-btn, .text-tab, .chip) > span { border-radius: var(--radius); }
 .canvas .mode-btn:hover, .canvas .text-tab:hover, .canvas .chip:hover {
   background: none;
   color: var(--text);
-  box-shadow: inset 0 0 0 1px var(--border);   /* thin rule on rollover, no fill */
+}
+.canvas :is(.mode-btn, .text-tab, .chip):hover:not(:disabled) > span {
+  outline: 1px solid var(--border);   /* thin rule on rollover, no fill: the old inset box, round the word */
+  outline-offset: var(--spacing-01, 4px);
 }
 .canvas .mode-btn.on, .canvas .text-tab.on, .canvas .chip.on {
   background: none;
-  box-shadow: none;
   color: var(--text);
   font-weight: 700;
+}
+.canvas :is(.mode-btn, .text-tab, .chip).on > span {
   text-decoration: underline;
   text-decoration-color: var(--accent);
   text-decoration-thickness: 1.5px;
@@ -55,17 +65,17 @@
 }
 .canvas .mode-btn:disabled, .canvas .text-tab:disabled, .canvas .chip:disabled {
   color: var(--text-dim);
-  box-shadow: none;
   cursor: default;
 }
+/* Focus: the house ring (chip.css .wm-chip:focus-visible -- 2px --accent outline, 2px
+   offset), on the word. It was a heavier underline, which read as "active". */
 .canvas .mode-btn:focus-visible, .canvas .text-tab:focus-visible, .canvas .chip:focus-visible {
   outline: none;
   color: var(--text);
-  box-shadow: none;
-  text-decoration: underline;
-  text-decoration-color: var(--accent);
-  text-decoration-thickness: 2.5px;
-  text-underline-offset: 5px;
+}
+.canvas :is(.mode-btn, .text-tab, .chip):focus-visible > span {
+  outline: 2px solid var(--accent, currentColor);
+  outline-offset: 2px;
 }
 
 .modebar { display: flex; gap: var(--spacing-01, 4px); }
@@ -296,10 +306,13 @@
 .compare-inline-btn {
   corner-shape: superellipse(var(--corner-k, 1.2));
 }
-.mode-btn:active:not(:disabled),
-.text-tab:active:not(:disabled),
-.chip:active:not(:disabled),
 .compare-inline-btn:active:not(:disabled) {
   background: none;
   box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) currentColor;
+}
+/* the tabs' press rule, like their hover rule, goes round the word (see the Modebar block) */
+:is(.mode-btn, .text-tab, .chip):active:not(:disabled) { background: none; }
+.canvas :is(.mode-btn, .text-tab, .chip):active:not(:disabled) > span {
+  outline: var(--stroke-press, 1.8px) solid currentColor;
+  outline-offset: var(--spacing-01, 4px);
 }
