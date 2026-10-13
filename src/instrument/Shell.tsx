@@ -48,38 +48,6 @@ function ResetIcon() {
   )
 }
 
-// ── Rail: the font mutator (◆) ────────────────────────────────────────────────
-function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSignal?: boolean }) {
-  const { state, dispatch } = useInstrument()
-  const { min, max } = AXIS_RANGES[tag]
-  const v = state.defaults.axes[tag]
-  // While this slider is held, GEOM-swap flashes hold their zone color (live map)
-  // and only fade on release. Window-level pointerup ends it even if released
-  // outside the thumb; keyboard changes don't set it (they read as instant jumps).
-  const onRangePointerDown = dragSignal
-    ? () => {
-        dispatch({ type: 'setGeomDragging', value: true })
-        const up = () => { dispatch({ type: 'setGeomDragging', value: false }); window.removeEventListener('pointerup', up) }
-        window.addEventListener('pointerup', up)
-      }
-    : undefined
-  return (
-    <AxisSlider
-      label={label}
-      tag={tag}
-      value={v}
-      min={min}
-      max={max}
-      step={tag === 'ital' ? 0.01 : 1}
-      variant="track"
-      reference={state.shipped[tag]}
-      onRangePointerDown={onRangePointerDown}
-      onChange={val => dispatch({ type: 'setDefaultAxis', tag, value: val as number })}
-    />
-  )
-}
-
-
 // The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
 const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics']
 const VMETRICS_ROW = 5
@@ -441,11 +409,10 @@ function TierMenu({ selected, toggle, scaleStyles }: {
   )
 }
 
-function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, feats, toggleFeat, resetFeats, featStr }: {
+function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
-  opszAuto: boolean
   feats: Set<string>; toggleFeat: (t: string) => void; resetFeats: () => void
   featStr: string
 }) {
@@ -535,7 +502,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
             {vmActive
               ? <VMetricsScene />
               : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
+                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet}
                   paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
                   fit={fit} topInset={uiOverlay ? navHeight : 0} />}
           </div>
@@ -865,7 +832,6 @@ export default function Shell() {
   const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
   const [leading, setLeading] = useState(1)
-  const [opszAuto, setOpszAuto] = useState(true)
   // Size-only: collapse when the window is narrow, pop open when it grows past 660px.
   const [railCollapsed, setRailCollapsed] = useState(() => window.matchMedia(RAIL_NARROW).matches)
   useEffect(() => {
@@ -885,11 +851,11 @@ export default function Shell() {
   const resetFeats = () => setFeats(new Set(FEATS_DEFAULT))
 
   // Entering EDIT resets all preview view-state to the ◆ default look (the store
-  // clears the ● axis preview; here we reset the local size/tracking/leading/opsz/feats).
+  // clears the ● axis preview; here we reset the local size/tracking/leading/feats).
   const prevMode = useRef(state.recalMode)
   useEffect(() => {
     if (state.recalMode === 'edit' && prevMode.current !== 'edit') {
-      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true); resetFeats()
+      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats()
     }
     prevMode.current = state.recalMode
   }, [state.recalMode])
@@ -949,7 +915,6 @@ export default function Shell() {
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}
         leading={leading} setLeading={setLeading}
-        opszAuto={opszAuto}
         feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats} featStr={featStr} />
       {/* Inline-emphasis bubble — shared wm-primitives component; labels use Cal Sans's real ital/bold axes */}
       <InlineEmphasisBubble

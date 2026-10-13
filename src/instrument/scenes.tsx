@@ -159,32 +159,6 @@ export const FEATURE_CHIPS: { tag: string; label: string }[] = [
   { tag: 'ordn', label: 'Ordinals' },
 ]
 
-// Real stylistic-set names from CalSansVF's GSUB FeatureParams. Shown as compact
-// ssNN tokens; the full name lives in title + aria-label. The ss family is the
-// manual override for the same variants GEOM drives automatically.
-export const SS_FEATURES: { tag: string; name: string }[] = [
-  { tag: 'ss01', name: 'Geometric a' },
-  { tag: 'ss02', name: 'Humanist a' },
-  { tag: 'ss03', name: 'Tailed a' },
-  { tag: 'ss04', name: 'Geometric g' },
-  { tag: 'ss05', name: 'Gothic g' },
-  { tag: 'ss06', name: 'Geometric G' },
-  { tag: 'ss07', name: 'Humanist G' },
-  { tag: 'ss08', name: 'Constructed j and y' },
-  { tag: 'ss09', name: 'Humanist j and y' },
-  { tag: 'ss10', name: 'Futura alternatives' },
-  { tag: 'ss11', name: 'Futura alternatives and ligations' },
-  { tag: 'ss12', name: 'Angular M' },
-  { tag: 'ss13', name: 'Square M' },
-  { tag: 'ss14', name: 'Constructed f and t' },
-  { tag: 'ss15', name: 'Humanist f and t' },
-  { tag: 'ss16', name: 'Humanist/Grotesk 6 and 9' },
-  { tag: 'ss17', name: 'Geometric/legible 6 and 9' },
-  { tag: 'ss18', name: 'A11Y I l a' },
-  { tag: 'ss19', name: 'Constructed l' },
-  { tag: 'ss20', name: 'Horizontal Sharps' },
-]
-
 // ── Scenes ──────────────────────────────────────────────────────────────────────
 // SEO landing pages boot Paragraph with a referent-aware pitch as its own source tab.
 if (BOOT.pitch) {
@@ -197,7 +171,7 @@ export const TEXT_SOURCES = Object.keys(TEXT_PRESETS)
 
 export type SceneProps = {
   size: number; ls: string; leading: number; featStr: string
-  source: string; measure: number; pairs: Set<string>; glyphSet: string; opszAuto: boolean
+  source: string; measure: number; pairs: Set<string>; glyphSet: string
   paraStyles: ParaStyles
   scaleStyles: ScaleStyles; selectedTiers: Set<string>
   /** Line fitting, from the Type panel. Paragraph only; other scenes ignore it. */
@@ -508,9 +482,9 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
   )
 }
 
-function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
+function Words({ size, ls, leading, featStr }: SceneProps) {
   const { state } = useInstrument()
-  const op = opszCss(state.defaults, opszAuto)
+  const op = opszCss(state.defaults, true)
   const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   // Words/Scale only swap for a live webfont; static-SVG referents render only their
   // Paragraph specimen, so here they fall back to Cal Sans.
@@ -522,7 +496,7 @@ function Words({ size, ls, leading, featStr, opszAuto }: SceneProps) {
   return (
     <div className="stage-pad words-scene">
       <div className="words-edit specimen edit-rail" contentEditable suppressContentEditableWarning
-        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', whiteSpace: 'pre-wrap', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto }) : {}) }}
+        style={{ fontSize: size, lineHeight: leading, textAlign: 'center', whiteSpace: 'pre-wrap', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto: true }) : {}) }}
         onFocus={() => setFocused(true)}
         // innerText (not textContent) preserves soft line breaks: Enter inserts <br>/<div>
         // nodes that textContent would concatenate with no \n, flattening the layout.
@@ -604,10 +578,10 @@ function CompareSvg({ url }: { url: string }) {
   return <div className="compare-svg" dangerouslySetInnerHTML={{ __html: markup }} />
 }
 
-function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSource }: SceneProps) {
+function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
-  const op = opszCss(state.defaults, opszAuto)
+  const op = opszCss(state.defaults, true)
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, op.renderOpts)
   const italVs = renderVarSettings({ ...axes, ital: 1 }, op.renderOpts)
   // Comparing to a referent with a live webfont → restyle the blocks (compareStyle).
@@ -734,7 +708,7 @@ function Paragraph({ featStr, source, measure, opszAuto, paraStyles, fit, setSou
               ref={el => { if (el) { refs.current[b.id] = el; if (!el.textContent) el.textContent = b.text } else delete refs.current[b.id] }}
               contentEditable suppressContentEditableWarning spellCheck={false}
               className={`para-block para-block--${b.type} edit-rail`}
-              style={{ textAlign: st.align, fontSize: st.size, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto }) : {}) }}
+              style={{ textAlign: st.align, fontSize: st.size, lineHeight: vmLH ?? st.leading, transform: vmShift ? `translateY(${vmShift}em)` : undefined, fontVariationSettings: blockVs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: `${st.tracking / 100}em`, ...(cmp ? compareStyle(cmp, { ...axes, wght: cmp.headingWght && b.type !== 'p' ? cmp.headingWght : st.wght }, { opszAuto: true }) : {}) }}
               onMouseDown={e => { if (!focused) pending.current = { id: b.id, offset: caretCharOffset(e.currentTarget, e.clientX, e.clientY) } }}
               onFocus={() => focus(b.id)}
               onBlur={e => {
@@ -843,9 +817,9 @@ function loadCmap(): Promise<CmapRanges | null> {
   return cmapPromise
 }
 
-function Glyphs({ featStr, glyphSet, opszAuto }: SceneProps) {
+function Glyphs({ featStr, glyphSet }: SceneProps) {
   const { state } = useInstrument()
-  const op = opszCss(state.defaults, opszAuto)
+  const op = opszCss(state.defaults, true)
   const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   const { flashes, clear, dragging } = useGridFlash()
   const [ranges, setRanges] = useState<CmapRanges | null>(null)
