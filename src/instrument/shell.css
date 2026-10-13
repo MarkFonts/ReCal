@@ -41,6 +41,24 @@
   white-space: nowrap;
 }
 .rail--collapsed:hover .rail-collapsed-label { color: var(--text); }
+/* Under the same breakpoint an OPEN rail does not squeeze the canvas to a sliver: it covers
+   the whole viewport (the canvas, and its Try bar, wait behind it) and shows a Close row at
+   the top. The strip's 44px column stays, so the canvas keeps its width for when it closes. */
+.rail-close { display: none; }
+@media (max-width: 800px) {
+  .shell:not(.shell--rail-collapsed) { grid-template-columns: 44px 1fr; }
+  .shell:not(.shell--rail-collapsed) .rail { position: fixed; inset: 0; z-index: 300; border-right: 0; }
+  .shell:not(.shell--rail-collapsed) .try { display: none; }
+  .rail-close {
+    display: inline-flex; align-items: center; gap: var(--spacing-02, 6px); align-self: flex-start;
+    min-height: 32px; margin-top: var(--spacing-05, 16px); margin-bottom: calc(-1 * var(--spacing-05, 16px));
+    padding: 0 var(--spacing-04, 12px); border-radius: var(--radius-pill);
+    background: none; border: 1px solid var(--border);
+    color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer;
+  }
+  .rail-close:hover { background: var(--text); color: var(--bg); border-color: var(--text); }
+  .rail-close-chv { transform: rotate(90deg); }   /* the house chevron, turned to point back toward the strip */
+}
 .rail-header { display: flex; flex-direction: column; gap: var(--spacing-01, 4px); padding-top: var(--spacing-05, 16px); }
 /* Title + Reset share the top row (aligned); subtitle gets its own full-width row
    below, so it stays one line and never collides with the button. */

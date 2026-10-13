@@ -242,6 +242,10 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       onPointerDown={() => { if (!collapsed && state.recalMode !== 'edit') dispatch({ type: 'setRecalMode', mode: 'edit' }) }}
       onClick={collapsed ? onToggle : undefined}>
       <div className="rail-collapsed-label">ReCal Builder</div>
+      {/* Narrow windows only (CSS): the open rail covers the whole viewport, so this is the way back. */}
+      <button className="rail-close" onClick={onToggle}>
+        <Chevron dir={-1} width={10} height={6} className="rail-close-chv" />Close
+      </button>
       <div className="rail-header">
         <div className="rail-header-top">
           <div className="rail-title">ReCal Builder</div>
