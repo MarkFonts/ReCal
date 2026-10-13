@@ -727,21 +727,28 @@
 /* Shared slider look (native range on tokens) */
 .shell input[type="range"] { width: 100%; accent-color: var(--accent); }
 
-/* ── stack seams: every row header is a centered seam label ───────────────────
-   Rows above the open one point up, rows below point down; all muted except the row
-   right after the open one, which is the holo (holo.css, .is-next). */
+/* ── stack seams: every row header is a left-aligned row ──────────────────────
+   [number] [TITLE ........ chevron] on one line, the muted summary under the title (indented
+   to the title's x, not the number's). Rows above the open one point up, rows below point
+   down, the open row has no chevron; all muted except the row right after the open one,
+   which is the holo (holo.css, .is-next). */
 .rail-seam {
-  all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  all: unset; box-sizing: border-box; display: grid; grid-template-columns: 22px minmax(0, 1fr); align-items: baseline;
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
-  gap: 3px; cursor: pointer; user-select: none; padding: var(--spacing-04, 12px) 0;
+  row-gap: 3px; cursor: pointer; user-select: none; padding: var(--spacing-04, 12px) 0 var(--spacing-03, 9px);
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: var(--track-caps);
   color: rgba(232,232,232,.35);
 }
 .rail-seam:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
-.rail-seam-lbl { white-space: nowrap; text-transform: uppercase; }
+.rail-seam-num { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim); }
+.rail-seam.is-open .rail-seam-num { color: var(--text); }
+.rail-seam-lbl { display: block; min-width: 0; white-space: nowrap; text-transform: uppercase; }
 .rail-seam.is-open { color: var(--text); }
 .rail-seam:not(.is-next):hover:not(.is-open) { color: rgba(232,232,232,.6); }
-.rail-seam-sum { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim); }
+.rail-seam-sum {
+  grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim);
+}
 .rail-row { border-top: 1px solid var(--border-subtle); }
 .rail-row:first-child { border-top: 0; }
 .rail-row-body { display: flex; flex-direction: column; gap: var(--spacing-04, 12px); padding-bottom: var(--spacing-05, 16px); }

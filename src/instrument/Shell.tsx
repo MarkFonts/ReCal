@@ -81,7 +81,7 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
 
 
 // The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
-const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharp', 'Type Matrix', 'Freezer', 'Vertical metrics']
+const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics']
 const VMETRICS_ROW = 5
 const OPSZ_FROZEN_BLOCKED = 'Turn off Auto ascender to freeze optical size: it needs the optical size axis.'
 const AUTO_ASC_BLOCKED = 'Unavailable while optical size is frozen: the ascender follows the optical size axis, and freezing removes it.'
@@ -139,19 +139,21 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
   )
 }
 
-// One stack row: a centered seam label + a muted value summary. Rows above the open one
-// point up, rows below point down; only the row right after the open one carries the holo
-// (holo.css `.is-next`). The chevrons are masked spans (house chevron geometry), see holo.css.
-function RailRow({ label, summary, open, above, next, dir, onToggle, children }: {
-  label: string; summary: string; open: boolean; above: boolean; next: boolean
+// One stack row: a left-aligned header (number, uppercase title, ONE chevron on the right
+// margin) + a muted value summary under the title. Rows above the open one point up, rows
+// below point down, the open row has none; only the row right after the open one carries the
+// holo (holo.css `.is-next`). The chevron is a masked span inside the title, so the holo band
+// runs continuously across word and chevron (house chevron geometry, see holo.css).
+function RailRow({ n, label, summary, open, above, next, dir, onToggle, children }: {
+  n: number; label: string; summary: string; open: boolean; above: boolean; next: boolean
   dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
 }) {
-  const chv = open ? null : <span className="rail-seam-chv-t" aria-hidden="true" />
   return (
     <div className="rail-row">
       <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
         aria-expanded={open} onClick={onToggle}>
-        <span className="rail-seam-lbl">{chv}{label}{chv && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
+        <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
+        <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
         {!open && <span className="rail-seam-sum tnum">{summary}</span>}
       </button>
       {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
@@ -195,7 +197,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
   const summaries = [
     `GEOM ${Math.round(d.axes.GEOM)} · ${Math.round(d.axes.wght)}`,
     d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×`,
-    `Asc ${Math.round(d.axes.YTAS)} · Sharp ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
+    `Asc ${Math.round(d.axes.YTAS)} · Sharpness ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
     edited ? `${edited} moved` : 'stock swaps',
     frozenTags.length ? (frozenTags.length > 3 ? `${frozenTags.slice(0, 3).join(' · ')} +${frozenTags.length - 3}` : frozenTags.join(' · ')) : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
@@ -205,7 +207,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     <OpticalSize note={opszNote} onNote={() => setOpszNote(true)} />,
     <div className="rail-row-body">
       <Pin tag="YTAS" label="Ascender" />
-      <Pin tag="SHRP" label="Sharp" />
+      <Pin tag="SHRP" label="Sharpness" />
       <label className="rail-toggle" title={d.freezeOpsz ? AUTO_ASC_BLOCKED : undefined}
         style={d.freezeOpsz ? { opacity: .38, cursor: 'default' } : undefined}>
         <input type="checkbox" checked={d.autoAscender} disabled={d.freezeOpsz}
@@ -260,7 +262,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
 
       <div className="rail-stack">
         {ROW_LABELS.map((label, i) => (
-          <RailRow key={label} label={label} summary={summaries[i]} dir={dir}
+          <RailRow key={label} n={i + 1} label={label} summary={summaries[i]} dir={dir}
             open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
             onToggle={() => toggle(i)}>
             {bodies[i]}

@@ -1250,7 +1250,7 @@ export default function App() {
                 )}
                 {shrpAxis && (
                   <div className="pm-ctrl">
-                    <div className="pm-label">Sharp <span className="pm-val">{Math.round(m.axisValues['SHRP'] ?? shrpAxis.default)}</span></div>
+                    <div className="pm-label">Sharpness <span className="pm-val">{Math.round(m.axisValues['SHRP'] ?? shrpAxis.default)}</span></div>
                     <input type="range" min={shrpAxis.min} max={shrpAxis.max} step={1}
                       value={m.axisValues['SHRP'] ?? shrpAxis.default}
                       onChange={e => setAxis('SHRP', +e.target.value)} />
