@@ -760,8 +760,12 @@
   padding: 6px 0; border: 0; border-radius: 6px; background: none; color: var(--text-muted); cursor: pointer;
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem);
 }
-.rail-seg button:hover:not([aria-disabled="true"]) { background: none; color: var(--text); }
-.rail-seg button.on { background: var(--surface-hi); color: var(--text); }
+/* App.css paints every button:hover white, so the hover rule has to reset the background. It
+   must skip .on: the selected segment keeps its fill under the pointer, or clicking Frozen
+   (pointer still on it) un-highlights the choice you just made. */
+.rail-seg button:hover:not([aria-disabled="true"]):not(.on) { background: none; color: var(--text); }
+.rail-seg button.on,
+.rail-seg button.on:hover:not([aria-disabled="true"]) { background: var(--surface-hi); color: var(--text); }
 .rail-seg button[aria-disabled="true"] { opacity: .38; cursor: default; }
 .rail-help { margin: 0; font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; color: var(--text-dim); }
 .rail-help--note { color: var(--text-muted); }

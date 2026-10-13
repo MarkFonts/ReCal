@@ -108,7 +108,7 @@ export function ShapePad() {
           {LANDING_ZONES.map((z, i) => (
             <span key={z.label} className="shape-pad-col"
               style={{
-                fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${wMin}`,
+                fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${wMin}, 'opsz' 8`,
                 color: chipColor(z.label),
                 // First label sits inside the left edge, last inside the right edge.
                 ...(i === 0 ? { left: PAD_X + 3, transform: 'none' }
