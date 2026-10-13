@@ -624,14 +624,16 @@
 .rail-help { margin: 0; font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; color: var(--text-dim); }
 .rail-help--note { color: var(--text-muted); }
 
-/* Shape pad: GEOM across, weight up. Plotted area is inset PAD_X / PAD_TOP / PAD_BOT (ShapePad.tsx). */
+/* Pads (ShapePad.tsx): x across, y up. Plotted area is inset PAD_X / --pad-top / PAD_BOT; the
+   pad sets --pad-top and its own height. Shape: GEOM × weight. Ascender & Sharpness: SHRP × YTAS. */
 .shape-pad {
+  --pad-top: 42px; --zone-flat: var(--marker-default);   /* a pad with no zones has a plain knob */
   position: relative; height: 198px; border-radius: var(--radius); background: var(--bg);
   cursor: crosshair; touch-action: none; user-select: none; overflow: hidden;
 }
 .shape-pad:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
 .shape-pad-band { position: absolute; top: 0; bottom: 0; pointer-events: none; }
-.shape-pad-dots { position: absolute; left: 9px; right: 9px; top: 42px; bottom: 9px; width: calc(100% - 18px); height: calc(100% - 51px); overflow: visible; fill: var(--border); pointer-events: none; }
+.shape-pad-dots { position: absolute; left: 9px; right: 9px; top: var(--pad-top); bottom: 9px; width: calc(100% - 18px); height: calc(100% - var(--pad-top) - 9px); overflow: visible; fill: var(--border); pointer-events: none; }
 .shape-pad-cols { position: absolute; left: 0; right: 0; top: 6px; height: 30px; pointer-events: none; }
 /* Column label: the word "Cal" sampled at the zone's form. The ACTIVE zone's label becomes a
    filled pill carrying that zone's HDR swatch (a fill survives at this size; thin text would
@@ -648,13 +650,14 @@
 /* One number style for every GEOM / weight figure on the pad and the matrix rulers. */
 .geom-num { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); color: var(--text-dim); font-variant-numeric: tabular-nums; line-height: 12px; }
 .shape-pad-ylab { position: absolute; right: 9px; pointer-events: none; }
+.shape-pad-ylab--off { opacity: .38; }   /* the axis is locked (Auto ascender) */
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
   box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
 }
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
 .shape-readout > div {
-  display: flex; justify-content: space-between; align-items: baseline; padding: 8px 12px;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 8px 12px;
   border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--bg);
   font-size: var(--type-ui-size, 0.75rem);
 }

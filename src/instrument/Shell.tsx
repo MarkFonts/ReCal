@@ -25,7 +25,7 @@ import { useFontEngine, type ExportConfig } from './useFontEngine'
 import { Matrix } from './Matrix'
 import { Freezer } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
-import { ShapePad } from './ShapePad'
+import { ShapePad, AscenderPad } from './ShapePad'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOURS', color: 'var(--marker-default)' },
@@ -215,8 +215,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     <div className="rail-row-body"><ShapePad /></div>,
     <OpticalSize note={opszNote} onNote={() => setOpszNote(true)} />,
     <div className="rail-row-body">
-      <Pin tag="YTAS" label="Ascender" />
-      <Pin tag="SHRP" label="Sharpness" />
+      <AscenderPad />
       <label className="rail-toggle" title={d.freezeOpsz ? AUTO_ASC_BLOCKED : undefined}
         style={d.freezeOpsz ? { opacity: .38, cursor: 'default' } : undefined}>
         <input type="checkbox" checked={d.autoAscender} disabled={d.freezeOpsz}
