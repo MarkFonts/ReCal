@@ -5,23 +5,21 @@
 // grab, false on release, so a swapping glyph holds its zone color while you drag and fades
 // when you let go (useGeomFlash in scenes.tsx; the Freezer gold reads the same flag).
 // Column labels are GLYPHS, not zone names: "Cal" set at each zone's sample GEOM.
-import { useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { AXIS_RANGES } from './store'
 import { LANDING_ZONES } from '../GlyphGroups'
-import { ZONE_CHIP_COLOR } from '../zoneColors'
+import { GEOM_INSET, chipColor, geomFromClientX, geomLeft, geomSpan, zoneBandBackground } from './geomAxis'
 
 // Inset of the plotted area inside the pad, in px. CSS reads them as custom properties so
 // the knob, dots and pointer math can't drift apart.
-const PAD_X = 9
+const PAD_X = GEOM_INSET
 const PAD_TOP = 42
 const PAD_BOT = 9
 const COLS = 17      // dot lattice: GEOM every 6.25
+const COL_PAD = 4    // horizontal padding of a column label (the pill when active)
 const ROWS = 4       // dot lattice: weight every 100
-
-const chipColor = (label: string) =>
-  ZONE_CHIP_COLOR[(label === 'A11Y' ? 'A11y' : label) as keyof typeof ZONE_CHIP_COLOR]
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
@@ -35,15 +33,41 @@ export function ShapePad() {
   const { min: wMin, max: wMax } = AXIS_RANGES.wght
   const { min: gMin, max: gMax } = AXIS_RANGES.GEOM
   const padRef = useRef<HTMLDivElement>(null)
+  // Column labels sit centered on their band, clamped so none crosses the plot's inner edge.
+  // Widths are measured (the glyphs are variable and the font loads late), so positions are px.
+  const colRefs = useRef<(HTMLSpanElement | null)[]>([])
+  const [colX, setColX] = useState<number[] | null>(null)
+  const measureCols = () => {
+    const pad = padRef.current
+    if (!pad) return
+    const plotW = pad.clientWidth - 2 * PAD_X
+    const next = LANDING_ZONES.map((z, i) => {
+      const el = colRefs.current[i]
+      const w = Math.max(0, (el?.offsetWidth ?? 0) - 2 * COL_PAD)   // the word, not its pill
+      const c = PAD_X + plotW * (((z.start + z.end) / 2 - gMin) / (gMax - gMin))
+      return Math.max(PAD_X + w / 2, Math.min(pad.clientWidth - PAD_X - w / 2, c))
+    })
+    setColX(prev => (prev && prev.length === next.length && prev.every((v, i) => Math.abs(v - next[i]) < 0.25) ? prev : next))
+  }
+  useLayoutEffect(measureCols)
+  useEffect(() => {
+    const pad = padRef.current
+    if (!pad) return
+    const ro = new ResizeObserver(measureCols)
+    ro.observe(pad)
+    colRefs.current.forEach(el => el && ro.observe(el))
+    document.fonts?.ready.then(measureCols)
+    return () => ro.disconnect()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const setGeom = (v: number) => dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: v })
   const setWght = (v: number) => dispatch({ type: 'setDefaultAxis', tag: 'wght', value: v })
 
   const fromPointer = (e: { clientX: number; clientY: number }) => {
     const r = padRef.current!.getBoundingClientRect()
-    const x = clamp01((e.clientX - r.left - PAD_X) / (r.width - 2 * PAD_X))
     const y = clamp01((e.clientY - r.top - PAD_TOP) / (r.height - PAD_TOP - PAD_BOT))
-    return { g: Math.round(gMin + x * (gMax - gMin)), w: Math.round(wMax - y * (wMax - wMin)) }
+    return { g: Math.round(geomFromClientX(e.clientX, r)), w: Math.round(wMax - y * (wMax - wMin)) }
   }
 
   // Grab: one undo grain per drag (like a matrix drag), snapshotted on the first real move.
@@ -81,7 +105,8 @@ export function ShapePad() {
     e.preventDefault()
   }
 
-  const gPct = (g: number) => `calc(${PAD_X}px + (100% - ${2 * PAD_X}px) * ${(g - gMin) / (gMax - gMin)})`
+  const gPct = geomLeft
+  const active = nearestZone(geom)
   const wPct = (w: number) => `calc(${PAD_TOP}px + (100% - ${PAD_TOP + PAD_BOT}px) * ${1 - (w - wMin) / (wMax - wMin)})`
 
   return (
@@ -95,8 +120,8 @@ export function ShapePad() {
         {LANDING_ZONES.map(z => (
           <div key={z.label} className="shape-pad-band"
             style={{
-              left: gPct(z.start), width: `calc((100% - ${2 * PAD_X}px) * ${(z.end - z.start) / (gMax - gMin)})`,
-              background: `color-mix(in srgb, ${chipColor(z.label)} 7%, transparent)`,
+              left: gPct(z.start), width: geomSpan(z.start, z.end),
+              background: zoneBandBackground(z.label),
             }} />
         ))}
         <svg className="shape-pad-dots" aria-hidden="true">
@@ -106,21 +131,22 @@ export function ShapePad() {
         </svg>
         <div className="shape-pad-cols" aria-hidden="true">
           {LANDING_ZONES.map((z, i) => (
-            <span key={z.label} className="shape-pad-col"
+            <span key={z.label} className={`shape-pad-col${z.label === active ? ' on' : ''}`}
+              data-zone={z.label}
+              ref={el => { colRefs.current[i] = el }}
               style={{
                 fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${wMin}, 'opsz' 8.2`,
                 letterSpacing: '0.03em',
-                color: chipColor(z.label),
-                // First label sits inside the left edge, last inside the right edge.
-                ...(i === 0 ? { left: PAD_X + 3, transform: 'none' }
-                  : i === LANDING_ZONES.length - 1 ? { left: 'auto', right: PAD_X + 3, transform: 'none' }
-                  : { left: gPct(z.sampleGeom) }),
+                color: z.label === active ? 'var(--bg)' : chipColor(z.label),
+                left: colX ? colX[i] : gPct((z.start + z.end) / 2),
+                transform: 'translateX(calc(-50% + 0.015em))',
+                visibility: colX ? 'visible' : 'hidden',
               }}>Cal</span>
           ))}
         </div>
-        <span className="shape-pad-ylab" style={{ top: PAD_TOP - 6 }} aria-hidden="true">{wMax}</span>
-        <span className="shape-pad-ylab" style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{wMin}</span>
-        <div className="shape-pad-knob" style={{ left: gPct(geom), top: wPct(wght) }} />
+        <span className="shape-pad-ylab geom-num tnum" style={{ top: PAD_TOP - 6 }} aria-hidden="true">{wMax}</span>
+        <span className="shape-pad-ylab geom-num tnum" style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{wMin}</span>
+        <div className="shape-pad-knob" data-zone={active} style={{ left: gPct(geom), top: wPct(wght) }} />
       </div>
       <div className="shape-readout">
         <div><span>GEOM {nearestZone(geom)}</span><span className="tnum">{Math.round(geom)}</span></div>

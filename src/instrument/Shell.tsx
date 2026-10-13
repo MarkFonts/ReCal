@@ -144,9 +144,9 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
 // below point down, the open row has none; only the row right after the open one carries the
 // holo (holo.css `.is-next`). The chevron is a masked span inside the title, so the holo band
 // runs continuously across word and chevron (house chevron geometry, see holo.css).
-function RailRow({ n, label, summary, open, above, next, dir, onToggle, children }: {
+function RailRow({ n, label, summary, open, above, next, dir, onToggle, action, children }: {
   n: number; label: string; summary: string; open: boolean; above: boolean; next: boolean
-  dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
+  dir: 'fwd' | 'back'; onToggle: () => void; action?: React.ReactNode; children: React.ReactNode
 }) {
   return (
     <div className="rail-row">
@@ -156,6 +156,7 @@ function RailRow({ n, label, summary, open, above, next, dir, onToggle, children
         <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
         {!open && <span className="rail-seam-sum tnum">{summary}</span>}
       </button>
+      {open && action && <div className="rail-seam-action">{action}</div>}
       {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
     </div>
   )
@@ -201,6 +202,14 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     edited ? `${edited} moved` : 'stock swaps',
     frozenTags.length ? (frozenTags.length > 3 ? `${frozenTags.slice(0, 3).join(' · ')} +${frozenTags.length - 3}` : frozenTags.join(' · ')) : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
+  ]
+  const matrixDirty = JSON.stringify(d.glyphThresholds) !== JSON.stringify(state.shippedThresholds)
+  const actions: React.ReactNode[] = [
+    null, null, null,
+    matrixDirty ? (
+      <button className="matrix-reset"
+        onClick={() => dispatch({ type: 'setThresholds', thresholds: state.shippedThresholds })}>reset</button>
+    ) : null,
   ]
   const bodies: React.ReactNode[] = [
     <div className="rail-row-body"><ShapePad /></div>,
@@ -264,7 +273,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
         {ROW_LABELS.map((label, i) => (
           <RailRow key={label} n={i + 1} label={label} summary={summaries[i]} dir={dir}
             open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
-            onToggle={() => toggle(i)}>
+            onToggle={() => toggle(i)} action={actions[i]}>
             {bodies[i]}
           </RailRow>
         ))}

@@ -455,169 +455,16 @@
   background: var(--surface);
 }
 .floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); }
-.zone-chips { display: flex; gap: 4px; flex-wrap: wrap; }
-/* The GEOM zones are near-primary actions, so they carry weight, not just color.
-   ACTIVE zone takes a fill (zone color IS information); inactive keeps its hue at full
-   strength — the old .6 opacity made them read as disabled.
-   Weight DOES change between states now. It used to be banned to avoid reflow; instead
-   each chip renders its own label a second time at the heavier weight, hidden and stacked
-   underneath, so the box is always sized for the bold form and nothing moves. */
-.zone-chip {
-  display: inline-grid;
-  padding: 6px 12px;
-  border-radius: var(--radius-pill);
-  corner-shape: superellipse(var(--corner-k, 1.2));
-  border: none;
-  background: transparent;
-  font-family: var(--ui-font);
-  font-size: var(--type-ui-size, 0.75rem);
-  font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-off, 450);
-  cursor: pointer;
+/* THE ZONE HDR SWATCHES, once. Baked radial ramps (hue at 1216 nits in the core, falling to
+   its 203-nit SDR level at the rim), PQ-encoded per channel so the hue holds. The Shape pad's
+   active label pill and knob read these; the old GEOM chips that carried them are gone. Pair
+   with background-color (the SDR fallback), background-size 512px and dynamic-range-limit: no-limit. */
+:root {
+  --zone-hdr-a11y: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hJMhlrw/rk8neqXGuhocc+d1yg8if+dFMa1VS6mN4TiTvLafrpsbr7VHggtwpGO9rkBpA3zorwwQOc7EUwEYMRy6jcB4PHgDacWbhwZHAQ2v39tlcYM5iuRRiivlIYHaETinSQq0eW4M+Vj/d8S8SMxsKzyd5WpuBkWzk1b9xNrgmHxuJu8uIXou3Ns02ehZ79lsnbsLS3iaY9AhRqdwAWK5z5+k');
+  --zone-hdr-ui: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hGLDZLsPI/TfPL+ddSiGEPi+eoE6UD4j3aKHM03vSb2zZ9qquF7osjdobEweHIKFlzBr0Jpq8RMj2DX1ObMIWLlXw4EiZTXFKV88wQnStBG89mjD146LbDpkGlZafKkFDsUyxVDzIMJ9hyMPCvmZCoKF0tyt9hHftuzQU/f2aEnHEHwMEokPCW7Mtt38Ei+//8Eu8y7OYJ5cnhZm3Y6WFMLryidm');
+  --zone-hdr-base: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMcAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARkAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAysgEQAYSABhhhiPS5K3Gq2+EwqHui6wk4h9XLVX3qeNb2RPdyVfdwmwkJJQKQ3jsVteZGwm1XOQH3Nm3+rRdouSexP40bBhTbytJdke3imHNaBf62iQEERzcn6dLbRNnbXnevUbXN413QEk61BfbttxNuqnAvBHAWJU0dLgHkuqBYVVGfWtmQsXaeQi/heQoTHzwnd2qaK63+Y9xR5cOks07dR1C+DQbRBd/1zrnk6X9WH1QQ');
+  --zone-hdr-geo: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMoAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARwAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAytQEQAYSABhhhiPS5hIa2va1T3o+EdcaRkWZc/sSI69aSmYJjo85Uu8R167RwWh0RaLtCCeLcqow6MvQ/zW9xhaJiW+ejcmRmBvLbQTrWc0irljEfQrF0ZE60WM1oArK0HjD6Obp9xLghNBaJ33tYQ2ZWQRHLTAf2kboSWyyf59rfiSlmqqkWT533SlXanEZ2EghKQHia7oKxTWfI+R7GHNmcQrXlkjAQX0f7ZGDZkm9vw+589aT0');
 }
-.zone-chip > span { grid-area: 1 / 1; }
-.zone-chip::after {
-  content: attr(data-label);
-  grid-area: 1 / 1;
-  visibility: hidden;
-  pointer-events: none;
-  font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-on, 630);
-}
-/* THE LIGHT CROSSES THE WHOLE ROW, not just the chosen chip. Every chip carries the same
-   ramp at the same moment -- the only difference is what lets it through: an inactive chip
-   reveals it through its LETTERS and its outline, the active one through its whole body.
-   So activating a chip is the same light filling a larger opening, rather than one
-   treatment being swapped for another, which is what made the change read as a jump. */
-.zone-chip {
-  position: relative;
-  /* THE REACH OF THE LIGHT, and the only number to turn. The swatch is baked at 256px but
-     its size on screen is this -- scaling one image is free, where re-baking per reach is
-     not. Smaller reads as a specular hit that follows the cursor; larger reads as a wash
-     the chip sits inside. The JS clamp derives its radius from this, so the two cannot
-     drift. */
-  /* The IMAGE is 512px; the bright core inside it is ~40px. They are different numbers on
-     purpose. The image has to cover the chip at all times -- an image edge inside the chip
-     is an SDR/HDR seam, and no nit value hides one, because on macOS EDR the level a flat
-     colour composites to follows the brightness slider. At 512 the light can travel ~156px
-     past the chip before the edge could reach it, so panning fast runs out of screen
-     before it runs out of image. */
-  --glow-size: 512px;
-  /* DECLARED here even though JS is what writes it. The pointer handler sets --glow-pos
-     per frame, so the stylesheet only ever READ it -- and a property read in three places
-     and declared in none is exactly what the token lint is for: it cannot tell a live
-     JS-driven value from a typo. Declaring the resting state fixes that and documents the
-     default where someone reading the CSS would look.
-     Off-element, not centred: a cursor-driven light that is lit before the cursor arrives
-     is not a light, it is a blob parked in the middle of the word. */
-  --glow-pos: -9999px -9999px;
-  /* The ramp's resting place is OFF the element, not `center`. A cursor-driven light that
-     is already on before the cursor arrives is not a light -- and at a 40px reach the
-     default parked a bright disc in the middle of every label, so "START" was lit and
-     "FROM" was not. It reads as a defect, which is exactly what it is. Off-canvas until
-     the pointer writes a real position, so at rest everything is simply its flat colour. */
-    background-image: var(--zone-chip-hdr, none);
-  background-size: var(--glow-size) var(--glow-size);
-  background-position: var(--glow-pos);
-  background-repeat: no-repeat;
-  dynamic-range-limit: no-limit;
-}
-/* Inactive: the ramp is clipped to the glyphs. The chip's own hue stays underneath as the
-   SDR fallback, so on a non-HDR display it is exactly the flat colour it always was. */
-.zone-chip:not(.on) {
-  /* THE HUE UNDER THE RAMP, or the label disappears. With background-clip:text the glyphs
-     are painted by the BACKGROUND and nothing else -- text-fill-color is transparent -- so
-     a 40px ramp paints a 40px disc of the word and leaves the rest of it invisible. At the
-     old 256px reach the ramp covered the whole chip and this was hidden; shrinking it to a
-     cursor-sized specular is what exposed it. background-color is clipped to the text too,
-     so it fills every glyph with the flat zone colour and the image only brightens the
-     part the cursor is near. */
-  background-color: var(--zone-chip-flat);
-  color: var(--zone-chip-flat);
-  -webkit-background-clip: text; background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.zone-chip.on {
-  color: var(--bg);
-  font-variation-settings: 'GEOM' 25, 'wght' var(--chip-wght-on, 630);
-  /* THE CHOSEN CHIP IS PAINTED ABOVE SDR WHITE. The fill already carries the information
-     -- zone colour IS the state -- so the boost is not decoration, it is that statement
-     said louder. No mask needed here: the pill is the shape, so the swatch is simply its
-     background, unlike a mark where the glyph has to clip it.
-     Each hue is its OWN swatch, baked per channel. A white swatch would have flattened
-     these to white; the sRGB hex is linearised, gained so its brightest channel lands on
-     1216 nits, then PQ-encoded per channel -- which preserves hue and saturation exactly
-     while pushing the colour as far above reference white as it goes. 1216 is the same
-     figure the marks use (field-247's own peak), so a chip cannot outshine a headline.
-     background-color stays underneath as the SDR fallback: on a non-HDR display, in a
-     screenshot, or if the data URI ever fails, the chip is still its flat zone colour. */
-  background-color: var(--zone-chip-flat, transparent);
-  background-image: var(--zone-chip-hdr, none);
-  /* THE BOOST FOLLOWS THE CURSOR. The swatch is a baked RADIAL ramp -- the hue at 1216
-     nits in the centre falling to its 203-nit SDR level at the rim -- panned under the
-     chip so its bright spot sits wherever the pointer is. A CSS radial-gradient() cannot
-     do this: every CSS colour syntax clamps at reference white.
-     The image is larger than the chip on purpose; the chip is a window onto it, and what
-     shows through is a slice of the ramp rather than the whole thing. Beyond the image the
-     background-color takes over, so a chip the cursor is nowhere near is simply its own
-     flat colour -- which is what makes the glow read as proximity rather than as state. */
-  background-size: var(--glow-size) var(--glow-size);
-  /* ONE property holding the whole position, defaulting to `center` -- NOT a percentage
-     minus a length. A percentage background-position resolves against (box - image), so
-     on a 100px chip under a 256px ramp `50%` is already -78px; subtracting a further 128
-     put the image at -206 and dropped its right edge at mid-chip, which is the hard
-     vertical seam you get before the pointer has moved. Mixing the two units was the bug;
-     `center` centres the ramp with no arithmetic at all. */
-  background-position: var(--glow-pos);
-  background-repeat: no-repeat;
-  dynamic-range-limit: no-limit;
-}
-.zone-chip[data-label="A11y"] { --zone-chip-flat: var(--zone-a11y-chip); --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hJMhlrw/rk8neqXGuhocc+d1yg8if+dFMa1VS6mN4TiTvLafrpsbr7VHggtwpGO9rkBpA3zorwwQOc7EUwEYMRy6jcB4PHgDacWbhwZHAQ2v39tlcYM5iuRRiivlIYHaETinSQq0eW4M+Vj/d8S8SMxsKzyd5WpuBkWzk1b9xNrgmHxuJu8uIXou3Ns02ehZ79lsnbsLS3iaY9AhRqdwAWK5z5+k'); }
-.zone-chip[data-label="UI"]   { --zone-chip-flat: var(--zone-ui-chip);   --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hGLDZLsPI/TfPL+ddSiGEPi+eoE6UD4j3aKHM03vSb2zZ9qquF7osjdobEweHIKFlzBr0Jpq8RMj2DX1ObMIWLlXw4EiZTXFKV88wQnStBG89mjD146LbDpkGlZafKkFDsUyxVDzIMJ9hyMPCvmZCoKF0tyt9hHftuzQU/f2aEnHEHwMEokPCW7Mtt38Ei+//8Eu8y7OYJ5cnhZm3Y6WFMLryidm'); }
-.zone-chip[data-label="Base"] { --zone-chip-flat: var(--zone-base-chip); --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMcAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARkAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAysgEQAYSABhhhiPS5K3Gq2+EwqHui6wk4h9XLVX3qeNb2RPdyVfdwmwkJJQKQ3jsVteZGwm1XOQH3Nm3+rRdouSexP40bBhTbytJdke3imHNaBf62iQEERzcn6dLbRNnbXnevUbXN413QEk61BfbttxNuqnAvBHAWJU0dLgHkuqBYVVGfWtmQsXaeQi/heQoTHzwnd2qaK63+Y9xR5cOks07dR1C+DQbRBd/1zrnk6X9WH1QQ'); }
-.zone-chip[data-label="Geo"]  { --zone-chip-flat: var(--zone-geo-chip);  --zone-chip-hdr: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMoAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARwAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAytQEQAYSABhhhiPS5hIa2va1T3o+EdcaRkWZc/sSI69aSmYJjo85Uu8R167RwWh0RaLtCCeLcqow6MvQ/zW9xhaJiW+ejcmRmBvLbQTrWc0irljEfQrF0ZE60WM1oArK0HjD6Obp9xLghNBaJ33tYQ2ZWQRHLTAf2kboSWyyf59rfiSlmqqkWT533SlXanEZ2EghKQHia7oKxTWfI+R7GHNmcQrXlkjAQX0f7ZGDZkm9vw+589aT0'); }
-/* THE OUTLINE IS THE ZONE COLOUR WITH THE RAMP ON TOP OF IT. Two layers in one ring: the
-   flat hue draws the border everywhere, and the PQ gradient rides over it, brightening the
-   stretch nearest the cursor. That ordering matters -- image over colour, not instead of
-   it -- because at a 40px reach the ramp only covers a short arc, and a ring made of the
-   image alone was invisible everywhere else. That was the broken outline.
-   box-shadow cannot do this: it takes a colour, never an image. So the border is a masked
-   pseudo-element -- two rounded rects, one inset by the stroke width, composited to leave
-   just the ring. */
-.zone-chip:not(.on)::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  corner-shape: inherit;
-  padding: var(--stroke-hover, 1.2px);
-  background-color: var(--zone-chip-flat);
-    background-image: var(--zone-chip-hdr, none);
-  background-size: var(--glow-size) var(--glow-size);
-  background-position: var(--glow-pos);
-  background-repeat: no-repeat;
-  dynamic-range-limit: no-limit;
-  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  pointer-events: none;
-}
-.zone-chip:not(.on):hover:not(:disabled) {
-  /* No box-shadow here any more -- ::before IS the border now, and two would double it.
-     NOT `background: none` either, as the original had: an inactive chip carries the
-     travelling ramp in its letters, and that shorthand would put the light out exactly
-     when you reach for the chip. */
-}
-/* Press: the stroke lands before the fill does. Beats .on deliberately — the stroke
-   acknowledges the tap, the fill confirms it on release. */
-/* Pressed with a FILL, not the house inset stroke. A box-shadow follows border-radius
-   and not corner-shape, so on a pill — where the whole edge is curved — the ring paints
-   as a rounded rectangle inside the squircle and shows while the tap is held. A
-   background is clipped to the real shape. Noted in corners.css. */
-.zone-chip:active:not(:disabled) {
-  background: var(--surface-press);
-}
-.zone-chip:focus-visible { outline: none; box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) var(--accent); }
 .floor-spacer { flex: 1; }
 .floor-btn {
   padding: 8px 16px;
@@ -752,7 +599,7 @@
 .rail-row { border-top: 1px solid var(--border-subtle); }
 .rail-row:first-child { border-top: 0; }
 .rail-row-body { display: flex; flex-direction: column; gap: var(--spacing-04, 12px); padding-bottom: var(--spacing-05, 16px); }
-.rail-stack { display: flex; flex-direction: column; }
+.rail-stack { display: flex; flex-direction: column; position: relative; z-index: 0; }  /* own stacking context: diamonds (z 3) cannot climb over the pinned footer (z 2) */
 .rail--demo .rail-stack { opacity: .2; }
 .rail .rail-stack { transition: opacity var(--dur) ease; }
 
@@ -786,11 +633,24 @@
 .shape-pad-band { position: absolute; top: 0; bottom: 0; pointer-events: none; }
 .shape-pad-dots { position: absolute; left: 9px; right: 9px; top: 42px; bottom: 9px; width: calc(100% - 18px); height: calc(100% - 51px); overflow: visible; fill: var(--border); pointer-events: none; }
 .shape-pad-cols { position: absolute; left: 0; right: 0; top: 6px; height: 30px; pointer-events: none; }
-.shape-pad-col { position: absolute; transform: translateX(-50%); font-size: var(--type-lede-size, 1.125rem); line-height: 30px; white-space: nowrap; }
-.shape-pad-ylab { position: absolute; right: 9px; font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); color: var(--text-dim); pointer-events: none; }
+/* Column label: the word "Cal" sampled at the zone's form. The ACTIVE zone's label becomes a
+   filled pill carrying that zone's HDR swatch (a fill survives at this size; thin text would
+   lose it), dark ink on top. The other three stay flat zone-colored text. */
+.shape-pad-col {
+  position: absolute; top: 4px; padding: 0 4px; border-radius: var(--radius-pill);
+  font-size: var(--type-lede-size, 1.125rem); line-height: 22px; white-space: nowrap;
+}
+.shape-pad-col.on, .shape-pad-knob { background-color: var(--zone-flat); background-image: var(--zone-hdr, none); background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit; }
+.shape-pad [data-zone="A11Y"] { --zone-flat: var(--zone-a11y-chip);  --zone-hdr: var(--zone-hdr-a11y); }
+.shape-pad [data-zone="UI"]   { --zone-flat: var(--zone-ui-chip);    --zone-hdr: var(--zone-hdr-ui); }
+.shape-pad [data-zone="Base"] { --zone-flat: var(--zone-base-chip);  --zone-hdr: var(--zone-hdr-base); }
+.shape-pad [data-zone="Geo"]  { --zone-flat: var(--zone-geo-chip);   --zone-hdr: var(--zone-hdr-geo); }
+/* One number style for every GEOM / weight figure on the pad and the matrix rulers. */
+.geom-num { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); color: var(--text-dim); font-variant-numeric: tabular-nums; line-height: 12px; }
+.shape-pad-ylab { position: absolute; right: 9px; pointer-events: none; }
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
-  background: var(--text); box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
+  box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
 }
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
 .shape-readout > div {
@@ -883,33 +743,30 @@
 /* ── GEOM swap editor (type matrix), instrument-styled ── */
 /* Horizontal padding insets everything together (bands, shade, axis labels are all
    positioned within this box), so nothing jams the rail edge. */
-.matrix { display: flex; flex-direction: column; padding: 0 var(--spacing-02, 6px); }
-/* The 6px is the rows'; the head steps back out so its title sits on the rail's 16 with every other label. */
-.matrix-head { display: flex; align-items: center; justify-content: space-between; margin: 0 calc(-1 * var(--spacing-02, 6px)) 16px; }
-.matrix-title { font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); color: var(--text-muted); text-transform: uppercase; }
+/* Pad and matrix share one GEOM ruler (geomAxis.ts): the component is full width and every
+   x is placed through geomLeft, so GEOM 0 and 100 sit at the pad's inset in both. */
+.matrix { display: flex; flex-direction: column; }
+/* Reset lives on the row heading, right-aligned (RailRow action). */
+.rail-row { position: relative; }
+.rail-seam-action { position: absolute; top: 7px; right: 0; z-index: 1; }
 .matrix-reset {
-  all: unset; cursor: pointer; font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted);
-  padding: 2px 8px; border-radius: 5px; transition: color var(--dur-fast, 140ms), background var(--dur-fast, 140ms), opacity var(--dur-fast, 140ms);
+  font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase;
+  padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer;
+  color: var(--text); font-weight: 600; background: var(--surface-hi);
 }
-/* Engaged (there are edits to undo) — full-opacity white + pill so it clearly reads
-   as actionable, not the muted header gray. */
-.matrix-reset:not(:disabled) { color: var(--text); font-weight: 600; background: var(--surface-hi); }
-.matrix-reset:hover:not(:disabled) { background: var(--surface); }
-.matrix-reset:disabled { color: var(--text-faint); font-weight: 400; background: none; cursor: default; }
+.matrix-reset:hover { background: var(--surface); }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
-.matrix-axis-tick { position: absolute; top: 0; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: rgba(255,255,255,.2); }
-.matrix-axis-tick--mid { transform: translateX(-50%); }
-.matrix-axis-tick--end { transform: translateX(-100%); }
-.matrix-rows { display: flex; flex-direction: column; gap: 4px; position: relative; }
-/* Fade the shade in/out vertically so the band eases in at the top and out at the
-   bottom instead of hard-cutting at the first / last lane. */
-.matrix-geom-shade {
-  position: absolute; inset: 0; z-index: 0; pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 calc(100% - 10px), transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0, #000 12px, #000 calc(100% - 10px), transparent 100%);
-}
-/* No z-index here: the lane must NOT form a stacking context, so its ◆ handles (z:3)
-   win the click over the GEOM grabber (z:2) wherever they overlap the default line. */
+.matrix-axis-tick { position: absolute; top: 0; transform: translateX(-50%); }
+/* Opaque in the rail surface: it is allowed to cover the tick it lands on. */
+.matrix-default-tag { position: absolute; top: 0; z-index: 1; padding: 0 3px; background: var(--surface); white-space: nowrap; }
+/* The lanes sit on the pad's own panel, with the pad's zone washes behind them. */
+.matrix-rows { display: flex; flex-direction: column; gap: 4px; position: relative; background: var(--bg); border-radius: var(--radius); padding: 12px 0 6px; }
+.matrix-zone { position: absolute; top: 0; bottom: 0; pointer-events: none; }
+/* Your default GEOM: one line through every lane, ringed like the pad's knob. Never takes
+   the pointer (the grabber below does), so it cannot block a diamond. */
+.matrix-default { position: absolute; top: 0; bottom: 0; width: 1px; transform: translateX(-50%); background: var(--text); pointer-events: none; z-index: 1; }
+.matrix-default::before { content: ''; position: absolute; top: 1px; left: 50%; width: 9px; height: 9px; transform: translateX(-50%); border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg); }
+
 .matrix-lane { position: relative; height: 34px; }
 .matrix-band { position: absolute; top: 25px; height: 3px; border-radius: 2px; opacity: .38; transition: opacity var(--dur-fast); }
 .matrix-band.on { opacity: 1; }
@@ -967,7 +824,7 @@
   background: var(--surface-hi); padding: 1px 6px; border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
   pointer-events: none; z-index: 5; white-space: nowrap;
 }
-.matrix-val--geom { top: -2px; }
+.matrix-val--geom { top: 2px; }
 .matrix-val--in { animation: matrix-val-in .18s var(--spring); }
 .matrix-val--out { animation: matrix-val-out .24s ease-in forwards; }
 @keyframes matrix-val-in { from { opacity: 0; transform: translateX(-50%) translateY(6px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
