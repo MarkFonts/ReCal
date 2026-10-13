@@ -51,6 +51,12 @@
      two different visual species (control-mapping §5, spec directive 3). */
   --accent:         #e8e8e8;        /* primary action + ◆ */
   --marker-default: var(--accent);  /* ◆ YOUR default */
+  /* The house signal (wm-primitives color.css) is acid in dark. ReCal stays neutral grey
+     everywhere: the package's fills read --accent first (grey here), its thin uses (focus
+     rings, the active value's number and underline) read --signal-ink first, so both are
+     pinned to --accent. Opt a surface into acid by re-pointing them there. */
+  --signal:         var(--accent);
+  --signal-ink:     var(--accent);
   --marker-preview: #999;           /* ● PREVIEWING */
   /* STOCK narrator only. It takes the A11Y zone hue BY REFERENCE, not by coincidence:
      one literal written twice gets changed for one reason and silently breaks the other.
