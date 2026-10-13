@@ -1,6 +1,6 @@
 // Font-export engine for the instrument UI — ports the legacy App.tsx download path.
 // Owns the Pyodide/fontTools worker, loads the font on demand, and exposes a
-// promise-based `download(config)` that returns the baked TTF bytes. The worker,
+// promise-based `download(config)` that returns the baked bytes (+ kind: lone TTF or statics .zip). The worker,
 // the `applyConfig` message, and `_rebuild_fv` (what-you-preview-is-what-you-get)
 // are the SAME ones the classic app uses — only the wiring is new.
 //
@@ -20,7 +20,13 @@ export interface ExportConfig {
   thresholds: Record<string, number[]>   // ◆ GEOM swap map → FeatureVariations
   frozenFeatures: string[]               // ◆ ssXX/cvXX/tnum/… fused into the default + stripped
   vmetrics: VMetrics                     // ◆ OS/2 + hhea vertical metrics
+  statics?: boolean                      // also cut wght 400/500/600/700 (× italic if the font has `ital`) → .zip
+  familyName?: string                    // family for the statics' names + file names (default 'ReCal Sans')
 }
+
+// What a bake yields: the lone variable TTF, or — with `statics` — a .zip holding it plus
+// the static cuts. `kind` tells the caller which extension to save under.
+export interface BakeResult { bytes: ArrayBuffer; kind: 'ttf' | 'zip' }
 
 // Preview rebuild config — the rebuild-only edits CSS can't show (opsz-axis rescale/pin +
 // FeatureVariations threshold rewrite). Axis DEFAULTS stay stock here (the instrument
@@ -60,9 +66,9 @@ export function useFontEngine(useHoi: boolean) {
   // (or two edits) can't clobber each other's result. Each applyConfig carries an id
   // the worker echoes back; `bake` is single-flight per config key (JSON) so calling
   // it repeatedly — e.g. from every prefetch trigger — reuses one in-flight job.
-  const pending = useRef(new Map<number, { resolve: (b: ArrayBuffer) => void; reject: (e: unknown) => void }>())
+  const pending = useRef(new Map<number, { resolve: (b: BakeResult) => void; reject: (e: unknown) => void }>())
   const idRef = useRef(0)
-  const bakeCacheRef = useRef<{ key: string; promise: Promise<ArrayBuffer> } | null>(null)
+  const bakeCacheRef = useRef<{ key: string; promise: Promise<BakeResult> } | null>(null)
   const bakedKeys = useRef(new Set<string>())          // configs whose bake has resolved
   const queuedBakes = useRef<{ id: number; config: ExportConfig }[]>([])  // requested pre-ready
   const rebuildingRef = useRef(false)
@@ -72,6 +78,7 @@ export function useFontEngine(useHoi: boolean) {
   const [building, setBuilding] = useState(false)
   const [rebuilding, setRebuilding] = useState(false)   // preview (◆) recompile in flight
   const [error, setError] = useState<string | null>(null)
+  const [progress, setProgress] = useState<string | null>(null)   // statics bake step, e.g. 'Static 3/8: SemiBold'
 
   // Preview @font-face plumbing: the latest requested config (re-fired once the worker
   // is ready / after a HOI font reload), plus the injected CalSansPreview style element.
@@ -114,8 +121,11 @@ export function useFontEngine(useHoi: boolean) {
           worker.postMessage({ type: 'applyConfig', configJson: JSON.stringify(b.config), id: b.id })
         queuedBakes.current = []
       } else if (msg.type === 'fontResult') {
-        pending.current.get(msg.id)?.resolve(msg.ttf as ArrayBuffer)
+        pending.current.get(msg.id)?.resolve({ bytes: msg.ttf as ArrayBuffer, kind: msg.kind === 'zip' ? 'zip' : 'ttf' })
         pending.current.delete(msg.id)
+        setProgress(null)
+      } else if (msg.type === 'progress' && typeof msg.message === 'string') {
+        setProgress(msg.message)
       } else if (msg.type === 'previewFontResult') {
         injectPreviewFace(msg.ttf as ArrayBuffer)
         setRebuilding(false); rebuildingRef.current = false
@@ -124,7 +134,7 @@ export function useFontEngine(useHoi: boolean) {
       } else if (msg.type === 'error') {
         console.error('[fontEngine]', msg.message)
         setError(String(msg.message))
-        setBuilding(false)
+        setBuilding(false); setProgress(null)
         setRebuilding(false); rebuildingRef.current = false
         pending.current.forEach(p => p.reject(new Error(String(msg.message))))
         pending.current.clear()
@@ -147,17 +157,17 @@ export function useFontEngine(useHoi: boolean) {
   // Single-flight bake: one job per config key. Returns a cached promise for a key
   // already baking/baked, so prefetch triggers can call it freely. Posts to the worker
   // now if ready, else queues to fire on axisInfo.
-  const bake = useCallback((config: ExportConfig): Promise<ArrayBuffer> => {
+  const bake = useCallback((config: ExportConfig): Promise<BakeResult> => {
     const key = JSON.stringify(config)
     if (bakeCacheRef.current?.key === key) return bakeCacheRef.current.promise
     init()
     const id = ++idRef.current
-    const promise = new Promise<ArrayBuffer>((resolve, reject) => {
+    const promise = new Promise<BakeResult>((resolve, reject) => {
       pending.current.set(id, { resolve, reject })
       const msg = { type: 'applyConfig' as const, configJson: JSON.stringify(config), id }
       if (workerRef.current && readyRef.current) workerRef.current.postMessage(msg)
       else queuedBakes.current.push({ id, config })
-    }).then(buf => { bakedKeys.current.add(key); return buf })
+    }).then(res => { bakedKeys.current.add(key); return res })
     bakeCacheRef.current = { key, promise }
     return promise
   }, [init])
@@ -176,7 +186,7 @@ export function useFontEngine(useHoi: boolean) {
 
   // Real download: instant if the exact config was already pre-baked, else shows
   // Building… while it bakes.
-  const download = useCallback(async (config: ExportConfig): Promise<ArrayBuffer> => {
+  const download = useCallback(async (config: ExportConfig): Promise<BakeResult> => {
     setError(null)
     const cached = bakedKeys.current.has(JSON.stringify(config))
     if (!cached) setBuilding(true)
@@ -200,5 +210,5 @@ export function useFontEngine(useHoi: boolean) {
     if (faceUrlRef.current) { URL.revokeObjectURL(faceUrlRef.current); faceUrlRef.current = null }
   }, [])
 
-  return { started, ready, building, rebuilding, error, init, prebake, download, rebuildPreview, clearPreviewFont }
+  return { started, ready, building, rebuilding, error, progress, init, prebake, download, rebuildPreview, clearPreviewFont }
 }

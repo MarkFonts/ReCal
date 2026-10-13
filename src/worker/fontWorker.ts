@@ -13,7 +13,8 @@ type WorkerToMain =
   | { type: 'status'; message: string }
   | { type: 'ready' }
   | { type: 'axisInfo'; axisInfoJson: string }
-  | { type: 'fontResult'; ttf: ArrayBuffer; id: number }
+  | { type: 'fontResult'; ttf: ArrayBuffer; kind: 'ttf' | 'zip'; id: number }   // zip = statics export
+  | { type: 'progress'; message: string }
   | { type: 'previewFontResult'; ttf: ArrayBuffer }
   | { type: 'measureWordsResult'; dataJson: string }
   | { type: 'error'; message: string }
@@ -320,6 +321,129 @@ def _freeze_features(font, tags, geom):
             if cp in tbl.cmap:
                 tbl.cmap[cp] = ng
 
+# ── Static instances ─────────────────────────────────────────────────────────────
+# Optional "statics" export: wght 400/500/600/700 (x roman/italic when the font has an
+# ital axis), each a fully-instanced non-variable TTF cut from the processed font.
+_STATIC_WEIGHTS = [(400, 'Regular'), (500, 'Medium'), (600, 'SemiBold'), (700, 'Bold')]
+
+# Legacy four-style naming, extended in _set_recal_names' style. Regular and Bold share
+# the plain family in nameID 1; Medium/SemiBold get their own nameID-1 family
+# ("<family> Medium") with subfamily Regular/Italic so Word-style menus still resolve.
+# 16/17 always carry the typographic family + full style name.
+def _set_static_names(font, family, wght, wname, italic, version):
+    nt = font['name']
+    for n in list(nt.names):
+        if n.nameID in (16, 17, 21, 22, 25) or n.nameID >= 256:
+            nt.removeNames(nameID=n.nameID)
+    typo_style = wname if not italic else ('Italic' if wname == 'Regular' else wname + ' Italic')
+    legacy_fam = family if wname in ('Regular', 'Bold') else family + ' ' + wname
+    legacy_sub = ('Bold' if wname == 'Bold' else 'Regular')
+    if italic:
+        legacy_sub = 'Bold Italic' if wname == 'Bold' else 'Italic'
+    ps = family.replace(' ', '') + '-' + typo_style.replace(' ', '')
+    for nameID, value in [(1, legacy_fam), (2, legacy_sub), (3, '%s;%s' % (version, ps)),
+                          (4, family + ' ' + typo_style), (6, ps), (16, family), (17, typo_style)]:
+        nt.setName(value, nameID, 3, 1, 0x0409)
+    os2 = font['OS/2']
+    os2.usWeightClass = int(wght)
+    fs = os2.fsSelection & ~((1 << 0) | (1 << 5) | (1 << 6))     # keep USE_TYPO_METRICS (bit 7) etc.
+    if italic:
+        fs |= 1 << 0
+    if wname == 'Bold':
+        fs |= 1 << 5
+    if not italic and wname != 'Bold':
+        fs |= 1 << 6
+    os2.fsSelection = fs
+    font['head'].macStyle = (1 if wname == 'Bold' else 0) | (2 if italic else 0)
+    return ps
+
+# Slant (degrees, post.italicAngle sign: negative = leaning right) read off the longest
+# near-vertical edge of "I" — the instancer leaves post.italicAngle at 0 (no MVAR entry).
+def _measure_italic_angle(font):
+    import math
+    from fontTools.pens.recordingPen import RecordingPen
+    try:
+        cmap = font.getBestCmap()
+        gn = cmap.get(ord('I')) or cmap.get(ord('H'))
+        pen = RecordingPen()
+        font.getGlyphSet()[gn].draw(pen)
+        contours, cur = [], []
+        for op, args in pen.value:
+            if op in ('moveTo', 'lineTo'):
+                if op == 'moveTo' and cur:
+                    contours.append(cur); cur = []
+                cur.append(args[0])
+        if cur:
+            contours.append(cur)
+        best, best_len = None, 0.0
+        for c in contours:
+            for (x0, y0), (x1, y1) in zip(c, c[1:] + c[:1]):
+                dx, dy = x1 - x0, y1 - y0
+                if abs(dy) > abs(dx) and math.hypot(dx, dy) > best_len:
+                    best_len = math.hypot(dx, dy)
+                    if dy < 0:
+                        dx, dy = -dx, -dy
+                    best = -math.degrees(math.atan2(dx, dy))
+        return None if best is None else round(best, 2)
+    except Exception:
+        return None
+
+# Pin EVERY axis of the processed font for a static cut: wght/ital per style, opsz to the
+# frozen value (else the axis default), everything else (GEOM, YTAS, SHRP…) to the user's
+# shifted default. Each cut re-loads the snapshot bytes, so cuts can't contaminate each
+# other or the variable font.
+def _build_static(snapshot, family, wght, wname, italic, freeze_opsz, frozen_opsz, auto_ascender, version):
+    f = TTFont(io.BytesIO(snapshot))
+    pins = {}
+    for a in f['fvar'].axes:
+        t = a.axisTag
+        if t == 'wght':
+            v = float(wght)
+        elif t == 'ital':
+            v = 1.0 if italic else 0.0
+        elif t == 'opsz' and freeze_opsz and auto_ascender:
+            # Freeze is disabled under auto ascender, so the variable font still carries
+            # opsz. Cal Sans's avar2 only maps YTAS from opsz across 8–14 and nothing at
+            # >=14, so pinning opsz >= 14 with YTAS at its default is exact. A frozen
+            # value below 14 would change YTAS in the VF — fall back to 14 (the default).
+            v = float(frozen_opsz) if frozen_opsz is not None and float(frozen_opsz) >= 14 else a.defaultValue
+        else:
+            v = a.defaultValue
+        pins[t] = min(max(float(v), a.minValue), a.maxValue)
+    # only some builds list ital; a roman-only source just gets the roman set (see caller)
+    f = instantiateVariableFont(f, pins, inplace=True)
+    for tag in ('STAT', 'fvar', 'avar', 'gvar', 'HVAR', 'MVAR', 'VVAR'):
+        if tag in f:
+            del f[tag]
+    ps = _set_static_names(f, family, wght, wname, italic, version)
+    if italic:
+        ang = _measure_italic_angle(f)
+        if ang is not None:
+            import math
+            f['post'].italicAngle = ang
+            f['hhea'].caretSlopeRise = 1000
+            f['hhea'].caretSlopeRun = int(round(-1000 * math.tan(math.radians(ang))))
+    out = io.BytesIO(); f.save(out)
+    return ps + '.ttf', out.getvalue()
+
+def _build_statics_zip(snapshot, vf_bytes, family, freeze_opsz, frozen_opsz, auto_ascender, progress=None):
+    import zipfile
+    probe = TTFont(io.BytesIO(snapshot))
+    has_ital = any(a.axisTag == 'ital' for a in probe['fvar'].axes)
+    version = '%.3f' % probe['head'].fontRevision
+    del probe
+    ps_fam = family.replace(' ', '')
+    jobs = [(w, n, it) for it in ([False, True] if has_ital else [False]) for (w, n) in _STATIC_WEIGHTS]
+    zbuf = io.BytesIO()
+    with zipfile.ZipFile(zbuf, 'w', zipfile.ZIP_DEFLATED) as z:
+        z.writestr(ps_fam + '-Variable.ttf', vf_bytes)
+        for i, (w, n, it) in enumerate(jobs):
+            if progress:
+                progress('Static %d/%d: %s' % (i + 1, len(jobs), n + (' Italic' if it else '')))
+            fname, data = _build_static(snapshot, family, w, n, it, freeze_opsz, frozen_opsz, auto_ascender, version)
+            z.writestr(fname, data)
+    return zbuf.getvalue()
+
 axes_out = []
 for axis in _font_cache['fvar'].axes:
     name = _font_cache['name'].getDebugName(axis.axisNameID) or axis.axisTag
@@ -484,6 +608,7 @@ _measure_words()
     } else if (msg.type === 'applyConfig') {
       // Only called on download — no live debouncing
       pyodide.globals.set('_config_json', msg.configJson)
+      pyodide.globals.set('_bake_progress', (m: string) => post({ type: 'progress', message: String(m) }))
 
       const ttfPy = await pyodide.runPythonAsync(`
 import io, json, logging, time
@@ -562,10 +687,6 @@ elif opsz_m != 1:
             instance.coordinates['opsz'] *= opsz_m
 _t_inst = time.perf_counter()
 
-# Auto Ascender → graft Flex's avar2 (opsz->YTAS) onto the result + hide YTAS.
-if auto_ascender:
-    _graft_avar2(result)
-
 # Vertical metrics → OS/2 (typo asc/desc/gap, win asc/desc, USE_TYPO bit) + hhea
 # (asc/desc/gap). Metrics are global, so this is safe after instancing. The WORDMARK
 # default equals the shipped values, so a default config writes them back unchanged.
@@ -586,23 +707,53 @@ if vm:
     else:
         _os2.fsSelection &= ~(1 << 7)
 
-_set_recal_names(result)
+# Statics are cut from the font as it stands HERE — defaults shifted, features frozen,
+# vmetrics written — but BEFORE the avar2 graft, so they carry no avar2 at all.
+statics = bool(config.get('statics', False))
+if statics:
+    _static_snapshot = io.BytesIO(); result.save(_static_snapshot)
+    _static_snapshot = _static_snapshot.getvalue()
+
+# Auto Ascender → graft Flex's avar2 (opsz->YTAS) onto the result + hide YTAS.
+# (After the vmetrics write — they touch disjoint tables, so the VF is byte-identical
+# to the old order.)
+if auto_ascender:
+    _graft_avar2(result)
+
+# The VF keeps the stock 'ReCal Sans' name unless statics are on, where it must share
+# the cuts' family so the zip installs as one family.
+family = (config.get('familyName') or 'ReCal Sans').strip() or 'ReCal Sans'
+if statics:
+    _set_recal_names(result, family)
+else:
+    _set_recal_names(result)
 out = io.BytesIO()
 result.save(out)
 _t_save = time.perf_counter()
 
+_bake_kind = 'ttf'
+_bake_bytes = out.getvalue()
+if statics:
+    _bake_bytes = _build_statics_zip(_static_snapshot, _bake_bytes, family, freeze_opsz,
+                                     frozen_opsz, auto_ascender,
+                                     globals().get('_bake_progress'))
+    _bake_kind = 'zip'
+_t_statics = time.perf_counter()
+
 _ms = lambda a, b: round(1000 * (b - a))
 _bake_timing = (
-    "[bake] parse=%dms rebuild_fv=%dms freeze=%dms axis_shift=%dms opsz=%dms save=%dms | total=%dms"
+    "[bake] parse=%dms rebuild_fv=%dms freeze=%dms axis_shift=%dms opsz=%dms snapshot+save=%dms statics=%dms | total=%dms"
     % (_ms(_t0, _t_parse), _ms(_t_parse, _t_fv), _ms(_t_fv, _t_freeze),
-       _ms(_t_freeze, _t_shift), _ms(_t_shift, _t_inst), _ms(_t_inst, _t_save), _ms(_t0, _t_save))
+       _ms(_t_freeze, _t_shift), _ms(_t_shift, _t_inst), _ms(_t_inst, _t_save), _ms(_t_save, _t_statics),
+       _ms(_t0, _t_statics))
 )
-out.getvalue()
+_bake_bytes
 `)
       const ttfBytes: Uint8Array = ttfPy.toJs()
+      const kind: 'ttf' | 'zip' = pyodide.globals.get('_bake_kind') === 'zip' ? 'zip' : 'ttf'
       try { post({ type: 'status', message: String(pyodide.globals.get('_bake_timing') ?? '') }) } catch { /* best-effort */ }
       post(
-        { type: 'fontResult', ttf: ttfBytes.buffer as ArrayBuffer, id: msg.id },
+        { type: 'fontResult', ttf: ttfBytes.buffer as ArrayBuffer, kind, id: msg.id },
         [ttfBytes.buffer as ArrayBuffer]
       )
     }
