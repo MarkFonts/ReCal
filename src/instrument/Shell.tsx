@@ -293,9 +293,10 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
   )
 }
 
-// Mode label, below the scene tabs (left). Reads the CURRENT mode; throbs in EDIT.
-// Modes switch by touching the trays (rail → EDIT, play → DEMO); leaving EDIT plays
-// a save animation (spinning throbber → green check).
+// Mode label, below the scene tabs (left). It says nothing at rest (the mode is shown by
+// the dimmed rail / Try bar); it carries feedback only. Modes switch by touching the trays
+// (rail → EDIT, play → DEMO); leaving EDIT plays a save animation (spinning throbber →
+// green check).
 function ModeLabel() {
   const { state } = useInstrument()
   const prev = useRef(state.recalMode)
@@ -330,10 +331,10 @@ function ModeLabel() {
     : saving ? { kind: saving, spin: 'Saving…', check: 'Saved' } : null
   const editing = state.recalMode === 'edit'
   return (
-    <div className={`mode-label${phase ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
+    <div className={`mode-label${editing ? ' mode-label--edit' : ''}`}>
       {phase?.kind === 'spin' ? <><span className="mode-throb" aria-hidden /> {phase.spin}</>
         : phase?.kind === 'check' ? <span className="mode-check">✓ <span className="mc-word">{phase.check}</span></span>
-          : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
+          : null}
     </div>
   )
 }
