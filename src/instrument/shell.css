@@ -858,9 +858,6 @@
 .vm-toggle-lbl { line-height: 1.4; }
 .vm-warn { display: block; color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
 
-/* the reused Ascender (YTAS) pin gets extra air before and after it */
-.vm-pin { margin: 6px 0; }
-
 .vm-table { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; padding-top: 12px; border-top: 1px solid var(--border-subtle); font-size: var(--type-ui-size, 0.75rem); }
 .vm-tr { display: grid; grid-template-columns: 46px 1fr 1fr 1fr; }
 .vm-tr span:first-child { color: var(--text-muted); }

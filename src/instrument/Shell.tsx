@@ -232,7 +232,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       </label>
     </div>,
     <div className="rail-row-body"><Freezer /></div>,
-    <div className="rail-row-body"><VMetricsPanel ytasPin={<Pin tag="YTAS" label="Ascender" />} /></div>,
+    <div className="rail-row-body"><VMetricsPanel /></div>,
   ]
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.

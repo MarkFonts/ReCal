@@ -15,7 +15,7 @@
 // Reference lines are analytic, not measured: SVG getBBox returns the em/ascent box, not
 // per-glyph ink (every normal glyph reports the same top), so the recorded design metrics
 // are the honest source. The specimen itself renders every axis live.
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings } from './render'
@@ -26,7 +26,7 @@ import {
 } from './vmetrics'
 
 // ── Rail controls ───────────────────────────────────────────────────────────────
-export function VMetricsPanel({ ytasPin }: { ytasPin?: ReactNode }) {
+export function VMetricsPanel() {
   const { state, dispatch } = useInstrument()
   const vm = state.defaults.vmetrics
   const set = (value: VMetrics) => dispatch({ type: 'setVMetrics', value })
@@ -86,8 +86,6 @@ export function VMetricsPanel({ ytasPin }: { ytasPin?: ReactNode }) {
             onChange={e => set({ ...vm, preset: 'custom', useTypo: e.target.checked })} />
           <span className="vm-toggle-lbl">Use Typo Metrics <span className="vm-warn">(not recommended)</span></span>
         </label>
-
-        {ytasPin && <div className="vm-pin">{ytasPin}</div>}
 
         <div className="vm-table tnum">
           <div className="vm-tr vm-tr--head"><span /><span>asc</span><span>desc</span><span>gap</span></div>
