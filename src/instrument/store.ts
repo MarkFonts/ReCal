@@ -70,6 +70,27 @@ const cloneVMetrics = (v: VMetrics): VMetrics =>
 const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
   ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics) })
 
+// The rail's rows that own ◆ values (Rail in Shell.tsx), for the per-row reset.
+export type Section = 'shape' | 'opsz' | 'asc' | 'matrix' | 'freezer' | 'vmetrics'
+
+// The ◆ layer with ONE row's values put back to stock (shipped axes and thresholds, the
+// initial opsz / freezer / metrics); everything outside that row is untouched.
+const stockSection = (s: InstrumentState, sec: Section): DefaultsLayer => {
+  const d = cloneDefaults(s.defaults)
+  switch (sec) {
+    case 'shape': d.axes.GEOM = s.shipped.GEOM; d.axes.wght = s.shipped.wght; break
+    case 'opsz': d.freezeOpsz = false; d.frozenOpszValue = null; d.opszMultiplier = 1; break
+    case 'asc': d.axes.YTAS = s.shipped.YTAS; d.axes.SHRP = s.shipped.SHRP; d.autoAscender = false; break
+    case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); break
+    case 'freezer': d.frozenFeatures = []; break
+    case 'vmetrics': d.vmetrics = cloneVMetrics(DEFAULT_VMETRICS); break
+  }
+  return d
+}
+/** Does this row hold anything that is not stock? Drives its reset button. */
+export const sectionDirty = (s: InstrumentState, sec: Section): boolean =>
+  JSON.stringify(stockSection(s, sec)) !== JSON.stringify(s.defaults)
+
 export function shippedThresholds(): Record<string, number[]> {
   return Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
 }
@@ -165,6 +186,7 @@ export type Action =
   | { type: 'setRecalMode'; mode: 'edit' | 'demo' }           // entering 'edit' clears preview
   | { type: 'setCompareOn'; on: boolean }                     // swap specimen text to the referent font
   | { type: 'setRebuilding'; value: boolean }                 // engine → store: preview recompile state
+  | { type: 'resetSection'; section: Section }                // row reset: one row's ◆ → stock, one undo step
   | { type: 'resetDefaults' }                                 // rail reset: ◆ → SHIPPED + clear preset
   | { type: 'pushHistory' }                                   // snapshot ◆ before a drag (one undo grain per drag)
   | { type: 'undo' }
@@ -228,6 +250,10 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       const fresh = createInitialState(s.shipped, s.compare)
       return { ...fresh, preview: { ...s.preview }, useHoi: s.useHoi, buildName: s.buildName, recalMode: s.recalMode, railGroup: s.railGroup }
     }
+    case 'resetSection':
+      return sectionDirty(s, a.section)
+        ? { ...s, defaults: stockSection(s, a.section), past: [...s.past, cloneDefaults(s.defaults)], future: [] }
+        : s
     case 'pushHistory':
       return { ...s, past: [...s.past, cloneDefaults(s.defaults)], future: [] }
     case 'undo': {

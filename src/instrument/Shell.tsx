@@ -10,6 +10,7 @@ import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   type FitOptions, Chevron } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
+  sectionDirty, type Section,
 } from './store'
 import { renderVarSettings } from './render'
 import { BOOT } from './boot'
@@ -51,6 +52,7 @@ function ResetIcon() {
 // The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
 const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics']
 const VMETRICS_ROW = 5
+const ROW_SECTIONS: Section[] = ['shape', 'opsz', 'asc', 'matrix', 'freezer', 'vmetrics']
 const OPSZ_FROZEN_BLOCKED = 'Turn off Auto ascender to freeze optical size: it needs the optical size axis.'
 const AUTO_ASC_BLOCKED = 'Unavailable while optical size is frozen: the ascender follows the optical size axis, and freezing removes it.'
 const VM_LABEL: Record<string, string> = { wordmark: 'Cal Sans', arrowtype: 'ArrowType', googlefonts: 'Google Fonts', custom: 'custom' }
@@ -112,10 +114,14 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
 // below point down, the open row has none; only the row right after the open one carries the
 // holo (holo.css `.is-next`). The chevron is a masked span inside the title, so the holo band
 // runs continuously across word and chevron (house chevron geometry, see holo.css).
-function RailRow({ n, label, summary, open, above, next, dir, onToggle, action, children }: {
-  n: number; label: string; summary: string; open: boolean; above: boolean; next: boolean
-  dir: 'fwd' | 'back'; onToggle: () => void; action?: React.ReactNode; children: React.ReactNode
+// The open row has no chevron; in its slot sits that row's own reset, a button beside the
+// heading (not inside it) that puts only this row's values back to stock, one undo step.
+function RailRow({ n, label, section, summary, open, above, next, dir, onToggle, children }: {
+  n: number; label: string; section: Section; summary: string; open: boolean; above: boolean; next: boolean
+  dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
 }) {
+  const { state, dispatch } = useInstrument()
+  const dirty = open && sectionDirty(state, section)
   return (
     <div className="rail-row">
       <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
@@ -124,7 +130,10 @@ function RailRow({ n, label, summary, open, above, next, dir, onToggle, action, 
         <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
         {!open && <span className="rail-seam-sum tnum">{summary}</span>}
       </button>
-      {open && action && <div className="rail-seam-action">{action}</div>}
+      {open && (
+        <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
+          onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
+      )}
       {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
     </div>
   )
@@ -170,14 +179,6 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     edited ? `${edited} moved` : 'stock swaps',
     frozenTags.length ? (frozenTags.length > 3 ? `${frozenTags.slice(0, 3).join(' · ')} +${frozenTags.length - 3}` : frozenTags.join(' · ')) : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
-  ]
-  const matrixDirty = JSON.stringify(d.glyphThresholds) !== JSON.stringify(state.shippedThresholds)
-  const actions: React.ReactNode[] = [
-    null, null, null,
-    matrixDirty ? (
-      <button className="matrix-reset"
-        onClick={() => dispatch({ type: 'setThresholds', thresholds: state.shippedThresholds })}>reset</button>
-    ) : null,
   ]
   const bodies: React.ReactNode[] = [
     <div className="rail-row-body"><ShapePad /></div>,
@@ -242,9 +243,9 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
 
       <div className="rail-stack">
         {ROW_LABELS.map((label, i) => (
-          <RailRow key={label} n={i + 1} label={label} summary={summaries[i]} dir={dir}
+          <RailRow key={label} n={i + 1} label={label} section={ROW_SECTIONS[i]} summary={summaries[i]} dir={dir}
             open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
-            onToggle={() => toggle(i)} action={actions[i]}>
+            onToggle={() => toggle(i)}>
             {bodies[i]}
           </RailRow>
         ))}

@@ -764,15 +764,21 @@
 /* Pad and matrix share one GEOM ruler (geomAxis.ts): the component is full width and every
    x is placed through geomLeft, so GEOM 0 and 100 sit at the pad's inset in both. */
 .matrix { display: flex; flex-direction: column; }
-/* Reset lives on the row heading, right-aligned (RailRow action). */
+/* A row's own reset sits on the open row's heading, in the slot a closed row's chevron
+   occupies (same right margin, same vertical center: the title line's middle, 19px down in
+   the first row and 20px in the rest, which have a 1px top rule). Icon only; dimmed and
+   inert while the row is at stock. */
 .rail-row { position: relative; }
-.rail-seam-action { position: absolute; top: 7px; right: 0; z-index: 1; }
-.matrix-reset {
-  font-family: var(--ui-font); font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase;
-  padding: 3px 8px; border: none; border-radius: 5px; cursor: pointer;
-  color: var(--text); font-weight: 600; background: var(--surface-hi);
+.rail-seam-reset {
+  all: unset; box-sizing: border-box; position: absolute; top: 10px; right: 0; z-index: 1;
+  width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;
+  color: var(--text); cursor: pointer;
 }
-.matrix-reset:hover { background: var(--surface); }
+.rail-row:first-child .rail-seam-reset { top: 9px; }
+.rail-seam-reset:disabled { color: var(--text-dim); opacity: .45; cursor: default; }
+.rail-seam-reset:hover:not(:disabled) { background: none; color: var(--accent); }
+.rail-seam-reset:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.rail-seam-reset:active:not(:disabled) svg { transform: rotate(-320deg); transition: transform var(--dur) var(--spring); }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
 .matrix-axis-tick { position: absolute; top: 0; transform: translateX(-50%); }
 /* Opaque in the rail surface: it is allowed to cover the tick it lands on. */
@@ -891,7 +897,6 @@
 .rail-toggle,
 .rail-reset,
 .style-menu-btn,
-.matrix-reset,
 .preview-reset,
 .freezer-reset {
   corner-shape: superellipse(var(--corner-k, 1.2));
@@ -900,7 +905,6 @@
 .rail-toggle:active:not(:disabled),
 .rail-reset:active:not(:disabled),
 .style-menu-btn:active:not(:disabled),
-.matrix-reset:active:not(:disabled),
 .freezer-reset:active:not(:disabled) {
   background: none;
   box-shadow: inset 0 0 0 var(--stroke-press, 1.8px) currentColor;
