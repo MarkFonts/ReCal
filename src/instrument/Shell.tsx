@@ -344,7 +344,7 @@ function ModeLabel() {
 // scene shows only the rows it uses.
 const TYPE_ROWS: Record<string, string[]> = {
   words: ['size', 'tracking', 'leading'],
-  paragraph: ['size', 'tracking', 'leading', 'measure'],
+  paragraph: ['size', 'tracking', 'leading'],   // its measure lives in the Layout popover
   scale: ['tracking', 'leading', 'measure'],
 }
 
@@ -562,12 +562,13 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
 // rail's dials (they ARE the AxisSlider track variant). Nothing here is baked. It replaces
 // both the hover-bloomed Preview bar (a second copy of the six axes + the ss chips) and the
 // floating TYPE panel: size / tracking / leading, then the preview-only Weight / Italic /
-// Features, then whatever the current scene adds (paragraph style, alignment, fitting,
-// measure; scale tiers, measure). GEOM, opsz, YTAS and SHRP are not here: they are defaults,
-// and the rail drives them.
+// Features, then whatever the current scene adds (paragraph style and a Layout popover
+// holding alignment, fitting and measure; scale tiers, measure). GEOM, opsz, YTAS and SHRP
+// are not here: they are defaults, and the rail drives them.
 
-// A pill that opens a small popover ABOVE itself (the bar sits at the bottom edge).
-function TryPop({ label, children }: { label: string; children: React.ReactNode }) {
+// A pill that opens a small popover ABOVE itself (the bar sits at the bottom edge). `end`
+// hangs it off the pill's right edge, for pills near the bar's right side.
+function TryPop({ label, end, children }: { label: string; end?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -583,7 +584,7 @@ function TryPop({ label, children }: { label: string; children: React.ReactNode 
       <button className={`try-btn${open ? ' on' : ''}`} aria-expanded={open} onClick={() => setOpen(o => !o)}>
         {label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
       </button>
-      {open && <div className="try-pop-list">{children}</div>}
+      {open && <div className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
     </div>
   )
 }
@@ -658,26 +659,31 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       {!vmActive && mode === 'scale' && (
         <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
       )}
-      {/* Alignment and line fitting, from wm-primitives — the same controls font-proofer
-          renders in its sidebar. Alignment, the rag and hyphenation belong to the style the
-          menu selects; only the H&J bands in `fit` are the document's, because they are the
-          typeface's. Hidden on the compare pages: a pre-made SVG has nothing live to fit,
-          and the controls would only promise something the page cannot deliver. */}
-      {!vmActive && mode === 'paragraph' && !comparingSvg && (
-        <>
-          <div className="try-aligns">
-            <AlignmentButtons value={paraStyles[activeParaStyle].align}
-              onChange={a => patchPara({ align: a })} />
-          </div>
-          <TryPop label="Fit">
-            <FittingControls value={fit} onChange={setFit}
-              mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
-              swissRag={paraStyles[activeParaStyle].swissRag}
-              onSwissRag={on => patchPara({ swissRag: on })}
-              hyphenate={paraStyles[activeParaStyle].hyphenate}
-              onHyphenate={on => patchPara({ hyphenate: on })} />
-          </TryPop>
-        </>
+      {/* Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
+          controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
+          and hyphenation belong to the style the menu selects; only the H&J bands in `fit`
+          are the document's, because they are the typeface's. On the compare pages a
+          pre-made SVG has nothing live to fit, so the alignment and fitting controls are
+          dropped (they would only promise something the page cannot deliver) and the
+          measure stays. */}
+      {!vmActive && mode === 'paragraph' && (
+        <TryPop label="Layout" end>
+          {!comparingSvg && (
+            <>
+              <div className="try-aligns">
+                <AlignmentButtons value={paraStyles[activeParaStyle].align}
+                  onChange={a => patchPara({ align: a })} />
+              </div>
+              <FittingControls value={fit} onChange={setFit}
+                mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
+                swissRag={paraStyles[activeParaStyle].swissRag}
+                onSwissRag={on => patchPara({ swissRag: on })}
+                hyphenate={paraStyles[activeParaStyle].hyphenate}
+                onHyphenate={on => patchPara({ hyphenate: on })} />
+            </>
+          )}
+          <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />
+        </TryPop>
       )}
       {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />}
       <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>

@@ -422,7 +422,9 @@
   border-radius: var(--radius); background: var(--surface); border: 1px solid var(--border);
   box-shadow: 0 8px 24px rgba(0, 0, 0, .5);
 }
+.try-pop-list--end { left: auto; right: 0; }
 .try-aligns { display: flex; gap: 3px; }
+.try-pop-list .try-pill { width: auto; }     /* a dial inside a popover fills it */
 .try-pop-list .fit-switches { margin: 0; }   /* the popover's own padding is the gutter */
 /* The paragraph-style and tier menus come from the old TYPE panel; here they are pills
    in a row, and open upward. */
