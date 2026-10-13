@@ -3,8 +3,9 @@
    over a base layer, clipped to the glyphs, its position animated through a registered
    custom property.
 
-     1. Seam tabs (.rail-seam--down .rail-seam-lbl) — a diffraction color band sweeping
-        over drifting brushed metal, plus the V chevrons and the hover weight.
+     1. Seam tabs (.rail-seam.is-next .rail-seam-lbl) — a diffraction color band sweeping
+        over drifting brushed metal, plus the V chevrons and the hover weight. Only the
+        stack row right after the open one is .is-next.
      2. ✓ Saved   (.mc-word) — a one-shot rainbow over the resting gray, timed to the
         check's ~0.5s life. The ✓ itself stays green (.mode-check's color, in shell.css).
 
@@ -36,7 +37,7 @@
 @property --holo-load  { syntax: "<percentage>"; inherits: false; initial-value: 0%; }
 
 /* Shared mechanism: layer 1 (color) screened over layer 2 (base), clipped to the text. */
-.rail-seam--down .rail-seam-lbl,
+.rail-seam.is-next .rail-seam-lbl,
 .mc-word,
 .holo-loading {
   background-blend-mode: screen, normal;
@@ -47,8 +48,8 @@
 /* 1 ─ Seam tab. Color band = three sub-bands + a white specular (opacities 100/75/100/50),
    sweeping left→right then pausing, over a drifting dark↔light metal base. The V chevrons
    sit inside the label, so they ride this one clipped gradient too. */
-.rail-seam--down .rail-seam-lbl,
-.rail-seam--down .rail-seam-chv-t {
+.rail-seam.is-next .rail-seam-lbl,
+.rail-seam.is-next .rail-seam-chv-t {
   background-image:
     linear-gradient(90deg,
       transparent 0 40%,
@@ -67,7 +68,7 @@
 @keyframes holo-0 { from { --holo0: 100%; } to { --holo0: 0%; } }
 /* band sweeps across in the first ~25% of the cycle, then holds off-screen for the pause */
 @keyframes holo-1 { 0% { --holo1: 125%; } 25% { --holo1: -25%; } 100% { --holo1: -25%; } }
-.rail-seam--down:hover:not(:disabled) .rail-seam-lbl { filter: brightness(1.2); }
+.rail-seam.is-next:hover:not(:disabled) .rail-seam-lbl { filter: brightness(1.2); }
 
 /* Seam weight: word + V chevrons rest at --holo-weight, easing to --holo-weight-hover on
    hover — the word via font-weight, the chevrons via font-variation-settings. */
@@ -102,8 +103,10 @@
 /* One at each end of the word; the label reserves their gutters. */
 .rail-seam-chv-t:last-child { -webkit-mask-position: right center; mask-position: right center; }
 .rail-seam-lbl { position: relative; padding: 0 32px; }
-/* An --up seam has no holo stack, so its chevron needs ink of its own to reveal. */
-.rail-seam--up .rail-seam-chv-t { background: currentColor; }
+/* Every other stack row has no holo stack, so its chevron needs ink of its own to reveal;
+   rows above the open one point up (the same mask, flipped). */
+.rail-seam:not(.is-next) .rail-seam-chv-t { background: currentColor; }
+.rail-seam.is-above .rail-seam-chv-t { transform: scaleY(-1); }
 
 /* 2 ─ ✓ Saved word. A green-free rainbow (no cyan/teal, which read green) tiled over its
    gray base so there's no rainbow edge cutting into it; sweeps once as the check appears. */

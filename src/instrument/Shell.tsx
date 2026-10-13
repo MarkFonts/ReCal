@@ -9,7 +9,6 @@ import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
   type FitOptions, Chevron } from '../../shared/index' // wm-primitives (git submodule)
-import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
 } from './store'
@@ -27,6 +26,7 @@ import { useFontEngine } from './useFontEngine'
 import { Matrix } from './Matrix'
 import { Freezer } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
+import { ShapePad } from './ShapePad'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOURS', color: 'var(--marker-default)' },
@@ -48,66 +48,6 @@ function ResetIcon() {
     </svg>
   )
 }
-
-// Instrument zone anchors — each chip pins GEOM to one exact value (owner spec).
-const ZONES = [
-  { label: 'A11y', geom: 0, color: ZONE_CHIP_COLOR.A11y },
-  { label: 'UI', geom: 25, color: ZONE_CHIP_COLOR.UI },
-  { label: 'Base', geom: 50, color: ZONE_CHIP_COLOR.Base },
-  { label: 'Geo', geom: 100, color: ZONE_CHIP_COLOR.Geo },
-]
-/* WHERE THE LIGHT IS. The chosen chip's HDR ramp is panned by --mx/--my, written straight
-   to the DOM rather than through state: this runs on every pointermove and a setState per
-   move would re-render the rail. rAF-coalesced for the same reason -- several moves per
-   frame, one write.
-   Listening on the WINDOW, not the chip, because the glow should build as you approach:
-   a light you only see once you are already on top of it is not a light, it is a hover
-   style. Coordinates are per-chip and local, so the bright spot lands on the real cursor
-   however the row is laid out -- the same registration lesson the hero's field taught,
-   just at one element instead of a headline. */
-function useChipGlow(ref: React.RefObject<HTMLDivElement | null>) {
-  useEffect(() => {
-    const host = ref.current
-    if (!host) return
-    if (window.matchMedia('(pointer: coarse)').matches) return   // no cursor to follow
-    let frame = 0
-    let last: PointerEvent | null = null
-    const paint = () => {
-      frame = 0
-      if (!last) return
-      /* EVERY chip, each with its own local coordinates -- that is what makes one light
-         travel across the row instead of four private ones. Same registration lesson the
-         hero's field taught: a shared source, offset per element by its own corner. */
-      for (const on of Array.from(host.querySelectorAll<HTMLElement>('.zone-chip'))) {
-      const r = on.getBoundingClientRect()
-      /* NO CLAMP. There was one, to stop the ramp's square edge crossing the chip, and it
-         was both unnecessary and broken: the hard seam it was written for turned out to be
-         a unit bug in background-position, and its range [size-R, R] is only valid while
-         the element is NARROWER than the ramp. Once the reach dropped to 96px on a ~100px
-         chip that range inverted and collapsed to a single value, pinning the light in
-         place -- a clamp that stopped the thing it was meant to protect from moving.
-         Unclamped, the ramp simply travels with the cursor and meets the flat colour at
-         its rim, which is the same hue at 203 nits. That IS the intended edge. */
-      const R = (parseFloat(getComputedStyle(on).getPropertyValue('--glow-size')) || 256) / 2
-      /* Clamped so the image always covers the element -- valid now, and it was not before:
-         the range [size-R, R] needs the ramp to be WIDER than the chip, and at a 40px reach
-         on a ~100px chip it inverted and pinned the light in place. At 512 there is ~156px
-         of slack, so this only bites when the cursor is well off the chip, where the light
-         has already faded to nothing anyway. */
-      const cl = (v: number, size: number) => Math.max(size - R, Math.min(R, v))
-      const x = Math.round(cl(last.clientX - r.left, r.width)) - R
-      const y = Math.round(cl(last.clientY - r.top, r.height)) - R
-      on.style.setProperty('--glow-pos', `${x}px ${y}px`)
-      }
-    }
-    const onMove = (e: PointerEvent) => { last = e; if (!frame) frame = requestAnimationFrame(paint) }
-    window.addEventListener('pointermove', onMove, { passive: true })
-    return () => { window.removeEventListener('pointermove', onMove); if (frame) cancelAnimationFrame(frame) }
-  }, [ref])
-}
-
-const nearestZoneLabel = (geom: number) =>
-  ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
 
 // ── Rail: the font mutator (◆) ────────────────────────────────────────────────
 function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSignal?: boolean }) {
@@ -141,19 +81,103 @@ function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSigna
 }
 
 
+// The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
+const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharp', 'Type Matrix', 'Freezer', 'Vertical metrics']
+const VMETRICS_ROW = 5
+const OPSZ_FROZEN_BLOCKED = 'Turn off Auto ascender to freeze optical size: it needs the optical size axis.'
+const AUTO_ASC_BLOCKED = 'Unavailable while optical size is frozen: the ascender follows the optical size axis, and freezing removes it.'
+const VM_LABEL: Record<string, string> = { wordmark: 'Cal Sans', arrowtype: 'ArrowType', googlefonts: 'Google Fonts', custom: 'custom' }
+
+// Optical size: Auto (browser scales opsz to the size; the 1-6 scale stretches the range) or
+// Frozen (pin the axis). The bake does one or the other, never both, so each mode shows only
+// its own control. Frozen and Auto ascender are mutually exclusive (the grafted avar2 needs
+// the opsz axis): the Frozen side is disabled while Auto ascender is on, with a visible note.
+function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
+  const { state, dispatch } = useInstrument()
+  const d = state.defaults
+  return (
+    <div className="rail-row-body">
+      <div className="rail-seg" role="group" aria-label="Optical size mode">
+        <button className={d.freezeOpsz ? '' : 'on'} aria-pressed={!d.freezeOpsz}
+          onClick={() => dispatch({ type: 'setFreezeOpsz', value: false })}>Auto</button>
+        {/* aria-disabled, not disabled: a disabled button swallows the hover/click that
+            reveals why it's disabled. */}
+        <button className={d.freezeOpsz ? 'on' : ''} aria-pressed={d.freezeOpsz}
+          aria-disabled={d.autoAscender} title={d.autoAscender ? OPSZ_FROZEN_BLOCKED : undefined}
+          onPointerEnter={d.autoAscender ? onNote : undefined}
+          onClick={() => { if (d.autoAscender) onNote(); else dispatch({ type: 'setFreezeOpsz', value: true }) }}>Frozen</button>
+      </div>
+      {note && d.autoAscender
+        ? <p className="rail-help rail-help--note" role="status">{OPSZ_FROZEN_BLOCKED}</p>
+        : <p className="rail-help">{d.freezeOpsz
+            ? 'Every size uses this one optical size. The axis is removed from the font.'
+            : 'Follows the type size. Scale stretches how far it travels.'}</p>}
+      {d.freezeOpsz ? (
+        <AxisSlider
+          label="Optical size"
+          tag="opsz"
+          value={d.frozenOpszValue ?? 14}
+          min={AXIS_RANGES.opsz.min}
+          max={AXIS_RANGES.opsz.max}
+          step={1}
+          variant="track"
+          reference={state.shipped.opsz}
+          onChange={val => dispatch({ type: 'setFrozenOpszValue', value: val as number })}
+        />
+      ) : (
+        <div className="pin">
+          <div className="pin-head"><span className="pin-label">Optical scale</span>
+            <span className="pin-val tnum">{d.opszMultiplier}×</span></div>
+          <div className="stepper">
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <button key={n} className={d.opszMultiplier === n ? 'on' : ''}
+                onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// One stack row: a centered seam label + a muted value summary. Rows above the open one
+// point up, rows below point down; only the row right after the open one carries the holo
+// (holo.css `.is-next`). The chevrons are masked spans (house chevron geometry), see holo.css.
+function RailRow({ label, summary, open, above, next, dir, onToggle, children }: {
+  label: string; summary: string; open: boolean; above: boolean; next: boolean
+  dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
+}) {
+  const chv = open ? null : <span className="rail-seam-chv-t" aria-hidden="true" />
+  return (
+    <div className="rail-row">
+      <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
+        aria-expanded={open} onClick={onToggle}>
+        <span className="rail-seam-lbl">{chv}{label}{chv && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
+        {!open && <span className="rail-seam-sum tnum">{summary}</span>}
+      </button>
+      {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
+    </div>
+  )
+}
+
 function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
   const railRef = useRef<HTMLDivElement>(null)
-  useChipGlow(railRef)
-  // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = Freezer · 3 = Vertical Metrics.
-  // Lives in the store so the canvas can swap to the metrics preview on group 3.
-  const group = state.railGroup
-  const [leaving, setLeaving] = useState(false)
-  const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
-  // Descend (down-seam): current slides up + out, next rides up from below.
-  // Ascend (up-seam): the opposite — current slides down + out, next comes from above.
-  const go = (i: number, d: 'fwd' | 'back') => { setDir(d); setLeaving(true); setTimeout(() => { dispatch({ type: 'setRailGroup', group: i }); setLeaving(false) }, 150) }
+  const d = state.defaults
   const tag = TAG_TEXT[stateTag(state)]
+  // One row open at a time (or none). Opening Vertical metrics switches the canvas to the
+  // metrics stage, which still reads store.railGroup === 3; every other row is 0.
+  const [open, setOpen] = useState<number | null>(0)
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
+  const toggle = (i: number) => { setDir(open !== null && i < open ? 'back' : 'fwd'); setOpen(open === i ? null : i) }
+  useEffect(() => { dispatch({ type: 'setRailGroup', group: open === VMETRICS_ROW ? 3 : 0 }) }, [open, dispatch])
+  // Optical size note: shown when someone reaches for Frozen while Auto ascender is on, and
+  // once when a preset arrives with both set (Auto ascender wins; freeze is cleared).
+  const [opszNote, setOpszNote] = useState(false)
+  useEffect(() => {
+    if (d.freezeOpsz && d.autoAscender) { dispatch({ type: 'setFreezeOpsz', value: false }); setOpszNote(true) }
+    if (!d.autoAscender) setOpszNote(false)
+  }, [d.freezeOpsz, d.autoAscender, dispatch])
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -166,6 +190,41 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [dispatch])
+
+  const frozenTags = d.frozenFeatures
+  const edited = glyphsEditedCount(state)
+  const summaries = [
+    `GEOM ${Math.round(d.axes.GEOM)} · ${Math.round(d.axes.wght)}`,
+    d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×`,
+    `Asc ${Math.round(d.axes.YTAS)} · Sharp ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
+    edited ? `${edited} moved` : 'stock swaps',
+    frozenTags.length ? (frozenTags.length > 3 ? `${frozenTags.slice(0, 3).join(' · ')} +${frozenTags.length - 3}` : frozenTags.join(' · ')) : 'nothing frozen',
+    VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
+  ]
+  const bodies: React.ReactNode[] = [
+    <div className="rail-row-body"><ShapePad /></div>,
+    <OpticalSize note={opszNote} onNote={() => setOpszNote(true)} />,
+    <div className="rail-row-body">
+      <Pin tag="YTAS" label="Ascender" />
+      <Pin tag="SHRP" label="Sharp" />
+      <label className="rail-toggle" title={d.freezeOpsz ? AUTO_ASC_BLOCKED : undefined}
+        style={d.freezeOpsz ? { opacity: .38, cursor: 'default' } : undefined}>
+        <input type="checkbox" checked={d.autoAscender} disabled={d.freezeOpsz}
+          onChange={e => dispatch({ type: 'setAutoAscender', value: e.target.checked })} />
+        Auto ascender (YTAS tracks opsz)
+      </label>
+    </div>,
+    <div className="rail-row-body">
+      <Matrix />
+      <label className="rail-toggle">
+        <input type="checkbox" checked={state.useHoi}
+          onChange={e => dispatch({ type: 'setUseHoi', value: e.target.checked })} />
+        HOI interpolation
+      </label>
+    </div>,
+    <div className="rail-row-body"><Freezer /></div>,
+    <div className="rail-row-body"><VMetricsPanel ytasPin={<Pin tag="YTAS" label="Ascender" />} /></div>,
+  ]
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.
   return (
@@ -184,8 +243,6 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         <div className="rail-sub">your defaults — baked into the export</div>
       </div>
 
-      <div key={group} className={`rail-descent rail-descent--${dir}${leaving ? ' rail-descent--leaving' : ''}`}>
-      {group === 0 && (<>
       <div className="rail-group">
         <div className="rail-group-label">Start from</div>
         <span className="wm-select-wrap">
@@ -202,141 +259,15 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         </span>
       </div>
 
-      <div className="rail-group">
-        <div className="rail-group-label">Geometric form</div>
-        <div className="zone-chips">
-          {ZONES.map(z => {
-            const on = nearestZoneLabel(state.defaults.axes.GEOM) === z.label
-            return (
-              <button key={z.label}
-                className={`zone-chip${on ? ' on' : ''}`}
-                /* No inline background when on: the HDR swatch lives in CSS (an inline
-                   style would win over it and flatten the chip back to SDR). */
-                style={on ? undefined : { color: z.color }}
-                data-label={z.label}
-                onClick={() => {
-                  dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
-                  dispatch({ type: 'clearPreview' })
-                }}>
-                <span>{z.label}</span>
-              </button>
-            )
-          })}
-        </div>
-        <Pin tag="GEOM" label="GEOM" dragSignal />
+      <div className="rail-stack">
+        {ROW_LABELS.map((label, i) => (
+          <RailRow key={label} label={label} summary={summaries[i]} dir={dir}
+            open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
+            onToggle={() => toggle(i)}>
+            {bodies[i]}
+          </RailRow>
+        ))}
       </div>
-
-      <div className="rail-group">
-        <div className="rail-group-head">
-          <span className="rail-group-label">Optical</span>
-          <label className="rail-toggle">
-            <input type="checkbox" checked={state.defaults.freezeOpsz}
-              onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
-            Freeze opsz
-          </label>
-        </div>
-        {/* Optical size — only meaningful when frozen: off = the browser scales opsz to
-            size (auto); on = pin the opsz axis to this value for a fixed display size. */}
-        {/* opsz uses the canonical allowAuto affordance: field shows "auto" until you
-            edit it (type a value to freeze, `a` to go auto); the Freeze checkbox stays
-            in sync. Track variant + burned stock reference like the other rail axes. */}
-        <AxisSlider
-          label="Optical size"
-          tag="opsz"
-          value={state.defaults.freezeOpsz ? (state.defaults.frozenOpszValue ?? 14) : 'auto'}
-          min={AXIS_RANGES.opsz.min}
-          max={AXIS_RANGES.opsz.max}
-          step={1}
-          allowAuto
-          autoValue={state.defaults.frozenOpszValue ?? 14}
-          variant="track"
-          disabled={!state.defaults.freezeOpsz}
-          reference={state.shipped.opsz}
-          onChange={val => {
-            if (val === 'auto') { dispatch({ type: 'setFreezeOpsz', value: false }) }
-            else { dispatch({ type: 'setFreezeOpsz', value: true }); dispatch({ type: 'setFrozenOpszValue', value: val }) }
-          }}
-        />
-        <div className="pin">
-          <div className="pin-head"><span className="pin-label">Optical scale</span>
-            <span className="pin-val tnum">{state.defaults.opszMultiplier}×</span></div>
-          <div className="stepper">
-            {[1, 2, 3, 4, 5, 6].map(n => (
-              <button key={n} className={state.defaults.opszMultiplier === n ? 'on' : ''}
-                onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="rail-group">
-        <div className="rail-group-label">Weight &amp; slant</div>
-        <Pin tag="wght" label="Weight" />
-      </div>
-
-      <div className="rail-group">
-        <div className="rail-group-label">Parametric</div>
-        <Pin tag="YTAS" label="Ascender" />
-        <Pin tag="SHRP" label="Sharp" />
-      </div>
-
-      <div className="rail-group">
-        <div className="rail-group-label">Construction</div>
-        <label className="rail-toggle">
-          <input type="checkbox" checked={state.useHoi}
-            onChange={e => dispatch({ type: 'setUseHoi', value: e.target.checked })} />
-          HOI interpolation
-        </label>
-        <label className="rail-toggle">
-          <input type="checkbox" checked={state.defaults.autoAscender}
-            onChange={e => dispatch({ type: 'setAutoAscender', value: e.target.checked })} />
-          Auto ascender (YTAS tracks opsz)
-        </label>
-      </div>
-
-      <button className="rail-seam rail-seam--down" onClick={() => go(1, 'fwd')}>
-        <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />TYPE MATRIX<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-      </button>
-      </>)}
-
-      {group === 1 && (
-      <div className="rail-matrix">
-        <button className="rail-seam rail-seam--up" onClick={() => go(0, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />TYPE MATRIX<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-        <Matrix />
-        <button className="rail-seam rail-seam--down" onClick={() => go(2, 'fwd')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />FREEZER<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-      </div>
-      )}
-
-      {group === 2 && (
-      <div className="rail-freezer">
-        <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />FREEZER<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-        <Freezer />
-        <button className="rail-seam rail-seam--down" onClick={() => go(3, 'fwd')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />VERTICAL METRICS<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-      </div>
-      )}
-
-      {group === 3 && (
-      <div className="rail-vmetrics">
-        <button className="rail-seam rail-seam--up" onClick={() => go(2, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />VERTICAL METRICS<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-        <VMetricsPanel ytasPin={<Pin tag="YTAS" label="Ascender" />} />
-        {/* Vertical Metrics is the last section — no down-seam (its rule + chevrons removed).
-            Restore this button if a section is ever added below it.
-        <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" /><span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button> */}
-      </div>
-      )}
-      </div>{/* /rail-descent */}
 
       {/* YOUR ◆ state tag — hidden for now
       <div className="rail-footer">
