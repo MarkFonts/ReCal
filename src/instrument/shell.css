@@ -639,8 +639,8 @@
    filled pill carrying that zone's HDR swatch (a fill survives at this size; thin text would
    lose it), dark ink on top. The other three stay flat zone-colored text. */
 .shape-pad-col {
-  position: absolute; top: 4px; padding: 0 4px; border-radius: var(--radius-pill);
-  font-size: var(--type-lede-size, 1.125rem); line-height: 22px; white-space: nowrap;
+  position: absolute; top: 4px; padding: 0 3px; border-radius: var(--radius-pill);
+  font-size: var(--type-body-size, 1rem); line-height: 22px; white-space: nowrap;
 }
 .shape-pad-col.on, .shape-pad-knob { background-color: var(--zone-flat); background-image: var(--zone-hdr, none); background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit; }
 .shape-pad [data-zone="A11Y"] { --zone-flat: var(--zone-a11y-chip);  --zone-hdr: var(--zone-hdr-a11y); }

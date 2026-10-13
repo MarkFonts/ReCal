@@ -20,7 +20,7 @@ import { GEOM_INSET, axisFromClientX, axisLeft, chipColor, geomLeft, geomSpan, z
 const PAD_X = GEOM_INSET
 const PAD_BOT = 9
 const COLS = 17      // dot lattice: x every 1/16 of the axis (GEOM every 6.25)
-const COL_PAD = 4    // horizontal padding of a column label (the pill when active)
+const COL_PAD = 3    // horizontal padding of a column label (the pill when active)
 const ROWS = 4       // dot lattice: y every 1/3 of the axis (weight every 100)
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
