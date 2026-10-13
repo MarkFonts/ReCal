@@ -395,7 +395,7 @@
   font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim); margin-right: var(--spacing-02, 6px);
 }
-.try-pill { width: 10rem; }
+.try-pill { width: 9rem; }
 .try-sep { width: 1px; height: 24px; background: var(--border); margin: 0 var(--spacing-02, 6px); }
 /* The non-dial pills: the same box as the dial bars beside them (32px, 1px --border,
    --radius), and the same inversion on hover as .style-menu-btn. */
