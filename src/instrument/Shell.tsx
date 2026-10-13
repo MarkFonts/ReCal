@@ -696,10 +696,9 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
 
 // ── Download line — pinned under the rail's stack (never scrolls away). ────────────
 // Says what the download contains (the full variable range, always) and offers the 8
-// static cuts as one optional checkbox. OFL acceptance + the button live here too.
+// static cuts as one optional checkbox. The OFL line + the button live here too.
 function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }) {
   const { state } = useInstrument()
-  const [oflAgreed, setOflAgreed] = useState(false)
   const [expanded, setExpanded] = useState(false)
   const [statics, setStatics] = useState(false)
   const footRef = useRef<HTMLDivElement>(null)
@@ -724,16 +723,15 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
   }
   const cfgRef = useRef(buildConfig)
   cfgRef.current = buildConfig
-  // force = definitive intent (OFL / hovering the download) — bakes even during a
+  // force = definitive intent (hovering the download) — bakes even during a
   // preview rebuild. Passive pointer-vectoring stays un-forced. Always the plain-TTF
   // config: the prebake cache keys on the config, and the 8 statics only bake on a click.
   const prefetch = (force = false) => engine.prebake(cfgRef.current(), force)
 
   // "Load the room behind the door": when the pointer is heading toward the download
   // button (aligned velocity + within reach), speculatively bake the export so the click
-  // is instant. 9/10 people check the OFL box first, which also prefetches — this just
-  // buys even more lead time. Not while a button is held: dragging a rail dial toward the
-  // footer is an edit, not intent.
+  // is instant. Entering the footer also prefetches — this just buys more lead time. Not
+  // while a button is held: dragging a rail dial toward the footer is an edit, not intent.
   useEffect(() => {
     let px = 0, py = 0, vx = 0, vy = 0, last = 0
     const onMove = (e: PointerEvent) => {
@@ -770,11 +768,11 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
 
   // One-shot holo (+ ital lean) over the "Download" letters when the export first becomes
   // downloadable. In dev the Pyodide worker often never boots (stuck on "Preparing engine…"),
-  // so once OFL is ticked we FAKE-ready the button — clicking replays the flourish — to
+  // so in dev we FAKE-ready the button — clicking replays the flourish — to
   // preview the animation without the engine. This never fakes a bake (doDownload needs ready).
   const [holoKey, setHoloKey] = useState(0)
   const playHolo = () => setHoloKey(k => k + 1)
-  const devFake = import.meta.env.DEV && oflAgreed && !engine.ready && !engine.building
+  const devFake = import.meta.env.DEV && !engine.ready && !engine.building
   const showDownload = engine.ready || devFake
   const wasReady = useRef(false)
   useEffect(() => { if (showDownload && !wasReady.current) playHolo(); wasReady.current = showDownload }, [showDownload])
@@ -813,25 +811,20 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
         </div>
       )}
       <div className="dl-act">
-        <label className="floor-toggle">
-          <input type="checkbox" checked={oflAgreed}
-            onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) prefetch(true) }} />
-          <span>I accept the{' '}
-            <a href="https://openfontlicense.org/open-font-license-official-text/"
-              target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a></span>
-        </label>
         <button className="floor-btn floor-btn--primary"
-          disabled={!oflAgreed || engine.building || (!engine.ready && !devFake)}
+          disabled={engine.building || (!engine.ready && !devFake)}
           onPointerEnter={() => prefetch(true)}
           onClick={() => { if (engine.ready) doDownload(); else if (devFake) playHolo() }}
-          title={!oflAgreed ? 'Accept the OFL to enable download'
-            : !engine.ready ? 'Loading the font engine (first time ~10–20s)…'
+          title={!engine.ready ? 'Loading the font engine (first time ~10–20s)…'
             : statics ? `Download your ${family} variable font + 8 statics (.zip)` : 'Download your ReCal Sans TTF'}>
           {engine.building
             ? <span className="holo-loading">Building…</span>
             : <span key={holoKey} className={holoKey > 0 ? 'holo-once' : ''}
                 onAnimationEnd={e => { if (e.animationName === 'holo-once-ital') e.currentTarget.classList.remove('holo-once') }}>{label}</span>}
         </button>
+        <p className="dl-ofl">By downloading you accept the{' '}
+          <a href="https://openfontlicense.org/open-font-license-official-text/"
+            target="_blank" rel="noopener noreferrer">OFL 1.1</a></p>
       </div>
       {engine.building && engine.progress && <p className="dl-progress" role="status">{engine.progress}</p>}
     </div>

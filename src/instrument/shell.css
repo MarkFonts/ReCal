@@ -123,10 +123,6 @@
   text-underline-offset: 4px;
 }
 
-.floor-toggle {
-  font-family: var(--ui-font, inherit); display: flex; align-items: center; gap: 8px; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); cursor: pointer; }
-.floor-toggle input { accent-color: var(--accent); }
-.floor-toggle a { color: var(--text); text-decoration: underline; }
 .rail-group { display: flex; flex-direction: column; gap: 12px; }
 .rail-group-label {
   font-size: var(--type-micro-size, 0.5625rem);
@@ -529,6 +525,8 @@
 .dl-opt b { font-weight: inherit; color: var(--text); }
 .dl-opt--locked { cursor: default; }
 .dl-act { display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-03, 8px); }
+.dl-ofl { margin: 0; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
+.dl-ofl a { color: var(--text); text-decoration: underline; }
 .dl-progress { margin: 0; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 
 /* Paragraph style menu (which style the TYPE controls target) */
@@ -890,7 +888,6 @@
    CORNER: superellipse(--corner-k) so a pill, a rounded rect and a circular button all
    follow one curvature law. CSS parameterises k as exponent 2^k: 1 is a circular arc. */
 .floor-btn,
-.floor-toggle,
 .rail-toggle,
 .rail-reset,
 .style-menu-btn,
@@ -900,7 +897,6 @@
   corner-shape: superellipse(var(--corner-k, 1.2));
 }
 .floor-btn:active:not(:disabled),
-.floor-toggle:active:not(:disabled),
 .rail-toggle:active:not(:disabled),
 .rail-reset:active:not(:disabled),
 .style-menu-btn:active:not(:disabled),
