@@ -4,7 +4,7 @@
 // The swap flashes depend on `geomDragging` exactly as the GEOM pin's drag set it: true on
 // grab, false on release, so a swapping glyph holds its zone color while you drag and fades
 // when you let go (useGeomFlash in scenes.tsx; the Freezer gold reads the same flag).
-// Column labels are GLYPHS, not zone names: "ay" set at each zone's sample GEOM.
+// Column labels are GLYPHS, not zone names: "Cal" set at each zone's sample GEOM.
 import { useRef } from 'react'
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
@@ -108,13 +108,14 @@ export function ShapePad() {
           {LANDING_ZONES.map((z, i) => (
             <span key={z.label} className="shape-pad-col"
               style={{
-                fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${wMin}, 'opsz' 8`,
+                fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${wMin}, 'opsz' 8.2`,
+                letterSpacing: '0.03em',
                 color: chipColor(z.label),
                 // First label sits inside the left edge, last inside the right edge.
                 ...(i === 0 ? { left: PAD_X + 3, transform: 'none' }
                   : i === LANDING_ZONES.length - 1 ? { left: 'auto', right: PAD_X + 3, transform: 'none' }
                   : { left: gPct(z.sampleGeom) }),
-              }}>ay</span>
+              }}>Cal</span>
           ))}
         </div>
         <span className="shape-pad-ylab" style={{ top: PAD_TOP - 6 }} aria-hidden="true">{wMax}</span>
