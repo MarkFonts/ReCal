@@ -672,7 +672,7 @@
 }
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
 .shape-readout > div {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 8px 12px;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px 10px; white-space: nowrap;
   border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--bg);
   font-size: var(--type-ui-size, 0.75rem);
 }
