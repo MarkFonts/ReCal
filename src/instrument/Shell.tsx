@@ -933,7 +933,7 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
 
   // Bake the ◆ defaults into a TTF (instant if already pre-baked) and trigger download.
   const doDownload = async () => {
-    const ttf = await engine.download(cfgRef.current())
+    const { bytes: ttf } = await engine.download(cfgRef.current())
     const url = URL.createObjectURL(new Blob([new Uint8Array(ttf)], { type: 'font/ttf' }))
     const a = document.createElement('a')
     a.href = url
