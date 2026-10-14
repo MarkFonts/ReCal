@@ -127,7 +127,7 @@
   --ui-font: 'CalSansVF', sans-serif;
 }
 
-/* Light, reached only through the house theme switch (?try=split stamps <html data-theme>);
+/* Light, reached only through the house theme switch (?try=float stamps <html data-theme>);
    with no attribute nothing here applies and ReCal is dark as before. Values are the
    house light ramp (wm-primitives color.css). The accent and acid follow it: ink on light
    is the #161616 text, the acid's thin-use form is the darker #557b00. Auto follows the OS.
@@ -143,6 +143,11 @@
   --edit-rail: rgba(22, 22, 22, 0.28);
   --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
   --signal-acid: #557b00;
+  /* No HDR swatches on a light ground (same gate as the icon primitive: there is nothing brighter than
+     white to boost into, and the swatch would paint the chosen chip white on white). The chips keep
+     their flat zone color; the UI zone's chip is ink instead of white. */
+  --zone-hdr-a11y: none;  --zone-hdr-ui: none;  --zone-hdr-base: none;  --zone-hdr-geo: none;
+  --zone-ui-on-grid: #161616;
 }
 @media (prefers-color-scheme: light) {
   :root[data-theme="auto"] {
@@ -155,6 +160,11 @@
     --edit-rail: rgba(22, 22, 22, 0.28);
     --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
     --signal-acid: #557b00;
+    /* No HDR swatches on a light ground (same gate as the icon primitive: there is nothing brighter than
+       white to boost into, and the swatch would paint the chosen chip white on white). The chips keep
+       their flat zone color; the UI zone's chip is ink instead of white. */
+    --zone-hdr-a11y: none;  --zone-hdr-ui: none;  --zone-hdr-base: none;  --zone-hdr-geo: none;
+    --zone-ui-on-grid: #161616;
   }
 }
 

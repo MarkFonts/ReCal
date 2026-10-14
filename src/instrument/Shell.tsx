@@ -7,7 +7,7 @@ import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties } from
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
-  type FitOptions, Chevron, AccentButton, Icon } from '../../shared/index' // wm-primitives (git submodule)
+  type FitOptions, Chevron, AccentButton, Icon, ThemeSwitch, bootTheme } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
@@ -472,6 +472,9 @@ function TierMenu({ selected, toggle, scaleStyles }: {
 type TryPlace = 'dock' | 'float'
 const TRY_PLACE: TryPlace = new URLSearchParams(window.location.search).get('try') === 'float' ? 'float' : 'dock'
 // ?grid draws the grid's columns and 3px lines (gridSnap.js, a plain script) -- review only.
+// float carries the house theme switch (Auto / Light / Dark), so the stored choice is stamped on <html>
+// before first paint; the other placements never touch data-theme.
+if (TRY_PLACE === 'float') bootTheme()
 if (TRY_PLACE === 'float' && /[?&]grid\b/.test(window.location.search)) {
   const sc = document.createElement('script'); sc.src = gridSnapUrl; sc.defer = true; document.head.appendChild(sc)
 }
@@ -589,6 +592,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         </div>
         {tryBar}
       </div>
+      {TRY_PLACE === 'float' && <div className="theme-corner"><ThemeSwitch /></div>}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
@@ -734,7 +738,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   // them on four grid columns (below). Proofing controls (not ◆ defaults) → the track variant
   // with no diamond/marker/reference, as font-proofer's TYPOGRAPHY has them.
   const sizeDial = has('size')
-    ? <TryDial label="Size" icon="format_size" iconFull value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
+    ? <TryDial label="Size" icon="text_increase" iconFull value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
     : null
   // Preview-only optical size. At rest it reads "auto" (the browser follows the type size);
   // moved, it overrides opsz in the preview text. The range is the preview font's relabeled
@@ -820,7 +824,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     const present: { key: string; px: number }[] = []
     if (colA.length) present.push({ key: 'a', px: 150 })
     if (colB.length) present.push({ key: 'b', px: 214 })
-    present.push({ key: 'c', px: 214 })
+    present.push({ key: 'c', px: 244 })   // Weight, and Italic + Features as two EQUAL halves (Features' icon, word and caret need ~120px)
     if (colD.length) present.push({ key: 'd', px: 156 })
     present.push({ key: 'r', px: 92 })
     const at: Record<string, CSSProperties> = {}

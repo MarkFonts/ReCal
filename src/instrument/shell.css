@@ -490,7 +490,7 @@
 .canvas[data-try="float"] .try {
   position: absolute; left: 0; right: 0; bottom: 0;
   display: grid; align-items: start; gap: var(--spacing-04, 12px) var(--grid-gutter, 24px);
-  background: none; pointer-events: none;
+  background: none; pointer-events: none; border-top: 0;   /* no 1px rule, so the pills' tops land on the 3px line (12, 48) */
   padding: var(--spacing-04, 12px) 0;
 }
 .canvas[data-try="float"] .try > * { pointer-events: auto; }
@@ -504,9 +504,8 @@
 }
 .try-col[data-eol]::after { display: none; }
 .try-col > * { width: 100%; min-width: 0; }
-.try-row { display: flex; gap: var(--spacing-01, 4px); }
-.try-row > .wm-accent { flex: 0 0 auto; width: auto; }   /* Italic is its content width ... */
-.try-row > .try-pop { flex: 1 1 0; min-width: 0; }      /* ... and Features takes the rest of the column */
+.try-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-01, 4px); }   /* Italic and Features: equal halves (a grid, so a button's padding can't skew them), spanning the Weight pill exactly */
+.try-row > * { min-width: 0; }
 .try-col .try-pill, .try-col .style-menu, .try-col .try-pop { width: 100%; }
 .try-col .style-menu-btn, .try-col .try-pop .wm-accent { width: 100%; justify-content: flex-start; }
 .try-row > .wm-accent { justify-content: flex-start; }
@@ -527,11 +526,11 @@ body:has(.canvas[data-try="float"]) .wm-ov-cols { left: 264px; }
 .try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
 .try-pill--ic .slider-label-left { padding-left: 22px; }
 .try-row { }
-/* LOCAL REVIEW ONLY: the shared subset lacks format_size and format_letter_spacing, so these
+/* LOCAL REVIEW ONLY: the shared subset lacks text_increase and format_letter_spacing, so these
    two draw from a one-off Google Fonts cut of just those ligatures until the subset grows. */
 @font-face {
   font-family: 'Material Symbols Review'; font-style: normal; font-weight: 100 700; font-display: block;
-  src: url(https://fonts.gstatic.com/l/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsLjBuVYLBvbrM8iVqo6h9UPXPrH2QOKx3lk8aaMWtmtJDeeVA&skey=b8dc2088854b122f&v=v377) format('woff2');
+  src: url(https://fonts.gstatic.com/l/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsLjBuVYLBrbrM8iVqo6h9UPXPrH2QOL1xsuOvg3WMHqOg&skey=b8dc2088854b122f&v=v377) format('woff2');
 }
 .wm-icon.icon-full { font-family: 'Material Symbols Review'; }
 .try .preview-reset:disabled { visibility: hidden; }
@@ -713,14 +712,14 @@ body:has(.canvas[data-try="float"]) .wm-ov-cols { left: 264px; }
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
   row-gap: 3px; cursor: pointer; user-select: none; padding: var(--spacing-04, 12px) 0 var(--spacing-03, 9px);
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: var(--track-caps);
-  color: rgba(232,232,232,.35);
+  color: rgba(var(--text-rgb, 232, 232, 232), .35);
 }
 .rail-seam:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 3px; border-radius: 4px; }
 .rail-seam-num { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim); }
 .rail-seam.is-open .rail-seam-num { color: var(--text); }
 .rail-seam-lbl { display: block; min-width: 0; white-space: nowrap; text-transform: uppercase; }
 .rail-seam.is-open { color: var(--text); }
-.rail-seam:not(.is-next):hover:not(.is-open) { color: rgba(232,232,232,.6); }
+.rail-seam:not(.is-next):hover:not(.is-open) { color: rgba(var(--text-rgb, 232, 232, 232), .6); }
 .rail-seam-sum {
   grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim);
@@ -1098,3 +1097,17 @@ body:has(.canvas[data-try="float"]) .wm-ov-cols { left: 264px; }
 .rail-reset:not(:disabled), .rail-reset:hover:not(:disabled),
 .rail-seam-reset:not(:disabled), .rail-seam-reset:hover:not(:disabled),
 .preview-reset:not(:disabled), .preview-reset:not(:disabled):hover { color: var(--signal-acid); }
+
+/* TEMPORARY, for this review build: the Try controls are 30px tall (Mark), 12 + 18 on the 3px line,
+   but the shared AxisSlider track variant sets min-height: 32px (shared/src/AxisSlider.css). Until the
+   wm-primitives change lands, this scoped rule sets the Try dials -- and their non-dial neighbors,
+   so the two rows match -- to 30. Delete it when the primitive is 30. */
+.canvas[data-try="float"] .try .slider-row--track .slider-label { min-height: 30px; }
+.canvas[data-try="float"] .try .wm-accent, .canvas[data-try="float"] .try .try-btn, .canvas[data-try="float"] .try .style-menu-btn,
+.canvas[data-try="float"] .try .preview-reset { height: 30px; min-height: 30px; box-sizing: border-box; padding-block: 0; }
+.canvas[data-try="float"] .try-lbl { min-height: 30px; }
+
+/* The theme switch (shared ThemeSwitch, default look) in the canvas's top right corner. The Info
+   panel, when open, starts below it. */
+.theme-corner { position: absolute; top: var(--spacing-04, 12px); right: var(--grid-gutter, 24px); z-index: 5; }
+.canvas[data-try="float"] .info-panel { padding-top: calc(var(--spacing-09, 64px)); }
