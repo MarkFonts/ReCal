@@ -3,7 +3,7 @@
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
 import './holo.css'
-import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
@@ -689,6 +689,23 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     ro.observe(bar)
     return () => ro.disconnect()
   })
+  // The float's grid, measured: the bar's width and the house columns/gutter (grid.css), so the
+  // packer below can give each column a whole number of grid columns.
+  const [geo, setGeo] = useState<{ W: number; cols: number; g: number } | null>(null)
+  useLayoutEffect(() => {
+    if (TRY_PLACE !== 'float') return
+    const bar = barRef.current
+    if (!bar) return
+    const read = () => {
+      const cs = getComputedStyle(document.documentElement)
+      const next = { W: bar.getBoundingClientRect().width, cols: +cs.getPropertyValue('--grid-cols') || 24, g: parseFloat(cs.getPropertyValue('--grid-gutter')) || 24 }
+      setGeo(p => (p && p.W === next.W && p.cols === next.cols && p.g === next.g ? p : next))
+    }
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(bar)
+    return () => ro.disconnect()
+  }, [])
   // The metrics stage has its own type; only the preview-only pills apply there.
   const rows = vmActive ? [] : TYPE_ROWS[mode] ?? []
   const has = (k: string) => rows.includes(k)
@@ -739,7 +756,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     ? <TryDial label="Leading" icon="format_line_spacing" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
     : null
   const weightDial = (
-    <TryDial label="Weight" icon="format_bold" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
+    <TryDial label="Weight" icon="line_weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
       display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
   )
   const italicBtn = (
@@ -792,19 +809,48 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     ? <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} /> : null
 
   if (floatPlace) {
-    // Four columns, two rows, each column a whole number of grid columns (CSS: .try-c-*).
-    // Column 4 is the scene's: Styles over Alignment on Paragraph, the tier menu over Measure on
-    // Scale, empty elsewhere (slots are kept so nothing shifts between tabs).
-    const col4 = para || tierMenu
+    // Columns that have no controls on this tab are not rendered, and what is left packs left
+    // from the first grid column after TRY, each column a whole number of grid columns wide
+    // (its pills' natural width, rounded up), whole columns wrapping to a band that starts under
+    // the first control. Column 1 Size/Tracking, 2 Optical size/Leading, 3 Weight/Italic+Features,
+    // 4 the scene's (Styles/Alignment on Paragraph, tier menu/Measure on Scale); Reset after the last.
+    const colA = [sizeDial, trackingDial].filter(Boolean)
+    const colB = [opticalDial, leadingDial].filter(Boolean)
+    const colD = para ? [styleMenu, layoutPop] : tierMenu ? [tierMenu, scaleMeasure] : []
+    const present: { key: string; px: number }[] = []
+    if (colA.length) present.push({ key: 'a', px: 150 })
+    if (colB.length) present.push({ key: 'b', px: 214 })
+    present.push({ key: 'c', px: 214 })
+    if (colD.length) present.push({ key: 'd', px: 156 })
+    present.push({ key: 'r', px: 92 })
+    const at: Record<string, CSSProperties> = {}
+    if (geo) {
+      const { W, cols, g } = geo
+      const col = (W - (cols - 1) * g) / cols
+      const spanFor = (px: number, from: number) => Math.min(cols - from + 1, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
+      const put = (k: string, start: number, span: number) => {
+        at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span } as CSSProperties
+      }
+      const L = spanFor(54, 1)               // the TRY label: its gutter + the word
+      put('lbl', 1, L)
+      const x0 = L + 1
+      let cur = x0
+      for (const it of present) {
+        let s = spanFor(it.px, x0)
+        if (cur + s - 1 > cols) cur = x0       // whole column wraps to a new band
+        put(it.key, cur, s)
+        cur += s
+      }
+    }
     return (
       <div className="try wm-grid wm-lines" role="group" aria-label="Try" ref={barRef}
         onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
-        <span className="try-lbl try-c-lbl">Try</span>
-        <div className="try-col try-c-a">{sizeDial ?? slot}{trackingDial ?? slot}</div>
-        <div className="try-col try-c-b">{opticalDial ?? slot}{leadingDial ?? slot}</div>
-        <div className="try-col try-c-c">{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
-        {col4 && <div className="try-col try-c-d">{styleMenu ?? tierMenu}{layoutPop ?? scaleMeasure ?? slot}</div>}
-        <div className="try-c-r">{resetBtn}</div>
+        <span className="try-lbl try-c-lbl" style={at.lbl}>Try</span>
+        {colA.length > 0 && <div className="try-col" style={at.a}>{colA}</div>}
+        {colB.length > 0 && <div className="try-col" style={at.b}>{colB}</div>}
+        <div className="try-col" style={at.c}>{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
+        {colD.length > 0 && <div className="try-col" style={at.d}>{colD}</div>}
+        <div className="try-c-r" style={at.r}>{resetBtn}</div>
       </div>
     )
   }

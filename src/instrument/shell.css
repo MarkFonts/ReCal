@@ -481,12 +481,12 @@
    its full height. The block is the house grid (grid.css, 24 columns / 12 below 1024) over the
    CANVAS width only -- the rail stays a fixed 264px, off the columns. A tool has no page margin:
    text sits one gutter in (the bleed rule), so the TRY label and the tab row's text both start
-   at the column-1 content edge. Four columns of two rows, each a whole number of grid columns:
+   at the column-1 content edge. Up to four columns of two rows:
      1 Size / Tracking   2 Optical size / Leading   3 Weight / Italic + Features   4 Styles / Alignment
-   wide (canvas >= 1100): label 1-2, then 3-6, 7-11, 12-16, 17-20, Reset 21-24.
-   middle (24 cols, narrower): label 1-3, 4-8, 9-15, 16-22; column 4 and Reset wrap to a band under 4.
-   below 1024 (12 cols): label 1-2, 3-6, 7-11; then 3-7 and 8-11; Reset on a third band.
-   Whole columns wrap; a column never splits. The box ignores the pointer except on the controls. */
+   A column with no controls on the tab is not rendered; the rest pack left from the first grid column
+   after TRY. Spans and starts are computed in TryBar (--start / --span set inline: each column is
+   its pills' natural width rounded up to whole grid columns). Whole columns wrap to a band that
+   starts under the first control; a column never splits. The box ignores the pointer except on the controls. */
 .canvas[data-try="float"] .try {
   position: absolute; left: 0; right: 0; bottom: 0;
   display: grid; align-items: start; gap: var(--spacing-04, 12px) var(--grid-gutter, 24px);
@@ -495,23 +495,7 @@
 }
 .canvas[data-try="float"] .try > * { pointer-events: auto; }
 .canvas[data-try="float"] .try-lbl { margin: 0; align-items: center; }
-.try-c-lbl { --start: 1; --span: 2; --start-md: 1; --span-md: 2; }
-.try-c-a   { --start: 3; --span: 4; --start-md: 3; --span-md: 4; }
-.try-c-b   { --start: 7; --span: 5; --start-md: 7; --span-md: 5; }
-.try-c-c   { --start: 12; --span: 5; --start-md: 3; --span-md: 5; }
-.try-c-d   { --start: 17; --span: 4; --start-md: 8; --span-md: 4; }
-.try-c-r   { --start: 21; --span: 4; --start-md: 3; --span-md: 4; align-self: end; }
-@media (min-width: 1024px) {
-  @container (max-width: 1099px) {
-    .try-c-lbl { --start: 1; --span: 3; }
-    .try-c-a { --start: 4; --span: 5; }
-    .try-c-b { --start: 9; --span: 7; }
-    .try-c-c { --start: 16; --span: 7; }
-    .try-c-d { --start: 4; --span: 5; }
-    .try-c-r { --start: 9; --span: 4; }
-    .try:not(:has(.try-c-d)) .try-c-r { --start: 4; }
-  }
-}
+.try-c-r { align-self: end; }
 /* each column: its two rows, a hairline in the gutter after it (not after the last of a band) */
 .try-col { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--spacing-02, 6px); align-content: start; }
 .try-col::after {
@@ -520,13 +504,18 @@
 }
 .try-col[data-eol]::after { display: none; }
 .try-col > * { width: 100%; min-width: 0; }
-.try-slot { display: block; min-height: 32px; }
 .try-row { display: flex; gap: var(--spacing-01, 4px); }
-.try-row > * { flex: 1 1 0; min-width: 0; }
+.try-row > .wm-accent { flex: 0 0 auto; width: auto; }   /* Italic is its content width ... */
+.try-row > .try-pop { flex: 1 1 0; min-width: 0; }      /* ... and Features takes the rest of the column */
 .try-col .try-pill, .try-col .style-menu, .try-col .try-pop { width: 100%; }
-.try-col .style-menu-btn, .try-col .try-pop .wm-accent, .try-row .wm-accent { width: 100%; justify-content: flex-start; }
+.try-col .style-menu-btn, .try-col .try-pop .wm-accent { width: 100%; justify-content: flex-start; }
+.try-row > .wm-accent { justify-content: flex-start; }
 .try-col .try-pop .wm-accent .try-btn-caret, .try-col .style-menu-caret { margin-left: auto; }
-.canvas[data-try="float"] .stage-scroll { padding-bottom: calc(var(--spacing-09, 64px) * 2); }
+.canvas[data-try="float"] .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) { padding-bottom: calc(var(--spacing-09, 64px) * 2); }   /* scroll room inside the scroller, so text can clear the controls; no band on the full-bleed scenes */
+/* every control stands on the ground: opaque, so content scrolling behind never shows through */
+.canvas[data-try="float"] .try-pill { background-color: var(--bg); border-radius: var(--radius, 8px); }
+.canvas[data-try="float"] .try .wm-accent, .canvas[data-try="float"] .style-menu-btn,
+.canvas[data-try="float"] .try .preview-reset { background-color: var(--bg); }
 /* the tab row on the same grid: its text starts at the column-1 content edge, exactly where TRY does */
 .canvas[data-try="float"] .canvas-bar { padding-inline: 0; }
 .canvas[data-try="float"] .canvas-bar .modebar { margin-inline-start: calc(var(--tab-pad, 8px) * -1); }
