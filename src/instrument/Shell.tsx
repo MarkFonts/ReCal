@@ -723,15 +723,27 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
 
   // Bake the ◆ defaults (instant if already pre-baked) and trigger the download: a lone
   // TTF, or with statics a .zip of the variable font + the 8 static cuts.
+  const [dlError, setDlError] = useState<string | null>(null)
   const doDownload = async () => {
-    const { bytes, kind } = await engine.download(statics ? { ...cfgRef.current(), statics: true } : cfgRef.current())
-    const zip = kind === 'zip'
-    const url = URL.createObjectURL(new Blob([new Uint8Array(bytes)], { type: zip ? 'application/zip' : 'font/ttf' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${family}.${zip ? 'zip' : 'ttf'}`
-    a.click()
-    URL.revokeObjectURL(url)
+    setDlError(null)
+    let baked: Awaited<ReturnType<typeof engine.download>>
+    try {
+      baked = await engine.download(statics ? { ...cfgRef.current(), statics: true } : cfgRef.current())
+    } catch {
+      return   // a failed bake: the engine already logged it and set engine.error (the footer shows it)
+    }
+    try {
+      const zip = baked.kind === 'zip'
+      const url = URL.createObjectURL(new Blob([new Uint8Array(baked.bytes)], { type: zip ? 'application/zip' : 'font/ttf' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${family}.${zip ? 'zip' : 'ttf'}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('[download]', e)
+      setDlError(String(e))
+    }
   }
 
   // One-shot holo (+ ital lean) over the "Download" letters when the export first becomes
@@ -754,8 +766,8 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
     // Touching the footer is not touching the rail's controls: don't enter EDIT.
     <div className="rail-dl" ref={footRef} onPointerEnter={() => prefetch(true)}
       onPointerDown={e => e.stopPropagation()}>
-      {engine.error && (
-        <span className="dock-error" title={engine.error}>export failed — see console</span>
+      {(engine.error || dlError) && (
+        <span className="dock-error" title={dlError ?? engine.error ?? undefined}>export failed — see console</span>
       )}
       <button className="dl-what" aria-expanded={expanded} onClick={() => setExpanded(x => !x)}>
         <span className="dl-k">In your download</span>
