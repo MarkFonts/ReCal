@@ -7,7 +7,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
-  type FitOptions, Chevron } from '../../shared/index' // wm-primitives (git submodule)
+  type FitOptions, Chevron, AccentButton } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
@@ -551,9 +551,10 @@ function TryPop({ label, end, children }: { label: string; end?: boolean; childr
   }, [open])
   return (
     <div className="try-pop" ref={ref}>
-      <button className={`try-btn${open ? ' on' : ''}`} aria-expanded={open} onClick={() => setOpen(o => !o)}>
+      <AccentButton look="q5" shape="chip" lit={open} className={open ? undefined : 'try-btn'}
+        aria-expanded={open} onClick={() => setOpen(o => !o)}>
         {label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
-      </button>
+      </AccentButton>
       {open && <div className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
     </div>
   )
@@ -612,8 +613,9 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       {rows.length > 0 && <span className="try-sep" aria-hidden="true" />}
       <TryDial label="Weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
         display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v })} />
-      <button className={`try-btn${merged.ital >= 0.5 ? ' on' : ''}`} aria-pressed={merged.ital >= 0.5} disabled={naItal}
-        onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}>Italic</button>
+      <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
+        aria-pressed={merged.ital >= 0.5} disabled={naItal}
+        onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}>Italic</AccentButton>
       <TryPop label="Features">
         {FEATURE_CHIPS.map(f => (
           <label key={f.tag} className="rail-toggle" title={f.tag}>
@@ -792,7 +794,7 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
         </div>
       )}
       <div className="dl-act">
-        <button className="floor-btn floor-btn--primary"
+        <AccentButton look="q5" shape="pill"
           disabled={engine.building || (!engine.ready && !devFake)}
           onPointerEnter={() => prefetch(true)}
           onClick={() => { if (engine.ready) doDownload(); else if (devFake) playHolo() }}
@@ -802,7 +804,7 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
             ? <span className="holo-loading">Building…</span>
             : <span key={holoKey} className={holoKey > 0 ? 'holo-once' : ''}
                 onAnimationEnd={e => { if (e.animationName === 'holo-once-ital') e.currentTarget.classList.remove('holo-once') }}>{label}</span>}
-        </button>
+        </AccentButton>
         <p className="dl-ofl">By downloading you accept the{' '}
           <a href="https://openfontlicense.org/open-font-license-official-text/"
             target="_blank" rel="noopener noreferrer">OFL 1.1</a></p>
