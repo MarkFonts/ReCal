@@ -224,16 +224,17 @@ type Flashes = Record<string, { color: string; nonce: number }>
 // ── Freezer gold ─────────────────────────────────────────────────────────────────
 // Characters a frozen feature swaps get painted gold in the specimen — the freezer's
 // zone-like color language ("held off GEOM", distinct from the four GEOM zone hues).
-// ss/cv derive their chars from `families`; figure/case features from an explicit list.
+// ss/cv derive their chars from the font's own GSUB (`chars`: the characters whose base
+// glyph the feature really swaps); figure/case features from an explicit list.
 const FEATURE_CHARS: Record<string, string> = {
   tnum: '0123456789', pnum: '0123456789', zero: '0', case: '-–—()[]{}',
 }
-const FEATURE_FAMILIES: Record<string, string[]> =
-  Object.fromEntries([...SUBS.stylisticSets, ...SUBS.charVariants].map(f => [f.tag, f.families]))
+const FEATURE_GSUB_CHARS: Record<string, string[]> =
+  Object.fromEntries([...SUBS.stylisticSets, ...SUBS.charVariants].map(f => [f.tag, f.chars]))
 function frozenCharSet(tags: string[]): Set<string> {
   const s = new Set<string>()
   for (const t of tags) {
-    for (const c of FEATURE_FAMILIES[t] ?? []) s.add(c)
+    for (const c of FEATURE_GSUB_CHARS[t] ?? []) s.add(c)
     for (const c of FEATURE_CHARS[t] ?? '') s.add(c)
   }
   return s

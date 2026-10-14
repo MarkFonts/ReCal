@@ -21,15 +21,16 @@ import type { FeatureSet } from '../data/substitutions'
 type Item = { tag: string; name: string; sample: string }
 type Section = { title: string; items: Item[] }
 
-// Representative glyphs shown as base → variant. Stylistic sets derive theirs from
-// `families` (the letters they touch); a few carry no families (the "6 and 9" sets) or
-// too many (Futura), so they get an explicit, legible sample.
+// Representative glyphs shown as base → variant: the first three ASCII letters/digits the
+// feature actually swaps (`chars`, read from the font's own GSUB). A few sets swap too many
+// (Futura) or their name promises a letter the first three skip (A11Y I l a), so they get
+// an explicit, legible sample.
 const SAMPLE_OVERRIDE: Record<string, string> = {
   ss10: 'aut', ss11: 'aut',   // Futura alternatives — show the iconic a/u/t
-  ss16: '69', ss17: '69',     // 6-and-9 sets carry no `families`
+  ss18: 'Ial',                // the name is "Accessible I l a"; its g would crowd out the l
 }
-const sampleFor = (ss: FeatureSet): string =>
-  SAMPLE_OVERRIDE[ss.tag] ?? (ss.families.slice(0, 3).join('') || ss.tag)
+const asciiChars = (f: FeatureSet): string => f.chars.filter(c => /^[A-Za-z0-9]$/.test(c)).slice(0, 3).join('')
+const sampleFor = (ss: FeatureSet): string => SAMPLE_OVERRIDE[ss.tag] ?? (asciiChars(ss) || ss.tag)
 
 // Plain card names — the font's own ss names run long or read like tags ("A11Y I l a");
 // these say what the form IS, in the letters the card shows.
@@ -53,9 +54,9 @@ const FIGURE_ITEMS: Item[] = [
 //   { tag: 'case', name: 'Case-sensitive', sample: 'H-' },
 // ]
 
-// The 6/9 and ae character variants carry no `families`, so they get a sample too.
+// The ae character variants swap no ASCII letter, so they get an explicit sample.
 const CV_SAMPLE: Record<string, string> = {
-  cv04: 'æ', cv05: 'æ', cv26: '6', cv27: '9', cv28: '6', cv29: '9', cv30: '6', cv31: '9',
+  cv04: 'æ', cv05: 'æ',
 }
 const NAME_BY_TAG: Record<string, string> = {}
 // A character variant someone froze (a preset does) — the Freezer lists only the ssXX
@@ -64,7 +65,7 @@ const NAME_BY_TAG: Record<string, string> = {}
 const cvItem = (tag: string): Item | null => {
   const cv = SUBS.charVariants.find(c => c.tag === tag)
   if (!cv) return null
-  return { tag, name: cv.name ?? tag, sample: CV_SAMPLE[tag] ?? (cv.families.slice(0, 3).join('') || tag) }
+  return { tag, name: cv.name ?? tag, sample: CV_SAMPLE[tag] ?? (asciiChars(cv) || tag) }
 }
 
 // Stylistic sets in their natural ssNN order.
