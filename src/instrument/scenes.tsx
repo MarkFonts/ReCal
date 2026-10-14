@@ -29,33 +29,18 @@ export const SCENES: { mode: SceneMode; label: string }[] = [
 
 // INFO sits in the tab row (content type), but toggles the right-side opaque overlay
 // rather than replacing the content scene.
-// The same marks font-proofer's mode list uses (Big Word, ¶, Type Scale, grid, calendar).
-const SCENE_ICON: Record<SceneMode, string> = {
-  words: 'insert_text', paragraph: 'format_paragraph', scale: 'text_fields', glyphs: 'grid_view', ui: 'calendar_month',
-}
-
-// `icons` (the ?try=split placement): each tab gains its mark before the label, keeps the
-// existing tab look, and Info leaves the row (it is a corner button there). Under 1280px
-// the label drops (CSS) and the title + aria-label carry the name.
-export function Modebar({ mode, setMode, showInfo, toggleInfo, icons = false }: {
+export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
   mode: SceneMode; setMode: (m: SceneMode) => void
-  showInfo: boolean; toggleInfo: () => void; icons?: boolean
+  showInfo: boolean; toggleInfo: () => void
 }) {
   return (
-    <div className={`modebar${icons ? ' modebar--icons' : ''}`}>
+    <div className="modebar">
       {SCENES.map(s => (
         <button key={s.mode} data-label={s.label} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
-          title={icons ? s.label : undefined} aria-label={icons ? s.label : undefined}
-          onClick={() => setMode(s.mode)}>
-          {icons
-            ? <span className="mode-btn-in"><Icon name={SCENE_ICON[s.mode]} size={16} state={mode === s.mode ? 'active' : 'rest'} className="mode-btn-ic" /><span className="mode-btn-lbl">{s.label}</span></span>
-            : s.label}
-        </button>
+          onClick={() => setMode(s.mode)}>{s.label}</button>
       ))}
-      {!icons && (
-        <button data-label="Info" className={`mode-btn${showInfo ? ' on' : ''}`}
-          aria-pressed={showInfo} onClick={toggleInfo}>Info</button>
-      )}
+      <button data-label="Info" className={`mode-btn${showInfo ? ' on' : ''}`}
+        aria-pressed={showInfo} onClick={toggleInfo}>Info</button>
     </div>
   )
 }

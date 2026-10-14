@@ -203,6 +203,10 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;        /* let the 1fr row shrink so the stage scrolls, not the floor */
+  /* The left edge of the tab row's text = canvas-bar's inset + a tab button's own padding.
+     Named so the floating Try label can start on exactly the same x. */
+  --canvas-inset: var(--spacing-06, 24px);
+  --tab-pad: var(--spacing-03, 8px);
 }
 /* Everything below the top bar; anchors the Font info overlay (this box doesn't
    scroll — the stage inside it does), so the overlay stays put vertically and
@@ -237,7 +241,7 @@
   /* +2px: "Words" (12px, in an 8px-padded button) shares a baseline with the rail's
      "ReCal Builder" (16px bold under the header's 16px). Measured, and held by the
      alignment spec's baseline pairs -- change either side and it fails. */
-  padding: calc(var(--spacing-04, 12px) + 2px) 24px 0;
+  padding: calc(var(--spacing-04, 12px) + 2px) var(--canvas-inset) 0;
 }
 
 /* Mode label + its per-mode submenu on ONE BASELINE, in every mode. The row aligns its
@@ -473,29 +477,74 @@
 }
 .try .preview-reset { margin-left: var(--spacing-02, 6px); }
 
-/* ── Try placements, for review (?try=…; the docked bar above is the default) ───────────
-   float:  no strip, the pills ride the foot of the canvas and the stage keeps its full
-           height. The row ignores the pointer except on the pills, so text behind stays clickable.
-   top:    the pills share the tab row, right-aligned, wrapping under the tabs when short;
-           popovers open downward because there is no room above.
-   inline: a caption row under the text, in the page's own flow and scroll. */
+/* ── ?try=float — no bar: the controls float over the foot of the canvas and the stage keeps
+   its full height. The block is the house grid (grid.css, 24 columns / 12 below 1024) over the
+   CANVAS width only -- the rail stays a fixed 264px, off the columns. A tool has no page margin:
+   text sits one gutter in (the bleed rule), so the TRY label and the tab row's text both start
+   at the column-1 content edge. Four columns of two rows, each a whole number of grid columns:
+     1 Size / Tracking   2 Optical size / Leading   3 Weight / Italic + Features   4 Styles / Alignment
+   wide (canvas >= 1100): label 1-2, then 3-6, 7-11, 12-16, 17-20, Reset 21-24.
+   middle (24 cols, narrower): label 1-3, 4-8, 9-15, 16-22; column 4 and Reset wrap to a band under 4.
+   below 1024 (12 cols): label 1-2, 3-6, 7-11; then 3-7 and 8-11; Reset on a third band.
+   Whole columns wrap; a column never splits. The box ignores the pointer except on the controls. */
 .canvas[data-try="float"] .try {
   position: absolute; left: 0; right: 0; bottom: 0;
+  display: grid; align-items: start; gap: var(--spacing-04, 12px) var(--grid-gutter, 24px);
   background: none; pointer-events: none;
-  padding: var(--spacing-04, 12px) var(--spacing-08, 48px);
+  padding: var(--spacing-04, 12px) 0;
 }
-.canvas[data-try="float"] .try-lbl, .canvas[data-try="float"] .try-group { pointer-events: auto; }
-.canvas[data-try="top"] .canvas-bar { flex-wrap: wrap; row-gap: var(--spacing-02, 6px); }
-.canvas[data-try="top"] .try {
-  flex: 1 1 auto; background: none;
-  padding: 0 0 0 var(--spacing-05, 16px);
+.canvas[data-try="float"] .try > * { pointer-events: auto; }
+.canvas[data-try="float"] .try-lbl { margin: 0; align-items: center; }
+.try-c-lbl { --start: 1; --span: 2; --start-md: 1; --span-md: 2; }
+.try-c-a   { --start: 3; --span: 4; --start-md: 3; --span-md: 4; }
+.try-c-b   { --start: 7; --span: 5; --start-md: 7; --span-md: 5; }
+.try-c-c   { --start: 12; --span: 5; --start-md: 3; --span-md: 5; }
+.try-c-d   { --start: 17; --span: 4; --start-md: 8; --span-md: 4; }
+.try-c-r   { --start: 21; --span: 4; --start-md: 3; --span-md: 4; align-self: end; }
+@media (min-width: 1024px) {
+  @container (max-width: 1099px) {
+    .try-c-lbl { --start: 1; --span: 3; }
+    .try-c-a { --start: 4; --span: 5; }
+    .try-c-b { --start: 9; --span: 7; }
+    .try-c-c { --start: 16; --span: 7; }
+    .try-c-d { --start: 4; --span: 5; }
+    .try-c-r { --start: 9; --span: 4; }
+    .try:not(:has(.try-c-d)) .try-c-r { --start: 4; }
+  }
 }
-.canvas[data-try="top"] .try-lbl { display: none; }
-.canvas[data-try="top"] .try-pop-list,
-.canvas[data-try="top"] .try .style-menu-list { bottom: auto; top: calc(100% + 4px); }
-.try-inline-wrap { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
-.try-inline-wrap .words-scene { min-height: auto; }
-.canvas[data-try="inline"] .try { background: none; padding: var(--spacing-06, 24px) 0 0; }
+/* each column: its two rows, a hairline in the gutter after it (not after the last of a band) */
+.try-col { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--spacing-02, 6px); align-content: start; }
+.try-col::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 1px;
+  right: calc(var(--grid-gutter, 24px) / -2 - .5px); background: var(--border);
+}
+.try-col[data-eol]::after { display: none; }
+.try-col > * { width: 100%; min-width: 0; }
+.try-slot { display: block; min-height: 32px; }
+.try-row { display: flex; gap: var(--spacing-01, 4px); }
+.try-row > * { flex: 1 1 0; min-width: 0; }
+.try-col .try-pill, .try-col .style-menu, .try-col .try-pop { width: 100%; }
+.try-col .style-menu-btn, .try-col .try-pop .wm-accent, .try-row .wm-accent { width: 100%; justify-content: flex-start; }
+.try-col .try-pop .wm-accent .try-btn-caret, .try-col .style-menu-caret { margin-left: auto; }
+.canvas[data-try="float"] .stage-scroll { padding-bottom: calc(var(--spacing-09, 64px) * 2); }
+/* the tab row on the same grid: its text starts at the column-1 content edge, exactly where TRY does */
+.canvas[data-try="float"] .canvas-bar { padding-inline: 0; }
+.canvas[data-try="float"] .canvas-bar .modebar { margin-inline-start: calc(var(--tab-pad, 8px) * -1); }
+.canvas[data-try="float"] .mode-row { padding-left: var(--grid-gutter, 24px); }
+/* ?grid draws the columns over the canvas only (the rail is off the grid) */
+body:has(.canvas[data-try="float"]) .wm-ov-cols { left: 264px; }
+/* a control icon: absolute inside the pill, the label shifted clear of it */
+.try-pill { position: relative; }
+.try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
+.try-pill--ic .slider-label-left { padding-left: 22px; }
+.try-row { }
+/* LOCAL REVIEW ONLY: the shared subset lacks format_size and format_letter_spacing, so these
+   two draw from a one-off Google Fonts cut of just those ligatures until the subset grows. */
+@font-face {
+  font-family: 'Material Symbols Review'; font-style: normal; font-weight: 100 700; font-display: block;
+  src: url(https://fonts.gstatic.com/l/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsLjBuVYLBvbrM8iVqo6h9UPXPrH2QOKx3lk8aaMWtmtJDeeVA&skey=b8dc2088854b122f&v=v377) format('woff2');
+}
+.wm-icon.icon-full { font-family: 'Material Symbols Review'; }
 .try .preview-reset:disabled { visibility: hidden; }
 .preview-reset {
   display: inline-flex;
@@ -1051,37 +1100,6 @@
    needs the extra class to win on specificity rather than on order. */
 .gp .gp-cell:hover { background: var(--signal-acid); }
 
-/* ── ?try=split — no bars (placement borrowed from timeless.co/type/playground; the tabs and
-   pills keep ReCal's own look). Tabs bottom left, Try groups bottom right on the same edge
-   and stacking upward when they wrap (the first line is the bottom one), theme switch and
-   Info top right. The scene's own options (Paragraph's source, Glyphs' sets) stay top left. */
-.canvas[data-try="split"] .mode-row { min-height: 0; padding-top: var(--spacing-04, 12px); }
-.canvas[data-try="split"] .mode-label { padding-bottom: 0; }
-.canvas[data-try="split"] .stage-scroll { padding-bottom: calc(var(--spacing-09, 64px) * 2); }
-.split-foot {
-  position: absolute; left: var(--spacing-06, 24px); right: var(--spacing-06, 24px); bottom: var(--spacing-04, 12px);
-  z-index: 3; display: flex; align-items: flex-end; gap: var(--spacing-05, 16px);
-  pointer-events: none;
-}
-.split-foot .modebar { flex: none; pointer-events: auto; }
-.split-foot .try { flex: 1 1 0; min-width: 0; padding: 0; background: none; pointer-events: none; }
-.split-foot .try-lbl { display: none; }
-.split-foot .try-group { pointer-events: auto; }
-.split-foot .try-groups { flex-wrap: wrap-reverse; }
-.modebar--icons .mode-btn-in { display: inline-block; white-space: nowrap; }
-.modebar--icons .mode-btn-ic { vertical-align: -3px; margin-right: var(--spacing-01, 4px); }
-/* Not enough width for labels beside the groups: marks only. The selected tab keeps its
-   acid rule, now under the mark since there is no text to underline. */
-@media (max-width: 1280px) {
-  .modebar--icons .mode-btn-lbl, .modebar--icons .mode-btn::after { display: none; }
-  .modebar--icons .mode-btn-ic { margin-right: 0; }
-  .modebar--icons .mode-btn.on .mode-btn-ic { border-bottom: 1.5px solid var(--signal-acid); padding-bottom: 2px; }
-}
-.split-corner {
-  position: absolute; top: var(--spacing-04, 12px); right: var(--spacing-06, 24px); z-index: 5;
-  display: flex; flex-direction: column; align-items: flex-end; gap: var(--spacing-01, 4px);
-}
-.canvas[data-try="split"] .info-panel { padding-top: calc(var(--spacing-09, 64px) + var(--spacing-03, 8px)); }
 .try-btn-ic { margin-right: var(--spacing-02, 6px); vertical-align: -3px; }
 
 /* Reset buttons take the acid while there is something to reset (they disable otherwise, and
