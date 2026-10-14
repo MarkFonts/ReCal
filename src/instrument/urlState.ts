@@ -31,6 +31,7 @@ const KEY_AXIS: Record<string, string> = Object.fromEntries(
 const K = {
   thresholds: 't',      // a:70.71~y:35.40   -- only groups that moved
   multiplier: 'm',      // opsz rescale, when not 1
+  opszDefault: 'od',    // where opsz rests, final (scaled) space; absent = stock
   frozenOpsz: 'f',      // frozen opsz value; 'f' present means freezeOpsz
   autoAscender: 'aa',   // 1
   features: 'ff',       // cv18.ss10
@@ -80,6 +81,7 @@ export function encodeDefaults(
   if (moved.length) p.set(K.thresholds, moved.join('~'))
 
   if (d.opszMultiplier !== 1) p.set(K.multiplier, num(d.opszMultiplier))
+  if (d.opszDefault != null) p.set(K.opszDefault, num(d.opszDefault))
   if (d.freezeOpsz) p.set(K.frozenOpsz, d.frozenOpszValue == null ? '' : num(d.frozenOpszValue))
   if (d.autoAscender) p.set(K.autoAscender, '1')
   if (d.frozenFeatures?.length) p.set(K.features, [...d.frozenFeatures].sort().join('.'))
@@ -97,6 +99,7 @@ export interface DecodedState {
   axes: AxisMap                                  // only the tags the URL carried
   glyphThresholds: Record<string, number[]>      // only the groups the URL carried
   opszMultiplier?: number
+  opszDefault?: number
   freezeOpsz?: boolean
   frozenOpszValue?: number | null
   autoAscender?: boolean
@@ -136,6 +139,13 @@ export function decodeDefaults(search: string): DecodedState {
 
   const m = Number(p.get(K.multiplier))
   if (p.has(K.multiplier) && Number.isFinite(m) && m > 0) out.opszMultiplier = m
+
+  /* Final-space value, so the valid range depends on the multiplier decoded just above. */
+  const od = Number(p.get(K.opszDefault))
+  if (p.has(K.opszDefault) && Number.isFinite(od)) {
+    const mm = out.opszMultiplier ?? 1
+    out.opszDefault = Math.min(Math.max(od, AXIS_RANGES.opsz.min * mm), AXIS_RANGES.opsz.max * mm)
+  }
 
   if (p.has(K.frozenOpsz)) {
     out.freezeOpsz = true

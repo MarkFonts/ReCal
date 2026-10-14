@@ -95,6 +95,7 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
           onChange={val => dispatch({ type: 'setFrozenOpszValue', value: val as number })}
         />
       ) : (
+        <>
         <div className="pin">
           <div className="pin-head"><span className="pin-label">Optical scale</span>
             <span className="pin-val tnum">{d.opszMultiplier}×</span></div>
@@ -105,6 +106,21 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
             ))}
           </div>
         </div>
+        {/* Final-space range (stock range × scale); the default resting point is 14 × scale
+           until moved. Landing back on stock stores null, so the row reads as untouched. */}
+        <AxisSlider
+          label="Default"
+          tag="opsz"
+          value={d.opszDefault ?? 14 * d.opszMultiplier}
+          min={AXIS_RANGES.opsz.min * d.opszMultiplier}
+          max={AXIS_RANGES.opsz.max * d.opszMultiplier}
+          step={1}
+          variant="track"
+          reference={14 * d.opszMultiplier}
+          onChange={val => dispatch({ type: 'setOpszDefault', value: val === 14 * d.opszMultiplier ? null : val as number })}
+        />
+        <p className="rail-help">Where the font rests in apps that don't set optical size by themselves.</p>
+        </>
       )}
     </div>
   )
@@ -202,7 +218,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
   const edited = glyphsEditedCount(state)
   const summaries = [
     `GEOM ${Math.round(d.axes.GEOM)} · ${Math.round(d.axes.wght)}`,
-    d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×`,
+    d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×${d.opszDefault != null ? ` · rests at ${d.opszDefault}` : ''}`,
     `Asc ${Math.round(d.axes.YTAS)} · Sharpness ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
     edited ? `${edited} moved` : 'stock swaps',
     frozenTags.length ? `${freezerName(frozenTags[0])}${frozenTags.length > 1 ? ` · +${frozenTags.length - 1}` : ''}` : 'nothing frozen',
@@ -710,6 +726,7 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
     return {
       axisDefaults: Object.fromEntries(Object.entries(d.axes).filter(([t]) => t !== 'opsz')),
       opszMultiplier: d.opszMultiplier,
+      opszDefault: d.freezeOpsz ? null : d.opszDefault,
       freezeOpsz: d.freezeOpsz,
       frozenOpszValue: d.frozenOpszValue,
       autoAscender: d.autoAscender,

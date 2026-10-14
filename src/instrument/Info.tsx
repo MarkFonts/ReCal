@@ -60,6 +60,9 @@ export default function Info() {
         <Row label="Re-anchored" value={`${changed.size} ${changed.size === 1 ? 'axis' : 'axes'}`} />
         <Row label="Construction" value={`${swapPointCount(state)} swaps · ${glyphsEditedCount(state)} edited`} />
         <Row label="Opsz scale" value={`×${defaults.opszMultiplier}${defaults.freezeOpsz ? ' · frozen' : ''}`} />
+        {defaults.opszDefault != null && !defaults.freezeOpsz && (
+          <Row label="Opsz rests at" value={String(defaults.opszDefault)} />
+        )}
       </div>
 
       <div className="info-sec">

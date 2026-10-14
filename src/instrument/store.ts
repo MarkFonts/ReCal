@@ -32,6 +32,7 @@ export interface DefaultsLayer {
   axes: AxisMap                                 // ◆ per-axis defaults (baked via fvar/avar)
   glyphThresholds: Record<string, number[]>     // ◆ GEOM swap map (baked via FeatureVariations)
   opszMultiplier: number                        // ◆ opsz axis rescale
+  opszDefault: number | null                    // ◆ where the opsz axis rests, in FINAL (scaled) space; null = stock 14×scale
   freezeOpsz: boolean                           // ◆ bake a fixed opsz
   frozenOpszValue: number | null                // ◆ the frozen value (preset-set)
   autoAscender: boolean                         // ◆ graft avar2 so YTAS tracks opsz
@@ -80,7 +81,7 @@ const stockSection = (s: InstrumentState, sec: Section): DefaultsLayer => {
   const d = cloneDefaults(s.defaults)
   switch (sec) {
     case 'shape': d.axes.GEOM = s.shipped.GEOM; d.axes.wght = s.shipped.wght; break
-    case 'opsz': d.freezeOpsz = false; d.frozenOpszValue = null; d.opszMultiplier = 1; break
+    case 'opsz': d.freezeOpsz = false; d.frozenOpszValue = null; d.opszMultiplier = 1; d.opszDefault = null; break
     case 'asc': d.axes.YTAS = s.shipped.YTAS; d.axes.SHRP = s.shipped.SHRP; d.autoAscender = false; break
     case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); break
     case 'freezer': d.frozenFeatures = []; break
@@ -105,6 +106,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       axes: { ...shipped },
       glyphThresholds: cloneThresholds(th),
       opszMultiplier: 1,
+      opszDefault: null,
       freezeOpsz: false,
       frozenOpszValue: null,
       autoAscender: false,
@@ -166,6 +168,7 @@ export const defaultsDirty = (s: InstrumentState): boolean =>
   changedAxisTags(s).length > 0 ||
   glyphsEditedCount(s) > 0 ||
   s.defaults.opszMultiplier !== 1 ||
+  s.defaults.opszDefault !== null ||
   s.defaults.freezeOpsz ||
   s.defaults.frozenOpszValue !== null ||
   s.defaults.autoAscender ||
@@ -184,6 +187,7 @@ export type Action =
   | { type: 'setThresholdDrag'; drag: { glyph: string; idx: number; value: number } | null }   // Type Matrix boundary drag in flight
   | { type: 'setThresholds'; thresholds: Record<string, number[]> }
   | { type: 'setOpszMultiplier'; value: number }
+  | { type: 'setOpszDefault'; value: number | null }
   | { type: 'setFreezeOpsz'; value: boolean }
   | { type: 'setFrozenOpszValue'; value: number | null }
   | { type: 'setAutoAscender'; value: boolean }
@@ -233,7 +237,13 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
     case 'setThresholds':
       return { ...s, defaults: { ...s.defaults, glyphThresholds: a.thresholds } }
     case 'setOpszMultiplier':
-      return { ...s, defaults: { ...s.defaults, opszMultiplier: a.value } }
+      /* The default is a point in the scaled range, so it means something different at every
+         scale (24 at 1× is 4 at 6×'s floor). A new scale drops it back to stock rather than
+         guessing a clamped value nobody chose. */
+      return { ...s, defaults: { ...s.defaults, opszMultiplier: a.value,
+        opszDefault: a.value === s.defaults.opszMultiplier ? s.defaults.opszDefault : null } }
+    case 'setOpszDefault':
+      return { ...s, defaults: { ...s.defaults, opszDefault: a.value } }
     case 'setFreezeOpsz':
       return { ...s, defaults: { ...s.defaults, freezeOpsz: a.value } }
     case 'setFrozenOpszValue':
