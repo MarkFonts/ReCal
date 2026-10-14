@@ -24,7 +24,7 @@ import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import { Matrix } from './Matrix'
-import { Freezer } from './Freezer'
+import { Freezer, freezerName } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
 import { ShapePad, AscenderPad } from './ShapePad'
 
@@ -177,7 +177,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×`,
     `Asc ${Math.round(d.axes.YTAS)} · Sharpness ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
     edited ? `${edited} moved` : 'stock swaps',
-    frozenTags.length ? (frozenTags.length > 3 ? `${frozenTags.slice(0, 3).join(' · ')} +${frozenTags.length - 3}` : frozenTags.join(' · ')) : 'nothing frozen',
+    frozenTags.length ? `${freezerName(frozenTags[0])}${frozenTags.length > 1 ? ` · +${frozenTags.length - 1}` : ''}` : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
   ]
   const bodies: React.ReactNode[] = [
