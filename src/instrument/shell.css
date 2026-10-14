@@ -29,7 +29,6 @@
      touches a diamond or its hit area. */
   --scrollbar-thumb: var(--text-dim);
   --scrollbar-thumb-hover: var(--text-muted);
-  --rail-fade: 32px;   /* height of the veil above the footer; also what the stack's bottom padding clears */
 }
 /* macOS hides overlay scrollbars, and Chrome treats scrollbar-width/-color as a request for
    the overlay kind. Handing both back to `auto` lets the 6px ::-webkit-scrollbar of the house
@@ -520,15 +519,6 @@
   display: flex; flex-direction: column; gap: var(--spacing-03, 8px);
   background: var(--surface); border-top: 1px solid var(--border);
 }
-/* The veil: content sliding under the footer fades into its surface over --rail-fade, so the
-   next lane is visibly cut by it rather than ending at a hard edge. Click-through, so diamonds
-   in the fade stay grabbable. Gone once scrolled to the end (Shell.tsx sets data-more). */
-.rail-dl::before {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 100%; height: var(--rail-fade, 32px);
-  background: linear-gradient(to bottom, transparent, var(--surface));
-  pointer-events: none; opacity: 0; transition: opacity var(--dur) ease;
-}
-.rail[data-more] .rail-dl::before { opacity: 1; }
 .dl-what {
   all: unset; box-sizing: border-box; width: 100%;
   display: flex; flex-direction: column; gap: 3px; cursor: pointer;
@@ -638,7 +628,17 @@
 .rail-row { border-top: 1px solid var(--border-subtle); }
 .rail-row:first-child { border-top: 0; }
 .rail-row-body { display: flex; flex-direction: column; gap: var(--spacing-04, 12px); padding-bottom: var(--spacing-05, 16px); }
-.rail-stack { display: flex; flex-direction: column; position: relative; z-index: 0; padding-bottom: calc(var(--rail-fade, 32px) - var(--spacing-06, 24px)); }  /* with the rail's 24px gap, the last lane scrolls fully clear of the veil */  /* own stacking context: diamonds (z 3) cannot climb over the pinned footer (z 2) */
+.rail-stack { display: flex; flex-direction: column; position: relative; z-index: 0; margin-bottom: calc(-1 * var(--spacing-06, 24px)); }  /* own stacking context: diamonds (z 3) cannot climb over the pinned footer (z 2). The negative margin cancels the rail's 24px gap, so the last pinned header rests flush on the footer at the end of the scroll. */
+/* Neighbors of the open row stay on screen: rows above stick to the rail's top, rows below to
+   the bottom, stacked directly over the download footer. Opaque and above the open row's
+   lanes and diamonds (the stack is its own stacking context, so z 5 here still sits under the
+   footer's z 2 in the rail). The offsets are measured, not guessed: Shell.tsx sets --pin-top
+   (the heights of the rows above this one) and --pin-bottom (the footer plus the heights of
+   the rows below this one) from the live layout, because summaries can wrap. At the end of
+   the open row's content the rows below rest in their natural place, flush on the footer. */
+.rail-row[data-pin] { --pin-top: 0px; --pin-bottom: 0px; position: sticky; z-index: 5; background: var(--surface); }  /* the 0s are only the unmeasured default; Shell.tsx's inline values win */
+.rail-row[data-pin="top"] { top: var(--pin-top); }
+.rail-row[data-pin="bottom"] { bottom: var(--pin-bottom); }
 .rail--demo .rail-stack { opacity: .2; }
 .rail .rail-stack { transition: opacity var(--dur) ease; }
 

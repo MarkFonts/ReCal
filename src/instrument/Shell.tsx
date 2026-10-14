@@ -117,14 +117,14 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
 // runs continuously across word and chevron (house chevron geometry, see holo.css).
 // The open row has no chevron; in its slot sits that row's own reset, a button beside the
 // heading (not inside it) that puts only this row's values back to stock, one undo step.
-function RailRow({ n, label, section, summary, open, above, next, dir, onToggle, children }: {
-  n: number; label: string; section: Section; summary: string; open: boolean; above: boolean; next: boolean
+function RailRow({ n, label, section, summary, open, above, pinBelow, next, dir, onToggle, children }: {
+  n: number; label: string; section: Section; summary: string; open: boolean; above: boolean; pinBelow: boolean; next: boolean
   dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
 }) {
   const { state, dispatch } = useInstrument()
   const dirty = open && sectionDirty(state, section)
   return (
-    <div className="rail-row">
+    <div className="rail-row" data-pin={open ? undefined : above ? 'top' : pinBelow ? 'bottom' : undefined}>
       <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
         aria-expanded={open} onClick={onToggle}>
         <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
@@ -158,23 +158,27 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     if (d.freezeOpsz && d.autoAscender) { dispatch({ type: 'setFreezeOpsz', value: false }); setOpszNote(true) }
     if (!d.autoAscender) setOpszNote(false)
   }, [d.freezeOpsz, d.autoAscender, dispatch])
-  // Scroll affordance: the footer's fade (shell.css, .rail-dl::before) says "more below", so it
-  // is only shown while there IS more below. Toggles data attributes on the rail itself (no
-  // re-render): data-more = content past the footer, absent when scrolled to the end.
-  useEffect(() => {
-    const el = railRef.current
-    if (!el) return
-    const sync = () => {
-      el.toggleAttribute('data-more', el.scrollHeight - el.scrollTop - el.clientHeight > 2)
+  // Pinned neighbors (shell.css, .rail-row[data-pin]): measure the row heights and the footer
+  // and hand each pinned row its sticky offset as a custom property. Re-measured whenever a
+  // row or the footer changes size (a wrapping summary, the footer's "change" options).
+  useLayoutEffect(() => {
+    const rail = railRef.current
+    const stack = rail?.querySelector('.rail-stack')
+    const foot = rail?.querySelector('.rail-dl') as HTMLElement | null
+    if (!rail || !stack || !foot || open === null) return
+    const rows = Array.from(stack.children) as HTMLElement[]
+    const apply = () => {
+      let top = 0
+      for (let i = 0; i < open; i++) { rows[i].style.setProperty('--pin-top', `${top}px`); top += rows[i].offsetHeight }
+      let bottom = foot.offsetHeight
+      for (let i = rows.length - 1; i > open; i--) { rows[i].style.setProperty('--pin-bottom', `${bottom}px`); bottom += rows[i].offsetHeight }
     }
-    sync()
-    el.addEventListener('scroll', sync, { passive: true })
-    const ro = new ResizeObserver(sync)
-    ro.observe(el)
-    const stack = el.querySelector('.rail-stack')
-    if (stack) ro.observe(stack)
-    return () => { el.removeEventListener('scroll', sync); ro.disconnect() }
-  }, [])
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(foot)
+    rows.forEach((r, i) => { if (i !== open) ro.observe(r) })
+    return () => ro.disconnect()
+  }, [open, collapsed])
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -262,7 +266,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       <div className="rail-stack">
         {ROW_LABELS.map((label, i) => (
           <RailRow key={label} n={i + 1} label={label} section={ROW_SECTIONS[i]} summary={summaries[i]} dir={dir}
-            open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
+            open={open === i} above={open !== null && i < open} pinBelow={open !== null && i > open} next={open !== null && i === open + 1}
             onToggle={() => toggle(i)}>
             {bodies[i]}
           </RailRow>
