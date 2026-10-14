@@ -786,6 +786,15 @@
    the first row and 20px in the rest, which have a 1px top rule). Icon only; dimmed and
    inert while the row is at stock. */
 .rail-row { position: relative; }
+/* The open row's header is pinned too, directly under the pinned rows above it. Its
+   containing block is its own row, so it releases when the row's content ends. The row's
+   top rule moves onto the header so it travels with it. */
+.rail-row[data-open] { --pin-top: 0px; border-top: 0; }
+.rail-row[data-open] > .rail-seam-head {
+  position: sticky; top: var(--pin-top); z-index: 5; background: var(--surface);
+  border-top: 1px solid var(--border-subtle);
+}
+.rail-row[data-open]:first-child > .rail-seam-head { border-top: 0; }
 .rail-seam-reset {
   all: unset; box-sizing: border-box; position: absolute; top: 10px; right: 0; z-index: 1;
   width: 20px; height: 20px; display: flex; align-items: center; justify-content: center;

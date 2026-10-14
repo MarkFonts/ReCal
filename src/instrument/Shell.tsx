@@ -124,17 +124,22 @@ function RailRow({ n, label, section, summary, open, above, pinBelow, next, dir,
   const { state, dispatch } = useInstrument()
   const dirty = open && sectionDirty(state, section)
   return (
-    <div className="rail-row" data-pin={open ? undefined : above ? 'top' : pinBelow ? 'bottom' : undefined}>
-      <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
-        aria-expanded={open} onClick={onToggle}>
-        <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
-        <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
-        {!open && <span className="rail-seam-sum tnum">{summary}</span>}
-      </button>
-      {open && (
-        <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
-          onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
-      )}
+    <div className="rail-row" data-pin={open ? undefined : above ? 'top' : pinBelow ? 'bottom' : undefined} data-open={open ? '' : undefined}>
+      {/* One box for the seam and (when open) its reset, so the pinned header and its reset
+          travel together: the open row's head is the sticky element, the reset a positioned
+          child of it. */}
+      <div className="rail-seam-head">
+        <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
+          aria-expanded={open} onClick={onToggle}>
+          <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
+          <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
+          {!open && <span className="rail-seam-sum tnum">{summary}</span>}
+        </button>
+        {open && (
+          <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
+            onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
+        )}
+      </div>
       {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
     </div>
   )
@@ -171,6 +176,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       let top = 0
       for (let i = 0; i < open; i++) { rows[i].style.setProperty('--pin-top', `${top}px`); top += rows[i].offsetHeight }
       let bottom = foot.offsetHeight
+      rows[open].style.setProperty('--pin-top', `${top}px`)   // the open row's own header sticks below the rows above it
       for (let i = rows.length - 1; i > open; i--) { rows[i].style.setProperty('--pin-bottom', `${bottom}px`); bottom += rows[i].offsetHeight }
     }
     apply()
