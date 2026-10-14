@@ -127,6 +127,37 @@
   --ui-font: 'CalSansVF', sans-serif;
 }
 
+/* Light, reached only through the house theme switch (?try=split stamps <html data-theme>);
+   with no attribute nothing here applies and ReCal is dark as before. Values are the
+   house light ramp (wm-primitives color.css). The accent and acid follow it: ink on light
+   is the #161616 text, the acid's thin-use form is the darker #557b00. Auto follows the OS.
+   Only the neutral scale and the signals are re-pointed; the zone hues and status colors
+   are left as they are. */
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f4f4;  --surface: #ffffff;  --surface-hi: #ebebeb;
+  --surface-press: rgba(22, 22, 22, .08);
+  --text: #161616;  --text-muted: rgba(22, 22, 22, .66);  --text-dim: rgba(22, 22, 22, .42);  --text-faint: rgba(22, 22, 22, .26);
+  --text-rgb: 22, 22, 22;
+  --border: rgba(22, 22, 22, .16);  --border-subtle: rgba(22, 22, 22, .08);
+  --edit-rail: rgba(22, 22, 22, 0.28);
+  --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
+  --signal-acid: #557b00;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] {
+    color-scheme: light;
+    --bg: #f4f4f4;  --surface: #ffffff;  --surface-hi: #ebebeb;
+    --surface-press: rgba(22, 22, 22, .08);
+    --text: #161616;  --text-muted: rgba(22, 22, 22, .66);  --text-dim: rgba(22, 22, 22, .42);  --text-faint: rgba(22, 22, 22, .26);
+    --text-rgb: 22, 22, 22;
+    --border: rgba(22, 22, 22, .16);  --border-subtle: rgba(22, 22, 22, .08);
+    --edit-rail: rgba(22, 22, 22, 0.28);
+    --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
+    --signal-acid: #557b00;
+  }
+}
+
 /* The UI-type recipe = GEOM 25 (the UI landing) and nothing else. wght is omitted so
    font-weight still drives bold UI elements, and opsz is omitted so the axis can do its
    job: every glyph gains sidebearing between opsz 10 and 8, which is precisely the

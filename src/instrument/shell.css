@@ -397,7 +397,7 @@
 .try {
   position: relative;      /* above the stage, so the popovers open over it */
   z-index: 3;
-  display: flex; flex-wrap: wrap; align-items: center;
+  display: flex; align-items: flex-start;
   gap: var(--spacing-02, 6px);
   padding: var(--spacing-04, 12px) var(--spacing-06, 24px);
   border-top: 1px solid transparent;     /* no rule along the top of the Try bar */
@@ -406,6 +406,24 @@
 .try-lbl {
   font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim); margin-right: var(--spacing-02, 6px);
+  min-height: 32px; display: flex; align-items: center;   /* sits on the first line of pills, whatever wraps below */
+}
+/* Feature groups: Size, Spacing, Style, then the scene's own. A group is one unit that wraps
+   whole and never splits, so no pill is ever alone on a line; everything is left-aligned
+   and wrapped lines start at the first pill's edge (the label has its own column). Pills
+   sit --spacing-01 apart inside a group, groups --spacing-04 apart with a hairline in the
+   gap. Only the group that ends a line drops its hairline (data-eol, set by TryBar). */
+.try-groups {
+  flex: 1 1 0; min-width: 0;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-start;
+  column-gap: var(--spacing-04, 12px); row-gap: var(--spacing-02, 6px);
+}
+.try-group { position: relative; display: flex; align-items: center; gap: var(--spacing-01, 4px); }
+.try-group > * { flex: none; }   /* a pill keeps its width; the group wraps instead of squeezing it */
+.try-group:not([data-eol])::after {
+  content: ''; position: absolute; top: 4px; bottom: 4px; width: 1px;
+  right: calc(var(--spacing-04, 12px) / -2 - .5px);
+  background: var(--border);
 }
 .try-pill { width: 9rem; }
 .try-pill--auto { width: 13rem; }     /* room for the label, the named auto switch and the value */
@@ -445,13 +463,39 @@
 @media (max-width: 800px) {
   .try { padding: var(--spacing-04, 12px) var(--spacing-05, 16px); }
   .try-lbl, .try-sep { display: none; }
+  .try-group { flex: 1 1 100%; flex-wrap: wrap; }
+  .try-group::after { display: none; }
   .try-pill, .try-pop, .try .style-menu { flex: 1 1 8rem; width: auto; }
   .try-btn, .try .wm-accent, .try .style-menu-btn { flex: 1 1 6rem; width: 100%; justify-content: center; }
   /* Popovers span the bar rather than hang off a pill that may sit at the right edge. */
   .try-pop, .try .style-menu { position: static; }
   .try-pop-list, .try .style-menu-list { left: var(--spacing-05, 16px); right: var(--spacing-05, 16px); width: auto; min-width: 0; }
 }
-.try .preview-reset { margin-left: auto; }
+.try .preview-reset { margin-left: var(--spacing-02, 6px); }
+
+/* ── Try placements, for review (?try=…; the docked bar above is the default) ───────────
+   float:  no strip, the pills ride the foot of the canvas and the stage keeps its full
+           height. The row ignores the pointer except on the pills, so text behind stays clickable.
+   top:    the pills share the tab row, right-aligned, wrapping under the tabs when short;
+           popovers open downward because there is no room above.
+   inline: a caption row under the text, in the page's own flow and scroll. */
+.canvas[data-try="float"] .try {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  background: none; pointer-events: none;
+  padding: var(--spacing-04, 12px) var(--spacing-08, 48px);
+}
+.canvas[data-try="float"] .try-lbl, .canvas[data-try="float"] .try-group { pointer-events: auto; }
+.canvas[data-try="top"] .canvas-bar { flex-wrap: wrap; row-gap: var(--spacing-02, 6px); }
+.canvas[data-try="top"] .try {
+  flex: 1 1 auto; background: none;
+  padding: 0 0 0 var(--spacing-05, 16px);
+}
+.canvas[data-try="top"] .try-lbl { display: none; }
+.canvas[data-try="top"] .try-pop-list,
+.canvas[data-try="top"] .try .style-menu-list { bottom: auto; top: calc(100% + 4px); }
+.try-inline-wrap { min-height: 100%; display: flex; flex-direction: column; justify-content: center; }
+.try-inline-wrap .words-scene { min-height: auto; }
+.canvas[data-try="inline"] .try { background: none; padding: var(--spacing-06, 24px) 0 0; }
 .try .preview-reset:disabled { visibility: hidden; }
 .preview-reset {
   display: inline-flex;
@@ -581,6 +625,7 @@
    presets select was cured of above. Sized to the stepper's 10x6; the SVG follows
    currentColor, so the hover inversion still works. */
 .style-menu-caret { color: var(--text-dim); margin-left: var(--spacing-02, 6px); vertical-align: middle; }
+.style-menu-val { display: inline-flex; align-items: center; gap: var(--spacing-02, 6px); }
 .style-menu-list {
   position: absolute; top: calc(100% + 4px); left: 0; min-width: 212px; z-index: 60;
   display: flex; flex-direction: column; padding: 4px;
@@ -1005,3 +1050,36 @@
    is already --bg ink. GlyphPicker.css is not layered and loads after this file, so it
    needs the extra class to win on specificity rather than on order. */
 .gp .gp-cell:hover { background: var(--signal-acid); }
+
+/* ── ?try=split — no bars (placement borrowed from timeless.co/type/playground; the tabs and
+   pills keep ReCal's own look). Tabs bottom left, Try groups bottom right on the same edge
+   and stacking upward when they wrap (the first line is the bottom one), theme switch and
+   Info top right. The scene's own options (Paragraph's source, Glyphs' sets) stay top left. */
+.canvas[data-try="split"] .mode-row { min-height: 0; padding-top: var(--spacing-04, 12px); }
+.canvas[data-try="split"] .mode-label { padding-bottom: 0; }
+.canvas[data-try="split"] .stage-scroll { padding-bottom: calc(var(--spacing-09, 64px) * 2); }
+.split-foot {
+  position: absolute; left: var(--spacing-06, 24px); right: var(--spacing-06, 24px); bottom: var(--spacing-04, 12px);
+  z-index: 3; display: flex; align-items: flex-end; gap: var(--spacing-05, 16px);
+  pointer-events: none;
+}
+.split-foot .modebar { flex: none; pointer-events: auto; }
+.split-foot .try { flex: 1 1 0; min-width: 0; padding: 0; background: none; pointer-events: none; }
+.split-foot .try-lbl { display: none; }
+.split-foot .try-group { pointer-events: auto; }
+.split-foot .try-groups { flex-wrap: wrap-reverse; }
+.modebar--icons .mode-btn-in { display: inline-block; white-space: nowrap; }
+.modebar--icons .mode-btn-ic { vertical-align: -3px; margin-right: var(--spacing-01, 4px); }
+/* Not enough width for labels beside the groups: marks only. The selected tab keeps its
+   acid rule, now under the mark since there is no text to underline. */
+@media (max-width: 1280px) {
+  .modebar--icons .mode-btn-lbl, .modebar--icons .mode-btn::after { display: none; }
+  .modebar--icons .mode-btn-ic { margin-right: 0; }
+  .modebar--icons .mode-btn.on .mode-btn-ic { border-bottom: 1.5px solid var(--signal-acid); padding-bottom: 2px; }
+}
+.split-corner {
+  position: absolute; top: var(--spacing-04, 12px); right: var(--spacing-06, 24px); z-index: 5;
+  display: flex; flex-direction: column; align-items: flex-end; gap: var(--spacing-01, 4px);
+}
+.canvas[data-try="split"] .info-panel { padding-top: calc(var(--spacing-09, 64px) + var(--spacing-03, 8px)); }
+.try-btn-ic { margin-right: var(--spacing-02, 6px); vertical-align: -3px; }

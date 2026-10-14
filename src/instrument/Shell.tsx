@@ -7,7 +7,7 @@ import { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
-  type FitOptions, Chevron, AccentButton } from '../../shared/index' // wm-primitives (git submodule)
+  type FitOptions, Chevron, AccentButton, Icon, ThemeSwitch, bootTheme } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
@@ -346,12 +346,36 @@ const TYPE_ROWS: Record<string, string[]> = {
   scale: ['tracking', 'leading', 'measure'],
 }
 
+// Keep an open popover inside the canvas: after it mounts, shift it sideways by however far it
+// overhangs the canvas edge (8px breathing room). `translate`, so no anchor rule has to change.
+function useKeepInside(open: boolean, ref: React.RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!open || !el) return
+    el.style.translate = ''
+    const r = el.getBoundingClientRect()
+    const box = (el.closest('.canvas') ?? document.documentElement).getBoundingClientRect()
+    const pad = 8
+    let dx = 0
+    if (r.right > box.right - pad) dx = box.right - pad - r.right
+    if (r.left + dx < box.left + pad) dx = box.left + pad - r.left
+    if (dx) el.style.translate = `${dx}px 0`
+  }, [open, ref])
+}
+
 // Paragraph style menu — pick which style (H1/H2/H3/P) the controls target.
+// The Material marks (in the subset the apps ship) for the four paragraph styles.
+const STYLE_ICON: Record<ParaStyleKey, string> = {
+  h1: 'format_h1', h2: 'format_h2', h3: 'format_h3', p: 'format_paragraph',
+}
+
 function StyleMenu({ active, setActive, paraStyles }: {
   active: ParaStyleKey; setActive: (k: ParaStyleKey) => void; paraStyles: ParaStyles
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  useKeepInside(open, listRef)
   useEffect(() => {
     if (!open) return
     const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -361,10 +385,10 @@ function StyleMenu({ active, setActive, paraStyles }: {
   return (
     <div className="style-menu" ref={ref}>
       <button className="style-menu-btn" onClick={() => setOpen(o => !o)}>
-        {PARA_STYLE_LABEL[active]}<Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
+        <span className="style-menu-val"><Icon name="text_fields" size={16} className="style-menu-ic" />{PARA_STYLE_LABEL[active]}</span><Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
       </button>
       {open && (
-        <div className="style-menu-list">
+        <div className="style-menu-list" ref={listRef}>
           {/* migrated to shared StyleScopeList (wm-primitives) */}
           <StyleScopeList
             inline
@@ -376,6 +400,7 @@ function StyleMenu({ active, setActive, paraStyles }: {
               return {
                 id: k,
                 label: PARA_STYLE_LABEL[k],
+                icon: STYLE_ICON[k],
                 chips: [
                   { text: `${Math.round(s.size)}px`, kind: 'size' as const },
                   { text: `wght ${s.wght}`, kind: 'axis' as const },
@@ -397,6 +422,8 @@ function TierMenu({ selected, toggle, scaleStyles }: {
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  useKeepInside(open, listRef)
   useEffect(() => {
     if (!open) return
     const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -411,7 +438,7 @@ function TierMenu({ selected, toggle, scaleStyles }: {
         {label}<Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
       </button>
       {open && (
-        <div className="style-menu-list style-menu-list--scroll">
+        <div className="style-menu-list style-menu-list--scroll" ref={listRef}>
           {/* migrated to shared StyleScopeList (wm-primitives), multi-select */}
           <StyleScopeList
             inline
@@ -437,6 +464,17 @@ function TierMenu({ selected, toggle, scaleStyles }: {
     </div>
   )
 }
+
+// Where the Try pills live, for review: ?try=float (over the canvas foot), top (on the tab
+// row), inline (a caption row under the text); anything else is the docked bar.
+type TryPlace = 'dock' | 'float' | 'top' | 'inline' | 'split'
+const TRY_PLACE: TryPlace = (() => {
+  const v = new URLSearchParams(window.location.search).get('try')
+  return v === 'float' || v === 'top' || v === 'inline' || v === 'split' ? v : 'dock'
+})()
+// split carries the house theme switch, so the stored choice is stamped on <html> up front
+// (the other placements never touch data-theme, so nothing changes for them).
+if (TRY_PLACE === 'split') bootTheme()
 
 function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
@@ -508,12 +546,35 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
     return () => ro.disconnect()
   }, [])
 
+  // The metrics stage is full-bleed and does not scroll, so an inline row would be clipped.
+  const place: TryPlace = vmActive && TRY_PLACE === 'inline' ? 'dock' : TRY_PLACE
+  const tryBar = (mode !== 'ui' || vmActive) && (
+    <TryBar mode={mode} vmActive={vmActive}
+      size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
+      leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
+      activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
+      patchPara={patchPara}
+      selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
+      fit={fit} setFit={setFit} feats={feats} toggleFeat={toggleFeat}
+      canReset={previewDrifted(inst) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)}
+      onReset={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats() }} />
+  )
+  const scene = vmActive
+    ? <VMetricsScene />
+    : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
+        source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet}
+        paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
+        fit={fit} topInset={uiOverlay ? navHeight : 0} />
+
   return (
-    <div className={`canvas${vmActive ? ' canvas--vm' : ''}`}>
+    <div className={`canvas${vmActive ? ' canvas--vm' : ''}`} data-try={place}>
       <div ref={navRef} className={`canvas-nav${uiOverlay ? ' canvas-nav--overlay' : ''}`}>
-        <div className="canvas-bar">
-          <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
-        </div>
+        {place !== 'split' && (
+          <div className="canvas-bar">
+            <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
+            {place === 'top' && tryBar}
+          </div>
+        )}
         {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
             disappearing never shifts the label (or stage) vertically. */}
         <div className="mode-row">
@@ -528,26 +589,28 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
       <div className={`canvas-body${uiOverlay ? ' canvas-body--full' : ''}${vmActive ? ' canvas-body--vm' : ''}`}>
         <div className="stage">
           <div className={`stage-scroll${uiOverlay ? ' stage-scroll--flush' : ''}${vmActive ? ' stage-scroll--bleed' : ''}`}>
-            {vmActive
-              ? <VMetricsScene />
-              : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet}
-                  paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
-                  fit={fit} topInset={uiOverlay ? navHeight : 0} />}
+            {place === 'inline'
+              ? <div className="try-inline-wrap">{scene}{tryBar}</div>
+              : scene}
           </div>
         </div>
-        {(mode !== 'ui' || vmActive) && (
-          <TryBar mode={mode} vmActive={vmActive}
-            size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
-            leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
-            activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
-            patchPara={patchPara}
-            selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
-            fit={fit} setFit={setFit} feats={feats} toggleFeat={toggleFeat}
-            canReset={previewDrifted(inst) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)}
-            onReset={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats() }} />
+        {(place === 'dock' || place === 'float') && tryBar}
+        {/* split: no bars. The view tabs sit bottom left, the Try groups bottom right on the same
+            edge (stacking upward when they wrap), the theme switch and Info top right. */}
+        {place === 'split' && (
+          <div className="split-foot">
+            <Modebar icons mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
+            {tryBar}
+          </div>
         )}
       </div>
+      {place === 'split' && (
+        <div className="split-corner">
+          <ThemeSwitch />
+          <button data-label="Info" className={`mode-btn${showInfo ? ' on' : ''}`}
+            aria-pressed={showInfo} onClick={() => setShowInfo(v => !v)}>Info</button>
+        </div>
+      )}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
@@ -565,9 +628,11 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
 
 // A pill that opens a small popover ABOVE itself (the bar sits at the bottom edge). `end`
 // hangs it off the pill's right edge, for pills near the bar's right side.
-function TryPop({ label, end, children }: { label: string; end?: boolean; children: React.ReactNode }) {
+function TryPop({ label, icon, end, children }: { label: string; icon?: string; end?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  useKeepInside(open, listRef)
   useEffect(() => {
     if (!open) return
     const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -580,9 +645,9 @@ function TryPop({ label, end, children }: { label: string; end?: boolean; childr
     <div className="try-pop" ref={ref}>
       <AccentButton look="q5" shape="chip" lit={open} className={open ? undefined : 'try-btn'}
         aria-expanded={open} onClick={() => setOpen(o => !o)}>
-        {label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
+        {icon && <Icon name={icon} size={16} className="try-btn-ic" />}{label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
       </AccentButton>
-      {open && <div className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
+      {open && <div ref={listRef} className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
     </div>
   )
 }
@@ -617,6 +682,24 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
+  // A divider closes each group except the last on its line: mark the groups that end a line
+  // (the next one sits lower) so CSS can drop the divider there. Pure DOM, no state.
+  const barRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const bar = barRef.current
+    if (!bar) return
+    const mark = () => {
+      const gs = [...bar.querySelectorAll<HTMLElement>('.try-group')]
+      gs.forEach((g, i) => {
+        const next = gs[i + 1]
+        if (!next || Math.abs(next.offsetTop - g.offsetTop) > 2) g.setAttribute('data-eol', ''); else g.removeAttribute('data-eol')
+      })
+    }
+    mark()
+    const ro = new ResizeObserver(mark)
+    ro.observe(bar)
+    return () => ro.disconnect()
+  })
   // The metrics stage has its own type; only the preview-only pills apply there.
   const rows = vmActive ? [] : TYPE_ROWS[mode] ?? []
   const has = (k: string) => rows.includes(k)
@@ -630,80 +713,102 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   const naItal = !!cmp && (!!cmp.svg || !cmp.css || !cmp.italic)
   const inScene = !vmActive && (mode === 'paragraph' || mode === 'scale')
   const { min: wMin, max: wMax } = AXIS_RANGES.wght
+  // Four feature groups, each one unit that wraps whole (never a lone pill): Size, Spacing,
+  // Style, then whatever the scene adds (Paragraph: the style menu + Layout; Scale: the tier
+  // menu + measure). Reset rides at the end of the LAST group so it can never wrap alone.
+  const resetBtn = (
+    <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
+      <ResetIcon /><span className="preview-reset-text">Reset</span>
+    </button>
+  )
+  const sceneGroup = !vmActive && (mode === 'paragraph' || mode === 'scale')
   return (
-    <div className="try" role="group" aria-label="Try"
+    <div className="try" role="group" aria-label="Try" ref={barRef}
       onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
       <span className="try-lbl">Try</span>
-      {/* Proofing controls (not ◆ defaults) → the track variant with no diamond/marker/reference,
-          as font-proofer's TYPOGRAPHY has them. */}
-      {has('size') && <TryDial label="Size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />}
-      {/* Preview-only optical size, right after Size. At rest it reads "auto" (the browser
-          follows the type size); moved, it overrides opsz in the preview text. The range is the
-          preview font's relabeled axis (stock × Optical scale). A frozen font has no opsz axis,
-          and a compared webfont sets its own, so both disable it. Never baked: it is not in
-          the ◆ layer and buildConfig never reads it. */}
-      {!vmActive && (
-        <TryDial label="Optical size" value={state.previewOpsz ?? 'auto'}
-          min={8 * state.defaults.opszMultiplier} max={45 * state.defaults.opszMultiplier} step={1}
-          autoValue={clampTryOpsz(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier)}
-          disabled={state.defaults.freezeOpsz || !!cmp}
-          display={state.defaults.freezeOpsz ? String(state.defaults.frozenOpszValue ?? 14) : cmp ? '—' : undefined}
-          title={state.defaults.freezeOpsz ? `The font is frozen at ${state.defaults.frozenOpszValue ?? 14}` : cmp ? 'The compared font sets its own optical size' : undefined}
-          onChange={v => dispatch({ type: 'setPreviewOpsz', value: v === 'auto' ? null : v })} />
-      )}
-      {has('tracking') && <TryDial label="Tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />}
-      {has('leading') && <TryDial label="Leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />}
-      {(rows.length > 0 || !vmActive) && <span className="try-sep" aria-hidden="true" />}
-      <TryDial label="Weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
-        display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
-      <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
-        aria-pressed={merged.ital >= 0.5} disabled={naItal}
-        onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}>Italic</AccentButton>
-      <TryPop label="Features">
-        {FEATURE_CHIPS.map(f => (
-          <label key={f.tag} className="rail-toggle" title={f.tag}>
-            <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
-            {f.label}
-          </label>
-        ))}
-      </TryPop>
-      {inScene && <span className="try-sep" aria-hidden="true" />}
-      {!vmActive && mode === 'paragraph' && (
-        <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
-      )}
-      {!vmActive && mode === 'scale' && (
-        <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
-      )}
-      {/* Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
-          controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
-          and hyphenation belong to the style the menu selects; only the H&J bands in `fit`
-          are the document's, because they are the typeface's. On the compare pages a
-          pre-made SVG has nothing live to fit, so the alignment and fitting controls are
-          dropped (they would only promise something the page cannot deliver) and the
-          measure stays. */}
-      {!vmActive && mode === 'paragraph' && (
-        <TryPop label="Layout" end>
-          {!comparingSvg && (
-            <>
-              <div className="try-aligns">
-                <AlignmentButtons value={paraStyles[activeParaStyle].align}
-                  onChange={a => patchPara({ align: a })} />
-              </div>
-              <FittingControls value={fit} onChange={setFit}
-                mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
-                swissRag={paraStyles[activeParaStyle].swissRag}
-                onSwissRag={on => patchPara({ swissRag: on })}
-                hyphenate={paraStyles[activeParaStyle].hyphenate}
-                onHyphenate={on => patchPara({ hyphenate: on })} />
-            </>
-          )}
-          <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
-        </TryPop>
-      )}
-      {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />}
-      <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
-        <ResetIcon /><span className="preview-reset-text">Reset</span>
-      </button>
+      <div className="try-groups">
+        {/* Proofing controls (not ◆ defaults) → the track variant with no diamond/marker/reference,
+            as font-proofer's TYPOGRAPHY has them. */}
+        {(has('size') || !vmActive) && (
+          <div className="try-group">
+            {has('size') && <TryDial label="Size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />}
+            {/* Preview-only optical size, right after Size. At rest it reads "auto" (the browser
+                follows the type size); moved, it overrides opsz in the preview text. The range is the
+                preview font's relabeled axis (stock × Optical scale). A frozen font has no opsz axis,
+                and a compared webfont sets its own, so both disable it. Never baked: it is not in
+                the ◆ layer and buildConfig never reads it. */}
+            {!vmActive && (
+              <TryDial label="Optical size" value={state.previewOpsz ?? 'auto'}
+                min={8 * state.defaults.opszMultiplier} max={45 * state.defaults.opszMultiplier} step={1}
+                autoValue={clampTryOpsz(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier)}
+                disabled={state.defaults.freezeOpsz || !!cmp}
+                display={state.defaults.freezeOpsz ? String(state.defaults.frozenOpszValue ?? 14) : cmp ? '—' : undefined}
+                title={state.defaults.freezeOpsz ? `The font is frozen at ${state.defaults.frozenOpszValue ?? 14}` : cmp ? 'The compared font sets its own optical size' : undefined}
+                onChange={v => dispatch({ type: 'setPreviewOpsz', value: v === 'auto' ? null : v })} />
+            )}
+          </div>
+        )}
+        {(has('tracking') || has('leading')) && (
+          <div className="try-group">
+            {has('tracking') && <TryDial label="Tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />}
+            {has('leading') && <TryDial label="Leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />}
+          </div>
+        )}
+        <div className="try-group">
+          <TryDial label="Weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
+            display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
+          <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
+            aria-pressed={merged.ital >= 0.5} disabled={naItal}
+            onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}><Icon name="format_italic" size={16} className="try-btn-ic" />Italic</AccentButton>
+          <TryPop label="Features" icon="discover_tune">
+            {FEATURE_CHIPS.map(f => (
+              <label key={f.tag} className="rail-toggle" title={f.tag}>
+                <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
+                {f.label}
+              </label>
+            ))}
+          </TryPop>
+          {!sceneGroup && resetBtn}
+        </div>
+        {sceneGroup && (
+          <div className="try-group">
+            {mode === 'paragraph' && (
+              <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
+            )}
+            {mode === 'scale' && (
+              <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
+            )}
+            {/* Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
+                controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
+                and hyphenation belong to the style the menu selects; only the H&J bands in `fit`
+                are the document's, because they are the typeface's. On the compare pages a
+                pre-made SVG has nothing live to fit, so the alignment and fitting controls are
+                dropped (they would only promise something the page cannot deliver) and the
+                measure stays. */}
+            {mode === 'paragraph' && (
+              <TryPop label="Layout" end>
+                {!comparingSvg && (
+                  <>
+                    <div className="try-aligns">
+                      <AlignmentButtons value={paraStyles[activeParaStyle].align}
+                        onChange={a => patchPara({ align: a })} />
+                    </div>
+                    <FittingControls value={fit} onChange={setFit}
+                      mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
+                      swissRag={paraStyles[activeParaStyle].swissRag}
+                      onSwissRag={on => patchPara({ swissRag: on })}
+                      hyphenate={paraStyles[activeParaStyle].hyphenate}
+                      onHyphenate={on => patchPara({ hyphenate: on })} />
+                  </>
+                )}
+                <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
+              </TryPop>
+            )}
+            {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />}
+            {resetBtn}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
