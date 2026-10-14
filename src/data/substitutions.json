@@ -728,6 +728,26 @@
       "headline": "y"
     },
     {
+      "cp": 162,
+      "aalt": 0,
+      "name": "cent",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
+      "cp": 162,
+      "aalt": 1,
+      "name": "cent.tf",
+      "thresholds": [
+        79
+      ],
+      "zones": "-G",
+      "headline": null
+    },
+    {
       "cp": 170,
       "aalt": 0,
       "name": "ordfeminine",
@@ -1189,6 +1209,16 @@
       "headline": "I"
     },
     {
+      "cp": 300,
+      "aalt": 0,
+      "name": "Ibreve",
+      "thresholds": [
+        11
+      ],
+      "zones": "A-",
+      "headline": "I"
+    },
+    {
       "cp": 302,
       "aalt": 0,
       "name": "Iogonek",
@@ -1435,9 +1465,41 @@
       "headline": "y"
     },
     {
+      "cp": 383,
+      "aalt": 0,
+      "name": "longs",
+      "thresholds": [
+        39,
+        76
+      ],
+      "zones": "-B-",
+      "headline": null
+    },
+    {
       "cp": 432,
       "aalt": 0,
       "name": "uhorn",
+      "thresholds": [
+        59
+      ],
+      "zones": "-G",
+      "headline": "u"
+    },
+    {
+      "cp": 462,
+      "aalt": 0,
+      "name": "uni01CE",
+      "thresholds": [
+        13,
+        34
+      ],
+      "zones": "A-B",
+      "headline": "a"
+    },
+    {
+      "cp": 468,
+      "aalt": 0,
+      "name": "uni01D4",
       "thresholds": [
         59
       ],
@@ -1493,6 +1555,26 @@
       ],
       "zones": "-B",
       "headline": null
+    },
+    {
+      "cp": 486,
+      "aalt": 0,
+      "name": "Gcaron",
+      "thresholds": [
+        40
+      ],
+      "zones": "-B",
+      "headline": "G"
+    },
+    {
+      "cp": 487,
+      "aalt": 0,
+      "name": "gcaron",
+      "thresholds": [
+        16
+      ],
+      "zones": "A-",
+      "headline": "g"
     },
     {
       "cp": 515,
@@ -2141,6 +2223,8 @@
         "atilde.rcltA11y": "atilde.ss01",
         "ordfeminine": "ordfeminine.ss01",
         "ordfeminine.rcltBase": "ordfeminine.ss01",
+        "uni01CE": "uni01CE.ss01",
+        "uni01CE.rcltA11y": "uni01CE.ss01",
         "uni01E3": "uni01E3.ss01",
         "uni01E3.rcltBase": "uni01E3.ss01",
         "uni0203": "uni0203.ss01",
@@ -2242,6 +2326,9 @@
         "atilde.rcltBase": "atilde.ss02",
         "ordfeminine": "ordfeminine.ss02",
         "ordfeminine.rcltBase": "ordfeminine.ss02",
+        "uni01CE": "uni01CE.ss02",
+        "uni01CE.rcltA11y": "uni01CE.ss02",
+        "uni01CE.rcltBase": "uni01CE.ss02",
         "uni01E3": "uni01E3.ss02",
         "uni01E3.rcltBase": "uni01E3.ss02",
         "uni0203": "uni0203.ss02",
@@ -2346,6 +2433,8 @@
         "atilde.rcltA11y": "atilde.ss03",
         "ordfeminine": "ordfeminine.ss03",
         "ordfeminine.rcltBase": "ordfeminine.ss03",
+        "uni01CE": "uni01CE.ss03",
+        "uni01CE.rcltA11y": "uni01CE.ss03",
         "uni01E3": "uni01E3.ss03",
         "uni01E3.rcltBase": "uni01E3.ss03",
         "uni0203": "uni0203.ss03",
@@ -2397,6 +2486,8 @@
         "g.rcltA11y": "g.ss04",
         "gbreve": "gbreve.ss04",
         "gbreve.rcltA11y": "gbreve.ss04",
+        "gcaron": "gcaron.ss04",
+        "gcaron.rcltA11y": "gcaron.ss04",
         "gcircumflex": "gcircumflex.ss04",
         "gcircumflex.rcltA11y": "gcircumflex.ss04",
         "gdotaccent": "gdotaccent.ss04",
@@ -2428,6 +2519,8 @@
         "g.rcltA11y": "g.ss05",
         "gbreve": "gbreve.ss05",
         "gbreve.rcltA11y": "gbreve.ss05",
+        "gcaron": "gcaron.ss05",
+        "gcaron.rcltA11y": "gcaron.ss05",
         "gcircumflex": "gcircumflex.ss05",
         "gcircumflex.rcltA11y": "gcircumflex.ss05",
         "gdotaccent": "gdotaccent.ss05",
@@ -2460,6 +2553,8 @@
         "G.rcltGeo": "G.ss06",
         "Gbreve": "Gbreve.ss06",
         "Gbreve.rcltGeo": "Gbreve.ss06",
+        "Gcaron": "Gcaron.ss06",
+        "Gcaron.rcltGeo": "Gcaron.ss06",
         "Gcircumflex": "Gcircumflex.ss06",
         "Gcircumflex.rcltGeo": "Gcircumflex.ss06",
         "Gdotaccent": "Gdotaccent.ss06",
@@ -2496,6 +2591,8 @@
         "G.rcltGeo": "G.ss07",
         "Gbreve": "Gbreve.ss07",
         "Gbreve.rcltGeo": "Gbreve.ss07",
+        "Gcaron": "Gcaron.ss07",
+        "Gcaron.rcltGeo": "Gcaron.ss07",
         "Gcircumflex": "Gcircumflex.ss07",
         "Gcircumflex.rcltGeo": "Gcircumflex.ss07",
         "Gdotaccent": "Gdotaccent.ss07",
@@ -2813,6 +2910,7 @@
         "ccircumflex.rcltGeo": "ccircumflex.ss10",
         "cdotaccent": "cdotaccent.ss10",
         "cdotaccent.rcltGeo": "cdotaccent.ss10",
+        "cent": "cent.ss10",
         "eng": "eng.ss10",
         "eng.rcltGeo": "eng.ss10",
         "f.rcltBase": "f.alt",
@@ -2896,6 +2994,11 @@
         "uni0163": "uni0163.ss10",
         "uni0163.rcltBase": "uni0163.ss10",
         "uni0163.rcltGeo": "uni0163.ss10",
+        "uni01CE": "uni01CE.ss01",
+        "uni01CE.rcltA11y": "uni01CE.ss01",
+        "uni01CE.rcltBase": "uni01CE.ss01",
+        "uni01D4": "uni01D4.ss10",
+        "uni01D4.rcltGeo": "uni01D4.ss10",
         "uni01D6": "uni01D6.ss10",
         "uni01D6.rcltGeo": "uni01D6.ss10",
         "uni01D8": "uni01D8.ss10",
@@ -3029,7 +3132,9 @@
         "zero.numr.rcltGeo": "zero.numr.ss10",
         "zero.rcltGeo": "zero.ss10",
         "zero.tf": "zero.tf.ss10",
-        "zero.tf.rcltGeo": "zero.tf.ss10"
+        "zero.tf.rcltGeo": "zero.tf.ss10",
+        "zero.zero": "zero.zero.ss10",
+        "zero.zero.tf": "zero.zero.tf.ss10"
       }
     },
     {
@@ -3223,6 +3328,8 @@
         "ccircumflex.rcltGeo": "ccircumflex.ss10",
         "cdotaccent": "cdotaccent.ss10",
         "cdotaccent.rcltGeo": "cdotaccent.ss10",
+        "cent": "cent.ss10",
+        "cent.tf": "cent.tf.ss10",
         "eng": "eng.ss10",
         "eng.rcltGeo": "eng.ss10",
         "f.rcltBase": "f.alt",
@@ -3314,6 +3421,11 @@
         "uni0163": "uni0163.ss10",
         "uni0163.rcltBase": "uni0163.ss10",
         "uni0163.rcltGeo": "uni0163.ss10",
+        "uni01CE": "uni01CE.ss01",
+        "uni01CE.rcltA11y": "uni01CE.ss01",
+        "uni01CE.rcltBase": "uni01CE.ss01",
+        "uni01D4": "uni01D4.ss10",
+        "uni01D4.rcltGeo": "uni01D4.ss10",
         "uni01D6": "uni01D6.ss10",
         "uni01D6.rcltGeo": "uni01D6.ss10",
         "uni01D8": "uni01D8.ss10",
@@ -3770,6 +3882,8 @@
         "IJacute.rcltA11y": "IJacute.ss18",
         "Iacute": "Iacute.ss18",
         "Iacute.rcltA11y": "Iacute.ss18",
+        "Ibreve": "Ibreve.ss18",
+        "Ibreve.rcltA11y": "Ibreve.ss18",
         "Icircumflex": "Icircumflex.ss18",
         "Icircumflex.rcltA11y": "Icircumflex.ss18",
         "Idieresis": "Idieresis.ss18",
@@ -3817,6 +3931,7 @@
         "atilde.rcltBase": "atilde.ss18",
         "g": "g.rcltA11y",
         "gbreve": "gbreve.rcltA11y",
+        "gcaron": "gcaron.rcltA11y",
         "gcircumflex": "gcircumflex.rcltA11y",
         "gdotaccent": "gdotaccent.rcltA11y",
         "l": "l.ss18",
@@ -3835,6 +3950,9 @@
         "uni013C.loclMAH": "uni013C.loclMAH.ss18",
         "uni013C.loclMAH.rcltA11y": "uni013C.loclMAH.ss18",
         "uni013C.rcltA11y": "uni013C.ss18",
+        "uni01CE": "uni01CE.ss18",
+        "uni01CE.rcltA11y": "uni01CE.ss18",
+        "uni01CE.rcltBase": "uni01CE.ss18",
         "uni01E3": "uni01E3.ss03",
         "uni0203": "uni0203.ss18",
         "uni0203.rcltA11y": "uni0203.ss18",
@@ -4122,6 +4240,9 @@
         "atilde.rcltBase": "atilde.ss01",
         "ordfeminine": "ordfeminine.ss01",
         "ordfeminine.rcltBase": "ordfeminine.ss01",
+        "uni01CE": "uni01CE.ss01",
+        "uni01CE.rcltA11y": "uni01CE.ss01",
+        "uni01CE.rcltBase": "uni01CE.ss01",
         "uni0203": "uni0203.ss01",
         "uni0203.rcltA11y": "uni0203.ss01",
         "uni0203.rcltBase": "uni0203.ss01",
@@ -4230,6 +4351,9 @@
         "atilde.rcltBase": "atilde.ss02",
         "ordfeminine": "ordfeminine.ss02",
         "ordfeminine.rcltBase": "ordfeminine.ss02",
+        "uni01CE": "uni01CE.ss02",
+        "uni01CE.rcltA11y": "uni01CE.ss02",
+        "uni01CE.rcltBase": "uni01CE.ss02",
         "uni0203": "uni0203.ss02",
         "uni0203.rcltA11y": "uni0203.ss02",
         "uni0203.rcltBase": "uni0203.ss02",
@@ -4335,6 +4459,9 @@
         "atilde": "atilde.ss18",
         "atilde.rcltA11y": "atilde.ss18",
         "atilde.rcltBase": "atilde.ss18",
+        "uni01CE": "uni01CE.ss18",
+        "uni01CE.rcltA11y": "uni01CE.ss18",
+        "uni01CE.rcltBase": "uni01CE.ss18",
         "uni0203": "uni0203.ss18",
         "uni0203.rcltA11y": "uni0203.ss18",
         "uni0203.rcltBase": "uni0203.ss18",
@@ -4458,7 +4585,9 @@
         "ccircumflex": "ccircumflex.ss10",
         "ccircumflex.rcltGeo": "ccircumflex.ss10",
         "cdotaccent": "cdotaccent.ss10",
-        "cdotaccent.rcltGeo": "cdotaccent.ss10"
+        "cdotaccent.rcltGeo": "cdotaccent.ss10",
+        "cent": "cent.ss10",
+        "cent.tf": "cent.tf.ss10"
       }
     },
     {
@@ -4497,6 +4626,8 @@
         "g.rcltA11y": "g.ss04",
         "gbreve": "gbreve.ss04",
         "gbreve.rcltA11y": "gbreve.ss04",
+        "gcaron": "gcaron.ss04",
+        "gcaron.rcltA11y": "gcaron.ss04",
         "gcircumflex": "gcircumflex.ss04",
         "gcircumflex.rcltA11y": "gcircumflex.ss04",
         "gdotaccent": "gdotaccent.ss04",
@@ -4528,6 +4659,8 @@
         "g.rcltA11y": "g.ss05",
         "gbreve": "gbreve.ss05",
         "gbreve.rcltA11y": "gbreve.ss05",
+        "gcaron": "gcaron.ss05",
+        "gcaron.rcltA11y": "gcaron.ss05",
         "gcircumflex": "gcircumflex.ss05",
         "gcircumflex.rcltA11y": "gcircumflex.ss05",
         "gdotaccent": "gdotaccent.ss05",
@@ -4558,6 +4691,7 @@
       "subs": {
         "G": "G.ss06",
         "Gbreve": "Gbreve.ss06",
+        "Gcaron": "Gcaron.ss06",
         "Gcircumflex": "Gcircumflex.ss06",
         "Gdotaccent": "Gdotaccent.ss06",
         "uni0122": "uni0122.ss06",
@@ -4588,6 +4722,8 @@
         "G.rcltGeo": "G.ss07",
         "Gbreve": "Gbreve.ss07",
         "Gbreve.rcltGeo": "Gbreve.ss07",
+        "Gcaron": "Gcaron.ss07",
+        "Gcaron.rcltGeo": "Gcaron.ss07",
         "Gcircumflex": "Gcircumflex.ss07",
         "Gcircumflex.rcltGeo": "Gcircumflex.ss07",
         "Gdotaccent": "Gdotaccent.ss07",
@@ -4634,6 +4770,8 @@
         "IJacute.rcltA11y": "IJacute.ss18",
         "Iacute": "Iacute.ss18",
         "Iacute.rcltA11y": "Iacute.ss18",
+        "Ibreve": "Ibreve.ss18",
+        "Ibreve.rcltA11y": "Ibreve.ss18",
         "Icircumflex": "Icircumflex.ss18",
         "Icircumflex.rcltA11y": "Icircumflex.ss18",
         "Idieresis": "Idieresis.ss18",
@@ -4978,6 +5116,8 @@
         "umacron.rcltGeo": "umacron.ss10",
         "uni00B5": "uni00B5.ss10",
         "uni00B5.rcltGeo": "uni00B5.ss10",
+        "uni01D4": "uni01D4.ss10",
+        "uni01D4.rcltGeo": "uni01D4.ss10",
         "uni01D6": "uni01D6.ss10",
         "uni01D6.rcltGeo": "uni01D6.ss10",
         "uni01D8": "uni01D8.ss10",
@@ -5117,22 +5257,17 @@
         "⁰",
         "₀"
       ],
-      "overridesGeom": true,
+      "overridesGeom": false,
       "subs": {
         "uni2070": "uni2070.ss10",
-        "uni2070.rcltGeo": "uni2070.ss10",
         "uni2080": "uni2080.ss10",
-        "uni2080.rcltGeo": "uni2080.ss10",
         "zero": "zero.ss10",
         "zero.dnom": "zero.dnom.ss10",
-        "zero.dnom.rcltGeo": "zero.dnom.ss10",
         "zero.lf": "zero.lf.ss10",
-        "zero.lf.rcltGeo": "zero.lf.ss10",
         "zero.numr": "zero.numr.ss10",
-        "zero.numr.rcltGeo": "zero.numr.ss10",
-        "zero.rcltGeo": "zero.ss10",
         "zero.tf": "zero.tf.ss10",
-        "zero.tf.rcltGeo": "zero.tf.ss10"
+        "zero.zero": "zero.zero.ss10",
+        "zero.zero.tf": "zero.zero.tf.ss10"
       }
     },
     {
