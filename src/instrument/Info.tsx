@@ -28,7 +28,7 @@ const AXES: { tag: string; name: string }[] = [
   { tag: 'GEOM', name: 'Geometric form' },
   { tag: 'wght', name: 'Weight' },
   { tag: 'YTAS', name: 'Ascender' },
-  { tag: 'SHRP', name: 'Sharp' },
+  { tag: 'SHRP', name: 'Sharpness' },
   { tag: 'ital', name: 'Italic' },
 ]
 

@@ -6,8 +6,9 @@
 // natural GEOM, so their forms stay distinct regardless of the user's thresholds.
 // Drag a boundary to move a swap → dispatch setThresholds → Shell's rebuild effect
 // regenerates the CalSansPreview face. ⌘Z routes through the store's history.
-import { useRef, useState } from 'react'
-import { GROUP_DEFS } from '../GlyphGroups'
+import { useLayoutEffect, useRef, useState } from 'react'
+import { GROUP_DEFS, LANDING_ZONES } from '../GlyphGroups'
+import { geomFromClientX, geomLeft, geomPx, geomSpan, zoneBandBackground } from './geomAxis'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings } from './render'
@@ -39,7 +40,7 @@ export function Matrix() {
     const rect = lane.getBoundingClientRect()
     const cur = thresholds[glyph] ?? []
     const clampAt = (clientX: number) => {
-      const v = Math.round(((clientX - rect.left) / rect.width) * 100)
+      const v = Math.round(geomFromClientX(clientX, rect))
       const lo = idx > 0 ? cur[idx - 1] + 1 : 0
       const hi = idx < cur.length - 1 ? cur[idx + 1] - 1 : 100
       return Math.max(lo, Math.min(hi, v))
@@ -72,20 +73,49 @@ export function Matrix() {
     if (!rows) return
     const rect = rows.getBoundingClientRect()
     setGeomDragging(true)
+    dispatch({ type: 'setGeomDragging', value: true })   // the line + its tag go HDR white while held, as on the pad
     let pushed = false, last = geom
     const move = (ev: PointerEvent) => {
       if (!pushed) { dispatch({ type: 'pushHistory' }); pushed = true }
-      last = Math.round(Math.max(0, Math.min(100, ((ev.clientX - rect.left) / rect.width) * 100)))
+      last = Math.round(geomFromClientX(ev.clientX, rect))
       dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: last })
     }
     const up = () => {
       window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up)
       setGeomDragging(false)
+      dispatch({ type: 'setGeomDragging', value: false })
       if (pushed) fade('geom', last)
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)
   }
+
+  // "Default NN" sits in the 0/50/100 row with its NUMBER centered on the bar's x, clamped to
+  // the matrix edges, and covers whatever tick it lands on.
+  const axisRef = useRef<HTMLDivElement | null>(null)
+  const tagRef = useRef<HTMLSpanElement | null>(null)
+  const numRef = useRef<HTMLSpanElement | null>(null)
+  const [tagLeft, setTagLeft] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    const place = () => {
+      const axis = axisRef.current, tag = tagRef.current, num = numRef.current
+      if (!axis || !tag || !num) return
+      const w = axis.clientWidth
+      const want = geomPx(geom, w) - (num.offsetLeft + num.offsetWidth / 2)
+      const next = Math.max(0, Math.min(w - tag.offsetWidth, want))
+      setTagLeft(prev => (prev !== null && Math.abs(prev - next) < 0.25 ? prev : next))
+      // A tick the tag touches goes under it entirely, never half-covered.
+      axis.querySelectorAll<HTMLElement>('.matrix-axis-tick').forEach(t => {
+        const c = geomPx(Number(t.dataset.v), w), half = t.offsetWidth / 2
+        t.style.visibility = c + half > next && c - half < next + tag.offsetWidth ? 'hidden' : ''
+      })
+    }
+    place()
+    const ro = new ResizeObserver(place)
+    if (axisRef.current) ro.observe(axisRef.current)
+    document.fonts?.ready.then(place)
+    return () => ro.disconnect()
+  }, [geom])
 
   const glyphStyle = (label: string) => ({
     fontFamily: "'CalSansVF', sans-serif",
@@ -94,28 +124,23 @@ export function Matrix() {
     fontOpticalSizing: 'none' as const,
   })
 
-  const dirty = JSON.stringify(thresholds) !== JSON.stringify(state.shippedThresholds)
 
   return (
     <div className="matrix">
-      <div className="matrix-head">
-        <span className="matrix-title">GEOM swap editor</span>
-        <button className="matrix-reset" disabled={!dirty}
-          onClick={() => dispatch({ type: 'setThresholds', thresholds: state.shippedThresholds })}>
-          reset
-        </button>
-      </div>
-
-      <div className="matrix-axis">
-        <span className="matrix-axis-tick" style={{ left: '0%' }}>0</span>
-        <span className="matrix-axis-tick matrix-axis-tick--mid" style={{ left: '50%' }}>50</span>
-        <span className="matrix-axis-tick matrix-axis-tick--end" style={{ left: '100%' }}>100</span>
+      <div className="matrix-axis" ref={axisRef}>
+        {[0, 50, 100].map(v => (
+          <span key={v} className="matrix-axis-tick geom-num tnum" data-v={v} style={{ left: geomLeft(v) }}>{v}</span>
+        ))}
+        <span ref={tagRef} className={`matrix-default-tag geom-num${state.geomDragging ? ' is-dragging' : ''}`}
+          style={{ left: tagLeft ?? 0, visibility: tagLeft === null ? 'hidden' : 'visible' }}>
+          Default <span ref={numRef} className="tnum">{Math.round(geom)}</span>
+        </span>
       </div>
       <div className="matrix-rows" ref={rowsRef}>
-        {/* soft shade under every lane: dark left of the default, light-gray right,
-            easing to app bg, meeting at the hard line at the GEOM default. */}
-        <div className="matrix-geom-shade"
-          style={{ background: `linear-gradient(to right, var(--bg) 0%, #060606 ${geom}%, rgba(255,255,255,0.15) ${geom}%, transparent ${geom + 15}%)` }} />
+        {LANDING_ZONES.map(z => (
+          <div key={z.label} className="matrix-zone"
+            style={{ left: geomLeft(z.start), width: geomSpan(z.start, z.end), background: zoneBandBackground(z.label) }} />
+        ))}
         {GROUP_DEFS.map(def => {
           const base = thresholds[def.glyph] ?? def.defaultThresholds
           const shown = drag && drag.glyph === def.glyph
@@ -131,7 +156,7 @@ export function Matrix() {
           return (
             <div className="matrix-lane" key={def.glyph} ref={el => { laneRefs.current[def.glyph] = el }}>
               {(state.shippedThresholds[def.glyph] ?? []).map((v, i) => (
-                <div key={`s${i}`} className="matrix-shipped" style={{ left: `${v}%` }}
+                <div key={`s${i}`} className="matrix-shipped" style={{ left: geomLeft(v) }}
                   title={`Cal Sans default · GEOM ${v}`} />
               ))}
               {def.variants.map((variant, vi) => {
@@ -144,34 +169,35 @@ export function Matrix() {
                       /* No inline background while ON: the HDR swatch is in CSS, and an
                          inline colour would win over it and flatten the band to SDR. */
                       style={on
-                        ? { left: `${a}%`, width: `${b - a}%` }
-                        : { left: `${a}%`, width: `${b - a}%`, background: variant.color }} />
+                        ? { left: geomLeft(a), width: geomSpan(a, b) }
+                        : { left: geomLeft(a), width: geomSpan(a, b), background: variant.color }} />
                     <span className={`matrix-vglyph${on ? ' on' : ''}`}
-                      style={{ left: `${mid}%`, ...glyphStyle(variant.label) }}
+                      style={{ left: geomLeft(mid), ...glyphStyle(variant.label) }}
                       title={`${variant.label} · GEOM ${a}–${b}`}>{def.glyph}</span>
                   </div>
                 )
               })}
               {shown.map((v, i) => (
-                <div key={`h${i}`} className="matrix-handle" style={{ left: `${v}%` }}
+                <div key={`h${i}`} className="matrix-handle" style={{ left: geomLeft(v) }}
                   onPointerDown={e => startDrag(def.glyph, i, e)} title={`your swap · GEOM ${v}`} />
               ))}
               {drag && drag.glyph === def.glyph && (
-                <span className="matrix-val matrix-val--in tnum" style={{ left: `${drag.value}%` }}>{drag.value}</span>
+                <span className="matrix-val matrix-val--in tnum" style={{ left: geomLeft(drag.value) }}>{drag.value}</span>
               )}
               {fading && fading.key.startsWith(`${def.glyph}:`) && (
-                <span className="matrix-val matrix-val--out tnum" style={{ left: `${fading.value}%` }}>{fading.value}</span>
+                <span className="matrix-val matrix-val--out tnum" style={{ left: geomLeft(fading.value) }}>{fading.value}</span>
               )}
             </div>
           )
         })}
-        {/* draggable grabber on the hard line where the two shades meet */}
-        <div className="matrix-geom" style={{ left: `${geom}%` }} onPointerDown={startGeomDrag} />
+        {/* the default: a line through every lane, ringed like the pad's knob */}
+        <div className={`matrix-default${state.geomDragging ? ' is-dragging' : ''}`} style={{ left: geomLeft(geom) }} />
+        <div className="matrix-geom" style={{ left: geomLeft(geom) }} onPointerDown={startGeomDrag} />
         {geomDragging && (
-          <span className="matrix-val matrix-val--in matrix-val--geom tnum" style={{ left: `${geom}%` }}>{geom}</span>
+          <span className="matrix-val matrix-val--in matrix-val--geom tnum" style={{ left: geomLeft(geom) }}>{geom}</span>
         )}
         {fading && fading.key === 'geom' && (
-          <span className="matrix-val matrix-val--out matrix-val--geom tnum" style={{ left: `${fading.value}%` }}>{fading.value}</span>
+          <span className="matrix-val matrix-val--out matrix-val--geom tnum" style={{ left: geomLeft(fading.value) }}>{fading.value}</span>
         )}
       </div>
 

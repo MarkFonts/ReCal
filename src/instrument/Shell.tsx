@@ -4,29 +4,29 @@
 import './shell.css'
 import './holo.css'
 import { useState, useRef, useEffect, useLayoutEffect } from 'react'
-import type { PointerEvent as ReactPointerEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
   type FitOptions, Chevron } from '../../shared/index' // wm-primitives (git submodule)
-import { ZONE_CHIP_COLOR } from '../zoneColors'
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
+  sectionDirty, type Section,
 } from './store'
-import { renderVarSettings, opszForSize } from './render'
+import { renderVarSettings } from './render'
 import { BOOT } from './boot'
 import {
-  Modebar, Scene, SceneControls, FEATURE_CHIPS, SS_FEATURES, SCENES, type SceneMode,
+  Modebar, Scene, SceneControls, FEATURE_CHIPS, SCENES, type SceneMode,
   DEFAULT_PARA_STYLES, PARA_STYLE_ORDER, PARA_STYLE_LABEL,
   type ParaStyleKey, type ParaStyle, type ParaStyles,
   SCALE_TIERS, DEFAULT_SCALE_STYLES, type ScaleTierStyle, type ScaleStyles,
 } from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
-import { useFontEngine } from './useFontEngine'
+import { useFontEngine, type ExportConfig } from './useFontEngine'
 import { Matrix } from './Matrix'
 import { Freezer } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
+import { ShapePad, AscenderPad } from './ShapePad'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
   YOUR: { label: 'YOURS', color: 'var(--marker-default)' },
@@ -49,111 +49,114 @@ function ResetIcon() {
   )
 }
 
-// Instrument zone anchors — each chip pins GEOM to one exact value (owner spec).
-const ZONES = [
-  { label: 'A11y', geom: 0, color: ZONE_CHIP_COLOR.A11y },
-  { label: 'UI', geom: 25, color: ZONE_CHIP_COLOR.UI },
-  { label: 'Base', geom: 50, color: ZONE_CHIP_COLOR.Base },
-  { label: 'Geo', geom: 100, color: ZONE_CHIP_COLOR.Geo },
-]
-/* WHERE THE LIGHT IS. The chosen chip's HDR ramp is panned by --mx/--my, written straight
-   to the DOM rather than through state: this runs on every pointermove and a setState per
-   move would re-render the rail. rAF-coalesced for the same reason -- several moves per
-   frame, one write.
-   Listening on the WINDOW, not the chip, because the glow should build as you approach:
-   a light you only see once you are already on top of it is not a light, it is a hover
-   style. Coordinates are per-chip and local, so the bright spot lands on the real cursor
-   however the row is laid out -- the same registration lesson the hero's field taught,
-   just at one element instead of a headline. */
-function useChipGlow(ref: React.RefObject<HTMLDivElement | null>) {
-  useEffect(() => {
-    const host = ref.current
-    if (!host) return
-    if (window.matchMedia('(pointer: coarse)').matches) return   // no cursor to follow
-    let frame = 0
-    let last: PointerEvent | null = null
-    const paint = () => {
-      frame = 0
-      if (!last) return
-      /* EVERY chip, each with its own local coordinates -- that is what makes one light
-         travel across the row instead of four private ones. Same registration lesson the
-         hero's field taught: a shared source, offset per element by its own corner. */
-      for (const on of Array.from(host.querySelectorAll<HTMLElement>('.zone-chip'))) {
-      const r = on.getBoundingClientRect()
-      /* NO CLAMP. There was one, to stop the ramp's square edge crossing the chip, and it
-         was both unnecessary and broken: the hard seam it was written for turned out to be
-         a unit bug in background-position, and its range [size-R, R] is only valid while
-         the element is NARROWER than the ramp. Once the reach dropped to 96px on a ~100px
-         chip that range inverted and collapsed to a single value, pinning the light in
-         place -- a clamp that stopped the thing it was meant to protect from moving.
-         Unclamped, the ramp simply travels with the cursor and meets the flat colour at
-         its rim, which is the same hue at 203 nits. That IS the intended edge. */
-      const R = (parseFloat(getComputedStyle(on).getPropertyValue('--glow-size')) || 256) / 2
-      /* Clamped so the image always covers the element -- valid now, and it was not before:
-         the range [size-R, R] needs the ramp to be WIDER than the chip, and at a 40px reach
-         on a ~100px chip it inverted and pinned the light in place. At 512 there is ~156px
-         of slack, so this only bites when the cursor is well off the chip, where the light
-         has already faded to nothing anyway. */
-      const cl = (v: number, size: number) => Math.max(size - R, Math.min(R, v))
-      const x = Math.round(cl(last.clientX - r.left, r.width)) - R
-      const y = Math.round(cl(last.clientY - r.top, r.height)) - R
-      on.style.setProperty('--glow-pos', `${x}px ${y}px`)
-      }
-    }
-    const onMove = (e: PointerEvent) => { last = e; if (!frame) frame = requestAnimationFrame(paint) }
-    window.addEventListener('pointermove', onMove, { passive: true })
-    return () => { window.removeEventListener('pointermove', onMove); if (frame) cancelAnimationFrame(frame) }
-  }, [ref])
-}
+// The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
+const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics']
+const VMETRICS_ROW = 5
+const ROW_SECTIONS: Section[] = ['shape', 'opsz', 'asc', 'matrix', 'freezer', 'vmetrics']
+const OPSZ_FROZEN_BLOCKED = 'Turn off Auto ascender to freeze optical size: it needs the optical size axis.'
+const AUTO_ASC_BLOCKED = 'Unavailable while optical size is frozen: the ascender follows the optical size axis, and freezing removes it.'
+const VM_LABEL: Record<string, string> = { wordmark: 'Cal Sans', arrowtype: 'ArrowType', googlefonts: 'Google Fonts', custom: 'custom' }
 
-const nearestZoneLabel = (geom: number) =>
-  ZONES.reduce((best, z) => (Math.abs(z.geom - geom) < Math.abs(best.geom - geom) ? z : best)).label
-
-// ── Rail: the font mutator (◆) ────────────────────────────────────────────────
-function Pin({ tag, label, dragSignal }: { tag: string; label: string; dragSignal?: boolean }) {
+// Optical size: Auto (browser scales opsz to the size; the 1-6 scale stretches the range) or
+// Frozen (pin the axis). The bake does one or the other, never both, so each mode shows only
+// its own control. Frozen and Auto ascender are mutually exclusive (the grafted avar2 needs
+// the opsz axis): the Frozen side is disabled while Auto ascender is on, with a visible note.
+function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
   const { state, dispatch } = useInstrument()
-  const { min, max } = AXIS_RANGES[tag]
-  const v = state.defaults.axes[tag]
-  // While this slider is held, GEOM-swap flashes hold their zone color (live map)
-  // and only fade on release. Window-level pointerup ends it even if released
-  // outside the thumb; keyboard changes don't set it (they read as instant jumps).
-  const onRangePointerDown = dragSignal
-    ? () => {
-        dispatch({ type: 'setGeomDragging', value: true })
-        const up = () => { dispatch({ type: 'setGeomDragging', value: false }); window.removeEventListener('pointerup', up) }
-        window.addEventListener('pointerup', up)
-      }
-    : undefined
+  const d = state.defaults
   return (
-    <AxisSlider
-      label={label}
-      tag={tag}
-      value={v}
-      min={min}
-      max={max}
-      step={tag === 'ital' ? 0.01 : 1}
-      variant="track"
-      reference={state.shipped[tag]}
-      onRangePointerDown={onRangePointerDown}
-      onChange={val => dispatch({ type: 'setDefaultAxis', tag, value: val as number })}
-    />
+    <div className="rail-row-body">
+      <div className="rail-seg" role="group" aria-label="Optical size mode">
+        <button className={d.freezeOpsz ? '' : 'on'} aria-pressed={!d.freezeOpsz}
+          onClick={() => dispatch({ type: 'setFreezeOpsz', value: false })}>Auto</button>
+        {/* aria-disabled, not disabled: a disabled button swallows the hover/click that
+            reveals why it's disabled. */}
+        <button className={d.freezeOpsz ? 'on' : ''} aria-pressed={d.freezeOpsz}
+          aria-disabled={d.autoAscender} title={d.autoAscender ? OPSZ_FROZEN_BLOCKED : undefined}
+          onPointerEnter={d.autoAscender ? onNote : undefined}
+          onClick={() => { if (d.autoAscender) onNote(); else dispatch({ type: 'setFreezeOpsz', value: true }) }}>Frozen</button>
+      </div>
+      {note && d.autoAscender
+        ? <p className="rail-help rail-help--note" role="status">{OPSZ_FROZEN_BLOCKED}</p>
+        : <p className="rail-help">{d.freezeOpsz
+            ? 'Every size uses this one optical size. The axis is removed from the font.'
+            : 'Follows the type size. Scale stretches how far it travels.'}</p>}
+      {d.freezeOpsz ? (
+        <AxisSlider
+          label="Optical size"
+          tag="opsz"
+          value={d.frozenOpszValue ?? 14}
+          min={AXIS_RANGES.opsz.min}
+          max={AXIS_RANGES.opsz.max}
+          step={1}
+          variant="track"
+          reference={state.shipped.opsz}
+          onChange={val => dispatch({ type: 'setFrozenOpszValue', value: val as number })}
+        />
+      ) : (
+        <div className="pin">
+          <div className="pin-head"><span className="pin-label">Optical scale</span>
+            <span className="pin-val tnum">{d.opszMultiplier}×</span></div>
+          <div className="stepper">
+            {[1, 2, 3, 4, 5, 6].map(n => (
+              <button key={n} className={d.opszMultiplier === n ? 'on' : ''}
+                onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
 
+// One stack row: a left-aligned header (number, uppercase title, ONE chevron on the right
+// margin) + a muted value summary under the title. Rows above the open one point up, rows
+// below point down, the open row has none; only the row right after the open one carries the
+// holo (holo.css `.is-next`). The chevron is a masked span inside the title, so the holo band
+// runs continuously across word and chevron (house chevron geometry, see holo.css).
+// The open row has no chevron; in its slot sits that row's own reset, a button beside the
+// heading (not inside it) that puts only this row's values back to stock, one undo step.
+function RailRow({ n, label, section, summary, open, above, next, dir, onToggle, children }: {
+  n: number; label: string; section: Section; summary: string; open: boolean; above: boolean; next: boolean
+  dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
+}) {
+  const { state, dispatch } = useInstrument()
+  const dirty = open && sectionDirty(state, section)
+  return (
+    <div className="rail-row">
+      <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
+        aria-expanded={open} onClick={onToggle}>
+        <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
+        <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
+        {!open && <span className="rail-seam-sum tnum">{summary}</span>}
+      </button>
+      {open && (
+        <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
+          onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
+      )}
+      {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
+    </div>
+  )
+}
 
-function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => void }) {
+function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFontEngine>; collapsed: boolean; onToggle: () => void }) {
   const { state, dispatch } = useInstrument()
   const railRef = useRef<HTMLDivElement>(null)
-  useChipGlow(railRef)
-  // Descent: 0 = tune (ReCal Builder) · 1 = Type Matrix · 2 = Freezer · 3 = Vertical Metrics.
-  // Lives in the store so the canvas can swap to the metrics preview on group 3.
-  const group = state.railGroup
-  const [leaving, setLeaving] = useState(false)
-  const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
-  // Descend (down-seam): current slides up + out, next rides up from below.
-  // Ascend (up-seam): the opposite — current slides down + out, next comes from above.
-  const go = (i: number, d: 'fwd' | 'back') => { setDir(d); setLeaving(true); setTimeout(() => { dispatch({ type: 'setRailGroup', group: i }); setLeaving(false) }, 150) }
+  const d = state.defaults
   const tag = TAG_TEXT[stateTag(state)]
+  // One row open at a time (or none). Opening Vertical metrics switches the canvas to the
+  // metrics stage, which still reads store.railGroup === 3; every other row is 0.
+  const [open, setOpen] = useState<number | null>(0)
+  const [dir, setDir] = useState<'fwd' | 'back'>('fwd')
+  const toggle = (i: number) => { setDir(open !== null && i < open ? 'back' : 'fwd'); setOpen(open === i ? null : i) }
+  useEffect(() => { dispatch({ type: 'setRailGroup', group: open === VMETRICS_ROW ? 3 : 0 }) }, [open, dispatch])
+  // Optical size note: shown when someone reaches for Frozen while Auto ascender is on, and
+  // once when a preset arrives with both set (Auto ascender wins; freeze is cleared).
+  const [opszNote, setOpszNote] = useState(false)
+  useEffect(() => {
+    if (d.freezeOpsz && d.autoAscender) { dispatch({ type: 'setFreezeOpsz', value: false }); setOpszNote(true) }
+    if (!d.autoAscender) setOpszNote(false)
+  }, [d.freezeOpsz, d.autoAscender, dispatch])
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -166,6 +169,40 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
   }, [dispatch])
+
+  const frozenTags = d.frozenFeatures
+  const edited = glyphsEditedCount(state)
+  const summaries = [
+    `GEOM ${Math.round(d.axes.GEOM)} · ${Math.round(d.axes.wght)}`,
+    d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×`,
+    `Asc ${Math.round(d.axes.YTAS)} · Sharpness ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
+    edited ? `${edited} moved` : 'stock swaps',
+    frozenTags.length ? (frozenTags.length > 3 ? `${frozenTags.slice(0, 3).join(' · ')} +${frozenTags.length - 3}` : frozenTags.join(' · ')) : 'nothing frozen',
+    VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
+  ]
+  const bodies: React.ReactNode[] = [
+    <div className="rail-row-body"><ShapePad /></div>,
+    <OpticalSize note={opszNote} onNote={() => setOpszNote(true)} />,
+    <div className="rail-row-body">
+      <AscenderPad />
+      <label className="rail-toggle" title={d.freezeOpsz ? AUTO_ASC_BLOCKED : undefined}
+        style={d.freezeOpsz ? { opacity: .38, cursor: 'default' } : undefined}>
+        <input type="checkbox" checked={d.autoAscender} disabled={d.freezeOpsz}
+          onChange={e => dispatch({ type: 'setAutoAscender', value: e.target.checked })} />
+        Auto ascender (YTAS tracks opsz)
+      </label>
+    </div>,
+    <div className="rail-row-body">
+      <Matrix />
+      <label className="rail-toggle">
+        <input type="checkbox" checked={state.useHoi}
+          onChange={e => dispatch({ type: 'setUseHoi', value: e.target.checked })} />
+        HOI interpolation
+      </label>
+    </div>,
+    <div className="rail-row-body"><Freezer /></div>,
+    <div className="rail-row-body"><VMetricsPanel /></div>,
+  ]
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.
   return (
@@ -174,6 +211,10 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
       onPointerDown={() => { if (!collapsed && state.recalMode !== 'edit') dispatch({ type: 'setRecalMode', mode: 'edit' }) }}
       onClick={collapsed ? onToggle : undefined}>
       <div className="rail-collapsed-label">ReCal Builder</div>
+      {/* Narrow windows only (CSS): the open rail covers the whole viewport, so this is the way back. */}
+      <button className="rail-close" onClick={onToggle}>
+        <Chevron dir={-1} width={10} height={6} className="rail-close-chv" />Close
+      </button>
       <div className="rail-header">
         <div className="rail-header-top">
           <div className="rail-title">ReCal Builder</div>
@@ -184,8 +225,6 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         <div className="rail-sub">your defaults — baked into the export</div>
       </div>
 
-      <div key={group} className={`rail-descent rail-descent--${dir}${leaving ? ' rail-descent--leaving' : ''}`}>
-      {group === 0 && (<>
       <div className="rail-group">
         <div className="rail-group-label">Start from</div>
         <span className="wm-select-wrap">
@@ -202,141 +241,17 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
         </span>
       </div>
 
-      <div className="rail-group">
-        <div className="rail-group-label">Geometric form</div>
-        <div className="zone-chips">
-          {ZONES.map(z => {
-            const on = nearestZoneLabel(state.defaults.axes.GEOM) === z.label
-            return (
-              <button key={z.label}
-                className={`zone-chip${on ? ' on' : ''}`}
-                /* No inline background when on: the HDR swatch lives in CSS (an inline
-                   style would win over it and flatten the chip back to SDR). */
-                style={on ? undefined : { color: z.color }}
-                data-label={z.label}
-                onClick={() => {
-                  dispatch({ type: 'setDefaultAxis', tag: 'GEOM', value: z.geom })
-                  dispatch({ type: 'clearPreview' })
-                }}>
-                <span>{z.label}</span>
-              </button>
-            )
-          })}
-        </div>
-        <Pin tag="GEOM" label="GEOM" dragSignal />
+      <div className="rail-stack">
+        {ROW_LABELS.map((label, i) => (
+          <RailRow key={label} n={i + 1} label={label} section={ROW_SECTIONS[i]} summary={summaries[i]} dir={dir}
+            open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
+            onToggle={() => toggle(i)}>
+            {bodies[i]}
+          </RailRow>
+        ))}
       </div>
 
-      <div className="rail-group">
-        <div className="rail-group-head">
-          <span className="rail-group-label">Optical</span>
-          <label className="rail-toggle">
-            <input type="checkbox" checked={state.defaults.freezeOpsz}
-              onChange={e => dispatch({ type: 'setFreezeOpsz', value: e.target.checked })} />
-            Freeze opsz
-          </label>
-        </div>
-        {/* Optical size — only meaningful when frozen: off = the browser scales opsz to
-            size (auto); on = pin the opsz axis to this value for a fixed display size. */}
-        {/* opsz uses the canonical allowAuto affordance: field shows "auto" until you
-            edit it (type a value to freeze, `a` to go auto); the Freeze checkbox stays
-            in sync. Track variant + burned stock reference like the other rail axes. */}
-        <AxisSlider
-          label="Optical size"
-          tag="opsz"
-          value={state.defaults.freezeOpsz ? (state.defaults.frozenOpszValue ?? 14) : 'auto'}
-          min={AXIS_RANGES.opsz.min}
-          max={AXIS_RANGES.opsz.max}
-          step={1}
-          allowAuto
-          autoValue={state.defaults.frozenOpszValue ?? 14}
-          variant="track"
-          disabled={!state.defaults.freezeOpsz}
-          reference={state.shipped.opsz}
-          onChange={val => {
-            if (val === 'auto') { dispatch({ type: 'setFreezeOpsz', value: false }) }
-            else { dispatch({ type: 'setFreezeOpsz', value: true }); dispatch({ type: 'setFrozenOpszValue', value: val }) }
-          }}
-        />
-        <div className="pin">
-          <div className="pin-head"><span className="pin-label">Optical scale</span>
-            <span className="pin-val tnum">{state.defaults.opszMultiplier}×</span></div>
-          <div className="stepper">
-            {[1, 2, 3, 4, 5, 6].map(n => (
-              <button key={n} className={state.defaults.opszMultiplier === n ? 'on' : ''}
-                onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      <div className="rail-group">
-        <div className="rail-group-label">Weight &amp; slant</div>
-        <Pin tag="wght" label="Weight" />
-      </div>
-
-      <div className="rail-group">
-        <div className="rail-group-label">Parametric</div>
-        <Pin tag="YTAS" label="Ascender" />
-        <Pin tag="SHRP" label="Sharp" />
-      </div>
-
-      <div className="rail-group">
-        <div className="rail-group-label">Construction</div>
-        <label className="rail-toggle">
-          <input type="checkbox" checked={state.useHoi}
-            onChange={e => dispatch({ type: 'setUseHoi', value: e.target.checked })} />
-          HOI interpolation
-        </label>
-        <label className="rail-toggle">
-          <input type="checkbox" checked={state.defaults.autoAscender}
-            onChange={e => dispatch({ type: 'setAutoAscender', value: e.target.checked })} />
-          Auto ascender (YTAS tracks opsz)
-        </label>
-      </div>
-
-      <button className="rail-seam rail-seam--down" onClick={() => go(1, 'fwd')}>
-        <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />TYPE MATRIX<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-      </button>
-      </>)}
-
-      {group === 1 && (
-      <div className="rail-matrix">
-        <button className="rail-seam rail-seam--up" onClick={() => go(0, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />TYPE MATRIX<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-        <Matrix />
-        <button className="rail-seam rail-seam--down" onClick={() => go(2, 'fwd')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />FREEZER<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-      </div>
-      )}
-
-      {group === 2 && (
-      <div className="rail-freezer">
-        <button className="rail-seam rail-seam--up" onClick={() => go(1, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />FREEZER<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-        <Freezer />
-        <button className="rail-seam rail-seam--down" onClick={() => go(3, 'fwd')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />VERTICAL METRICS<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-      </div>
-      )}
-
-      {group === 3 && (
-      <div className="rail-vmetrics">
-        <button className="rail-seam rail-seam--up" onClick={() => go(2, 'back')}>
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" />VERTICAL METRICS<span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button>
-        <VMetricsPanel ytasPin={<Pin tag="YTAS" label="Ascender" />} />
-        {/* Vertical Metrics is the last section — no down-seam (its rule + chevrons removed).
-            Restore this button if a section is ever added below it.
-        <button className="rail-seam rail-seam--down" onClick={() => go(0, 'fwd')} title="Back to square one">
-          <span className="rail-seam-lbl"><span className="rail-seam-chv-t" aria-hidden="true" /><span className="rail-seam-chv-t" aria-hidden="true" /></span>
-        </button> */}
-      </div>
-      )}
-      </div>{/* /rail-descent */}
+      <DownloadFooter engine={engine} />
 
       {/* YOUR ◆ state tag — hidden for now
       <div className="rail-footer">
@@ -347,9 +262,10 @@ function Rail({ collapsed, onToggle }: { collapsed: boolean; onToggle: () => voi
   )
 }
 
-// Mode label, below the scene tabs (left). Reads the CURRENT mode; throbs in EDIT.
-// Modes switch by touching the trays (rail → EDIT, play → DEMO); leaving EDIT plays
-// a save animation (spinning throbber → green check).
+// Mode label, below the scene tabs (left). It says nothing at rest (the mode is shown by
+// the dimmed rail / Try bar); it carries feedback only. Modes switch by touching the trays
+// (rail → EDIT, play → DEMO); leaving EDIT plays a save animation (spinning throbber →
+// green check).
 function ModeLabel() {
   const { state } = useInstrument()
   const prev = useRef(state.recalMode)
@@ -384,24 +300,23 @@ function ModeLabel() {
     : saving ? { kind: saving, spin: 'Saving…', check: 'Saved' } : null
   const editing = state.recalMode === 'edit'
   return (
-    <div className={`mode-label${phase ? '' : ' mode-label--throb'}${editing ? ' mode-label--edit' : ''}`}>
+    <div className={`mode-label${editing ? ' mode-label--edit' : ''}`}>
       {phase?.kind === 'spin' ? <><span className="mode-throb" aria-hidden /> {phase.spin}</>
         : phase?.kind === 'check' ? <span className="mode-check">✓ <span className="mc-word">{phase.check}</span></span>
-          : editing ? 'EDIT ReCal Mode' : 'DEMO ReCal Mode'}
+          : null}
     </div>
   )
 }
 
 // ── Canvas: top bar + (stage / scene controls / play), with the Font info overlay
 // covering everything below the top bar. ─────────────────────────────────────────
-// Floating TYPE panel — viewport/render controls (not baked axes), so they live in
-// their own HUD rather than the ● play bar. Each scene shows only the rows it uses.
+// Type controls — viewport/render controls (not baked axes), shown in the Try bar. Each
+// scene shows only the rows it uses.
 const TYPE_ROWS: Record<string, string[]> = {
   words: ['size', 'tracking', 'leading'],
-  paragraph: ['size', 'tracking', 'leading', 'measure'],
+  paragraph: ['size', 'tracking', 'leading'],   // its measure lives in the Layout popover
   scale: ['tracking', 'leading', 'measure'],
 }
-const TYPE_PANEL_POS_KEY = 'recal-type-panel-pos'
 
 // Paragraph style menu — pick which style (H1/H2/H3/P) the controls target.
 function StyleMenu({ active, setActive, paraStyles }: {
@@ -495,119 +410,10 @@ function TierMenu({ selected, toggle, scaleStyles }: {
   )
 }
 
-function TypePanel({ mode, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, patchPara, selectedTiers, toggleTier, scaleStyles, fit, setFit }: {
-  mode: SceneMode
+function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
   leading: number; setLeading: (n: number) => void
-  measure: number; setMeasure: (n: number) => void
-  activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
-  patchPara: (p: Partial<ParaStyle>) => void
-  selectedTiers: Set<string>; toggleTier: (k: string) => void; scaleStyles: ScaleStyles
-  fit: Partial<FitOptions>; setFit: (f: Partial<FitOptions>) => void
-}) {
-  const rows = TYPE_ROWS[mode] ?? []
-  // Draggable by the header. Position persists across sessions; free-drag against the
-  // ref + commit on release (per the spec's drag rules — no re-render mid-drag).
-  const panelRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<{ dx: number; dy: number } | null>(null)
-  const [pos, setPos] = useState<{ x: number; y: number } | null>(() => {
-    try { const s = JSON.parse(localStorage.getItem(TYPE_PANEL_POS_KEY) || 'null'); return (s && typeof s.x === 'number') ? s : null } catch { return null }
-  })
-  // The paragraph is a pre-made SVG on the compare pages — the same condition the scene
-  // uses to render one — so nothing typeset here can reach it.
-  const { state: instrument } = useInstrument()
-  const comparingSvg = !!(instrument.compareOn && instrument.compare?.svg)
-  if (!rows.length) return null
-  const has = (k: string) => rows.includes(k)
-
-  const clamp = (v: number, max: number) => Math.min(Math.max(v, 8), Math.max(8, max - 8))
-  const onDown = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const r = panelRef.current!.getBoundingClientRect()
-    dragRef.current = { dx: e.clientX - r.left, dy: e.clientY - r.top }
-    e.currentTarget.setPointerCapture(e.pointerId)
-  }
-  const onMove = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const el = panelRef.current, drag = dragRef.current
-    if (!el || !drag) return
-    el.style.left = `${clamp(e.clientX - drag.dx, window.innerWidth - el.offsetWidth)}px`
-    el.style.top = `${clamp(e.clientY - drag.dy, window.innerHeight - el.offsetHeight)}px`
-    el.style.right = 'auto'
-  }
-  const onUp = (e: ReactPointerEvent<HTMLDivElement>) => {
-    const el = panelRef.current
-    if (!dragRef.current || !el) return
-    dragRef.current = null
-    e.currentTarget.releasePointerCapture(e.pointerId)
-    const next = { x: parseFloat(el.style.left) || 0, y: parseFloat(el.style.top) || 0 }
-    setPos(next)
-    try { localStorage.setItem(TYPE_PANEL_POS_KEY, JSON.stringify(next)) } catch { /* ignore */ }
-  }
-
-  // Clamp the persisted position into the viewport every render, so a position saved on
-  // a wider window can never leave the panel stranded off-screen on a narrower one.
-  const clamped = pos ? {
-    x: Math.min(Math.max(pos.x, 8), Math.max(8, window.innerWidth - 186)),
-    y: Math.min(Math.max(pos.y, 8), Math.max(8, window.innerHeight - 60)),
-  } : null
-  return (
-    <div ref={panelRef} className="type-panel"
-      style={clamped ? { left: clamped.x, top: clamped.y, right: 'auto' } : undefined}>
-      <div className="type-panel-title" onPointerDown={onDown} onPointerMove={onMove}
-        onPointerUp={onUp} onPointerCancel={onUp}>Type</div>
-      {mode === 'paragraph' && (
-        <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
-      )}
-      {mode === 'scale' && (
-        <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
-      )}
-      {/* Proofing controls (not ◆ defaults) → default AxisSlider variant, matching
-          font-proofer's TYPOGRAPHY. No diamond/marker/reference. */}
-      {/* Alignment and line fitting, from wm-primitives — the same controls font-proofer
-          renders in its sidebar, and above size for the same reason it is there: it
-          decides the shape of the column, which the sliders then measure into.
-          Hidden on the compare pages: those set their text as a pre-made SVG, so
-          alignment and fitting have nothing live to act on and would only promise
-          something the page cannot deliver. */}
-      {mode === 'paragraph' && !comparingSvg && (
-        <>
-          {/* Alignment, the rag and hyphenation belong to the style the menu above has
-              selected — the same style whose size and leading the sliders below edit.
-              Only the H&J bands in `fit` are the document's, because they are the
-              typeface's. */}
-          <div className="type-panel-aligns">
-            <AlignmentButtons value={paraStyles[activeParaStyle].align}
-              onChange={a => patchPara({ align: a })} />
-          </div>
-          <FittingControls value={fit} onChange={setFit}
-            mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
-            swissRag={paraStyles[activeParaStyle].swissRag}
-            onSwissRag={on => patchPara({ swissRag: on })}
-            hyphenate={paraStyles[activeParaStyle].hyphenate}
-            onHyphenate={on => patchPara({ hyphenate: on })} />
-        </>
-      )}
-      {has('size') && (
-        <AxisSlider variant="track" label="size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
-      )}
-      {has('tracking') && (
-        <AxisSlider variant="track" label="tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
-      )}
-      {has('leading') && (
-        <AxisSlider variant="track" label="leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
-      )}
-      {has('measure') && (
-        <AxisSlider variant="track" label="measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
-      )}
-    </div>
-  )
-}
-
-function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, opszAuto, setOpszAuto, feats, toggleFeat, resetFeats, featStr }: {
-  size: number; setSize: (n: number) => void
-  tracking: number; setTracking: (n: number) => void
-  leading: number; setLeading: (n: number) => void
-  opszAuto: boolean; setOpszAuto: (v: boolean) => void
   feats: Set<string>; toggleFeat: (t: string) => void; resetFeats: () => void
   featStr: string
 }) {
@@ -629,10 +435,10 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
   const ls = `${tracking / 100}em`
   // On the Vertical Metrics rail tab the Words scene swaps for the metrics preview; the
   // other scenes stay themselves (so you can see the metrics' effect in a real paragraph/UI).
-  const { state: inst } = useInstrument()
+  const { state: inst, dispatch } = useInstrument()
   const vmActive = inst.railGroup === 3 && mode === 'words'
 
-  // Editable per-block paragraph styles + which one the TYPE controls target.
+  // Editable per-block paragraph styles + which one the Try bar's type controls target.
   const [paraStyles, setParaStyles] = useState<ParaStyles>(DEFAULT_PARA_STYLES)
   const [activeParaStyle, setActiveParaStyle] = useState<ParaStyleKey>('p')
   const patchPara = (p: Partial<ParaStyle>) =>
@@ -697,198 +503,179 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, ops
             {vmActive
               ? <VMetricsScene />
               : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet} opszAuto={opszAuto}
+                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet}
                   paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
                   fit={fit} topInset={uiOverlay ? navHeight : 0} />}
           </div>
         </div>
         {(mode !== 'ui' || vmActive) && (
-          <PreviewSurface
-            size={size} setSize={setSize}
-            tracking={tracking} setTracking={setTracking}
-            leading={leading} setLeading={setLeading}
-            feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats}
-            opszAuto={opszAuto} setOpszAuto={setOpszAuto} />
+          <TryBar mode={mode} vmActive={vmActive}
+            size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
+            leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
+            activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
+            patchPara={patchPara}
+            selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
+            fit={fit} setFit={setFit} feats={feats} toggleFeat={toggleFeat}
+            canReset={previewDrifted(inst) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)}
+            onReset={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats() }} />
         )}
       </div>
-      {!vmActive && <TypePanel mode={mode} size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
-        leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
-        activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
-        patchPara={patchPara}
-        selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
-        fit={fit} setFit={setFit} />}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
   )
 }
 
-// ── Bottom preview-control surface (●) ────────────────────────────────────────
-const DOCK_AXES = ['wght', 'GEOM', 'opsz', 'YTAS', 'SHRP', 'ital'] as const
+// ── Try bar (●) ───────────────────────────────────────────────────────────────
+// Always visible at the foot of the stage: a row of value pills, dragged sideways like the
+// rail's dials (they ARE the AxisSlider track variant). Nothing here is baked. It replaces
+// both the hover-bloomed Preview bar (a second copy of the six axes + the ss chips) and the
+// floating TYPE panel: size / tracking / leading, then the preview-only Weight / Italic /
+// Features, then whatever the current scene adds (paragraph style and a Layout popover
+// holding alignment, fitting and measure; scale tiers, measure). GEOM, opsz, YTAS and SHRP
+// are not here: they are defaults, and the rail drives them.
 
-function PreviewSurface({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, opszAuto, setOpszAuto }: {
-  size: number; setSize: (n: number) => void
-  tracking: number; setTracking: (n: number) => void
-  leading: number; setLeading: (n: number) => void
-  feats: Set<string>; toggleFeat: (t: string) => void; resetFeats: () => void
-  opszAuto: boolean; setOpszAuto: (v: boolean) => void
-}) {
-  const { state, dispatch } = useInstrument()
-  const merged = mergedAxes(state)
-  const autoOpsz = opszForSize(size, state.defaults.opszMultiplier)   // handle position when auto
-  const canReset = previewDrifted(state) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)
-  // Bloom on pointer proximity; collapse with a fuzzy threshold — the farther the
-  // cursor is above the bar, the faster it folds. Stays open while a child has focus.
+// A pill that opens a small popover ABOVE itself (the bar sits at the bottom edge). `end`
+// hangs it off the pill's right edge, for pills near the bar's right side.
+function TryPop({ label, end, children }: { label: string; end?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
-  const surfRef = useRef<HTMLDivElement>(null)
-  const openRef = useRef(open)
-  openRef.current = open
+  const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    let timer: ReturnType<typeof setTimeout> | undefined
-    const BAND = 20     // px above the bar that counts as "at" the bar → stay open (t=0 here)
-    const FAR = 200     // px above where collapse is immediate (t=1 here)
-    const MAX_DELAY = 650
-    const onMove = (e: PointerEvent) => {
-      const surf = surfRef.current
-      if (!surf) return
-      // Hovering the floating download dock (OFL + Download, bottom-right over the
-      // canvas) collapses the preview so it doesn't cover the pill.
-      if (e.target instanceof Element && e.target.closest('.dock-download')) {
-        clearTimeout(timer)
-        if (openRef.current) setOpen(false)
-        return
-      }
-      // Over the left rail (e.g. reaching the bottom seam buttons) — never bloom the dock;
-      // the rail overlaps the bar's full width, so the south edge shouldn't trigger it.
-      if (e.target instanceof Element && e.target.closest('.rail')) return
-      const rect = surf.getBoundingClientRect()
-      const focused = surf.contains(document.activeElement)
-      // Open ONLY when actually over the bar (no preemptive proximity bloom — the
-      // glyph-set tabs sit right above it). Once open, the BAND is just hysteresis.
-      if (focused || e.clientY >= rect.top) {
-        clearTimeout(timer)
-        if (!openRef.current) setOpen(true)
-        return
-      }
-      if (!openRef.current) return
-      const dist = rect.top - e.clientY
-      if (dist <= BAND) { clearTimeout(timer); return }       // stay open within band
-      const t = Math.min(1, (dist - BAND) / (FAR - BAND))
-      const delay = Math.round(MAX_DELAY * Math.exp(-t / 0.2))  // exponential falloff (e-fold 0.2)
-      clearTimeout(timer)
-      timer = setTimeout(() => {
-        const s = surfRef.current
-        if (s && !s.contains(document.activeElement)) setOpen(false)
-      }, delay)
-    }
-    window.addEventListener('pointermove', onMove)
-    return () => { window.removeEventListener('pointermove', onMove); clearTimeout(timer) }
-  }, [])
+    if (!open) return
+    const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpen(false) }
+    document.addEventListener('pointerdown', onDoc)
+    document.addEventListener('keydown', onKey)
+    return () => { document.removeEventListener('pointerdown', onDoc); document.removeEventListener('keydown', onKey) }
+  }, [open])
   return (
-    <div ref={surfRef} className={`preview-surface${open ? ' open' : ''}${state.recalMode === 'edit' ? ' preview-surface--dim' : ''}`}
-      onFocusCapture={() => setOpen(true)}
-      onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
-      <div className="preview-surface-head">
-        <span className={`preview-surface-cap${open ? '' : ' preview-surface-cap--collapsed'}`}>
-          <span className="preview-dot" aria-hidden="true" />Preview
-        </span>
-        {open && (
-          <button className="preview-reset" disabled={!canReset} title="Reset preview"
-            onClick={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true); resetFeats() }}>
-            <ResetIcon /><span className="preview-reset-text">Reset Preview</span>
-          </button>
-        )}
-      </div>
-      <div className="preview-body">
-        <div className="play-group">
-          <span className="play-group-label">Axes</span>
-          <div className="preview-rows">
-            {DOCK_AXES.map(tag => {
-              const { min, max } = AXIS_RANGES[tag]
-              const v = merged[tag]
-              // Compare mode: gray out axes the referent font can't express. A static
-              // SVG specimen (no live font) grays everything; a live webfont keeps
-              // wght (font-weight), ital only if real italics exist, opsz only if the
-              // referent has the axis; GEOM/YTAS/SHRP are Cal Sans-only.
-              const cmp = state.compareOn ? state.compare : null
-              const na = !!cmp && (!!cmp.svg || !cmp.css ||
-                !(tag === 'wght' || (tag === 'ital' && cmp.italic) || (tag === 'opsz' && !!cmp.opszRange)))
-              /* opsz is the one axis with a second state: it can follow the sample size
-                 instead of holding a number. That used to be a checkbox in a hand-built
-                 row -- the LAST row in this rail that was not the primitive -- so the
-                 axis with the extra affordance was also the one drawn differently from
-                 its five neighbours. `allowAuto` is the primitive's own version of the
-                 same thing: the dot-and-word control, the `a` keystroke, and typing the
-                 word, all of which this row never had. */
-              const isOpsz = tag === 'opsz'
-              return (
-                <AxisSlider
-                  key={tag}
-                  /* 01, the default. The preview bar is a rail you READ as much as drive,
-                     so it wants the label line and the track under it -- the same anatomy
-                     as everywhere else, at the same size. `skeletal` was a thinner drawing
-                     of the same control, which is a difference the reader has to account
-                     for without being told why. */
-                  label={tag}
-                  value={isOpsz && opszAuto ? 'auto' : v}
-                  min={min}
-                  max={max}
-                  step={tag === 'ital' ? 0.01 : 1}
-                  disabled={na}
-                  allowAuto={isOpsz}
-                  /* Where the handle sits while auto is on: the opsz this sample size
-                     derives, not the axis default -- the same number the renderer uses,
-                     so the track is not describing a different font from the canvas. */
-                  autoValue={isOpsz ? autoOpsz : undefined}
-                  display={na ? '\u2014' : undefined}
-                  onChange={val => {
-                    if (isOpsz) {
-                      setOpszAuto(val === 'auto')
-                      if (val === 'auto') return
-                    }
-                    dispatch({ type: 'setPreview', tag, value: val as number })
-                  }}
-                />
-              )
-            })}
-          </div>
-        </div>
-
-        <div className="play-opentype">
-          <div className="play-group">
-            <span className="play-group-label">Features</span>
-            <div className="feature-chips">
-              {FEATURE_CHIPS.map(f => (
-                <button key={f.tag} data-label={f.label} className={`chip${feats.has(f.tag) ? ' on' : ''}`} title={f.tag}
-                  onClick={() => toggleFeat(f.tag)}>{f.label}</button>
-              ))}
-            </div>
-          </div>
-          <div className="play-group">
-            <span className="play-group-label">Sets</span>
-            <div className="feature-chips ss-chips">
-              {SS_FEATURES.map(f => (
-                <button key={f.tag} data-label={f.tag} className={`chip${feats.has(f.tag) ? ' on' : ''}`}
-                  title={`${f.tag} · ${f.name}`} aria-label={`${f.tag} ${f.name}`}
-                  onClick={() => toggleFeat(f.tag)}>{f.tag}</button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+    <div className="try-pop" ref={ref}>
+      <button className={`try-btn${open ? ' on' : ''}`} aria-expanded={open} onClick={() => setOpen(o => !o)}>
+        {label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
+      </button>
+      {open && <div className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
     </div>
   )
 }
 
-// ── Download dock — a floating OFL + Download pill (no full-width floor). ─────────
-function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) {
+function TryDial({ label, value, min, max, step, suffix, disabled, display, onChange }: {
+  label: string; value: number; min: number; max: number; step: number
+  suffix?: string; disabled?: boolean; display?: string
+  onChange: (n: number) => void
+}) {
+  return (
+    <div className="try-pill">
+      <AxisSlider variant="track" label={label} value={value} min={min} max={max} step={step}
+        suffix={suffix} disabled={disabled} display={display} onChange={v => onChange(v as number)} />
+    </div>
+  )
+}
+
+function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading, setLeading, measure, setMeasure, activeParaStyle, setActiveParaStyle, paraStyles, patchPara, selectedTiers, toggleTier, scaleStyles, fit, setFit, feats, toggleFeat, canReset, onReset }: {
+  mode: SceneMode; vmActive: boolean
+  size: number; setSize: (n: number) => void
+  tracking: number; setTracking: (n: number) => void
+  leading: number; setLeading: (n: number) => void
+  measure: number; setMeasure: (n: number) => void
+  activeParaStyle: ParaStyleKey; setActiveParaStyle: (k: ParaStyleKey) => void; paraStyles: ParaStyles
+  patchPara: (p: Partial<ParaStyle>) => void
+  selectedTiers: Set<string>; toggleTier: (k: string) => void; scaleStyles: ScaleStyles
+  fit: Partial<FitOptions>; setFit: (f: Partial<FitOptions>) => void
+  feats: Set<string>; toggleFeat: (t: string) => void
+  canReset: boolean; onReset: () => void
+}) {
+  const { state, dispatch } = useInstrument()
+  const merged = mergedAxes(state)
+  // The metrics stage has its own type; only the preview-only pills apply there.
+  const rows = vmActive ? [] : TYPE_ROWS[mode] ?? []
+  const has = (k: string) => rows.includes(k)
+  // Compare mode: gray out what the referent font can't express. A static SVG specimen
+  // (no live font) grays everything; a live webfont keeps wght (font-weight) and ital only
+  // if real italics exist. The paragraph is a pre-made SVG on the compare pages — the same
+  // condition the scene uses to render one — so nothing typeset here can reach it.
+  const cmp = state.compareOn ? state.compare : null
+  const comparingSvg = !!cmp?.svg
+  const naWght = !!cmp && (!!cmp.svg || !cmp.css)
+  const naItal = !!cmp && (!!cmp.svg || !cmp.css || !cmp.italic)
+  const inScene = !vmActive && (mode === 'paragraph' || mode === 'scale')
+  const { min: wMin, max: wMax } = AXIS_RANGES.wght
+  return (
+    <div className="try" role="group" aria-label="Try"
+      onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
+      <span className="try-lbl">Try</span>
+      {/* Proofing controls (not ◆ defaults) → the track variant with no diamond/marker/reference,
+          as font-proofer's TYPOGRAPHY has them. */}
+      {has('size') && <TryDial label="Size" value={size} min={16} max={200} step={1} suffix="px" onChange={setSize} />}
+      {has('tracking') && <TryDial label="Tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={setTracking} />}
+      {has('leading') && <TryDial label="Leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={setLeading} />}
+      {rows.length > 0 && <span className="try-sep" aria-hidden="true" />}
+      <TryDial label="Weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
+        display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v })} />
+      <button className={`try-btn${merged.ital >= 0.5 ? ' on' : ''}`} aria-pressed={merged.ital >= 0.5} disabled={naItal}
+        onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}>Italic</button>
+      <TryPop label="Features">
+        {FEATURE_CHIPS.map(f => (
+          <label key={f.tag} className="rail-toggle" title={f.tag}>
+            <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
+            {f.label}
+          </label>
+        ))}
+      </TryPop>
+      {inScene && <span className="try-sep" aria-hidden="true" />}
+      {!vmActive && mode === 'paragraph' && (
+        <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
+      )}
+      {!vmActive && mode === 'scale' && (
+        <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
+      )}
+      {/* Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
+          controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
+          and hyphenation belong to the style the menu selects; only the H&J bands in `fit`
+          are the document's, because they are the typeface's. On the compare pages a
+          pre-made SVG has nothing live to fit, so the alignment and fitting controls are
+          dropped (they would only promise something the page cannot deliver) and the
+          measure stays. */}
+      {!vmActive && mode === 'paragraph' && (
+        <TryPop label="Layout" end>
+          {!comparingSvg && (
+            <>
+              <div className="try-aligns">
+                <AlignmentButtons value={paraStyles[activeParaStyle].align}
+                  onChange={a => patchPara({ align: a })} />
+              </div>
+              <FittingControls value={fit} onChange={setFit}
+                mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
+                swissRag={paraStyles[activeParaStyle].swissRag}
+                onSwissRag={on => patchPara({ swissRag: on })}
+                hyphenate={paraStyles[activeParaStyle].hyphenate}
+                onHyphenate={on => patchPara({ hyphenate: on })} />
+            </>
+          )}
+          <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />
+        </TryPop>
+      )}
+      {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />}
+      <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
+        <ResetIcon /><span className="preview-reset-text">Reset</span>
+      </button>
+    </div>
+  )
+}
+
+// ── Download line — pinned under the rail's stack (never scrolls away). ────────────
+// Says what the download contains (the full variable range, always) and offers the 8
+// static cuts as one optional checkbox. The OFL line + the button live here too.
+function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }) {
   const { state } = useInstrument()
-  const [oflAgreed, setOflAgreed] = useState(false)
-  const dockRef = useRef<HTMLDivElement>(null)
+  const [expanded, setExpanded] = useState(false)
+  const [statics, setStatics] = useState(false)
+  const footRef = useRef<HTMLDivElement>(null)
+  const { min: wMin, max: wMax } = AXIS_RANGES.wght
+  const family = (state.buildName || 'ReCal Sans').trim() || 'ReCal Sans'
 
   // The exact export config for the current ◆ (deterministic → cacheable). Kept in a
   // ref so the pointer-vector listener always speculates on the latest config.
-  const buildConfig = () => {
+  const buildConfig = (): ExportConfig => {
     const d = state.defaults
     return {
       axisDefaults: Object.fromEntries(Object.entries(d.axes).filter(([t]) => t !== 'opsz')),
@@ -899,18 +686,20 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
       thresholds: d.glyphThresholds,
       frozenFeatures: d.frozenFeatures,
       vmetrics: d.vmetrics,
+      familyName: family,
     }
   }
   const cfgRef = useRef(buildConfig)
   cfgRef.current = buildConfig
-  // force = definitive intent (OFL / hovering the download) — bakes even during a
-  // preview rebuild. Passive pointer-vectoring stays un-forced.
+  // force = definitive intent (hovering the download) — bakes even during a
+  // preview rebuild. Passive pointer-vectoring stays un-forced. Always the plain-TTF
+  // config: the prebake cache keys on the config, and the 8 statics only bake on a click.
   const prefetch = (force = false) => engine.prebake(cfgRef.current(), force)
 
   // "Load the room behind the door": when the pointer is heading toward the download
-  // pill (aligned velocity + within reach), speculatively bake the export so the click
-  // is instant. 9/10 people check the OFL box first, which also prefetches — this just
-  // buys even more lead time.
+  // button (aligned velocity + within reach), speculatively bake the export so the click
+  // is instant. Entering the footer also prefetches — this just buys more lead time. Not
+  // while a button is held: dragging a rail dial toward the footer is an edit, not intent.
   useEffect(() => {
     let px = 0, py = 0, vx = 0, vy = 0, last = 0
     const onMove = (e: PointerEvent) => {
@@ -920,66 +709,104 @@ function DownloadDock({ engine }: { engine: ReturnType<typeof useFontEngine> }) 
         vy = vy * (1 - a) + (e.clientY - py) * a
       }
       px = e.clientX; py = e.clientY; last = e.timeStamp
-      const dock = dockRef.current; if (!dock) return
-      const r = dock.getBoundingClientRect()
+      const foot = footRef.current; if (!foot || e.buttons) return
+      const r = foot.getBoundingClientRect()
+      if (!r.width) return   // rail collapsed to its strip
       const tx = r.left + r.width / 2 - px, ty = r.top + r.height / 2 - py
       const dist = Math.hypot(tx, ty), speed = Math.hypot(vx, vy)
-      // within reach, moving fast enough, and aimed at the pill (cosine > 0.6)
+      // within reach, moving fast enough, and aimed at the footer (cosine > 0.6)
       if (dist < 460 && speed > 1.2 && (vx * tx + vy * ty) / (speed * dist || 1) > 0.6) prefetch(false)
     }
     window.addEventListener('pointermove', onMove)
     return () => window.removeEventListener('pointermove', onMove)
   }, [])
 
-  // Bake the ◆ defaults into a TTF (instant if already pre-baked) and trigger download.
+  // Bake the ◆ defaults (instant if already pre-baked) and trigger the download: a lone
+  // TTF, or with statics a .zip of the variable font + the 8 static cuts.
+  const [dlError, setDlError] = useState<string | null>(null)
   const doDownload = async () => {
-    const ttf = await engine.download(cfgRef.current())
-    const url = URL.createObjectURL(new Blob([new Uint8Array(ttf)], { type: 'font/ttf' }))
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${(state.buildName || 'ReCal Sans').trim() || 'ReCal Sans'}.ttf`
-    a.click()
-    URL.revokeObjectURL(url)
+    setDlError(null)
+    let baked: Awaited<ReturnType<typeof engine.download>>
+    try {
+      baked = await engine.download(statics ? { ...cfgRef.current(), statics: true } : cfgRef.current())
+    } catch {
+      return   // a failed bake: the engine already logged it and set engine.error (the footer shows it)
+    }
+    try {
+      const zip = baked.kind === 'zip'
+      const url = URL.createObjectURL(new Blob([new Uint8Array(baked.bytes)], { type: zip ? 'application/zip' : 'font/ttf' }))
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${family}.${zip ? 'zip' : 'ttf'}`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (e) {
+      console.error('[download]', e)
+      setDlError(String(e))
+    }
   }
 
   // One-shot holo (+ ital lean) over the "Download" letters when the export first becomes
   // downloadable. In dev the Pyodide worker often never boots (stuck on "Preparing engine…"),
-  // so once OFL is ticked we FAKE-ready the button — clicking replays the flourish — to
+  // so in dev we FAKE-ready the button — clicking replays the flourish — to
   // preview the animation without the engine. This never fakes a bake (doDownload needs ready).
   const [holoKey, setHoloKey] = useState(0)
   const playHolo = () => setHoloKey(k => k + 1)
-  const devFake = import.meta.env.DEV && oflAgreed && !engine.ready && !engine.building
+  const devFake = import.meta.env.DEV && !engine.ready && !engine.building
   const showDownload = engine.ready || devFake
   const wasReady = useRef(false)
   useEffect(() => { if (showDownload && !wasReady.current) playHolo(); wasReady.current = showDownload }, [showDownload])
 
+  const ext = statics ? '.zip' : '.ttf'
   const label = engine.building ? 'Building…'
     : (engine.started && !showDownload) ? 'Preparing engine…'
-    : 'Download'
+    : `Download ${ext}`
 
   return (
-    <div className="dock-download" ref={dockRef} onPointerEnter={() => prefetch(true)}>
-      {engine.error && (
-        <span className="dock-error" title={engine.error}>export failed — see console</span>
+    // Touching the footer is not touching the rail's controls: don't enter EDIT.
+    <div className="rail-dl" ref={footRef} onPointerEnter={() => prefetch(true)}
+      onPointerDown={e => e.stopPropagation()}>
+      {(engine.error || dlError) && (
+        <span className="dock-error" title={dlError ?? engine.error ?? undefined}>export failed — see console</span>
       )}
-      <label className="floor-toggle">
-        <input type="checkbox" checked={oflAgreed}
-          onChange={e => { setOflAgreed(e.target.checked); if (e.target.checked) prefetch(true) }} />
-        I accept the{' '}
-        <a href="https://openfontlicense.org/open-font-license-official-text/"
-          target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>OFL 1.1</a>
-      </label>
-      <button className="floor-btn floor-btn--primary"
-        disabled={!oflAgreed || engine.building || (!engine.ready && !devFake)}
-        onPointerEnter={() => prefetch(true)}
-        onClick={() => { if (engine.ready) doDownload(); else if (devFake) playHolo() }}
-        title={!oflAgreed ? 'Accept the OFL to enable download'
-          : !engine.ready ? 'Loading the font engine (first time ~10–20s)…' : 'Download your ReCal Sans TTF'}>
-        {engine.building
-          ? <span className="holo-loading">Building…</span>
-          : <span key={holoKey} className={holoKey > 0 ? 'holo-once' : ''}
-              onAnimationEnd={e => { if (e.animationName === 'holo-once-ital') e.currentTarget.classList.remove('holo-once') }}>{label}</span>}
+      <button className="dl-what" aria-expanded={expanded} onClick={() => setExpanded(x => !x)}>
+        <span className="dl-k">In your download</span>
+        <span className="dl-w">
+          {statics
+            ? `Variable ${wMin}–${wMax} + 8 statics · roman + italic`
+            : `Variable · weight ${wMin}–${wMax} · roman + italic`}
+          <span className="dl-change">change<Chevron dir={expanded ? 1 : -1} width={10} height={6} /></span>
+        </span>
       </button>
+      {expanded && (
+        <div className="dl-opts">
+          <label className="dl-opt dl-opt--locked">
+            <input type="checkbox" checked disabled />
+            <span><b>Variable font</b> · {wMin}–{wMax}, roman + italic</span>
+          </label>
+          <label className="dl-opt">
+            <input type="checkbox" checked={statics} onChange={e => setStatics(e.target.checked)} />
+            <span><b>Plus 8 statics</b> · 400 500 600 700, roman + italic</span>
+          </label>
+        </div>
+      )}
+      <div className="dl-act">
+        <button className="floor-btn floor-btn--primary"
+          disabled={engine.building || (!engine.ready && !devFake)}
+          onPointerEnter={() => prefetch(true)}
+          onClick={() => { if (engine.ready) doDownload(); else if (devFake) playHolo() }}
+          title={!engine.ready ? 'Loading the font engine (first time ~10–20s)…'
+            : statics ? `Download your ${family} variable font + 8 statics (.zip)` : 'Download your ReCal Sans TTF'}>
+          {engine.building
+            ? <span className="holo-loading">Building…</span>
+            : <span key={holoKey} className={holoKey > 0 ? 'holo-once' : ''}
+                onAnimationEnd={e => { if (e.animationName === 'holo-once-ital') e.currentTarget.classList.remove('holo-once') }}>{label}</span>}
+        </button>
+        <p className="dl-ofl">By downloading you accept the{' '}
+          <a href="https://openfontlicense.org/open-font-license-official-text/"
+            target="_blank" rel="noopener noreferrer">OFL 1.1</a></p>
+      </div>
+      {engine.building && engine.progress && <p className="dl-progress" role="status">{engine.progress}</p>}
     </div>
   )
 }
@@ -1015,18 +842,9 @@ export default function Shell() {
     l.rel = 'stylesheet'; l.href = css; l.dataset.compareFont = css
     document.head.appendChild(l)
   }, [state.compareOn, state.compare])
-  // Fused SEO landing pages put an article below the 100vh shell; fade the fixed
-  // panels (TYPE, download dock) out once the app is mostly scrolled away. The
-  // root app page never scrolls, so this never fires there.
-  useEffect(() => {
-    const on = () => document.body.classList.toggle('past-app', window.scrollY > window.innerHeight * 0.6)
-    window.addEventListener('scroll', on, { passive: true })
-    return () => window.removeEventListener('scroll', on)
-  }, [])
   const [size, setSize] = useState(SIZE_DEFAULT)
   const [tracking, setTracking] = useState(0)
   const [leading, setLeading] = useState(1)
-  const [opszAuto, setOpszAuto] = useState(true)
   // Size-only: collapse when the window is narrow, pop open when it grows past 660px.
   const [railCollapsed, setRailCollapsed] = useState(() => window.matchMedia(RAIL_NARROW).matches)
   useEffect(() => {
@@ -1046,11 +864,11 @@ export default function Shell() {
   const resetFeats = () => setFeats(new Set(FEATS_DEFAULT))
 
   // Entering EDIT resets all preview view-state to the ◆ default look (the store
-  // clears the ● axis preview; here we reset the local size/tracking/leading/opsz/feats).
+  // clears the ● axis preview; here we reset the local size/tracking/leading/feats).
   const prevMode = useRef(state.recalMode)
   useEffect(() => {
     if (state.recalMode === 'edit' && prevMode.current !== 'edit') {
-      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); setOpszAuto(true); resetFeats()
+      setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats()
     }
     prevMode.current = state.recalMode
   }, [state.recalMode])
@@ -1105,14 +923,12 @@ export default function Shell() {
   const emphBoldVs = renderVarSettings({ ...effectiveAxes(state), wght: 700 }, {})
   return (
     <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
-      <Rail collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
+      <Rail engine={engine} collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
       <Canvas
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}
         leading={leading} setLeading={setLeading}
-        opszAuto={opszAuto} setOpszAuto={setOpszAuto}
         feats={feats} toggleFeat={toggleFeat} resetFeats={resetFeats} featStr={featStr} />
-      <DownloadDock engine={engine} />
       {/* Inline-emphasis bubble — shared wm-primitives component; labels use Cal Sans's real ital/bold axes */}
       <InlineEmphasisBubble
         selector=".para-block, .tier-head, .tier-body"
