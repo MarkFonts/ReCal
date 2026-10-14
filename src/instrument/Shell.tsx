@@ -610,7 +610,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
 
 // A pill that opens a small popover ABOVE itself (the bar sits at the bottom edge). `end`
 // hangs it off the pill's right edge, for pills near the bar's right side.
-function TryPop({ label, icon, end, children }: { label: string; icon?: string; end?: boolean; children: React.ReactNode }) {
+function TryPop({ label, icon, end, caret = true, children }: { label: string; icon?: string; end?: boolean; caret?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
@@ -627,7 +627,7 @@ function TryPop({ label, icon, end, children }: { label: string; icon?: string; 
     <div className="try-pop" ref={ref}>
       <AccentButton look="q5" shape="chip" lit={open} className={open ? undefined : 'try-btn'}
         aria-expanded={open} onClick={() => setOpen(o => !o)}>
-        {icon && <Icon name={icon} size={16} state={open ? 'active' : 'rest'} className="try-btn-ic" />}{label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
+        {icon && <Icon name={icon} size={16} state={open ? 'active' : 'rest'} className="try-btn-ic" />}{label}{caret && <Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />}
       </AccentButton>
       {open && <div ref={listRef} className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
     </div>
@@ -703,6 +703,8 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     const read = () => {
       const cs = getComputedStyle(document.documentElement)
       const next = { W: bar.getBoundingClientRect().width, cols: +cs.getPropertyValue('--grid-cols') || 24, g: parseFloat(cs.getPropertyValue('--grid-gutter')) || 24 }
+      const cv = bar.closest('.canvas')?.getBoundingClientRect()
+      if (cv) { document.documentElement.style.setProperty('--ov-left', cv.left + 'px'); document.documentElement.style.setProperty('--ov-right', (document.documentElement.clientWidth - cv.right) + 'px') }
       setGeo(p => (p && p.W === next.W && p.cols === next.cols && p.g === next.g ? p : next))
     }
     read()
@@ -769,7 +771,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}><Icon name="format_italic" size={16} state={merged.ital >= 0.5 ? 'active' : 'rest'} className="try-btn-ic" />Italic</AccentButton>
   )
   const featuresPop = (
-    <TryPop label="Features" icon="discover_tune">
+    <TryPop label="Features" icon="discover_tune" caret={!floatPlace}>
       {FEATURE_CHIPS.map(f => (
         <label key={f.tag} className="rail-toggle" title={f.tag}>
           <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
@@ -824,7 +826,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     const present: { key: string; px: number }[] = []
     if (colA.length) present.push({ key: 'a', px: 150 })
     if (colB.length) present.push({ key: 'b', px: 214 })
-    present.push({ key: 'c', px: 244 })   // Weight, and Italic + Features as two EQUAL halves (Features' icon, word and caret need ~120px)
+    present.push({ key: 'c', px: 0 })   // Weight over Italic | Features: two EQUAL whole-column spans a gutter apart (below)
     if (colD.length) present.push({ key: 'd', px: 156 })
     present.push({ key: 'r', px: 92 })
     const at: Record<string, CSSProperties> = {}
@@ -832,17 +834,23 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       const { W, cols, g } = geo
       const col = (W - (cols - 1) * g) / cols
       const spanFor = (px: number, from: number) => Math.min(cols - from + 1, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
-      const put = (k: string, start: number, span: number) => {
-        at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span } as CSSProperties
+      const put = (k: string, start: number, span: number, extra?: Record<string, number>) => {
+        at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span, ...(extra ?? {}) } as CSSProperties
       }
       const L = spanFor(54, 1)               // the TRY label: its gutter + the word
       put('lbl', 1, L)
       const x0 = L + 1
       let cur = x0
       for (const it of present) {
-        let s = spanFor(it.px, x0)
+        let s: number, extra: Record<string, number> | undefined
+        if (it.key === 'c') {
+          // Features (icon + word, no caret) is the longer half; Italic gets the same span. The column is
+          // 2k grid columns: Italic = k, Features = k, the house gutter between, Weight across both.
+          const k = Math.max(1, Math.min(Math.floor((cols - x0 + 1) / 2), Math.ceil((100 + g) / (col + g) - 1e-6)))
+          s = 2 * k; extra = { ['--k' as string]: k }
+        } else s = spanFor(it.px, x0)
         if (cur + s - 1 > cols) cur = x0       // whole column wraps to a new band
-        put(it.key, cur, s)
+        put(it.key, cur, s, extra)
         cur += s
       }
     }

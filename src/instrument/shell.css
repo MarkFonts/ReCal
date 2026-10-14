@@ -497,15 +497,26 @@
 .canvas[data-try="float"] .try-lbl { margin: 0; align-items: center; }
 .try-c-r { align-self: end; }
 /* each column: its two rows, a hairline in the gutter after it (not after the last of a band) */
-.try-col { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); row-gap: var(--spacing-02, 6px); align-content: start; }
+/* Each column is a SUBGRID of the block's grid: its pills are placed on the same column lines, so every
+   pill's left and right edge is a column edge by construction, at any width (no measuring). Two
+   30px rows; stacked pills span the whole column, the Italic | Features pair gets k columns each. */
+.try-col {
+  position: relative; display: grid; grid-template-columns: subgrid; column-gap: inherit;
+  grid-template-rows: repeat(2, 30px); row-gap: var(--spacing-02, 6px); align-content: start;
+}
+.try > :not(.try-lbl) { padding-inline: 0; }
+.try-col > * { grid-column: 1 / -1; }
 .try-col::after {
   content: ''; position: absolute; top: 0; bottom: 0; width: 1px;
   right: calc(var(--grid-gutter, 24px) / -2 - .5px); background: var(--border);
 }
 .try-col[data-eol]::after { display: none; }
 .try-col > * { width: 100%; min-width: 0; }
-.try-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-01, 4px); }   /* Italic and Features: equal halves (a grid, so a button's padding can't skew them), spanning the Weight pill exactly */
-.try-row > * { min-width: 0; }
+.try-row { display: contents; }
+.try-col > :first-child:has(+ .try-row) { grid-row: 1; }
+.try-row > * { grid-row: 2; min-width: 0; }
+.try-row > :first-child { grid-column: 1 / span var(--k, 1); }          /* Italic: k columns ... */
+.try-row > :last-child { grid-column: calc(var(--k, 1) + 1) / span var(--k, 1); }   /* ... Features: k, a gutter later */
 .try-col .try-pill, .try-col .style-menu, .try-col .try-pop { width: 100%; }
 .try-col .style-menu-btn, .try-col .try-pop .wm-accent { width: 100%; justify-content: flex-start; }
 .try-row > .wm-accent { justify-content: flex-start; }
@@ -513,14 +524,21 @@
 .canvas[data-try="float"] .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) { padding-bottom: calc(var(--spacing-09, 64px) * 2); }   /* scroll room inside the scroller, so text can clear the controls; no band on the full-bleed scenes */
 /* every control stands on the ground: opaque, so content scrolling behind never shows through */
 .canvas[data-try="float"] .try-pill { background-color: var(--bg); border-radius: var(--radius, 8px); }
-.canvas[data-try="float"] .try .wm-accent, .canvas[data-try="float"] .style-menu-btn,
-.canvas[data-try="float"] .try .preview-reset { background-color: var(--bg); }
+.canvas[data-try="float"] .try .wm-accent, .canvas[data-try="float"] .try .try-btn,
+.canvas[data-try="float"] .try .style-menu-btn, .canvas[data-try="float"] .try .preview-reset { background-color: var(--bg); }
+/* ... in every state: pressed is the raised ground (also opaque), hover keeps the ground, disabled dims by ink not by opacity
+   (an opacity on the pill would let the content behind it show through) */
+.canvas[data-try="float"] .try .try-btn:active:not(:disabled), .canvas[data-try="float"] .try .style-menu-btn:active:not(:disabled),
+.canvas[data-try="float"] .try .preview-reset:active:not(:disabled) { background-color: var(--surface-hi); }
+.canvas[data-try="float"] .try .try-btn:disabled, .canvas[data-try="float"] .try .wm-accent:disabled { opacity: 1; color: var(--text-dim); }
+/* Reset fills its grid span, so its edges are column edges like every other control */
+.canvas[data-try="float"] .try-c-r .preview-reset { margin-left: 0; width: 100%; justify-content: center; }
 /* the tab row on the same grid: its text starts at the column-1 content edge, exactly where TRY does */
 .canvas[data-try="float"] .canvas-bar { padding-inline: 0; }
 .canvas[data-try="float"] .canvas-bar .modebar { margin-inline-start: calc(var(--tab-pad, 8px) * -1); }
 .canvas[data-try="float"] .mode-row { padding-left: var(--grid-gutter, 24px); }
 /* ?grid draws the columns over the canvas only (the rail is off the grid) */
-body:has(.canvas[data-try="float"]) .wm-ov-cols { left: 264px; }
+body:has(.canvas[data-try="float"]) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-right, 0px); }
 /* a control icon: absolute inside the pill, the label shifted clear of it */
 .try-pill { position: relative; }
 .try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
