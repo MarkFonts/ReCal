@@ -47,6 +47,7 @@ export interface InstrumentState {
   shippedThresholds: Record<string, number[]>   // SHIPPED GEOM swap map
   defaults: DefaultsLayer
   preview: PreviewLayer
+  previewOpsz: number | null                    // ● Try-bar optical size, in the preview font's (scaled) opsz space; null = auto (follows type size)
   stockHold: boolean                            // hold-to-compare: effective() → SHIPPED
   geomDragging: boolean                         // rail GEOM slider held: flash holds color, fades on release
   thresholdDrag: { glyph: string; idx: number; value: number } | null   // Type Matrix boundary mid-drag (live value, not yet committed)
@@ -112,6 +113,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       vmetrics: cloneVMetrics(DEFAULT_VMETRICS),
     },
     preview: {},
+    previewOpsz: null,
     stockHold: false,
     geomDragging: false,
     thresholdDrag: null,
@@ -141,7 +143,11 @@ export const liveThresholds = (s: InstrumentState): Record<string, number[]> => 
   if (!d || s.stockHold) return t
   return { ...t, [d.glyph]: (t[d.glyph] ?? []).map((v, i) => (i === d.idx ? d.value : v)) }
 }
-export const previewDrifted = (s: InstrumentState): boolean => Object.keys(s.preview).length > 0
+export const previewDrifted = (s: InstrumentState): boolean => Object.keys(s.preview).length > 0 || s.previewOpsz !== null
+// The Try bar's opsz as the scenes should apply it: held back while comparing to stock.
+// Kept out of the preview AxisMap on purpose -- that map feeds every renderVarSettings
+// caller, and auto opsz is the absence of a value, not a number.
+export const livePreviewOpsz = (s: InstrumentState): number | null => (s.stockHold ? null : s.previewOpsz)
 
 // Narrator state tag (§Origin mechanisms): STOCK while held, else ● if drifted, else ◆.
 export type StateTag = 'YOUR' | 'PREVIEWING' | 'STOCK'
@@ -178,6 +184,7 @@ export type Action =
   | { type: 'init'; shipped: AxisMap }                        // re-seed from live axisInfo
   | { type: 'setDefaultAxis'; tag: string; value: number }    // rail ◆ pin; clears matching ●
   | { type: 'setPreview'; tag: string; value: number }        // dock / Previewer ●
+  | { type: 'setPreviewOpsz'; value: number | null }          // Try bar optical size (null = auto)
   | { type: 'clearPreview' }                                  // Return pill
   | { type: 'setStockHold'; held: boolean }                   // hold-to-compare
   | { type: 'setGeomDragging'; value: boolean }               // rail GEOM slider pointer down/up
@@ -216,7 +223,7 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
     case 'setPreview':
       return { ...s, preview: { ...s.preview, [a.tag]: a.value } }
     case 'clearPreview':
-      return previewDrifted(s) ? { ...s, preview: {} } : s
+      return previewDrifted(s) ? { ...s, preview: {}, previewOpsz: null } : s
     case 'setStockHold':
       return { ...s, stockHold: a.held }
     case 'setCompareOn':
@@ -233,7 +240,10 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
     case 'setThresholds':
       return { ...s, defaults: { ...s.defaults, glyphThresholds: a.thresholds } }
     case 'setOpszMultiplier':
-      return { ...s, defaults: { ...s.defaults, opszMultiplier: a.value } }
+      /* The Try bar's opsz lives in the scaled range, so a new scale invalidates it. */
+      return { ...s, defaults: { ...s.defaults, opszMultiplier: a.value }, previewOpsz: null }
+    case 'setPreviewOpsz':
+      return s.previewOpsz === a.value ? s : { ...s, previewOpsz: a.value }
     case 'setFreezeOpsz':
       return { ...s, defaults: { ...s.defaults, freezeOpsz: a.value } }
     case 'setFrozenOpszValue':

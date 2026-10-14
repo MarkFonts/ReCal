@@ -12,7 +12,7 @@ import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
 } from './store'
-import { renderVarSettings } from './render'
+import { renderVarSettings, clampTryOpsz } from './render'
 import { BOOT } from './boot'
 import {
   Modebar, Scene, SceneControls, FEATURE_CHIPS, SCENES, type SceneMode,
@@ -587,15 +587,17 @@ function TryPop({ label, end, children }: { label: string; end?: boolean; childr
   )
 }
 
-function TryDial({ label, value, min, max, step, suffix, disabled, display, onChange }: {
-  label: string; value: number; min: number; max: number; step: number
-  suffix?: string; disabled?: boolean; display?: string
-  onChange: (n: number) => void
+function TryDial({ label, value, min, max, step, suffix, disabled, display, title, autoValue, onChange }: {
+  label: string; value: number | 'auto'; min: number; max: number; step: number
+  suffix?: string; disabled?: boolean; display?: string; title?: string
+  autoValue?: number                      // set → the dial can rest at 'auto' (onChange then gets 'auto' too)
+  onChange: (n: number | 'auto') => void
 }) {
   return (
-    <div className="try-pill">
+    <div className={`try-pill${autoValue !== undefined ? ' try-pill--auto' : ''}`} title={title}>
       <AxisSlider variant="track" label={label} value={value} min={min} max={max} step={step}
-        suffix={suffix} disabled={disabled} display={display} onChange={v => onChange(v as number)} />
+        suffix={suffix} disabled={disabled} display={display}
+        allowAuto={autoValue !== undefined} autoValue={autoValue} onChange={onChange} />
     </div>
   )
 }
@@ -634,12 +636,26 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       <span className="try-lbl">Try</span>
       {/* Proofing controls (not ◆ defaults) → the track variant with no diamond/marker/reference,
           as font-proofer's TYPOGRAPHY has them. */}
-      {has('size') && <TryDial label="Size" value={size} min={16} max={200} step={1} suffix="px" onChange={setSize} />}
-      {has('tracking') && <TryDial label="Tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={setTracking} />}
-      {has('leading') && <TryDial label="Leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={setLeading} />}
-      {rows.length > 0 && <span className="try-sep" aria-hidden="true" />}
+      {has('size') && <TryDial label="Size" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />}
+      {/* Preview-only optical size, right after Size. At rest it reads "auto" (the browser
+          follows the type size); moved, it overrides opsz in the preview text. The range is the
+          preview font's relabeled axis (stock × Optical scale). A frozen font has no opsz axis,
+          and a compared webfont sets its own, so both disable it. Never baked: it is not in
+          the ◆ layer and buildConfig never reads it. */}
+      {!vmActive && (
+        <TryDial label="Optical size" value={state.previewOpsz ?? 'auto'}
+          min={8 * state.defaults.opszMultiplier} max={45 * state.defaults.opszMultiplier} step={1}
+          autoValue={clampTryOpsz(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier)}
+          disabled={state.defaults.freezeOpsz || !!cmp}
+          display={state.defaults.freezeOpsz ? String(state.defaults.frozenOpszValue ?? 14) : cmp ? '—' : undefined}
+          title={state.defaults.freezeOpsz ? `The font is frozen at ${state.defaults.frozenOpszValue ?? 14}` : cmp ? 'The compared font sets its own optical size' : undefined}
+          onChange={v => dispatch({ type: 'setPreviewOpsz', value: v === 'auto' ? null : v })} />
+      )}
+      {has('tracking') && <TryDial label="Tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />}
+      {has('leading') && <TryDial label="Leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />}
+      {(rows.length > 0 || !vmActive) && <span className="try-sep" aria-hidden="true" />}
       <TryDial label="Weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
-        display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v })} />
+        display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
       <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
         aria-pressed={merged.ital >= 0.5} disabled={naItal}
         onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}>Italic</AccentButton>
@@ -681,10 +697,10 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
                 onHyphenate={on => patchPara({ hyphenate: on })} />
             </>
           )}
-          <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />
+          <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
         </TryPop>
       )}
-      {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />}
+      {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />}
       <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
         <ResetIcon /><span className="preview-reset-text">Reset</span>
       </button>

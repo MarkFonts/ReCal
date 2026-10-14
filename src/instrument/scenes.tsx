@@ -7,8 +7,8 @@ import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { Icon, placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fitOptionsFor, PARA_STYLE_DEFAULTS, PARA_STYLE_ORDER, PARA_STYLE_LABEL, loadSpecimen, specimenChunks, SpecimenNav, type ParaStyleBase, type ParaStyleKey, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
-import { effectiveAxes, effectiveThresholds } from './store'
-import { renderVarSettings, opszForSize, opszCss, compareStyle } from './render'
+import { effectiveAxes, effectiveThresholds, livePreviewOpsz } from './store'
+import { renderVarSettings, opszForSize, opszCss, clampTryOpsz, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
@@ -521,7 +521,7 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
 
 function Words({ size, ls, leading, featStr }: SceneProps) {
   const { state } = useInstrument()
-  const op = opszCss(state.defaults, true)
+  const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state))
   const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   // Words/Scale only swap for a live webfont; static-SVG referents render only their
   // Paragraph specimen, so here they fall back to Cal Sans.
@@ -618,7 +618,7 @@ function CompareSvg({ url }: { url: string }) {
 function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: SceneProps) {
   const { state } = useInstrument()
   const axes = effectiveAxes(state)
-  const op = opszCss(state.defaults, true)
+  const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state))
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, op.renderOpts)
   const italVs = renderVarSettings({ ...axes, ital: 1 }, op.renderOpts)
   // Comparing to a referent with a live webfont → restyle the blocks (compareStyle).
@@ -807,7 +807,8 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   // Freeze pins every size to the frozen opsz; otherwise the waterfall shows opsz
   // following size (the export's multiplier). Both live in CSS now — no re-bake.
   const frozen = state.defaults.freezeOpsz ? Math.min(Math.max(state.defaults.frozenOpszValue ?? 14, 8), 45) : null
-  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? opszForSize(px, mult) })
+  const tryOpsz = livePreviewOpsz(state)
+  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? (tryOpsz !== null ? clampTryOpsz(tryOpsz, mult) : opszForSize(px, mult)) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
   const [head, setHead] = useState(HEAD_WORD)
@@ -856,7 +857,7 @@ function loadCmap(): Promise<CmapRanges | null> {
 
 function Glyphs({ featStr, glyphSet }: SceneProps) {
   const { state } = useInstrument()
-  const op = opszCss(state.defaults, true)
+  const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state))
   const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   const { flashes, clear, dragging } = useGridFlash()
   const [ranges, setRanges] = useState<CmapRanges | null>(null)

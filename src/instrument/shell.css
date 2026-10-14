@@ -408,6 +408,7 @@
   color: var(--text-dim); margin-right: var(--spacing-02, 6px);
 }
 .try-pill { width: 9rem; }
+.try-pill--auto { width: 13rem; }     /* room for the label, the named auto switch and the value */
 .try-sep { width: 1px; height: 24px; background: var(--border); margin: 0 var(--spacing-02, 6px); }
 /* The non-dial pills: the same box as the dial bars beside them (32px, 1px --border,
    --radius). A chip that is ON is the primitive's AccentButton (look q5) and carries no .try-btn;
