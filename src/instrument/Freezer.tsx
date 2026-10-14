@@ -48,9 +48,10 @@ const FIGURE_ITEMS: Item[] = [
   { tag: 'pnum', name: 'Proportional', sample: '123' },
   { tag: 'zero', name: 'Slashed zero', sample: '0' },
 ]
-const LETTER_ITEMS: Item[] = [
-  { tag: 'case', name: 'Case-sensitive', sample: 'H-' },
-]
+// Off the Freezer: freezing `case` only makes sense if every letter were also forced to all caps, which ReCal won't do.
+// const LETTER_ITEMS: Item[] = [
+//   { tag: 'case', name: 'Case-sensitive', sample: 'H-' },
+// ]
 
 // The 6/9 and ae character variants carry no `families`, so they get a sample too.
 const CV_SAMPLE: Record<string, string> = {
@@ -69,7 +70,7 @@ const cvItem = (tag: string): Item | null => {
 // Stylistic sets in their natural ssNN order.
 const SECTIONS: Section[] = [
   { title: 'Figures', items: FIGURE_ITEMS },
-  { title: 'Letters', items: LETTER_ITEMS },
+  // { title: 'Letters', items: LETTER_ITEMS },   // empty without `case`, so no heading
   {
     title: 'Stylistic sets',
     items: SUBS.stylisticSets.map(ss => ({ tag: ss.tag, name: nameFor(ss), sample: sampleFor(ss) })),
