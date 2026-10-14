@@ -6,7 +6,7 @@ type MainToWorker =
   | { type: 'loadFont'; fontBytes: ArrayBuffer }
   | { type: 'loadFlexAvar'; fontBytes: ArrayBuffer }
   | { type: 'applyConfig'; configJson: string; id: number }
-  | { type: 'previewFont'; thresholdsJson: string; autoAscender?: boolean; opszMultiplier?: number; freezeOpsz?: boolean; frozenOpszValue?: number | null }
+  | { type: 'previewFont'; thresholdsJson: string; frozenFeatures?: string[]; autoAscender?: boolean; opszMultiplier?: number; freezeOpsz?: boolean; frozenOpszValue?: number | null }
   | { type: 'measureWords'; wordsJson: string; geomValuesJson: string; axisDefaultsJson: string }
 
 type WorkerToMain =
@@ -393,7 +393,42 @@ _LIG = {'fi': 'f', 'fl': 'f', 'f_f_i': 'f', 'f_f_l': 'f', 'f_t': 'f'}
 # Each band gets ONE fresh SingleSubst lookup containing exactly the glyphs active
 # in that band (incl. accented siblings) — no shared-lookup carryover. This both
 # fixes the live preview and is reused by the download path so they match.
-def _rebuild_fv(font, thresh):
+#
+# 'frozen' = the frozen ssXX/cvXX tags. They live INSIDE these band lookups, which is
+# what makes GEOM win: a band's lookup is  frozen forms  ∪  rclt swaps, rclt over frozen,
+# so a glyph the user's GEOM swaps keeps its GEOM form and a glyph GEOM leaves on the
+# master takes the frozen form. Preview and bake both call this, so they cannot disagree.
+#
+# Stock opsz conditions are kept: the stock font has records that only apply at certain
+# opsz (e.g. A11Y 'a' holds through its default band at opsz 8). Those are read back as
+# per-glyph "band j shows suffix S in this opsz class" and re-applied to the user's own
+# bands, so only the GEOM ranges move with the thresholds.
+def _is_lookup_frozen(tag):
+    import re
+    return re.match('^(ss|cv)[0-9][0-9]$', tag) is not None
+
+def _frozen_forms(font, tags):
+    # base -> form for the frozen ss/cv tags, in the order the browser would apply them
+    # (lookup index), skipping the .rclt*-suffixed keys: those only say "this set also
+    # re-skins the GEOM form", and GEOM winning means they never fire.
+    gt = font['GSUB'].table
+    ordered = []
+    for t in tags:
+        idx = [li for fr in gt.FeatureList.FeatureRecord if fr.FeatureTag == t for li in fr.Feature.LookupListIndex]
+        if idx:
+            ordered.append((min(idx), t))
+    ordered.sort()
+    fms = [_feature_map(font, t) for _, t in ordered]
+    out = {}
+    for b in {k for fm in fms for k in fm if '.rclt' not in k}:
+        cur = b
+        for fm in fms:
+            cur = fm.get(cur, cur)
+        if cur != b:
+            out[b] = cur
+    return out
+
+def _rebuild_fv(font, thresh, frozen=()):
     import unicodedata
     from fontTools.ttLib.tables import otTables as ot
     gvars = font['fvar'].axes
@@ -406,11 +441,15 @@ def _rebuild_fv(font, thresh):
         v = min(max(float(v), gmin), gmax)
         d = (gdef - gmin) if v <= gdef else (gmax - gdef)
         return (v - gdef) / d if d else 0.0
+    def n2u(n):
+        return gdef + n * ((gdef - gmin) if n < 0 else (gmax - gdef))
     gsub = font['GSUB'].table
     LK = gsub.LookupList.Lookup
+    best = font.getBestCmap() or {}
     rev = {}
-    for cp, gn in (font.getBestCmap() or {}).items():
+    for cp, gn in best.items():
         rev.setdefault(gn, cp)
+    ff = _frozen_forms(font, [t for t in (frozen or []) if _is_lookup_frozen(t)])
     # collect base -> variant glyph name, per suffix, across all existing lookups
     sub_map = {s: {} for s in _SUF}
     for lk in LK:
@@ -442,30 +481,94 @@ def _rebuild_fv(font, thresh):
             h = headline(b)
             if h:
                 groups.setdefault(h, set()).add(b)
-    def variant_at(h, geom):
+    def variant_idx(h, geom):
         ts = thresh.get(h, [])
-        vi = min(sum(1 for t in ts if geom >= float(t)), len(_GV[h]) - 1)
-        return _GV[h][vi]
+        return min(sum(1 for t in ts if geom >= float(t)), len(_GV[h]) - 1)
+
+    # ── stock opsz classes ────────────────────────────────────────────────────────
+    # A stock record may carry conditions on axes other than GEOM (only opsz does). Group
+    # the records by that extra condition set, then for each class (other than the plain
+    # one) find where it shows a different suffix than the plain class does, as
+    # (glyph, plain band index) -> suffix.
+    stock = []
+    sfv = getattr(gsub, 'FeatureVariations', None)
+    if sfv is not None:
+        for rec in sfv.FeatureVariationRecord:
+            conds = [c for c in rec.ConditionSet.ConditionTable if getattr(c, 'Format', 1) == 1]
+            m = {}
+            for sr in rec.FeatureTableSubstitution.SubstitutionRecord:
+                for li in sr.Feature.LookupListIndex:
+                    for st in LK[li].SubTable:
+                        m.update(getattr(st, 'mapping', {}) or {})
+            stock.append((conds, m))
+    classes = {}
+    for conds, _m in stock:
+        extra = tuple(sorted((c.AxisIndex, c.FilterRangeMinValue, c.FilterRangeMaxValue)
+                             for c in conds if c.AxisIndex != gi))
+        if extra:
+            classes[extra] = True
+    def stock_map(extra, geom_u):
+        rep = {ax: (lo + hi) / 2.0 for ax, lo, hi in extra}
+        gn = u2n(geom_u)
+        for conds, m in stock:
+            if all((c.FilterRangeMinValue <= gn <= c.FilterRangeMaxValue) if c.AxisIndex == gi
+                   else (c.FilterRangeMinValue <= rep.get(c.AxisIndex, 0.0) <= c.FilterRangeMaxValue)
+                   for c in conds):
+                return m
+        return {}
+    def stock_suffix(extra, h, x):
+        v = stock_map(extra, x).get(best.get(ord(h)))
+        return v.rsplit('.', 1)[1] if v and '.' in v and v.rsplit('.', 1)[1] in _SUF else 'default'
+    overrides = {}     # extra -> {(glyph, band index): suffix}
+    for extra in classes:
+        ov = {}
+        for h in _GV:
+            if best.get(ord(h)) is None:
+                continue
+            runs, idx, last, per = [], [], None, []
+            for xi in range(100):
+                s = stock_suffix((), h, xi + 0.5)
+                if s != last:
+                    runs.append(s); last = s
+                idx.append(len(runs) - 1)
+                per.append(s)
+            if runs != _GV[h]:
+                continue
+            found = {}
+            for xi in range(100):
+                cs = stock_suffix(extra, h, xi + 0.5)
+                if cs != per[xi]:
+                    found.setdefault(idx[xi], set()).add(cs)
+            for j, ss in found.items():
+                if len(ss) == 1:
+                    ov[(h, j)] = next(iter(ss))
+        if ov:
+            overrides[extra] = ov
+
     all_t = sorted({float(x) for ts in thresh.values() for x in ts})
     bounds = [0.0] + all_t + [100.0]
     segs = [(bounds[i], bounds[i + 1]) for i in range(len(bounds) - 1)]
     rclt = [i for i, r in enumerate(gsub.FeatureList.FeatureRecord) if r.FeatureTag == 'rclt']
     if not rclt or not segs:
         return
-    gsub.Version = 0x00010001
-    fv = ot.FeatureVariations()
-    fv.Version = 0x00010000
-    fv.FeatureVariationRecord = []
-    for lo, hi in segs:
-        mid = (lo + hi) / 2.0
+    def band_map(mid, ov):
         mapping = {}
         for h in _GV:
-            suf = variant_at(h, mid)
+            j = variant_idx(h, mid)
+            suf = ov.get((h, j), _GV[h][j])
             if suf == 'default':
                 continue
             for b in groups.get(h, ()):  # active glyphs only; inactive omitted
                 if b in sub_map[suf]:
                     mapping[b] = sub_map[suf][b]
+        merged = dict(ff)        # frozen forms for everything GEOM leaves on the master…
+        merged.update(mapping)   # …and GEOM's own swap wins wherever it applies
+        return merged
+    gsub.Version = 0x00010001
+    fv = ot.FeatureVariations()
+    fv.Version = 0x00010000
+    fv.FeatureVariationRecord = []
+    def add_record(mapping, lo, hi, extra):
         sub = ot.SingleSubst()
         sub.mapping = mapping
         nlk = ot.Lookup()
@@ -484,6 +587,13 @@ def _rebuild_fv(font, thresh):
         cond.FilterRangeMinValue = u2n(lo)
         cond.FilterRangeMaxValue = u2n(hi)
         cs.ConditionTable.append(cond)
+        for ax, mn, mx in extra:        # the stock opsz range, untouched
+            c2 = ot.ConditionTable()
+            c2.Format = 1
+            c2.AxisIndex = ax
+            c2.FilterRangeMinValue = mn
+            c2.FilterRangeMaxValue = mx
+            cs.ConditionTable.append(c2)
         rec.ConditionSet = cs
         fts = ot.FeatureTableSubstitution()
         fts.Version = 0x00010000
@@ -498,17 +608,29 @@ def _rebuild_fv(font, thresh):
             fts.SubstitutionRecord.append(sr)
         rec.FeatureTableSubstitution = fts
         fv.FeatureVariationRecord.append(rec)
+    for lo, hi in segs:
+        mid = (lo + hi) / 2.0
+        plain = band_map(mid, {})
+        # opsz-conditioned records first (first match wins); only where they differ
+        for extra, ov in overrides.items():
+            cm = band_map(mid, ov)
+            if cm != plain:
+                add_record(cm, lo, hi, extra)
+        add_record(plain, lo, hi, ())
     gsub.LookupList.LookupCount = len(LK)
     gsub.FeatureVariations = fv
 
+
 # ── Feature freezer ──────────────────────────────────────────────────────────────
-# "Freeze" a SingleSubst OpenType feature (ssXX/cvXX/tnum/zero/case/…) by fusing the
-# form it produces into the default cmap, so the exported font shows it with no
+# "Freeze" a SingleSubst OpenType feature (tnum/pnum/zero/case/…) by fusing the form it
+# produces into the default cmap, so the exported font shows it with no
 # font-feature-settings. Replicates the browser exactly: apply rclt (at the baked GEOM
 # default) THEN each frozen feature in order to each codepoint's glyph — the same
 # composition font-feature-settings does live, so what you preview is what you bake.
 # Only SingleSubst lookups fuse (glyph→glyph); ligature/contextual features are a no-op
 # here and aren't offered in the UI.
+# ssXX/cvXX are NOT fused here: a cmap rewrite makes the ss form beat the GEOM swap, so
+# they ride inside the rebuilt rclt lookups instead (_rebuild_fv's 'frozen'), where GEOM wins.
 
 # The base→variant map the GEOM rclt substitution yields at a given GEOM (userspace),
 # read straight back out of the FeatureVariations _rebuild_fv just built.
@@ -528,6 +650,8 @@ def _rclt_map_at(font, geom):
     d = (gdef - gmin) if v <= gdef else (gmax - gdef)
     gn = (v - gdef) / d if d else 0.0
     for rec in fv.FeatureVariationRecord:
+        if any(getattr(c, 'AxisIndex', None) != gi for c in rec.ConditionSet.ConditionTable):
+            continue   # opsz-conditioned records (kept from stock) don't apply at the default opsz
         conds = [c for c in rec.ConditionSet.ConditionTable if getattr(c, 'AxisIndex', None) == gi]
         if conds and all(c.FilterRangeMinValue <= gn <= c.FilterRangeMaxValue for c in conds):
             m = {}
@@ -559,7 +683,7 @@ def _feature_map(font, tag):
     return m
 
 def _freeze_features(font, tags, geom):
-    tags = [t for t in (tags or [])]
+    tags = [t for t in (tags or []) if not _is_lookup_frozen(t)]
     if not tags:
         return
     rmap = _rclt_map_at(font, geom)
@@ -768,6 +892,7 @@ if _fav is not None and getattr(_fav, 'majorVersion', 1) >= 2:
 
     } else if (msg.type === 'previewFont') {
       pyodide.globals.set('_thresholds_json', msg.thresholdsJson)
+      pyodide.globals.set('_frozen_json', JSON.stringify(msg.frozenFeatures ?? []))
       pyodide.globals.set('_auto_ascender', !!msg.autoAscender)
       pyodide.globals.set('_opsz_mult', Number(msg.opszMultiplier ?? 1))
       pyodide.globals.set('_freeze_opsz', !!msg.freezeOpsz)
@@ -780,7 +905,7 @@ from fontTools.varLib.instancer import instantiateVariableFont
 def _do_preview():
     thresh = json.loads(_thresholds_json)
     fnt = TTFont(io.BytesIO(_font_data))
-    _rebuild_fv(fnt, thresh)
+    _rebuild_fv(fnt, thresh, json.loads(_frozen_json))   # frozen ss/cv ride in the rclt lookups, same as the bake
     _strip_avar2(fnt)   # instancer can't partial-instance avar2; re-graft below if needed
     # opsz: rescale the axis by the multiplier so font-optical-sizing:auto remaps to
     # point size in the preview EXACTLY as the export does (axis defaults stay stock —
@@ -925,14 +1050,15 @@ _t_parse = time.perf_counter()
 # Bake the user's glyph thresholds into FeatureVariations using the same rebuild
 # as the live preview, BEFORE instancing — so the default shift re-normalizes
 # the new conditions. This closes the "what you preview is what you get" gap.
+frozen_features = config.get('frozenFeatures', [])
 if thresh:
-    _rebuild_fv(font, thresh)
+    _rebuild_fv(font, thresh, frozen_features)
 _t_fv = time.perf_counter()
 
-# Fuse any frozen features into the default cmap (before instancing — cmap is
-# axis-independent). Uses the baked GEOM default to pick the rclt form each feature
-# composes onto, so preview and export agree at that GEOM.
-frozen_features = config.get('frozenFeatures', [])
+# Fuse the frozen figure-style features (tnum/pnum/zero) into the default cmap (before
+# instancing — cmap is axis-independent). Uses the baked GEOM default to pick the rclt
+# form each feature composes onto. Frozen ss/cv are skipped here: _rebuild_fv above
+# already put them in the rclt lookups, so a GEOM swap on the same glyph wins.
 if frozen_features:
     _freeze_features(font, frozen_features, float(new_defaults.get('GEOM', 25)))
 _t_freeze = time.perf_counter()
