@@ -918,6 +918,24 @@
   background: var(--surface-press);
 }
 
+/* Acid-FILLED controls (Download, an on chip): the fill is the signal, so it never changes
+   color. Hover is a non-color cue, a 1px lift, with App.css's global button:hover
+   brightness(1.12) turned off (it paled the acid to a yellower fill). Pressed stays FILLED
+   (the generic .floor-btn:active above hollows to a stroke; restated here) and sits 1px
+   down. Specificity matches those rules and this block comes later. */
+.floor-btn--primary:hover:not(:disabled),
+.try-btn.on:hover:not(:disabled) {
+  filter: none;
+  transform: translateY(-1px);
+}
+.floor-btn--primary:active:not(:disabled),
+.try-btn.on:active:not(:disabled) {
+  filter: none;
+  background: var(--signal-acid);
+  box-shadow: none;
+  transform: translateY(1px);
+}
+
 /* ── The acid signal, opted in (--signal-acid, tokens.css) ──
    --signal and --signal-ink stay pinned to grey, so the package's controls read grey. These
    are the places Mark picked that the package draws, reached from here because an unlayered
