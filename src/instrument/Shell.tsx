@@ -158,6 +158,23 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     if (d.freezeOpsz && d.autoAscender) { dispatch({ type: 'setFreezeOpsz', value: false }); setOpszNote(true) }
     if (!d.autoAscender) setOpszNote(false)
   }, [d.freezeOpsz, d.autoAscender, dispatch])
+  // Scroll affordance: the footer's fade (shell.css, .rail-dl::before) says "more below", so it
+  // is only shown while there IS more below. Toggles data attributes on the rail itself (no
+  // re-render): data-more = content past the footer, absent when scrolled to the end.
+  useEffect(() => {
+    const el = railRef.current
+    if (!el) return
+    const sync = () => {
+      el.toggleAttribute('data-more', el.scrollHeight - el.scrollTop - el.clientHeight > 2)
+    }
+    sync()
+    el.addEventListener('scroll', sync, { passive: true })
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    const stack = el.querySelector('.rail-stack')
+    if (stack) ro.observe(stack)
+    return () => { el.removeEventListener('scroll', sync); ro.disconnect() }
+  }, [])
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
