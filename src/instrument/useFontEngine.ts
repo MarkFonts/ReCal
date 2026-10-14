@@ -14,6 +14,13 @@ import calSansFlexUrl from '../../shared/fonts/CalSansFlexVF.ttf?url'
 export interface ExportConfig {
   axisDefaults: Record<string, number>   // ◆ axis defaults, EXCLUDING opsz
   opszMultiplier: number
+  /* opsz DEFAULT shift (the axis stays, min/max unchanged; only where it rests moves).
+     Given in the final opsz space, i.e. AFTER opszMultiplier. null/absent = stock (14).
+     Ignored when freezeOpsz pins the axis. With autoAscender on, the baked avar2 opsz→YTAS
+     ramp is remapped into the new normalization so the ascender follows the same sizes as
+     stock. If a remap were ever impossible the bake rejects with a one-line "Auto ascender: …"
+     error (the `error` this hook returns). Statics pin opsz at: frozen value, else this, else 14. */
+  opszDefault?: number | null
   freezeOpsz: boolean
   frozenOpszValue: number | null          // opsz to pin to when frozen (null → axis default)
   autoAscender: boolean
@@ -21,7 +28,7 @@ export interface ExportConfig {
   frozenFeatures: string[]               // ◆ ssXX/cvXX/tnum/… fused into the default + stripped
   vmetrics: VMetrics                     // ◆ OS/2 + hhea vertical metrics
   statics?: boolean                      // also cut wght 400/500/600/700 (× italic if the font has `ital`) → .zip
-  familyName?: string                    // family for the statics' names + file names (default 'ReCal Sans')
+  familyName?: string                    // build name: the VF's internal family in EVERY bake, and the statics' names + file names (default 'ReCal Sans')
 }
 
 // What a bake yields: the lone variable TTF, or — with `statics` — a .zip holding it plus
