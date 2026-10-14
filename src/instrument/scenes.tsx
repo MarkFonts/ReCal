@@ -13,6 +13,7 @@ import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWith
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
 import { SUBS } from '../data/substitutions'
+import { variantIndex, groupKeyOf } from './lanes'
 import { BOOT, type CompareSpec } from './boot'
 import { effectiveLineHeightEm, capShiftEm } from './vmetrics'
 import calSansUrl from '../../shared/fonts/CalSansVF.ttf?url'
@@ -189,18 +190,6 @@ export type SceneProps = {
 // so the browser tracks opsz to each element's rendered size (per font-proofer).
 const optical = (auto: boolean): 'auto' | 'none' => (auto ? 'auto' : 'none')
 
-// Which variant a glyph shows at a given GEOM = how many of its swap thresholds
-// GEOM has passed (matches the non-HOI font's rclt band edges in GROUP_DEFS).
-const variantIndex = (geom: number, thresholds: number[]): number =>
-  thresholds.reduce((n, t) => n + (geom >= t ? 1 : 0), 0)
-
-const SWAP_GLYPHS = new Set(GROUP_DEFS.map(d => d.glyph))
-
-// Resolve a character to its swap GROUP key (the GROUP_DEFS representative), so
-// diacritic composites flash with their base group: à→a, ç→c, Ç→C, ª→a. Composites
-// share their base's `rclt` condition, so they inherit its thresholds/zone/color.
-// NFKD handles diacritics + compatibility forms (ª→a); EXTRA_MEMBERS covers
-// non-decomposing look-alikes. Returns undefined for non-swap glyphs.
 // Font-derived swap zone → color (matches the GROUP_DEFS zone palette). '-'/'U' → none.
 const ZONE_COLOR = ZONE_COLOR_SHORT
 // Codepoint behind a grid cell's char (skip the ◌ U+25CC carrier on combining marks).
@@ -210,14 +199,6 @@ const cpOf = (ch: string): number => (ch.charCodeAt(0) === 0x25CC ? ch.codePoint
 const GRID_ENTRIES = Object.entries(GRID_SWAPS).map(([key, s]) => ({
   key, t: s.t, colors: [...s.z].map(z => ZONE_COLOR[z] ?? null),
 }))
-
-const EXTRA_MEMBERS: Record<string, string> = { 'ɑ': 'a' }
-const groupKeyOf = (ch: string): string | undefined => {
-  if (SWAP_GLYPHS.has(ch)) return ch
-  const base = ch.normalize('NFKD')[0]
-  if (base && SWAP_GLYPHS.has(base)) return base
-  return EXTRA_MEMBERS[ch]
-}
 
 type Flashes = Record<string, { color: string; nonce: number }>
 

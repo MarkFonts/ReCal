@@ -13,7 +13,8 @@
 // the frozen card's outline and name are gold here, and in the specimen the glyphs a freeze
 // governs flash gold when you toggle it or drag GEOM (see useFrozenGold in scenes).
 import { useInstrument } from './InstrumentProvider'
-import { effectiveAxes } from './store'
+import { effectiveAxes, liveThresholds } from './store'
+import { freezeConflicts, conflictCardLine, conflictPanelNote, type Conflict } from './freezeConflicts'
 import { renderVarSettings } from './render'
 import { SUBS } from '../data/substitutions'
 import type { FeatureSet } from '../data/substitutions'
@@ -86,6 +87,15 @@ export const freezerName = (tag: string): string => NAME_BY_TAG[tag] ?? cvItem(t
 export function Freezer() {
   const { state, dispatch } = useInstrument()
   const frozen = state.defaults.frozenFeatures
+  // A frozen set the user's own GEOM swaps cover is hidden at their default GEOM (GEOM wins
+  // over a frozen form). Computed from the live thresholds, so it follows a matrix drag.
+  const thr = liveThresholds(state)
+  const geom = state.defaults.axes.GEOM
+  const conflictsOf = (tag: string): Conflict[] => {
+    const f = SUBS.stylisticSets.find(x => x.tag === tag) ?? SUBS.charVariants.find(x => x.tag === tag)
+    return f && frozen.includes(tag) ? freezeConflicts(f, thr, geom) : []
+  }
+  const hidden = frozen.map(tag => ({ tag, name: freezerName(tag), conflicts: conflictsOf(tag) })).filter(h => h.conflicts.length)
   // Render the sample at the current ◆ GEOM so "before" shows the form the user is
   // actually getting now; opsz pinned at 14 for a stable display size (matches Matrix).
   const vs = renderVarSettings(effectiveAxes(state), {
@@ -113,12 +123,15 @@ export function Freezer() {
         </button>
       </div>
 
+      {hidden.length > 0 && <p className="freezer-conflict" role="status">{conflictPanelNote(hidden)}</p>}
+
       {sections.map(section => (
         <div className="freezer-section" key={section.title}>
           <span className="freezer-section-title">{section.title}</span>
           <div className="freezer-grid">
             {section.items.map(it => {
               const on = frozen.includes(it.tag)
+              const hid = hidden.find(h => h.tag === it.tag)
               return (
                 <button key={it.tag} className={`freezer-card${on ? ' on' : ''}`}
                   onClick={() => toggle(it.tag)}
@@ -129,6 +142,7 @@ export function Freezer() {
                   </span>
                   <span className="freezer-card-glyph" style={{ ...base, fontFeatureSettings: `'rclt' 1, '${it.tag}' 1` }}>{it.sample}</span>
                   <span className="freezer-card-name">{it.name.replace(/\//g, '/\u200b')}</span>
+                  {hid && <span className="freezer-card-warn">{conflictCardLine(hid.conflicts)}</span>}
                 </button>
               )
             })}

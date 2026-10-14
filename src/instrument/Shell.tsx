@@ -36,6 +36,7 @@ const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: stri
 
 const SIZE_DEFAULT = 88
 const FEATS_DEFAULT = ['liga']   // default-on OpenType features (ligatures)
+const LOOKUP_FROZEN = /^(ss|cv)\d\d$/   // frozen tags that ride in the rebuilt rclt lookups, not CSS
 const featsDrifted = (feats: Set<string>): boolean =>
   feats.size !== FEATS_DEFAULT.length || !FEATS_DEFAULT.every(t => feats.has(t))
 
@@ -856,9 +857,10 @@ export default function Shell() {
   // OpenType feature chips are global preview controls — they live in the play bar
   // and apply to every scene's text.
   const [feats, setFeats] = useState<Set<string>>(new Set(FEATS_DEFAULT))
-  // Frozen ss/cv (the ◆ freezer) render live too — union them into the specimen's
-  // feature string so the preview shows exactly what the bake will fuse into the default.
-  const activeFeats = [...new Set([...feats, ...state.defaults.frozenFeatures])]
+  // Frozen figure features (tnum/pnum/zero) render live through the feature string. Frozen
+  // ss/cv do NOT: they live inside the rebuilt preview face's rclt lookups (the bake builds
+  // the same ones), because a CSS feature would let the ss form beat the user's GEOM swap.
+  const activeFeats = [...new Set([...feats, ...state.defaults.frozenFeatures.filter(t => !LOOKUP_FROZEN.test(t))])]
   const featStr = ["'rclt' 1", ...activeFeats.map(t => `'${t}' 1`)].join(', ')
   const toggleFeat = (t: string) => setFeats(s => { const n = new Set(s); n.has(t) ? n.delete(t) : n.add(t); return n })
   const resetFeats = () => setFeats(new Set(FEATS_DEFAULT))
@@ -909,14 +911,14 @@ export default function Shell() {
   // opsz FREEZE is applied live via CSS now (opszCss in the scenes) — it no longer
   // needs a Pyodide rebuild. Only the SCALER relabel, threshold (matrix) edits, and
   // auto-ascender still require the worker.
-  const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.autoAscender
+  const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.autoAscender || d.frozenFeatures.some(t => LOOKUP_FROZEN.test(t))
   useEffect(() => {
     const t = setTimeout(() => {
-      if (needsRebuild) rebuildPreview({ thresholds: d.glyphThresholds, opszMultiplier: d.opszMultiplier, freezeOpsz: d.freezeOpsz, frozenOpszValue: d.frozenOpszValue, autoAscender: d.autoAscender })
+      if (needsRebuild) rebuildPreview({ thresholds: d.glyphThresholds, frozenFeatures: d.frozenFeatures, opszMultiplier: d.opszMultiplier, freezeOpsz: d.freezeOpsz, frozenOpszValue: d.frozenOpszValue, autoAscender: d.autoAscender })
       else clearPreviewFont()
     }, 250)
     return () => clearTimeout(t)
-  }, [needsRebuild, d.opszMultiplier, d.glyphThresholds, d.freezeOpsz, d.frozenOpszValue, d.autoAscender, state.useHoi, rebuildPreview, clearPreviewFont])
+  }, [needsRebuild, d.opszMultiplier, d.glyphThresholds, d.frozenFeatures, d.freezeOpsz, d.frozenOpszValue, d.autoAscender, state.useHoi, rebuildPreview, clearPreviewFont])
 
   // Real Cal Sans italic/bold for the emphasis-bubble labels — same axes renderInline uses.
   const emphItalVs = renderVarSettings({ ...effectiveAxes(state), ital: 1 }, {})
