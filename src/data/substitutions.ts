@@ -5,7 +5,7 @@ import data from './substitutions.json'
 export type Variant = { label: string; suffix: string | null; zone: string | null }
 export type GeomGroup = { headline: string; cp: number; thresholds: number[]; variants: Variant[] }
 export type GeomCell = { cp: number; aalt: number; name: string; thresholds: number[]; zones: string; headline: string | null }
-export type FeatureSet = { tag: string; name: string | null; families: string[]; overridesGeom: boolean; subs: Record<string, string> }
+export type FeatureSet = { tag: string; name: string | null; families: string[]; chars: string[]; overridesGeom: boolean; subs: Record<string, string> }
 export type Zone = { label: string; suffix: string | null; char: string; color: string; start: number; end: number; sampleGeom: number }
 export type Substitutions = {
   axis: { tag: string; min: number; default: number; max: number }
