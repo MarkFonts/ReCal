@@ -518,7 +518,7 @@
 .try-row > :first-child { grid-column: 1 / span var(--k, 1); }          /* Italic: k columns ... */
 .try-row > :last-child { grid-column: calc(var(--k, 1) + 1) / span var(--k, 1); }   /* ... Features: k, a gutter later */
 .try-col .try-pill, .try-col .style-menu, .try-col .try-pop { width: 100%; }
-.try-col .style-menu-btn, .try-col .try-pop .wm-accent { width: 100%; justify-content: flex-start; }
+.try-col .style-menu-btn, .try-col .try-pop > button { width: 100%; justify-content: flex-start; }   /* the button fills its cell, so its edges are the column's */
 .try-row > .wm-accent { justify-content: flex-start; }
 .try-col .try-pop .wm-accent .try-btn-caret, .try-col .style-menu-caret { margin-left: auto; }
 .canvas[data-try="float"] .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) { padding-bottom: calc(var(--spacing-09, 64px) * 2); }   /* scroll room inside the scroller, so text can clear the controls; no band on the full-bleed scenes */
