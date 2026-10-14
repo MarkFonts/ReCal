@@ -731,6 +731,10 @@
   color: var(--text-muted); text-wrap: balance;
 }
 .freezer-card.on .freezer-card-name { color: var(--freeze-gold); }
+/* A frozen set that the user's own GEOM swaps hide: one quiet line under the name, and the
+   full sentence once at the top of the panel. */
+.freezer-card-warn { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: var(--type-micro-lead, 12px); color: var(--text-dim); text-wrap: balance; }
+.freezer-conflict { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin: 0 0 12px; padding: 0 0 0 var(--spacing-03, 8px); border-left: 1px solid var(--freeze-gold); }
 
 .freezer-note { font-size: var(--type-ui-size, 0.75rem); color: var(--text-dim); line-height: 1.5; margin-top: 16px; padding: 0 4px; }
 .freezer-note-gold { color: var(--freeze-gold); font-weight: 600; }

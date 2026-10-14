@@ -134,6 +134,13 @@ export const effectiveAxes = (s: InstrumentState): AxisMap =>
   s.stockHold ? { ...s.shipped } : mergedAxes(s)
 export const effectiveThresholds = (s: InstrumentState): Record<string, number[]> =>
   s.stockHold ? s.shippedThresholds : s.defaults.glyphThresholds
+// The thresholds as they are right now, including a Type Matrix boundary that's mid-drag
+// and not committed yet (so anything that explains the swaps updates while you drag).
+export const liveThresholds = (s: InstrumentState): Record<string, number[]> => {
+  const t = effectiveThresholds(s), d = s.thresholdDrag
+  if (!d || s.stockHold) return t
+  return { ...t, [d.glyph]: (t[d.glyph] ?? []).map((v, i) => (i === d.idx ? d.value : v)) }
+}
 export const previewDrifted = (s: InstrumentState): boolean => Object.keys(s.preview).length > 0
 
 // Narrator state tag (§Origin mechanisms): STOCK while held, else ● if drifted, else ◆.
