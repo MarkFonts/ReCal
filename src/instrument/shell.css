@@ -1083,3 +1083,11 @@
 }
 .canvas[data-try="split"] .info-panel { padding-top: calc(var(--spacing-09, 64px) + var(--spacing-03, 8px)); }
 .try-btn-ic { margin-right: var(--spacing-02, 6px); vertical-align: -3px; }
+
+/* Reset buttons take the acid while there is something to reset (they disable otherwise, and
+   stay grey). --signal-acid, not --signal-ink: ReCal pins --signal-ink to grey. It is #eeff41 in
+   dark and #557b00 in light (tokens.css). Color only -- fills and borders are as they were, and
+   hover keeps the same color (no acid hover effects). */
+.rail-reset:not(:disabled), .rail-reset:hover:not(:disabled),
+.rail-seam-reset:not(:disabled), .rail-seam-reset:hover:not(:disabled),
+.preview-reset:not(:disabled), .preview-reset:not(:disabled):hover { color: var(--signal-acid); }
