@@ -24,7 +24,7 @@ import os, re, json, unicodedata
 from collections import defaultdict
 from fontTools.ttLib import TTFont
 
-PATH = next(p for p in ('public/fonts/CalSansVF.ttf', 'dist/fonts/CalSansVF.ttf') if os.path.exists(p))
+PATH = next(p for p in ('shared/fonts/CalSansVF.ttf', 'public/fonts/CalSansVF.ttf', 'dist/fonts/CalSansVF.ttf') if os.path.exists(p))
 OUT_JSON = 'src/data/substitutions.json'
 OUT_TS = 'src/data/substitutions.ts'
 
@@ -219,6 +219,11 @@ def feature_table(prefix):
         for li in fr.Feature.LookupListIndex:
             subs.update(lookup_pairs(li))
         fam = sorted({headline(b) for b in subs if headline(b)})
+        # `families` folds ligatures/accented siblings into a headline (ij → I), which is
+        # right for the GEOM lanes but wrong for "which characters does this set change".
+        # `chars` is the literal answer: every character whose BASE glyph the feature
+        # substitutes (key glyph name minus its .rclt* suffix → cmap).
+        chars = sorted({chr(rev[b.split('.')[0]]) for b in subs if b.split('.')[0] in rev})
         label = None
         fp = getattr(fr.Feature, 'FeatureParams', None)
         if fp is not None:
@@ -229,6 +234,7 @@ def feature_table(prefix):
             'tag': tag,
             'name': label,
             'families': fam,
+            'chars': chars,
             'overridesGeom': any('.rclt' in b for b in subs),
             'subs': dict(sorted(subs.items())),
         })
@@ -260,7 +266,7 @@ import data from './substitutions.json'
 export type Variant = { label: string; suffix: string | null; zone: string | null }
 export type GeomGroup = { headline: string; cp: number; thresholds: number[]; variants: Variant[] }
 export type GeomCell = { cp: number; aalt: number; name: string; thresholds: number[]; zones: string; headline: string | null }
-export type FeatureSet = { tag: string; name: string | null; families: string[]; overridesGeom: boolean; subs: Record<string, string> }
+export type FeatureSet = { tag: string; name: string | null; families: string[]; chars: string[]; overridesGeom: boolean; subs: Record<string, string> }
 export type Zone = { label: string; suffix: string | null; char: string; color: string; start: number; end: number; sampleGeom: number }
 export type Substitutions = {
   axis: { tag: string; min: number; default: number; max: number }

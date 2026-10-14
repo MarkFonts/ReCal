@@ -2086,6 +2086,35 @@
       "families": [
         "a"
       ],
+      "chars": [
+        "a",
+        "ª",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "æ",
+        "ā",
+        "ă",
+        "ą",
+        "ǎ",
+        "ǣ",
+        "ȃ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ"
+      ],
       "overridesGeom": true,
       "subs": {
         "a": "a.ss01",
@@ -2147,6 +2176,35 @@
       "name": "Humanist a",
       "families": [
         "a"
+      ],
+      "chars": [
+        "a",
+        "ª",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "æ",
+        "ā",
+        "ă",
+        "ą",
+        "ǎ",
+        "ǣ",
+        "ȃ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -2233,6 +2291,35 @@
       "families": [
         "a"
       ],
+      "chars": [
+        "a",
+        "ª",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "æ",
+        "ā",
+        "ă",
+        "ą",
+        "ǎ",
+        "ǣ",
+        "ȃ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ"
+      ],
       "overridesGeom": true,
       "subs": {
         "a": "a.ss03",
@@ -2295,6 +2382,15 @@
       "families": [
         "g"
       ],
+      "chars": [
+        "g",
+        "ĝ",
+        "ğ",
+        "ġ",
+        "ģ",
+        "ǧ",
+        "ḡ"
+      ],
       "overridesGeom": true,
       "subs": {
         "g": "g.ss04",
@@ -2317,6 +2413,15 @@
       "families": [
         "g"
       ],
+      "chars": [
+        "g",
+        "ĝ",
+        "ğ",
+        "ġ",
+        "ģ",
+        "ǧ",
+        "ḡ"
+      ],
       "overridesGeom": true,
       "subs": {
         "g": "g.ss05",
@@ -2338,6 +2443,16 @@
       "name": "Geometric G",
       "families": [
         "G"
+      ],
+      "chars": [
+        "G",
+        "Ĝ",
+        "Ğ",
+        "Ġ",
+        "Ģ",
+        "Ǧ",
+        "Ḡ",
+        "₲"
       ],
       "overridesGeom": true,
       "subs": {
@@ -2364,6 +2479,16 @@
       "name": "Humanist G",
       "families": [
         "G"
+      ],
+      "chars": [
+        "G",
+        "Ĝ",
+        "Ğ",
+        "Ġ",
+        "Ģ",
+        "Ǧ",
+        "Ḡ",
+        "₲"
       ],
       "overridesGeom": true,
       "subs": {
@@ -2392,6 +2517,21 @@
         "I",
         "j",
         "y"
+      ],
+      "chars": [
+        "j",
+        "y",
+        "ý",
+        "ÿ",
+        "ĳ",
+        "ĵ",
+        "ŷ",
+        "ȷ",
+        "ẏ",
+        "ỳ",
+        "ỵ",
+        "ỷ",
+        "ỹ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -2434,6 +2574,21 @@
         "I",
         "j",
         "y"
+      ],
+      "chars": [
+        "j",
+        "y",
+        "ý",
+        "ÿ",
+        "ĳ",
+        "ĵ",
+        "ŷ",
+        "ȷ",
+        "ẏ",
+        "ỳ",
+        "ỵ",
+        "ỷ",
+        "ỹ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -2485,6 +2640,114 @@
         "t",
         "u",
         "y"
+      ],
+      "chars": [
+        "0",
+        "1",
+        "5",
+        "C",
+        "a",
+        "c",
+        "f",
+        "j",
+        "t",
+        "u",
+        "y",
+        "¢",
+        "ª",
+        "µ",
+        "¹",
+        "¼",
+        "½",
+        "Ç",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "æ",
+        "ç",
+        "ù",
+        "ú",
+        "û",
+        "ü",
+        "ý",
+        "ÿ",
+        "ā",
+        "ă",
+        "ą",
+        "Ć",
+        "ć",
+        "Ĉ",
+        "ĉ",
+        "Ċ",
+        "ċ",
+        "Č",
+        "č",
+        "ĳ",
+        "ĵ",
+        "Ŋ",
+        "ŋ",
+        "ţ",
+        "ť",
+        "ŧ",
+        "ũ",
+        "ū",
+        "ŭ",
+        "ů",
+        "ű",
+        "ų",
+        "ŷ",
+        "ư",
+        "ǎ",
+        "ǔ",
+        "ǖ",
+        "ǘ",
+        "ǚ",
+        "ǜ",
+        "ǣ",
+        "ȃ",
+        "ȗ",
+        "ț",
+        "ȷ",
+        "π",
+        "ṭ",
+        "ṯ",
+        "ẏ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ",
+        "ụ",
+        "ủ",
+        "ứ",
+        "ừ",
+        "ử",
+        "ữ",
+        "ự",
+        "ỳ",
+        "ỵ",
+        "ỷ",
+        "ỹ",
+        "⁰",
+        "⁵",
+        "₀",
+        "₁",
+        "₅",
+        "€",
+        "⅓",
+        "⅔",
+        "⅛",
+        "⅝"
       ],
       "overridesGeom": true,
       "subs": {
@@ -2786,6 +3049,116 @@
         "u",
         "y"
       ],
+      "chars": [
+        "0",
+        "1",
+        "5",
+        "C",
+        "a",
+        "c",
+        "f",
+        "j",
+        "t",
+        "u",
+        "y",
+        "¢",
+        "ª",
+        "µ",
+        "¹",
+        "¼",
+        "½",
+        "Ç",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "æ",
+        "ç",
+        "ù",
+        "ú",
+        "û",
+        "ü",
+        "ý",
+        "ÿ",
+        "ā",
+        "ă",
+        "ą",
+        "Ć",
+        "ć",
+        "Ĉ",
+        "ĉ",
+        "Ċ",
+        "ċ",
+        "Č",
+        "č",
+        "ĳ",
+        "ĵ",
+        "Ŋ",
+        "ŋ",
+        "ţ",
+        "ť",
+        "ŧ",
+        "ũ",
+        "ū",
+        "ŭ",
+        "ů",
+        "ű",
+        "ų",
+        "ŷ",
+        "ư",
+        "ǎ",
+        "ǔ",
+        "ǖ",
+        "ǘ",
+        "ǚ",
+        "ǜ",
+        "ǣ",
+        "ȃ",
+        "ȗ",
+        "ț",
+        "ȷ",
+        "π",
+        "ṭ",
+        "ṯ",
+        "ẏ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ",
+        "ụ",
+        "ủ",
+        "ứ",
+        "ừ",
+        "ử",
+        "ữ",
+        "ự",
+        "ỳ",
+        "ỵ",
+        "ỷ",
+        "ỹ",
+        "⁰",
+        "⁵",
+        "₀",
+        "₁",
+        "₅",
+        "€",
+        "⅓",
+        "⅔",
+        "⅛",
+        "⅝",
+        "ﬁ",
+        "ﬂ"
+      ],
       "overridesGeom": true,
       "subs": {
         "C": "C.ss10",
@@ -3083,6 +3456,11 @@
       "families": [
         "M"
       ],
+      "chars": [
+        "M",
+        "Ṁ",
+        "Ṃ"
+      ],
       "overridesGeom": true,
       "subs": {
         "M": "M.ss12",
@@ -3102,6 +3480,11 @@
       "name": "Square M",
       "families": [
         "M"
+      ],
+      "chars": [
+        "M",
+        "Ṁ",
+        "Ṃ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3123,6 +3506,18 @@
       "families": [
         "f",
         "t"
+      ],
+      "chars": [
+        "f",
+        "t",
+        "ţ",
+        "ť",
+        "ŧ",
+        "ț",
+        "ṭ",
+        "ṯ",
+        "ﬁ",
+        "ﬂ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3156,6 +3551,18 @@
         "f",
         "t"
       ],
+      "chars": [
+        "f",
+        "t",
+        "ţ",
+        "ť",
+        "ŧ",
+        "ț",
+        "ṭ",
+        "ṯ",
+        "ﬁ",
+        "ﬂ"
+      ],
       "overridesGeom": true,
       "subs": {
         "f": "f.ss15",
@@ -3185,6 +3592,14 @@
       "tag": "ss16",
       "name": "Humanist/Grotesk 6 and 9",
       "families": [],
+      "chars": [
+        "6",
+        "9",
+        "⁶",
+        "⁹",
+        "₆",
+        "₉"
+      ],
       "overridesGeom": true,
       "subs": {
         "nine": "nine.ss16",
@@ -3241,6 +3656,14 @@
       "tag": "ss17",
       "name": "Geometric/legible 6 and 9",
       "families": [],
+      "chars": [
+        "6",
+        "9",
+        "⁶",
+        "⁹",
+        "₆",
+        "₉"
+      ],
       "overridesGeom": true,
       "subs": {
         "nine.dnom": "nine.dnom.ss17",
@@ -3277,6 +3700,65 @@
         "a",
         "g",
         "l"
+      ],
+      "chars": [
+        "I",
+        "a",
+        "g",
+        "l",
+        "ª",
+        "Ì",
+        "Í",
+        "Î",
+        "Ï",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "æ",
+        "ā",
+        "ă",
+        "ą",
+        "ĝ",
+        "ğ",
+        "ġ",
+        "ģ",
+        "Ĩ",
+        "Ī",
+        "Ĭ",
+        "Į",
+        "İ",
+        "Ĳ",
+        "ĺ",
+        "ļ",
+        "ľ",
+        "ŀ",
+        "ł",
+        "ǎ",
+        "ǣ",
+        "ǧ",
+        "ȃ",
+        "Ȋ",
+        "ḡ",
+        "ḷ",
+        "ḹ",
+        "ḻ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ",
+        "Ỉ",
+        "Ị"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3414,6 +3896,17 @@
       "families": [
         "l"
       ],
+      "chars": [
+        "l",
+        "ĺ",
+        "ļ",
+        "ľ",
+        "ŀ",
+        "ł",
+        "ḷ",
+        "ḹ",
+        "ḻ"
+      ],
       "overridesGeom": true,
       "subs": {
         "l": "l.ss19",
@@ -3444,6 +3937,41 @@
       "families": [
         "1",
         "5"
+      ],
+      "chars": [
+        "1",
+        "2",
+        "4",
+        "5",
+        "7",
+        "Z",
+        "z",
+        "²",
+        "¹",
+        "¼",
+        "½",
+        "Ź",
+        "ź",
+        "Ż",
+        "ż",
+        "Ž",
+        "ž",
+        "Ẓ",
+        "ẓ",
+        "Ẕ",
+        "ẕ",
+        "⁴",
+        "⁵",
+        "⁷",
+        "₁",
+        "₂",
+        "₄",
+        "₅",
+        "₇",
+        "⅓",
+        "⅔",
+        "⅛",
+        "⅝"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3533,6 +4061,33 @@
       "families": [
         "a"
       ],
+      "chars": [
+        "a",
+        "ª",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "ā",
+        "ă",
+        "ą",
+        "ǎ",
+        "ȃ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ"
+      ],
       "overridesGeom": true,
       "subs": {
         "a": "a.ss01",
@@ -3613,6 +4168,33 @@
       "name": "Humanist a",
       "families": [
         "a"
+      ],
+      "chars": [
+        "a",
+        "ª",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "ā",
+        "ă",
+        "ą",
+        "ǎ",
+        "ȃ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3695,6 +4277,32 @@
       "families": [
         "a"
       ],
+      "chars": [
+        "a",
+        "à",
+        "á",
+        "â",
+        "ã",
+        "ä",
+        "å",
+        "ā",
+        "ă",
+        "ą",
+        "ǎ",
+        "ȃ",
+        "ạ",
+        "ả",
+        "ấ",
+        "ầ",
+        "ẩ",
+        "ẫ",
+        "ậ",
+        "ắ",
+        "ằ",
+        "ẳ",
+        "ẵ",
+        "ặ"
+      ],
       "overridesGeom": true,
       "subs": {
         "a": "a.ss18",
@@ -3772,6 +4380,10 @@
       "tag": "cv04",
       "name": "Geometric ae",
       "families": [],
+      "chars": [
+        "æ",
+        "ǣ"
+      ],
       "overridesGeom": true,
       "subs": {
         "ae": "ae.ss01",
@@ -3784,6 +4396,10 @@
       "tag": "cv05",
       "name": "Humanist ae",
       "families": [],
+      "chars": [
+        "æ",
+        "ǣ"
+      ],
       "overridesGeom": true,
       "subs": {
         "ae": "ae.ss02",
@@ -3798,6 +4414,22 @@
       "families": [
         "C",
         "c"
+      ],
+      "chars": [
+        "C",
+        "c",
+        "¢",
+        "Ç",
+        "ç",
+        "Ć",
+        "ć",
+        "Ĉ",
+        "ĉ",
+        "Ċ",
+        "ċ",
+        "Č",
+        "č",
+        "€"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3835,6 +4467,9 @@
       "families": [
         "f"
       ],
+      "chars": [
+        "f"
+      ],
       "overridesGeom": true,
       "subs": {
         "f": "f.ss14",
@@ -3846,6 +4481,15 @@
       "name": "Geometric g",
       "families": [
         "g"
+      ],
+      "chars": [
+        "g",
+        "ĝ",
+        "ğ",
+        "ġ",
+        "ģ",
+        "ǧ",
+        "ḡ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3869,6 +4513,15 @@
       "families": [
         "g"
       ],
+      "chars": [
+        "g",
+        "ĝ",
+        "ğ",
+        "ġ",
+        "ģ",
+        "ǧ",
+        "ḡ"
+      ],
       "overridesGeom": true,
       "subs": {
         "g": "g.ss05",
@@ -3891,6 +4544,16 @@
       "families": [
         "G"
       ],
+      "chars": [
+        "G",
+        "Ĝ",
+        "Ğ",
+        "Ġ",
+        "Ģ",
+        "Ǧ",
+        "Ḡ",
+        "₲"
+      ],
       "overridesGeom": false,
       "subs": {
         "G": "G.ss06",
@@ -3908,6 +4571,16 @@
       "name": "Humanist G",
       "families": [
         "G"
+      ],
+      "chars": [
+        "G",
+        "Ĝ",
+        "Ğ",
+        "Ġ",
+        "Ģ",
+        "Ǧ",
+        "Ḡ",
+        "₲"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3934,6 +4607,22 @@
       "name": "Accessible/seriffed I",
       "families": [
         "I"
+      ],
+      "chars": [
+        "I",
+        "Ì",
+        "Í",
+        "Î",
+        "Ï",
+        "Ĩ",
+        "Ī",
+        "Ĭ",
+        "Į",
+        "İ",
+        "Ĳ",
+        "Ȋ",
+        "Ỉ",
+        "Ị"
       ],
       "overridesGeom": true,
       "subs": {
@@ -3974,6 +4663,12 @@
         "I",
         "j"
       ],
+      "chars": [
+        "j",
+        "ĳ",
+        "ĵ",
+        "ȷ"
+      ],
       "overridesGeom": true,
       "subs": {
         "ij": "ij.ss08",
@@ -4002,6 +4697,14 @@
       "families": [
         "I",
         "j"
+      ],
+      "chars": [
+        "j",
+        "ĳ",
+        "ĵ",
+        "Ŋ",
+        "ŋ",
+        "ȷ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4035,6 +4738,17 @@
       "families": [
         "l"
       ],
+      "chars": [
+        "l",
+        "ĺ",
+        "ļ",
+        "ľ",
+        "ŀ",
+        "ł",
+        "ḷ",
+        "ḹ",
+        "ḻ"
+      ],
       "overridesGeom": true,
       "subs": {
         "l": "l.ss18",
@@ -4064,6 +4778,17 @@
       "name": "Constructed l",
       "families": [
         "l"
+      ],
+      "chars": [
+        "l",
+        "ĺ",
+        "ļ",
+        "ľ",
+        "ŀ",
+        "ł",
+        "ḷ",
+        "ḹ",
+        "ḻ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4095,6 +4820,11 @@
       "families": [
         "M"
       ],
+      "chars": [
+        "M",
+        "Ṁ",
+        "Ṃ"
+      ],
       "overridesGeom": true,
       "subs": {
         "M": "M.ss12",
@@ -4114,6 +4844,15 @@
       "name": "Constructed t",
       "families": [
         "t"
+      ],
+      "chars": [
+        "t",
+        "ţ",
+        "ť",
+        "ŧ",
+        "ț",
+        "ṭ",
+        "ṯ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4145,6 +4884,16 @@
       "name": "Futura-style t",
       "families": [
         "t"
+      ],
+      "chars": [
+        "t",
+        "ţ",
+        "ť",
+        "ŧ",
+        "ț",
+        "π",
+        "ṭ",
+        "ṯ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4178,6 +4927,34 @@
       "name": "Futura-style u",
       "families": [
         "u"
+      ],
+      "chars": [
+        "u",
+        "µ",
+        "ù",
+        "ú",
+        "û",
+        "ü",
+        "ũ",
+        "ū",
+        "ŭ",
+        "ů",
+        "ű",
+        "ų",
+        "ư",
+        "ǔ",
+        "ǖ",
+        "ǘ",
+        "ǚ",
+        "ǜ",
+        "ȗ",
+        "ụ",
+        "ủ",
+        "ứ",
+        "ừ",
+        "ử",
+        "ữ",
+        "ự"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4239,6 +5016,17 @@
       "families": [
         "y"
       ],
+      "chars": [
+        "y",
+        "ý",
+        "ÿ",
+        "ŷ",
+        "ẏ",
+        "ỳ",
+        "ỵ",
+        "ỷ",
+        "ỹ"
+      ],
       "overridesGeom": true,
       "subs": {
         "uni1E8F": "uni1E8F.ss08",
@@ -4275,6 +5063,17 @@
       "name": "Geometric y",
       "families": [
         "y"
+      ],
+      "chars": [
+        "y",
+        "ý",
+        "ÿ",
+        "ŷ",
+        "ẏ",
+        "ỳ",
+        "ỵ",
+        "ỷ",
+        "ỹ"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4313,6 +5112,11 @@
       "families": [
         "0"
       ],
+      "chars": [
+        "0",
+        "⁰",
+        "₀"
+      ],
       "overridesGeom": true,
       "subs": {
         "uni2070": "uni2070.ss10",
@@ -4336,6 +5140,16 @@
       "name": "Futura-style one",
       "families": [
         "1"
+      ],
+      "chars": [
+        "1",
+        "¹",
+        "¼",
+        "½",
+        "₁",
+        "⅓",
+        "⅔",
+        "⅛"
       ],
       "overridesGeom": true,
       "subs": {
@@ -4371,6 +5185,12 @@
       "families": [
         "5"
       ],
+      "chars": [
+        "5",
+        "⁵",
+        "₅",
+        "⅝"
+      ],
       "overridesGeom": true,
       "subs": {
         "five": "five.ss10",
@@ -4391,6 +5211,11 @@
       "tag": "cv26",
       "name": "Humanist/Grotesk 6",
       "families": [],
+      "chars": [
+        "6",
+        "⁶",
+        "₆"
+      ],
       "overridesGeom": true,
       "subs": {
         "six": "six.ss16",
@@ -4423,6 +5248,11 @@
       "tag": "cv27",
       "name": "Humanist/Grotesk 9",
       "families": [],
+      "chars": [
+        "9",
+        "⁹",
+        "₉"
+      ],
       "overridesGeom": true,
       "subs": {
         "nine": "nine.ss16",
@@ -4455,6 +5285,11 @@
       "tag": "cv28",
       "name": "Geometric/legible 6",
       "families": [],
+      "chars": [
+        "6",
+        "⁶",
+        "₆"
+      ],
       "overridesGeom": true,
       "subs": {
         "six": "six.ss17",
@@ -4487,6 +5322,11 @@
       "tag": "cv29",
       "name": "Geometric/legible 9",
       "families": [],
+      "chars": [
+        "9",
+        "⁹",
+        "₉"
+      ],
       "overridesGeom": true,
       "subs": {
         "nine": "nine.ss17",
@@ -4519,6 +5359,11 @@
       "tag": "cv30",
       "name": "Open-aperture 6",
       "families": [],
+      "chars": [
+        "6",
+        "⁶",
+        "₆"
+      ],
       "overridesGeom": false,
       "subs": {
         "six": "six.rclt2",
@@ -4532,6 +5377,11 @@
       "tag": "cv31",
       "name": "Open-aperture 9",
       "families": [],
+      "chars": [
+        "9",
+        "⁹",
+        "₉"
+      ],
       "overridesGeom": false,
       "subs": {
         "nine": "nine.rclt2",
@@ -4545,6 +5395,7 @@
       "tag": "cv32",
       "name": "Constructed ffi",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4552,6 +5403,7 @@
       "tag": "cv33",
       "name": "Futura Ligation ffi",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4559,6 +5411,7 @@
       "tag": "cv34",
       "name": "Constructed ffl",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4566,6 +5419,7 @@
       "tag": "cv35",
       "name": "Futura Ligation ffl",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4573,6 +5427,7 @@
       "tag": "cv36",
       "name": "Constructed fi",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4580,6 +5435,7 @@
       "tag": "cv37",
       "name": "Futura discretionary ligation fi",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4587,6 +5443,7 @@
       "tag": "cv38",
       "name": "Constructed fl",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4594,6 +5451,7 @@
       "tag": "cv39",
       "name": "Futura discretionary ligation fl",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4601,6 +5459,7 @@
       "tag": "cv40",
       "name": "Constructed ft",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4608,6 +5467,7 @@
       "tag": "cv41",
       "name": "Futura ligation ft",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     },
@@ -4615,6 +5475,7 @@
       "tag": "cv42",
       "name": "Futura discretionary ligation ft",
       "families": [],
+      "chars": [],
       "overridesGeom": false,
       "subs": {}
     }

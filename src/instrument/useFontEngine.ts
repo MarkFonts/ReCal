@@ -25,7 +25,7 @@ export interface ExportConfig {
   frozenOpszValue: number | null          // opsz to pin to when frozen (null → axis default)
   autoAscender: boolean
   thresholds: Record<string, number[]>   // ◆ GEOM swap map → FeatureVariations
-  frozenFeatures: string[]               // ◆ ssXX/cvXX/tnum/… fused into the default + stripped
+  frozenFeatures: string[]               // ◆ ssXX/cvXX (into the rclt lookups, GEOM wins) and tnum/pnum/zero (fused into the cmap)
   vmetrics: VMetrics                     // ◆ OS/2 + hhea vertical metrics
   statics?: boolean                      // also cut wght 400/500/600/700 (× italic if the font has `ital`) → .zip
   familyName?: string                    // build name: the VF's internal family in EVERY bake, and the statics' names + file names (default 'ReCal Sans')
@@ -40,6 +40,7 @@ export interface BakeResult { bytes: ArrayBuffer; kind: 'ttf' | 'zip' }
 // applies those live via font-variation-settings), so this is a subset of ExportConfig.
 export interface PreviewConfig {
   thresholds: Record<string, number[]>
+  frozenFeatures: string[]               // ◆ frozen ssXX/cvXX ride inside the rebuilt rclt lookups (GEOM wins), same as the bake
   opszMultiplier: number
   freezeOpsz: boolean
   frozenOpszValue: number | null
@@ -57,6 +58,7 @@ function postPreview(w: Worker, cfg: PreviewConfig) {
   w.postMessage({
     type: 'previewFont',
     thresholdsJson: JSON.stringify(cfg.thresholds),
+    frozenFeatures: cfg.frozenFeatures,
     autoAscender: cfg.autoAscender,
     opszMultiplier: cfg.opszMultiplier,
     freezeOpsz: cfg.freezeOpsz,

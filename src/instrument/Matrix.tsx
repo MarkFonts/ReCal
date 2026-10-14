@@ -48,7 +48,9 @@ export function Matrix() {
     let pushed = false
     const move = (ev: PointerEvent) => {
       if (!pushed) { dispatch({ type: 'pushHistory' }); pushed = true }
-      setDrag({ glyph, idx, value: clampAt(ev.clientX) })
+      const value = clampAt(ev.clientX)
+      setDrag({ glyph, idx, value })
+      dispatch({ type: 'setThresholdDrag', drag: { glyph, idx, value } })   // the specimen colors the glyph from the live value
     }
     const up = (ev: PointerEvent) => {
       window.removeEventListener('pointermove', move)
@@ -60,6 +62,7 @@ export function Matrix() {
         fade(`${glyph}:${idx}`, val)
       }
       setDrag(null)
+      dispatch({ type: 'setThresholdDrag', drag: null })
     }
     window.addEventListener('pointermove', move)
     window.addEventListener('pointerup', up)

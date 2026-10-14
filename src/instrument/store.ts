@@ -49,6 +49,7 @@ export interface InstrumentState {
   preview: PreviewLayer
   stockHold: boolean                            // hold-to-compare: effective() → SHIPPED
   geomDragging: boolean                         // rail GEOM slider held: flash holds color, fades on release
+  thresholdDrag: { glyph: string; idx: number; value: number } | null   // Type Matrix boundary mid-drag (live value, not yet committed)
   activePreset: string | null                   // engaged "start from…" entry (§3.3)
   useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
   buildName: string                             // editable export family name (INFO receipt)
@@ -113,6 +114,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
     preview: {},
     stockHold: false,
     geomDragging: false,
+    thresholdDrag: null,
     activePreset: null,
     useHoi: false,
     buildName: 'ReCal Sans',
@@ -132,6 +134,13 @@ export const effectiveAxes = (s: InstrumentState): AxisMap =>
   s.stockHold ? { ...s.shipped } : mergedAxes(s)
 export const effectiveThresholds = (s: InstrumentState): Record<string, number[]> =>
   s.stockHold ? s.shippedThresholds : s.defaults.glyphThresholds
+// The thresholds as they are right now, including a Type Matrix boundary that's mid-drag
+// and not committed yet (so anything that explains the swaps updates while you drag).
+export const liveThresholds = (s: InstrumentState): Record<string, number[]> => {
+  const t = effectiveThresholds(s), d = s.thresholdDrag
+  if (!d || s.stockHold) return t
+  return { ...t, [d.glyph]: (t[d.glyph] ?? []).map((v, i) => (i === d.idx ? d.value : v)) }
+}
 export const previewDrifted = (s: InstrumentState): boolean => Object.keys(s.preview).length > 0
 
 // Narrator state tag (§Origin mechanisms): STOCK while held, else ● if drifted, else ◆.
@@ -172,6 +181,7 @@ export type Action =
   | { type: 'clearPreview' }                                  // Return pill
   | { type: 'setStockHold'; held: boolean }                   // hold-to-compare
   | { type: 'setGeomDragging'; value: boolean }               // rail GEOM slider pointer down/up
+  | { type: 'setThresholdDrag'; drag: { glyph: string; idx: number; value: number } | null }   // Type Matrix boundary drag in flight
   | { type: 'setThresholds'; thresholds: Record<string, number[]> }
   | { type: 'setOpszMultiplier'; value: number }
   | { type: 'setFreezeOpsz'; value: boolean }
@@ -215,6 +225,11 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return s.rebuilding === a.value ? s : { ...s, rebuilding: a.value }
     case 'setGeomDragging':
       return s.geomDragging === a.value ? s : { ...s, geomDragging: a.value }
+    case 'setThresholdDrag': {
+      const o = s.thresholdDrag, n = a.drag
+      if (o === n || (o && n && o.glyph === n.glyph && o.idx === n.idx && o.value === n.value)) return s
+      return { ...s, thresholdDrag: n }
+    }
     case 'setThresholds':
       return { ...s, defaults: { ...s.defaults, glyphThresholds: a.thresholds } }
     case 'setOpszMultiplier':

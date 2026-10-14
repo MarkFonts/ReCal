@@ -13,6 +13,7 @@ import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWith
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
 import { SUBS } from '../data/substitutions'
+import { variantIndex, groupKeyOf } from './lanes'
 import { BOOT, type CompareSpec } from './boot'
 import { effectiveLineHeightEm, capShiftEm } from './vmetrics'
 import calSansUrl from '../../shared/fonts/CalSansVF.ttf?url'
@@ -189,18 +190,6 @@ export type SceneProps = {
 // so the browser tracks opsz to each element's rendered size (per font-proofer).
 const optical = (auto: boolean): 'auto' | 'none' => (auto ? 'auto' : 'none')
 
-// Which variant a glyph shows at a given GEOM = how many of its swap thresholds
-// GEOM has passed (matches the non-HOI font's rclt band edges in GROUP_DEFS).
-const variantIndex = (geom: number, thresholds: number[]): number =>
-  thresholds.reduce((n, t) => n + (geom >= t ? 1 : 0), 0)
-
-const SWAP_GLYPHS = new Set(GROUP_DEFS.map(d => d.glyph))
-
-// Resolve a character to its swap GROUP key (the GROUP_DEFS representative), so
-// diacritic composites flash with their base group: à→a, ç→c, Ç→C, ª→a. Composites
-// share their base's `rclt` condition, so they inherit its thresholds/zone/color.
-// NFKD handles diacritics + compatibility forms (ª→a); EXTRA_MEMBERS covers
-// non-decomposing look-alikes. Returns undefined for non-swap glyphs.
 // Font-derived swap zone → color (matches the GROUP_DEFS zone palette). '-'/'U' → none.
 const ZONE_COLOR = ZONE_COLOR_SHORT
 // Codepoint behind a grid cell's char (skip the ◌ U+25CC carrier on combining marks).
@@ -211,29 +200,22 @@ const GRID_ENTRIES = Object.entries(GRID_SWAPS).map(([key, s]) => ({
   key, t: s.t, colors: [...s.z].map(z => ZONE_COLOR[z] ?? null),
 }))
 
-const EXTRA_MEMBERS: Record<string, string> = { 'ɑ': 'a' }
-const groupKeyOf = (ch: string): string | undefined => {
-  if (SWAP_GLYPHS.has(ch)) return ch
-  const base = ch.normalize('NFKD')[0]
-  if (base && SWAP_GLYPHS.has(base)) return base
-  return EXTRA_MEMBERS[ch]
-}
-
 type Flashes = Record<string, { color: string; nonce: number }>
 
 // ── Freezer gold ─────────────────────────────────────────────────────────────────
 // Characters a frozen feature swaps get painted gold in the specimen — the freezer's
 // zone-like color language ("held off GEOM", distinct from the four GEOM zone hues).
-// ss/cv derive their chars from `families`; figure/case features from an explicit list.
+// ss/cv derive their chars from the font's own GSUB (`chars`: the characters whose base
+// glyph the feature really swaps); figure/case features from an explicit list.
 const FEATURE_CHARS: Record<string, string> = {
   tnum: '0123456789', pnum: '0123456789', zero: '0', case: '-–—()[]{}',
 }
-const FEATURE_FAMILIES: Record<string, string[]> =
-  Object.fromEntries([...SUBS.stylisticSets, ...SUBS.charVariants].map(f => [f.tag, f.families]))
+const FEATURE_GSUB_CHARS: Record<string, string[]> =
+  Object.fromEntries([...SUBS.stylisticSets, ...SUBS.charVariants].map(f => [f.tag, f.chars]))
 function frozenCharSet(tags: string[]): Set<string> {
   const s = new Set<string>()
   for (const t of tags) {
-    for (const c of FEATURE_FAMILIES[t] ?? []) s.add(c)
+    for (const c of FEATURE_GSUB_CHARS[t] ?? []) s.add(c)
     for (const c of FEATURE_CHARS[t] ?? '') s.add(c)
   }
   return s
@@ -258,11 +240,21 @@ function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void; draggi
   // (matrix/preset edits), not the static GROUP_DEFS seed.
   const thresholds = effectiveThresholds(state)
   const editing = state.recalMode === 'edit'
-  const dragging = state.geomDragging
+  const geomDragging = state.geomDragging
   const [flashes, setFlashes] = useState<Flashes>({})
   const prevGeom = useRef(geom)
   const prevEditing = useRef(editing)
   const nonce = useRef(0)
+  // Flash one lane to the variant it shows at `geom` (zone color), or hard-off on the
+  // neutral master. Shared by the GEOM-crossing and threshold-drag detectors.
+  const flashLane = (next: Flashes, glyph: string, variant: { label: string; color: string }): boolean => {
+    if (variant.label === 'default') {                    // swapped back to the neutral master → hard-off
+      if (glyph in next) { delete next[glyph]; return true }
+      return false
+    }
+    next[glyph] = { color: variant.color, nonce: ++nonce.current }   // hard-on / hard-switch to a zone color
+    return true
+  }
   useEffect(() => {
     const from = prevGeom.current, wasEditing = prevEditing.current
     prevGeom.current = geom
@@ -275,17 +267,62 @@ function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void; draggi
         const thr = thresholds[def.glyph] ?? def.defaultThresholds
         const after = variantIndex(geom, thr)
         if (after === variantIndex(from, thr)) continue   // this glyph didn't cross
-        const variant = def.variants[after]
-        if (variant.label === 'default') {                  // swapped back to the neutral master → hard-off
-          if (def.glyph in next) { delete next[def.glyph]; changed = true }
-        } else {                                            // hard-on / hard-switch to a zone color
-          next[def.glyph] = { color: variant.color, nonce: ++nonce.current }
-          changed = true
-        }
+        if (flashLane(next, def.glyph, def.variants[after])) changed = true
       }
       return changed ? next : prev
     })
   }, [geom, editing])
+
+  // Threshold drag (Type Matrix): the boundary under the user's finger moves, and if that
+  // changes which variant the glyph shows at the default GEOM, it takes that variant's zone
+  // color WHILE dragging (driven by the live drag value, before the rebuilt face exists).
+  // Only drag-driven changes flash — undo, presets and resets move thresholds too, and
+  // nothing would ever clear those.
+  const drag = state.thresholdDrag
+  const thresholdDragging = drag !== null
+  const liveThr = useMemo(() => drag
+    ? { ...thresholds, [drag.glyph]: (thresholds[drag.glyph] ?? GROUP_DEFS.find(d => d.glyph === drag.glyph)?.defaultThresholds ?? []).map((v, i) => (i === drag.idx ? drag.value : v)) }
+    : thresholds, [thresholds, drag])
+  const prevLive = useRef(liveThr)
+  useEffect(() => {
+    const before = prevLive.current
+    prevLive.current = liveThr
+    if (!editing || !thresholdDragging || before === liveThr) return
+    setFlashes(prev => {
+      const next = { ...prev }
+      let changed = false
+      for (const def of GROUP_DEFS) {
+        const a = variantIndex(geom, before[def.glyph] ?? def.defaultThresholds)
+        const b = variantIndex(geom, liveThr[def.glyph] ?? def.defaultThresholds)
+        if (a === b) continue
+        if (flashLane(next, def.glyph, def.variants[b])) changed = true
+      }
+      return changed ? next : prev
+    })
+  }, [liveThr])
+  // After the release the preview face is still the OLD one until the worker's rebuild
+  // lands, so the color keeps holding through it: the fade starts on the rebuild-finished
+  // signal (state.rebuilding true → false), or after a short grace if no rebuild started.
+  const rebuilding = state.rebuilding
+  const [settling, setSettling] = useState(false)
+  const sawRebuild = useRef(false)
+  const prevRebuilding = useRef(rebuilding)
+  const wasThrDrag = useRef(false)
+  useEffect(() => {
+    if (thresholdDragging) { wasThrDrag.current = true; sawRebuild.current = false; setSettling(true); return }
+    if (!wasThrDrag.current) return
+    wasThrDrag.current = false
+    const t = setTimeout(() => { if (!sawRebuild.current) setSettling(false) }, 900)
+    return () => clearTimeout(t)
+  }, [thresholdDragging])
+  useEffect(() => {
+    const was = prevRebuilding.current
+    prevRebuilding.current = rebuilding
+    if (!settling || thresholdDragging) return
+    if (!was && rebuilding) sawRebuild.current = true
+    else if (was && !rebuilding && sawRebuild.current) { sawRebuild.current = false; setSettling(false) }
+  }, [rebuilding])
+  const dragging = geomDragging || thresholdDragging || settling
   // Release cleanup: on drag-release the held spans swap in place from
   // `geom-flash-hold` to `geom-flash`, and that in-place swap's animationend does
   // NOT reach React's per-span onAnimationEnd — so un-wrap them here once the fade
