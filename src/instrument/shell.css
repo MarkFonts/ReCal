@@ -12,7 +12,7 @@
 /* ── Rail — the font mutator (◆ file layer) ── */
 .rail {
   grid-area: rail;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid transparent;   /* no rule between the rail and the canvas; the box keeps its width */
   background: var(--surface);
   /* No vertical padding: it lives on the header (below) so the sticky seams pin flush
      to the rail's top/bottom edges — padding here would leave a strip above/below a
@@ -388,7 +388,7 @@
   display: flex; flex-wrap: wrap; align-items: center;
   gap: var(--spacing-02, 6px);
   padding: var(--spacing-04, 12px) var(--spacing-06, 24px);
-  border-top: 1px solid var(--border);
+  border-top: 1px solid transparent;     /* no rule along the top of the Try bar */
   background: var(--surface);
 }
 .try-lbl {
@@ -398,16 +398,17 @@
 .try-pill { width: 9rem; }
 .try-sep { width: 1px; height: 24px; background: var(--border); margin: 0 var(--spacing-02, 6px); }
 /* The non-dial pills: the same box as the dial bars beside them (32px, 1px --border,
-   --radius), and the same inversion on hover as .style-menu-btn. */
+   --radius). A chip that is ON is the primitive's AccentButton (look q5) and carries no .try-btn;
+   this is the chip when it is off. Its rollover never inverts to a light --text fill: the hairline
+   brightens on hover, a press fills it faintly, the label stays --text. */
 .try-btn {
   display: inline-flex; align-items: center; gap: var(--spacing-02, 6px);
   min-height: 32px; padding: 0 var(--spacing-04, 12px); border-radius: var(--radius);
   background: none; border: 1px solid var(--border);
   color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer;
 }
-.try-btn:hover:not(:disabled) { background: var(--text); color: var(--bg); border-color: var(--text); }
-/* On is the signal: acid fill, ground ink. Hover keeps it (the rule above is the idle inversion). */
-.try-btn.on, .try-btn.on:hover:not(:disabled) { background: var(--signal-acid); color: var(--bg); border-color: var(--signal-acid); }
+.try-btn:hover:not(:disabled) { background: none; color: var(--text); border-color: var(--text-muted); }
+.try-btn:active:not(:disabled) { background: var(--surface-hi); color: var(--text); border-color: var(--text); }
 .try-btn:disabled { opacity: .38; cursor: default; }
 .try-pop { position: relative; }
 .try-pop-list {
@@ -432,7 +433,7 @@
   .try { padding: var(--spacing-04, 12px) var(--spacing-05, 16px); }
   .try-lbl, .try-sep { display: none; }
   .try-pill, .try-pop, .try .style-menu { flex: 1 1 8rem; width: auto; }
-  .try-btn, .try .style-menu-btn { flex: 1 1 6rem; width: 100%; justify-content: center; }
+  .try-btn, .try .wm-accent, .try .style-menu-btn { flex: 1 1 6rem; width: 100%; justify-content: center; }
   /* Popovers span the bar rather than hang off a pill that may sit at the right edge. */
   .try-pop, .try .style-menu { position: static; }
   .try-pop-list, .try .style-menu-list { left: var(--spacing-05, 16px); right: var(--spacing-05, 16px); width: auto; min-width: 0; }
@@ -481,18 +482,6 @@
   --zone-hdr-geo: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMoAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARwAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAytQEQAYSABhhhiPS5hIa2va1T3o+EdcaRkWZc/sSI69aSmYJjo85Uu8R167RwWh0RaLtCCeLcqow6MvQ/zW9xhaJiW+ejcmRmBvLbQTrWc0irljEfQrF0ZE60WM1oArK0HjD6Obp9xLghNBaJ33tYQ2ZWQRHLTAf2kboSWyyf59rfiSlmqqkWT533SlXanEZ2EghKQHia7oKxTWfI+R7GHNmcQrXlkjAQX0f7ZGDZkm9vw+589aT0');
 }
 .floor-spacer { flex: 1; }
-.floor-btn {
-  padding: 8px 16px;
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  background: var(--surface-hi);
-  color: var(--text);
-  font-family: var(--ui-font);
-  font-size: var(--type-ui-size, 0.75rem);
-  cursor: pointer;
-}
-.floor-btn:disabled { opacity: .45; cursor: default; }
-.floor-btn--primary { background: var(--signal-acid); color: var(--bg); border-color: var(--signal-acid); font-weight: 700; }
 
 .dock-error { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 
@@ -505,7 +494,7 @@
   margin: auto -16px 0;
   padding: var(--spacing-04, 12px) 16px var(--spacing-05, 16px);
   display: flex; flex-direction: column; gap: var(--spacing-03, 8px);
-  background: var(--surface); border-top: 1px solid var(--border);
+  background: var(--surface); border-top: 1px solid transparent;   /* no rule above the Download footer */
 }
 .dl-what {
   all: unset; box-sizing: border-box; width: 100%;
@@ -526,7 +515,34 @@
 .dl-opt input { accent-color: var(--accent); margin: 1px 0 0; flex-shrink: 0; }
 .dl-opt b { font-weight: inherit; color: var(--text); }
 .dl-opt--locked { cursor: default; }
-.dl-act { display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-03, 8px); }
+/* The Download pill's light (AccentButton, look q5) spills 52px to each side and 62px below, wider than the
+   footer it sits in. .dl-act bleeds to the footer's edges (and to its bottom when nothing sits below it) and
+   clips the spill at its own edge; its 16px padding band at the sides and bottom holds nothing but light, so it
+   is faded to zero across exactly that band and the light dies there instead of ending in a hard edge. */
+.dl-act {
+  display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-03, 8px);
+  --edge: 16px;
+  --fade: rgba(0,0,0,0) 0, rgba(0,0,0,.05) calc(var(--edge) * .25), rgba(0,0,0,.22) calc(var(--edge) * .5), rgba(0,0,0,.6) calc(var(--edge) * .75), #000 var(--edge);
+  margin: 0 -16px -16px;
+  padding: 14px 16px 16px;               /* token-lint: allow -- 14px is the pill spill's reach above the button */
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, var(--fade)), linear-gradient(270deg, var(--fade)), linear-gradient(0deg, var(--fade));
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
+}
+.rail-dl:has(.dl-progress) .dl-act { margin-bottom: 0; }   /* the bake line sits under it */
+/* "Building…" keeps its looping shimmer, over the unlit grey ink instead of its dark base (the base was for
+   an acid face); the one-shot "ready" flourish keeps its band, over the pale label instead of --bg. */
+.dl-act .holo-loading {
+  background-image:
+    linear-gradient(90deg, #ff2e6e, #ffb02e, #ffe600, #ff2ec4, #b05cff, #5c7aff, #7a8aff, #ff2e6e),
+    linear-gradient(var(--ab-off-ink), var(--ab-off-ink));
+}
+.dl-act .holo-once {
+  background-image:
+    linear-gradient(90deg, transparent 0 42%, #ff2e6e 45%, #ffb02e 47%, #ffe600 49%, #ff2ec4 51%, #b05cff 53%, #5c7aff 55%, transparent 58% 100%),
+    linear-gradient(var(--ab-ink), var(--ab-ink));
+}
 .dl-ofl { margin: 0; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 .dl-ofl a { color: var(--text); text-decoration: underline; }
 .dl-progress { margin: 0; font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
@@ -899,7 +915,6 @@
    release. Applied to :active so it beats whatever selected/filled state is underneath.
    CORNER: superellipse(--corner-k) so a pill, a rounded rect and a circular button all
    follow one curvature law. CSS parameterises k as exponent 2^k: 1 is a circular arc. */
-.floor-btn,
 .rail-toggle,
 .rail-reset,
 .style-menu-btn,
@@ -907,7 +922,6 @@
 .freezer-reset {
   corner-shape: superellipse(var(--corner-k, 1.2));
 }
-.floor-btn:active:not(:disabled),
 .rail-toggle:active:not(:disabled),
 .rail-reset:active:not(:disabled),
 .style-menu-btn:active:not(:disabled),
@@ -922,29 +936,17 @@
   background: var(--surface-press);
 }
 
-/* Acid-FILLED controls (Download, an on chip): the fill is the signal, so it never changes
-   color. Hover is a non-color cue, a 1px lift, with App.css's global button:hover
-   brightness(1.12) turned off (it paled the acid to a yellower fill). Pressed stays FILLED
-   (the generic .floor-btn:active above hollows to a stroke; restated here) and sits 1px
-   down. Specificity matches those rules and this block comes later. */
-.floor-btn--primary:hover:not(:disabled),
-.try-btn.on:hover:not(:disabled) {
-  filter: none;
-  transform: translateY(-1px);
-}
-.floor-btn--primary:active:not(:disabled),
-.try-btn.on:active:not(:disabled) {
-  filter: none;
-  background: var(--signal-acid);
-  box-shadow: none;
-  transform: translateY(1px);
-}
+/* The lit chips' spill sits in the bottom Try bar, 12px above the window's bottom edge, so it was cut there.
+   AccentButton fades a chip's spill to nothing from --ab-fade-from (the chip's own bottom edge) over 11px:
+   clear at the chip, gone by the window edge. Nothing is masked above that, and the bar itself is never masked
+   (its popovers open upward). */
+.try .wm-accent[data-shape="chip"] { --ab-fade-from: calc(100% - var(--ab-mb) - 1px); }
 
 /* ── The acid signal, opted in (--signal-acid, tokens.css) ──
    --signal and --signal-ink stay pinned to grey, so the package's controls read grey. These
    are the places Mark picked that the package draws, reached from here because an unlayered
    rule beats the package's @layer wm.controls at any specificity. The rest of the picks sit
-   with the rules they restyle: .try-btn.on, .floor-btn--primary, .shape-pad-knob, the focus
+   with the rules they restyle: .shape-pad-knob, the focus
    rings of this file, the scene tab underlines, .info-nameinput. */
 
 /* Value underline: acid, the number stays grey. The package colours the active number AND
