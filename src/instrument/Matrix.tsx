@@ -73,6 +73,7 @@ export function Matrix() {
     if (!rows) return
     const rect = rows.getBoundingClientRect()
     setGeomDragging(true)
+    dispatch({ type: 'setGeomDragging', value: true })   // the line + its tag go HDR white while held, as on the pad
     let pushed = false, last = geom
     const move = (ev: PointerEvent) => {
       if (!pushed) { dispatch({ type: 'pushHistory' }); pushed = true }
@@ -82,6 +83,7 @@ export function Matrix() {
     const up = () => {
       window.removeEventListener('pointermove', move); window.removeEventListener('pointerup', up)
       setGeomDragging(false)
+      dispatch({ type: 'setGeomDragging', value: false })
       if (pushed) fade('geom', last)
     }
     window.addEventListener('pointermove', move)
@@ -129,7 +131,7 @@ export function Matrix() {
         {[0, 50, 100].map(v => (
           <span key={v} className="matrix-axis-tick geom-num tnum" data-v={v} style={{ left: geomLeft(v) }}>{v}</span>
         ))}
-        <span ref={tagRef} className="matrix-default-tag geom-num"
+        <span ref={tagRef} className={`matrix-default-tag geom-num${state.geomDragging ? ' is-dragging' : ''}`}
           style={{ left: tagLeft ?? 0, visibility: tagLeft === null ? 'hidden' : 'visible' }}>
           Default <span ref={numRef} className="tnum">{Math.round(geom)}</span>
         </span>
@@ -189,7 +191,7 @@ export function Matrix() {
           )
         })}
         {/* the default: a line through every lane, ringed like the pad's knob */}
-        <div className="matrix-default" style={{ left: geomLeft(geom) }} />
+        <div className={`matrix-default${state.geomDragging ? ' is-dragging' : ''}`} style={{ left: geomLeft(geom) }} />
         <div className="matrix-geom" style={{ left: geomLeft(geom) }} onPointerDown={startGeomDrag} />
         {geomDragging && (
           <span className="matrix-val matrix-val--in matrix-val--geom tnum" style={{ left: geomLeft(geom) }}>{geom}</span>

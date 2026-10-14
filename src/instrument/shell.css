@@ -793,6 +793,17 @@
    the pointer (the grabber below does), so it cannot block a diamond. */
 .matrix-default { position: absolute; top: 0; bottom: 0; width: 1px; transform: translateX(-50%); background: var(--text); pointer-events: none; z-index: 1; }
 .matrix-default::before { content: ''; position: absolute; top: 1px; left: 50%; width: 9px; height: 9px; transform: translateX(-50%); border-radius: 50%; background: var(--text); box-shadow: 0 0 0 2px var(--bg); }
+/* While the default is being dragged (store.geomDragging: the Shape pad, or this matrix's own
+   scrubber) the line, its ring and the "Default NN" tag take the white HDR swatch, the same
+   fill the pad's active-zone pill carries. HDR survives only on a FILLED area, so the 1px
+   line becomes a 2px bar: it is centered on the same x (translateX(-50%)), so nothing
+   moves. At rest all three are the plain neutral they always were. */
+.matrix-default.is-dragging, .matrix-default.is-dragging::before, .matrix-default-tag.is-dragging {
+  background-color: var(--text); background-image: var(--zone-hdr-ui); background-size: 512px 512px;
+  background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit;
+}
+.matrix-default.is-dragging { width: 2px; }
+.matrix-default-tag.is-dragging { border-radius: var(--radius-pill); color: var(--bg); }
 
 .matrix-lane { position: relative; height: 34px; }
 .matrix-band { position: absolute; top: 25px; height: 3px; border-radius: 2px; opacity: .38; transition: opacity var(--dur-fast); }
