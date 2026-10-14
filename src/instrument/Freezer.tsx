@@ -69,13 +69,16 @@ const cvItem = (tag: string): Item | null => {
   return { tag, name: cv.name ?? tag, sample: CV_SAMPLE[tag] ?? (asciiChars(cv) || tag) }
 }
 
+// Off the Freezer: ss17's font entries never apply; hidden until calbuild fixes the set.
+const HIDDEN_SS = new Set(['ss17'])
+
 // Stylistic sets in their natural ssNN order.
 const SECTIONS: Section[] = [
   { title: 'Figures', items: FIGURE_ITEMS },
   // { title: 'Letters', items: LETTER_ITEMS },   // empty without `case`, so no heading
   {
     title: 'Stylistic sets',
-    items: SUBS.stylisticSets.map(ss => ({ tag: ss.tag, name: nameFor(ss), sample: sampleFor(ss) })),
+    items: SUBS.stylisticSets.filter(ss => !HIDDEN_SS.has(ss.tag)).map(ss => ({ tag: ss.tag, name: nameFor(ss), sample: sampleFor(ss) })),
   },
 ]
 
