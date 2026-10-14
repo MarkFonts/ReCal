@@ -950,6 +950,13 @@
 :is(.try, .rail) .slider-number:focus,
 :is(.try, .rail) .slider-row:focus-within .slider-number { color: var(--text); text-decoration-color: var(--signal-acid); }
 
+/* Track-slider grip (shared .slider-row--track .slider-label::after, wm-primitives #114): the
+   package paints it var(--accent, var(--signal)), grey here. Only that pseudo-element is
+   opted into acid; --accent is not touched, so nothing else on the row recolors. Unlayered,
+   so it beats the package's @layer wm.controls rule at any specificity. Matches nothing until
+   the package ships the grip. */
+:is(.try, .rail) .slider-row--track .slider-label::after { background: var(--signal-acid); }
+
 /* Focus rings, wherever the package or the app draws one. Colour only: each ring keeps its
    own width and offset, and a rule that sets `outline: none` still draws nothing. :root:root
    lifts it over the package files that are not layered (Fitting, StopSlider, Specimen). */
