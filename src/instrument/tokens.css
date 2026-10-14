@@ -54,9 +54,15 @@
   /* The house signal (wm-primitives color.css) is acid in dark. ReCal stays neutral grey
      everywhere: the package's fills read --accent first (grey here), its thin uses (focus
      rings, the active value's number and underline) read --signal-ink first, so both are
-     pinned to --accent. Opt a surface into acid by re-pointing them there. */
+     pinned to --accent. Opt a surface into acid with --signal-acid, below. */
   --signal:         var(--accent);
   --signal-ink:     var(--accent);
+  /* The acid, opted in by name on the places Mark picked (his list of 13, 2026-10-13) and
+     nowhere else. color.css declares the same acid as --signal, which this file re-points
+     to grey, so the value is restated here once: dark's #eeff41, and its display-p3 form
+     where the screen has the gamut. Fills put --bg ink on it; thin uses (rules, rings) use
+     it as is. */
+  --signal-acid:    #eeff41;
   --marker-preview: #999;           /* ● PREVIEWING */
   /* STOCK narrator only. It takes the A11Y zone hue BY REFERENCE, not by coincidence:
      one literal written twice gets changed for one reason and silently breaks the other.
@@ -154,4 +160,10 @@
     /* token-lint: allow -- .001ms is the reduced-motion kill switch, not a duration */
     transition-duration: .001ms !important;
   }
+}
+
+/* --signal-acid in display-p3 where the screen has it. @supports, not a second declaration:
+   a custom property takes any value at parse time, so the hex would never fall back. */
+@supports (color: color(display-p3 1 1 1)) {
+  :root { --signal-acid: color(display-p3 0.9333 1 0.2549); }
 }

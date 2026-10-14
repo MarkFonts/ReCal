@@ -118,7 +118,7 @@
   outline: none;
   color: var(--text);
   text-decoration: underline;
-  text-decoration-color: var(--accent);
+  text-decoration-color: var(--signal-acid);
   text-decoration-thickness: 2.5px;
   text-underline-offset: 4px;
 }
@@ -363,7 +363,7 @@
 .info-k { color: rgba(201, 112, 80, .5); }
 .info-arrow { color: rgba(201, 112, 80, .4); }
 .info-v { color: var(--info-color); }
-.info-yours { color: var(--marker-default); font-weight: 700; }
+.info-yours { color: var(--signal-acid); font-weight: 700; }
 .info-block { color: var(--info-color); }
 .info-nameinput {
   font-family: var(--ui-font);
@@ -372,12 +372,12 @@
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(201, 112, 80, .35);
-  color: var(--marker-default);
+  color: var(--signal-acid);
   padding: 1px 0;
   min-width: 90px;
   max-width: 150px;
 }
-.info-nameinput:focus { outline: none; border-bottom-color: var(--accent); }
+.info-nameinput:focus { outline: none; border-bottom-color: var(--signal-acid); }
 
 /* ── Try bar (●) — the always-visible row of value pills at the foot of the stage ──
    In flow under the stage (no bloom, no collapsed state), so the stage is simply what's
@@ -405,7 +405,9 @@
   background: none; border: 1px solid var(--border);
   color: var(--text); font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); cursor: pointer;
 }
-.try-btn:hover:not(:disabled), .try-btn.on { background: var(--text); color: var(--bg); border-color: var(--text); }
+.try-btn:hover:not(:disabled) { background: var(--text); color: var(--bg); border-color: var(--text); }
+/* On is the signal: acid fill, ground ink. Hover keeps it (the rule above is the idle inversion). */
+.try-btn.on, .try-btn.on:hover:not(:disabled) { background: var(--signal-acid); color: var(--bg); border-color: var(--signal-acid); }
 .try-btn:disabled { opacity: .38; cursor: default; }
 .try-pop { position: relative; }
 .try-pop-list {
@@ -470,7 +472,7 @@
 .floor-label { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); }
 /* THE ZONE HDR SWATCHES, once. Baked radial ramps (hue at 1216 nits in the core, falling to
    its 203-nit SDR level at the rim), PQ-encoded per channel so the hue holds. The Shape pad's
-   active label pill and knob read these; the old GEOM chips that carried them are gone. Pair
+   active label pill reads these (the knob was acid from 2026-10-13); the old GEOM chips that carried them are gone. Pair
    with background-color (the SDR fallback), background-size 512px and dynamic-range-limit: no-limit. */
 :root {
   --zone-hdr-a11y: url('data:image/avif;base64,AAAAIGZ0eXBhdmlmAAAAAE1pUHJhdmlmbWlhZm1pZjEAAAFebWV0YQAAAAAAAAAhaGRscgAAAAAAAAAAcGljdAAAAAAAAAAAAAAAAAAAAAAkZGluZgAAABxkcmVmAAAAAAAAAAEAAAAMdXJsIAAAAAEAAAAOcGl0bQAAAAAAAQAAADhpaW5mAAAAAAACAAAAFWluZmUCAAAAAAEAAGF2MDEAAAAAFWluZmUCAAABAAIAAEV4aWYAAAAAGmlyZWYAAAAAAAAADmNkc2MAAgABAAEAAACBaXBycAAAAGBpcGNvAAAAE2NvbHJuY2x4AAkAEAABgAAAAAxjbGxpA+gAQAAAABRpc3BlAAAAAAAAAgAAAAIAAAAACWlyb3QAAAAAEHBpeGkAAAAAAwoKCgAAAAxhdjFDgQFMAAAAABlpcG1hAAAAAAAAAAEAAQaBAgMFhoQAAAAsaWxvYwAAAABEAAACAAEAAAABAAAB0AAAAMQAAgAAAAEAAAGOAAAAQgAAAAFtZGF0AAAAAAAAARYAAAAGRXhpZgAATU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAACAKADAAQAAAABAAACAAAAAAASAAoOAAAADEf//v/8KEiADCAyrwEQAYSABhhhiPS5hJMhlrw/rk8neqXGuhocc+d1yg8if+dFMa1VS6mN4TiTvLafrpsbr7VHggtwpGO9rkBpA3zorwwQOc7EUwEYMRy6jcB4PHgDacWbhwZHAQ2v39tlcYM5iuRRiivlIYHaETinSQq0eW4M+Vj/d8S8SMxsKzyd5WpuBkWzk1b9xNrgmHxuJu8uIXou3Ns02ehZ79lsnbsLS3iaY9AhRqdwAWK5z5+k');
@@ -490,7 +492,7 @@
   cursor: pointer;
 }
 .floor-btn:disabled { opacity: .45; cursor: default; }
-.floor-btn--primary { background: var(--accent); color: var(--bg); border-color: var(--accent); font-weight: 700; }
+.floor-btn--primary { background: var(--signal-acid); color: var(--bg); border-color: var(--signal-acid); font-weight: 700; }
 
 .dock-error { font-size: var(--type-ui-size, 0.75rem); color: var(--text-muted); }
 
@@ -511,7 +513,7 @@
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem);
 }
 .dl-what:hover:not(:disabled) { background: none; }
-.dl-what:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.dl-what:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 3px; border-radius: 4px; }
 .dl-k { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); }
 .dl-w { line-height: 1.4; color: var(--text); }
 .dl-change { display: inline-flex; align-items: center; gap: var(--spacing-01, 4px); margin-left: var(--spacing-02, 6px); color: var(--text-dim); }
@@ -601,7 +603,7 @@
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: var(--track-caps);
   color: rgba(232,232,232,.35);
 }
-.rail-seam:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 3px; border-radius: 4px; }
+.rail-seam:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 3px; border-radius: 4px; }
 .rail-seam-num { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim); }
 .rail-seam.is-open .rail-seam-num { color: var(--text); }
 .rail-seam-lbl { display: block; min-width: 0; white-space: nowrap; text-transform: uppercase; }
@@ -646,7 +648,7 @@
   position: relative; height: 198px; border-radius: var(--radius); background: var(--bg);
   cursor: crosshair; touch-action: none; user-select: none; overflow: hidden;
 }
-.shape-pad:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+.shape-pad:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
 .shape-pad-band { position: absolute; top: 0; bottom: 0; pointer-events: none; }
 .shape-pad-dots { position: absolute; left: 9px; right: 9px; top: var(--pad-top); bottom: 9px; width: calc(100% - 18px); height: calc(100% - var(--pad-top) - 9px); overflow: visible; fill: var(--border); pointer-events: none; }
 .shape-pad-cols { position: absolute; left: 0; right: 0; top: 6px; height: 30px; pointer-events: none; }
@@ -657,7 +659,7 @@
   position: absolute; top: 4px; padding: 0 3px; border-radius: var(--radius-pill);
   font-size: var(--type-body-size, 1rem); line-height: 22px; white-space: nowrap;
 }
-.shape-pad-col.on, .shape-pad-knob { background-color: var(--zone-flat); background-image: var(--zone-hdr, none); background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit; }
+.shape-pad-col.on { background-color: var(--zone-flat); background-image: var(--zone-hdr, none); background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit; }
 .shape-pad [data-zone="A11Y"] { --zone-flat: var(--zone-a11y-chip);  --zone-hdr: var(--zone-hdr-a11y); }
 .shape-pad [data-zone="UI"]   { --zone-flat: var(--zone-ui-chip);    --zone-hdr: var(--zone-hdr-ui); }
 .shape-pad [data-zone="Base"] { --zone-flat: var(--zone-base-chip);  --zone-hdr: var(--zone-hdr-base); }
@@ -668,6 +670,7 @@
 .shape-pad-ylab--off { opacity: .38; }   /* the axis is locked (Auto ascender) */
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
+  background: var(--signal-acid);   /* the knob is the signal on every pad; only the zone label keeps the HDR swatch */
   box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
 }
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
@@ -777,7 +780,7 @@
 .rail-row:first-child .rail-seam-reset { top: 9px; }
 .rail-seam-reset:disabled { color: var(--text-dim); opacity: .45; cursor: default; }
 .rail-seam-reset:hover:not(:disabled) { background: none; color: var(--accent); }
-.rail-seam-reset:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.rail-seam-reset:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; border-radius: 4px; }
 .rail-seam-reset:active:not(:disabled) svg { transform: rotate(-320deg); transition: transform var(--dur) var(--spring); }
 .matrix-axis { position: relative; height: 12px; margin-bottom: 8px; }
 .matrix-axis-tick { position: absolute; top: 0; transform: translateX(-50%); }
@@ -915,3 +918,27 @@
 .preview-reset:active:not(:disabled) {
   background: var(--surface-press);
 }
+
+/* ── The acid signal, opted in (--signal-acid, tokens.css) ──
+   --signal and --signal-ink stay pinned to grey, so the package's controls read grey. These
+   are the places Mark picked that the package draws, reached from here because an unlayered
+   rule beats the package's @layer wm.controls at any specificity. The rest of the picks sit
+   with the rules they restyle: .try-btn.on, .floor-btn--primary, .shape-pad-knob, the focus
+   rings of this file, the scene tab underlines, .info-nameinput. */
+
+/* Value underline: acid, the number stays grey. The package colours the active number AND
+   its rule with --signal-ink; only the rule is picked, so the number is restated as --text
+   (its idle ink, the same grey the focused number already took). */
+:is(.try, .rail) .slider-number { text-decoration-color: var(--signal-acid); }
+:is(.try, .rail) .slider-number:focus,
+:is(.try, .rail) .slider-row:focus-within .slider-number { color: var(--text); text-decoration-color: var(--signal-acid); }
+
+/* Focus rings, wherever the package or the app draws one. Colour only: each ring keeps its
+   own width and offset, and a rule that sets `outline: none` still draws nothing. :root:root
+   lifts it over the package files that are not layered (Fitting, StopSlider, Specimen). */
+:root:root :is(:focus-visible, .wm-chip:has(> input:focus-visible)) { outline-color: var(--signal-acid); }
+
+/* Glyph grid rollover: the package inverts to --accent; this cell is the signal. The glyph
+   is already --bg ink. GlyphPicker.css is not layered and loads after this file, so it
+   needs the extra class to win on specificity rather than on order. */
+.gp .gp-cell:hover { background: var(--signal-acid); }
