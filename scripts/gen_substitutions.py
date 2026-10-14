@@ -44,6 +44,8 @@ CHAR_TO_VARIANT = {
     '-': ('default', None),
 }
 
+SUFFIX_TO_CHAR = {'rcltA11y': 'A', 'rcltBase': 'B', 'rcltGeo': 'G'}
+
 # Irreducible hand-authored inputs: glyph names GSUB can't decode to a headline char,
 # and ligatures that follow a headline. (Documented; the only non-font input.)
 _NAME = {'IJ': 'I', 'ij': 'I', 'lslash': 'l', 'ldot': 'l', 'tbar': 't',
@@ -108,14 +110,18 @@ if getattr(gsub, 'FeatureVariations', None):
 
 
 def bands(g):
-    """→ (thresholds, zone-per-band string), zone by each target's onset GEOM."""
+    """→ (thresholds, zone-per-band string), zone by each target's real suffix.
+
+    The zone comes from the TARGET GLYPH's own suffix (.rcltA11y / .rcltBase / .rcltGeo),
+    not from the onset GEOM: G starts swapping at GEOM 40 (a "Base"-looking onset) but its
+    target is G.rcltGeo (there is no G.rcltBase), so the onset guess mislabeled it."""
     by_target = defaultdict(lambda: [1e9, -1e9])
     for lo, hi, t in swaps[g]:
         by_target[t][0] = min(by_target[t][0], lo)
         by_target[t][1] = max(by_target[t][1], hi)
     za = [None] * 101
-    for lo, hi in by_target.values():
-        zc = 'A' if lo < 15 else ('B' if lo < 55 else 'G')
+    for t, (lo, hi) in by_target.items():
+        zc = SUFFIX_TO_CHAR[t.rsplit('.', 1)[-1]]
         for x in range(int(round(lo)), int(round(hi)) + 1):
             if 0 <= x <= 100:
                 za[x] = zc

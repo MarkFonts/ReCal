@@ -121,9 +121,9 @@
           "zone": null
         },
         {
-          "label": "Base",
-          "suffix": "rcltBase",
-          "zone": "Base"
+          "label": "Geo",
+          "suffix": "rcltGeo",
+          "zone": "Geo"
         }
       ]
     },
@@ -588,7 +588,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -1115,7 +1115,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -1135,7 +1135,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -1155,7 +1155,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -1175,7 +1175,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -1563,7 +1563,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -1646,7 +1646,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": "G"
     },
     {
@@ -2085,7 +2085,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": null
     },
     {
@@ -2095,7 +2095,7 @@
       "thresholds": [
         40
       ],
-      "zones": "-B",
+      "zones": "-G",
       "headline": null
     },
     {
