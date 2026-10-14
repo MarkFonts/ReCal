@@ -117,24 +117,29 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
 // runs continuously across word and chevron (house chevron geometry, see holo.css).
 // The open row has no chevron; in its slot sits that row's own reset, a button beside the
 // heading (not inside it) that puts only this row's values back to stock, one undo step.
-function RailRow({ n, label, section, summary, open, above, next, dir, onToggle, children }: {
-  n: number; label: string; section: Section; summary: string; open: boolean; above: boolean; next: boolean
+function RailRow({ n, label, section, summary, open, above, pinBelow, next, dir, onToggle, children }: {
+  n: number; label: string; section: Section; summary: string; open: boolean; above: boolean; pinBelow: boolean; next: boolean
   dir: 'fwd' | 'back'; onToggle: () => void; children: React.ReactNode
 }) {
   const { state, dispatch } = useInstrument()
   const dirty = open && sectionDirty(state, section)
   return (
-    <div className="rail-row">
-      <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
-        aria-expanded={open} onClick={onToggle}>
-        <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
-        <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
-        {!open && <span className="rail-seam-sum tnum">{summary}</span>}
-      </button>
-      {open && (
-        <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
-          onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
-      )}
+    <div className="rail-row" data-pin={open ? undefined : above ? 'top' : pinBelow ? 'bottom' : undefined} data-open={open ? '' : undefined}>
+      {/* One box for the seam and (when open) its reset, so the pinned header and its reset
+          travel together: the open row's head is the sticky element, the reset a positioned
+          child of it. */}
+      <div className="rail-seam-head">
+        <button className={`rail-seam rail-seam--row${open ? ' is-open' : above ? ' is-above' : ' is-below'}${next ? ' is-next' : ''}`}
+          aria-expanded={open} onClick={onToggle}>
+          <span className="rail-seam-num tnum" aria-hidden="true">{n}</span>
+          <span className="rail-seam-lbl">{label}{!open && <span className="rail-seam-chv-t" aria-hidden="true" />}</span>
+          {!open && <span className="rail-seam-sum tnum">{summary}</span>}
+        </button>
+        {open && (
+          <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
+            onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
+        )}
+      </div>
       {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
     </div>
   )
@@ -158,6 +163,28 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     if (d.freezeOpsz && d.autoAscender) { dispatch({ type: 'setFreezeOpsz', value: false }); setOpszNote(true) }
     if (!d.autoAscender) setOpszNote(false)
   }, [d.freezeOpsz, d.autoAscender, dispatch])
+  // Pinned neighbors (shell.css, .rail-row[data-pin]): measure the row heights and the footer
+  // and hand each pinned row its sticky offset as a custom property. Re-measured whenever a
+  // row or the footer changes size (a wrapping summary, the footer's "change" options).
+  useLayoutEffect(() => {
+    const rail = railRef.current
+    const stack = rail?.querySelector('.rail-stack')
+    const foot = rail?.querySelector('.rail-dl') as HTMLElement | null
+    if (!rail || !stack || !foot || open === null) return
+    const rows = Array.from(stack.children) as HTMLElement[]
+    const apply = () => {
+      let top = 0
+      for (let i = 0; i < open; i++) { rows[i].style.setProperty('--pin-top', `${top}px`); top += rows[i].offsetHeight }
+      let bottom = foot.offsetHeight
+      rows[open].style.setProperty('--pin-top', `${top}px`)   // the open row's own header sticks below the rows above it
+      for (let i = rows.length - 1; i > open; i--) { rows[i].style.setProperty('--pin-bottom', `${bottom}px`); bottom += rows[i].offsetHeight }
+    }
+    apply()
+    const ro = new ResizeObserver(apply)
+    ro.observe(foot)
+    rows.forEach((r, i) => { if (i !== open) ro.observe(r) })
+    return () => ro.disconnect()
+  }, [open, collapsed])
   // ⌘Z / ⇧⌘Z — undo/redo ◆ edits (matrix drags snapshot on grab). Ignored in text fields.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -245,7 +272,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       <div className="rail-stack">
         {ROW_LABELS.map((label, i) => (
           <RailRow key={label} n={i + 1} label={label} section={ROW_SECTIONS[i]} summary={summaries[i]} dir={dir}
-            open={open === i} above={open !== null && i < open} next={open !== null && i === open + 1}
+            open={open === i} above={open !== null && i < open} pinBelow={open !== null && i > open} next={open !== null && i === open + 1}
             onToggle={() => toggle(i)}>
             {bodies[i]}
           </RailRow>
