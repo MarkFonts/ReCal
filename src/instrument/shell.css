@@ -533,10 +533,35 @@
 .canvas[data-try="float"] .try .try-btn:disabled, .canvas[data-try="float"] .try .wm-accent:disabled { opacity: 1; color: var(--text-dim); }
 /* Reset fills its grid span, so its edges are column edges like every other control */
 .canvas[data-try="float"] .try-c-r .preview-reset { margin-left: 0; width: 100%; justify-content: center; }
-/* the tab row on the same grid: its text starts at the column-1 content edge, exactly where TRY does */
-.canvas[data-try="float"] .canvas-bar { padding-inline: 0; }
-.canvas[data-try="float"] .canvas-bar .modebar { margin-inline-start: calc(var(--tab-pad, 8px) * -1); }
-.canvas[data-try="float"] .mode-row { padding-left: var(--grid-gutter, 24px); }
+/* THE TOP ROWS on the same columns. The tab row and the scene's sub-row are grids over the canvas
+   (wm-grid / subgrid, like the Try block); each label is placed with --start/--span (TryBar-style:
+   chosen in Shell from the measured text, whole columns, packed left). The label text starts on a column
+   edge, with Words on column 1's content edge (one gutter in, where TRY's text is). Tabs have no visible
+   box, so a button's box is the text plus an 8px halo to its left (negative margin) for the hover frame.
+   The sub-row hangs from the column "Scale" starts on (--s), so "Sample" sits exactly under "Scale". */
+.canvas[data-try="float"] .canvas-bar { display: grid; align-items: center; padding-inline: 0; column-gap: var(--grid-gutter, 24px); }
+.canvas[data-try="float"] .canvas-bar .modebar { display: contents; }
+.canvas[data-try="float"] :is(.canvas-bar, .scene-bar) [data-gk] {
+  grid-column: var(--start, auto) / span var(--span, 1); justify-self: start; white-space: nowrap;
+}
+.canvas[data-try="float"] :is(.mode-btn, .text-tab, .chip) {
+  padding-inline: var(--tab-pad, 8px); margin-left: calc(var(--tab-pad, 8px) * -1);
+  align-items: flex-start;   /* the label sits at the box's left, bold or not (it was centered in a bold-width box) */
+}
+.canvas[data-try="float"] .mode-btn[data-gk="tab:words"] { margin-left: calc(var(--grid-gutter, 24px) - var(--tab-pad, 8px)); }
+.canvas[data-try="float"] .theme-cell { justify-self: end; padding-inline: 0 var(--grid-gutter, 24px); }
+.canvas[data-try="float"] .mode-row {
+  display: grid; align-items: baseline; padding: 0 0 var(--spacing-03, 8px); column-gap: var(--grid-gutter, 24px);
+}
+.canvas[data-try="float"] .mode-row .mode-label { grid-column: 1 / span var(--s1, 2); width: auto; padding: calc(var(--spacing-03, 8px) - 3px) 0 0 var(--grid-gutter, 24px); }
+.canvas[data-try="float"] .mode-row .scene-bar {
+  grid-column: var(--s, 3) / -1; display: grid; grid-template-columns: subgrid; column-gap: inherit; row-gap: 0;
+  align-items: baseline; padding: 0;
+}
+.canvas[data-try="float"] .scene-bar :is(.text-tabs, .body-pairing, .feature-chips) { display: contents; }
+.canvas[data-try="float"] .scene-bar .drawer-label { width: auto; }
+.canvas[data-try="float"] .scene-bar .ui-credit { grid-column: var(--start, 1) / span var(--span, 1); padding-left: 0; }
+.canvas[data-try="float"] .mode-row .body-pairing { padding-left: 0; }
 /* ?grid draws the columns over the canvas only (the rail is off the grid) */
 body:has(.canvas[data-try="float"]) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-right, 0px); }
 /* a control icon: absolute inside the pill, the label shifted clear of it */

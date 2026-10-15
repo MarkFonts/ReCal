@@ -29,17 +29,20 @@ export const SCENES: { mode: SceneMode; label: string }[] = [
 
 // INFO sits in the tab row (content type), but toggles the right-side opaque overlay
 // rather than replacing the content scene.
-export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
+// `gp` (the float's grid placement): maps a tab's key to its --start/--span, so each label sits on a
+// grid column edge; `data-gk` is how Shell measures the label text to choose the span.
+export function Modebar({ mode, setMode, showInfo, toggleInfo, gp }: {
   mode: SceneMode; setMode: (m: SceneMode) => void
   showInfo: boolean; toggleInfo: () => void
+  gp?: (key: string) => CSSProperties | undefined
 }) {
   return (
     <div className="modebar">
       {SCENES.map(s => (
-        <button key={s.mode} data-label={s.label} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
+        <button key={s.mode} data-label={s.label} data-gk={`tab:${s.mode}`} style={gp?.(`tab:${s.mode}`)} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
           onClick={() => setMode(s.mode)}>{s.label}</button>
       ))}
-      <button data-label="Info" className={`mode-btn${showInfo ? ' on' : ''}`}
+      <button data-label="Info" data-gk="tab:info" style={gp?.('tab:info')} className={`mode-btn${showInfo ? ' on' : ''}`}
         aria-pressed={showInfo} onClick={toggleInfo}>Info</button>
     </div>
   )
@@ -47,7 +50,8 @@ export function Modebar({ mode, setMode, showInfo, toggleInfo }: {
 
 // Persistent per-scene control bar — lives in the canvas above the stage (not in
 // the scroll area, so it never covers scene content). Only some scenes have controls.
-export function SceneControls({ mode, source, setSource, pairs, togglePair, glyphSet, setGlyphSet }: {
+export function SceneControls({ mode, source, setSource, pairs, togglePair, glyphSet, setGlyphSet, gp }: {
+  gp?: (key: string) => CSSProperties | undefined   // the float's grid placement of each item (see Modebar)
   mode: SceneMode
   source: string; setSource: (s: string) => void
   pairs: Set<string>; togglePair: (k: string) => void
@@ -57,7 +61,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
     <div className="scene-bar">
       <div className="text-tabs">
         {GLYPH_SET_KEYS.map(k => (
-          <button key={k} data-label={k} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
+          <button key={k} data-label={k} data-gk={`sub:${k}`} style={gp?.(`sub:${k}`)} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
         ))}
       </div>
     </div>
@@ -66,7 +70,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
     <div className="scene-bar">
       <div className="text-tabs">
         {TEXT_SOURCES.map(k => (
-          <button key={k} data-label={k} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>
+          <button key={k} data-label={k} data-gk={`sub:${k}`} style={gp?.(`sub:${k}`)} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>
         ))}
       </div>
     </div>
@@ -74,10 +78,10 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
   if (mode === 'scale') return (
     <div className="scene-bar">
       <div className="body-pairing">
-        <span className="drawer-label">Body pairing</span>
+        <span className="drawer-label" data-gk="sub:bp" style={gp?.('sub:bp')}>Body pairing</span>
         <div className="feature-chips">
           {BODY_TIERS.map(t => (
-            <button key={t.key} data-label={t.key} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}>{t.key}</button>
+            <button key={t.key} data-label={t.key} data-gk={`sub:${t.key}`} style={gp?.(`sub:${t.key}`)} className={`chip${pairs.has(t.key) ? ' on' : ''}`} onClick={() => togglePair(t.key)}>{t.key}</button>
           ))}
         </div>
       </div>
@@ -85,7 +89,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
   )
   if (mode === 'ui') return (
     <div className="scene-bar">
-      <span className="ui-credit">
+      <span className="ui-credit" style={gp?.('sub:credit')}>
         These are <a className="ui-credit-link" href="https://coss.com/ui" target="_blank" rel="noreferrer">COSS ui</a>
         {' '}— accessible React components on Base UI + Tailwind by <a className="ui-credit-link" href="https://github.com/pasqualevitiello" target="_blank" rel="noreferrer">Pasquale Vitiello</a>, adopted across Cal.com — rendered here in Cal Sans
       </span>

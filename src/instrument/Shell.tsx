@@ -3,7 +3,7 @@
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
 import './holo.css'
-import { useState, useRef, useEffect, useLayoutEffect, type CSSProperties } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, type CSSProperties } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
@@ -479,6 +479,65 @@ if (TRY_PLACE === 'float' && /[?&]grid\b/.test(window.location.search)) {
   const sc = document.createElement('script'); sc.src = gridSnapUrl; sc.defer = true; document.head.appendChild(sc)
 }
 
+// The float's top rows on the canvas columns. Measures the canvas (width, the house column count and
+// gutter) and each label's text, then hands back, per label, a --start/--span: whole columns, wide
+// enough for the text, packed left, each label's text starting on a column edge. The tab row starts at
+// column 1 (Words' text one gutter in, as TRY's is); the scene's sub-row starts at the column "Scale"
+// starts on, so "Sample" sits exactly under "Scale" and every sub-row hangs from the same line.
+function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boolean) {
+  type G = { W: number; cols: number; g: number; tabs: [string, number][]; sub: [string, number][] }
+  const [g0, setG] = useState<G | null>(null)
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!on || !root) return
+    const textW = (e: Element) => { const r = document.createRange(); r.selectNodeContents(e); return Math.ceil(r.getBoundingClientRect().width) }
+    const read = () => {
+      const cs = getComputedStyle(document.documentElement)
+      const next: G = {
+        W: root.getBoundingClientRect().width, cols: +cs.getPropertyValue('--grid-cols') || 24, g: parseFloat(cs.getPropertyValue('--grid-gutter')) || 24,
+        tabs: [...root.querySelectorAll('.canvas-bar [data-gk]')].map(e => [e.getAttribute('data-gk')!, textW(e)]),
+        sub: [...root.querySelectorAll('.mode-row [data-gk]')].map(e => [e.getAttribute('data-gk')!, textW(e)]),
+      }
+      setG(p => (p && JSON.stringify(p) === JSON.stringify(next) ? p : next))
+    }
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(root)
+    document.fonts?.ready.then(read)
+    return () => ro.disconnect()
+  })
+  return useMemo(() => {
+    const out = { tab: {} as Record<string, CSSProperties>, sub: {} as Record<string, CSSProperties>, S: 3, themeStart: 0, themeSpan: 0, cols: g0?.cols ?? 24 }
+    if (!g0) return out
+    const { W, cols, g } = g0
+    const col = (W - (cols - 1) * g) / cols
+    const spanFor = (px: number) => Math.min(cols, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
+    const sty = (start: number, span: number): CSSProperties =>
+      ({ ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span } as CSSProperties)
+    const SAFE = 6   // the selected label is bold, a touch wider than the measured one
+    let cur = 1
+    g0.tabs.forEach(([k, w], i) => {
+      const s = spanFor(w + SAFE + (i === 0 ? g : 0))      // Words carries the one-gutter inset in its box
+      if (cur + s - 1 > cols) cur = 1
+      out.tab[k] = sty(cur, s)
+      if (k === 'tab:scale') out.S = cur
+      cur += s
+    })
+    const S = out.S
+    cur = S
+    g0.sub.forEach(([k, w]) => {
+      const s = spanFor(w + SAFE)
+      if (cur + s - 1 > cols) cur = S
+      out.sub[k] = { ['--start' as string]: cur - S + 1, ['--span' as string]: s } as CSSProperties   // local to the sub-row's subgrid
+      cur += s
+    })
+    out.sub['credit'] = { ['--start' as string]: 1, ['--span' as string]: cols - S + 1 } as CSSProperties
+    out.themeSpan = spanFor(112)
+    out.themeStart = cols - out.themeSpan + 1
+    return out
+  }, [g0])
+}
+
 function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, featStr }: {
   size: number; setSize: (n: number) => void
   tracking: number; setTracking: (n: number) => void
@@ -536,6 +595,9 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   // (transparent, no background of its own) instead of pushing it down — measured so
   // UiKitBoard knows where row 0 should rest to clear the nav, same as it looked before
   // the nav overlaid anything. Other tabs are untouched (nav stays in normal flow there).
+  const rootRef = useRef<HTMLDivElement>(null)
+  const fg = useFloatGrid(rootRef, TRY_PLACE === 'float')
+  const flt = TRY_PLACE === 'float'
   const navRef = useRef<HTMLDivElement>(null)
   const [navHeight, setNavHeight] = useState(0)
   const uiOverlay = mode === 'ui' && !vmActive
@@ -568,18 +630,25 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         fit={fit} topInset={uiOverlay ? navHeight : 0} />
 
   return (
-    <div className={`canvas${vmActive ? ' canvas--vm' : ''}${TRY_PLACE === 'float' ? ' wm-grid--bleed' : ''}`} data-try={TRY_PLACE}>
+    <div ref={rootRef} className={`canvas${vmActive ? ' canvas--vm' : ''}${TRY_PLACE === 'float' ? ' wm-grid--bleed' : ''}`} data-try={TRY_PLACE}>
       <div ref={navRef} className={`canvas-nav${uiOverlay ? ' canvas-nav--overlay' : ''}`}>
         <div className={`canvas-bar${TRY_PLACE === 'float' ? ' wm-grid wm-lines' : ''}`}>
-          <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
+          <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)}
+            gp={flt ? k => fg.tab[k] : undefined} />
+          {flt && fg.themeSpan > 0 && (
+            <div className="theme-cell" style={{ ['--start' as string]: fg.themeStart, ['--span' as string]: fg.themeSpan, ['--start-md' as string]: fg.themeStart, ['--span-md' as string]: fg.themeSpan } as CSSProperties}>
+              <ThemeSwitch />
+            </div>
+          )}
         </div>
         {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
             disappearing never shifts the label (or stage) vertically. */}
-        <div className="mode-row">
+        <div className={`mode-row${flt ? ' wm-grid wm-lines' : ''}`} style={flt ? { ['--s' as string]: fg.S, ['--s1' as string]: fg.S - 1 } as CSSProperties : undefined}>
           <ModeLabel />
           <SceneControls mode={mode} source={source} setSource={setSource}
             pairs={pairs} togglePair={togglePair}
-            glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+            glyphSet={glyphSet} setGlyphSet={setGlyphSet}
+            gp={flt ? k => fg.sub[k] : undefined} />
         </div>
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
@@ -592,7 +661,6 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         </div>
         {tryBar}
       </div>
-      {TRY_PLACE === 'float' && <div className="theme-corner"><ThemeSwitch /></div>}
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
     </div>
