@@ -84,6 +84,15 @@
 
 .seo-below .card-fig { margin: 24px 0 0; max-width: 820px; }
 .seo-below .card-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border-subtle, var(--sline)); }
+/* Dark and light card, one visible at a time. Dark is the default (no data-theme, or dark); light shows
+   under data-theme=light, and under auto when the OS is light. */
+.seo-below .card-fig img.card-img--light { display: none; }
+:root[data-theme="light"] .seo-below .card-fig img.card-img--dark { display: none; }
+:root[data-theme="light"] .seo-below .card-fig img.card-img--light { display: block; }
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] .seo-below .card-fig img.card-img--dark { display: none; }
+  :root[data-theme="auto"] .seo-below .card-fig img.card-img--light { display: block; }
+}
 
 /* THE SPECIMEN IS A STAGE (data-nosnap, linesSkip). Its rows are the preset at a display
    size with their own leading; the copy below it goes back on the line by the snapper. */
