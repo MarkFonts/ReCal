@@ -36,8 +36,13 @@ export function Modebar({ mode, setMode, showInfo, toggleInfo, gp }: {
   showInfo: boolean; toggleInfo: () => void
   gp?: (key: string) => CSSProperties | undefined
 }) {
+  // On a phone the tab row scrolls sideways (shell.css); keep the chosen tab in view.
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    barRef.current?.querySelector<HTMLElement>('.mode-btn.on')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [mode])
   return (
-    <div className="modebar">
+    <div className="modebar" ref={barRef}>
       {SCENES.map(s => (
         <button key={s.mode} data-label={s.label} data-gk={`tab:${s.mode}`} style={gp?.(`tab:${s.mode}`)} className={`mode-btn${mode === s.mode ? ' on' : ''}`}
           onClick={() => setMode(s.mode)}>{s.label}</button>
@@ -57,8 +62,13 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
   pairs: Set<string>; togglePair: (k: string) => void
   glyphSet: string; setGlyphSet: (k: string) => void
 }) {
+  // The sub-row scrolls sideways on a phone too: keep the chosen item in view.
+  const barRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    barRef.current?.querySelector<HTMLElement>('.text-tab.on')?.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+  }, [mode, source, glyphSet])
   if (mode === 'glyphs') return (
-    <div className="scene-bar">
+    <div className="scene-bar" ref={barRef}>
       <div className="text-tabs">
         {GLYPH_SET_KEYS.map(k => (
           <button key={k} data-label={k === 'All' ? 'Everything' : k} data-gk={`sub:${k}`} style={gp?.(`sub:${k}`)} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k === 'All' ? 'Everything' : k}</button>
@@ -67,7 +77,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
     </div>
   )
   if (mode === 'paragraph') return (
-    <div className="scene-bar">
+    <div className="scene-bar" ref={barRef}>
       <div className="text-tabs">
         {TEXT_SOURCES.map(k => (
           <button key={k} data-label={k} data-gk={`sub:${k}`} style={gp?.(`sub:${k}`)} className={`text-tab${source === k ? ' on' : ''}`} onClick={() => setSource(k)}>{k}</button>

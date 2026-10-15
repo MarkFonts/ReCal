@@ -608,7 +608,12 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   useLayoutEffect(() => {
     const el = navRef.current
     if (!el) return
-    const measure = () => setNavHeight(el.getBoundingClientRect().height)
+    const measure = () => {
+      setNavHeight(el.getBoundingClientRect().height)
+      // the tab row's height, for the phone's Info panel to start under it (shell.css)
+      const bar = el.querySelector<HTMLElement>('.canvas-bar')
+      if (bar) el.parentElement?.style.setProperty('--bar-h', `${bar.offsetHeight}px`)
+    }
     measure()
     const ro = new ResizeObserver(measure)
     ro.observe(el)
@@ -831,7 +836,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   // would not match the lines on screen.
   const vmLeading = state.railGroup === 3 ? effectiveLineHeightEm(state.defaults.vmetrics) : null
   const leadingDial = has('leading')
-    ? <TryDial label="Leading" icon="format_line_spacing" value={vmLeading ?? leading} min={0.8} max={2.5} step={0.1}
+    ? <TryDial label="Leading" icon="format_line_spacing" value={vmLeading ?? leading} min={0.8} max={2.5} step={0.01}
         disabled={vmLeading !== null} display={vmLeading !== null ? vmLeading.toFixed(2) : undefined}
         title={vmLeading !== null ? 'Line spacing follows the font\u2019s line metrics while Vertical Metrics is open' : undefined}
         onChange={v => setLeading(v as number)} />
@@ -939,10 +944,10 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     <div className="try wm-grid wm-lines" role="group" aria-label="Try" ref={barRef}
       onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
       <span className="try-lbl try-c-lbl" style={at.lbl}>Try</span>
-      {colA.length > 0 && <div className="try-col" style={at.a}>{colA}</div>}
-      {colB.length > 0 && <div className="try-col" style={at.b}>{colB}</div>}
-      <div className="try-col" style={at.c}>{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
-      {colD.length > 0 && <div className="try-col" style={at.d}>{colD}</div>}
+      {colA.length > 0 && <div className="try-col try-col--a" style={at.a}>{colA}</div>}
+      {colB.length > 0 && <div className="try-col try-col--b" style={at.b}>{colB}</div>}
+      <div className="try-col try-col--c" style={at.c}>{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
+      {colD.length > 0 && <div className="try-col try-col--d" style={at.d}>{colD}</div>}
       <div className="try-c-r" style={at.r}>{resetBtn}</div>
     </div>
   )

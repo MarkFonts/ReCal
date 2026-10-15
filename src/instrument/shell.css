@@ -60,7 +60,7 @@
 @media (max-width: 800px) {
   .shell:not(.shell--rail-collapsed) { grid-template-columns: 44px 1fr; }
   .shell:not(.shell--rail-collapsed) .rail { position: fixed; inset: 0; z-index: 300; border-right: 0; }
-  .shell:not(.shell--rail-collapsed) .try { display: none; }
+  .shell:not(.shell--rail-collapsed) .try, .shell:not(.shell--rail-collapsed) .canvas.wm-grid--bleed .try { display: none; }   /* the second selector outranks the float's own display: grid */
   .rail-close {
     display: inline-flex; align-items: center; gap: var(--spacing-02, 6px); align-self: flex-start;
     min-height: 32px; margin-top: var(--spacing-05, 16px); margin-bottom: calc(-1 * var(--spacing-05, 16px));
@@ -207,6 +207,7 @@
      Named so the floating Try label can start on exactly the same x. */
   --canvas-inset: var(--spacing-06, 24px);
   --tab-pad: var(--spacing-03, 8px);
+  --bar-h: 58px;   /* the tab row's height; Canvas measures it and sets the real one inline (the phone's Info panel starts under it) */
 }
 /* Everything below the top bar; anchors the Font info overlay (this box doesn't
    scroll — the stage inside it does), so the overlay stays put vertically and
@@ -523,11 +524,105 @@
 .canvas.wm-grid--bleed .mode-row .body-pairing { padding-left: 0; }
 /* ?grid draws the columns over the canvas only (the rail is off the grid) */
 body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-right, 0px); }
-/* PHONE (<= 680px): the controls are five bands tall there, so floating them would bury the text. They sit in
-   the flow under the stage instead (on the ground), and the stage's own bottom padding is the ordinary one. */
+/* PHONE (<= 680px). The same layout, made to fit; the bottom sheet (Timeless-style) is a later pass.
+   - The shell is the VISIBLE height (dvh): a phone's 100vh is taller than the screen once the URL bar is up, which
+     put the foot of the controls under the browser's toolbar.
+   - TABS: one row, scrolled sideways, never wrapped. The chosen tab scrolls into view (Modebar); the theme switch
+     stays at the right edge, outside the scroller, so it is always reachable. The scene's sub-row (Sample / Tale ...,
+     Everything / Uppercase ..., the body pairings) is the same kind of row. A fade marks the cut edge.
+   - TRY: in the flow under the stage, on the ground, two columns. The label and Reset share a header row; every
+     feature group stays whole: Size | Tracking and the scene's Styles | Alignment each on one row, Optical size /
+     Leading and Weight / Italic | Features stacked at full width (Optical size carries its AUTO switch, which needs it).
+   - The stage keeps a gutter's worth of side padding instead of 48px, so a word is not broken to fit. */
 @media (max-width: 680px) {
-  .canvas.wm-grid--bleed .try { position: relative; left: auto; right: auto; bottom: auto; background: var(--bg); pointer-events: auto; }
-  .canvas.wm-grid--bleed .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) { padding-bottom: var(--spacing-09, 64px); }
+  .shell { height: 100vh; height: 100dvh; }
+
+  .canvas.wm-grid--bleed .canvas-bar { display: flex; align-items: flex-start; column-gap: 0; padding-left: var(--spacing-03, 8px); }
+  .canvas.wm-grid--bleed .canvas-bar .modebar {
+    display: flex; flex: 1 1 0; min-width: 0; gap: 0;
+    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+    padding: 0 var(--spacing-06, 24px) 0 0;
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) calc(100% - var(--spacing-06, 24px)), rgba(0, 0, 0, 0));
+            mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) calc(100% - var(--spacing-06, 24px)), rgba(0, 0, 0, 0));
+  }
+  .canvas.wm-grid--bleed :is(.modebar, .scene-bar)::-webkit-scrollbar { display: none; }
+  .canvas.wm-grid--bleed :is(.mode-btn, .text-tab, .chip) { margin-left: 0; flex: none; }
+  .canvas.wm-grid--bleed .theme-cell { flex: none; grid-row: auto; padding-inline: 0 var(--spacing-05, 16px); }
+
+  .canvas.wm-grid--bleed .mode-row {
+    display: flex; position: relative; align-items: baseline; min-height: 42px; padding: 0 0 0 var(--spacing-03, 8px); column-gap: 0;
+  }
+  /* the building / saved status floats over the row's right end instead of taking width from the sub-tabs */
+  .canvas.wm-grid--bleed .mode-row .mode-label {
+    position: absolute; right: var(--spacing-05, 16px); top: 0; z-index: 1; grid-column: auto; width: auto;
+    padding: calc(var(--spacing-03, 8px) - 3px) 0 0; background: var(--bg);
+  }
+  .canvas.wm-grid--bleed .mode-row .mode-label:empty { display: none; }
+  .canvas.wm-grid--bleed .mode-row .scene-bar {
+    display: flex; grid-column: auto; flex: 1 1 0; min-width: 0; gap: 0; align-items: baseline;
+    overflow-x: auto; overscroll-behavior-x: contain; scrollbar-width: none;
+  }
+  .canvas.wm-grid--bleed .mode-row .scene-bar:has(:is(.text-tab, .chip)) {
+    padding-right: var(--spacing-06, 24px);
+    -webkit-mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) calc(100% - var(--spacing-06, 24px)), rgba(0, 0, 0, 0));
+            mask-image: linear-gradient(to right, rgba(0, 0, 0, 1) calc(100% - var(--spacing-06, 24px)), rgba(0, 0, 0, 0));
+  }
+  .canvas.wm-grid--bleed .scene-bar :is(.text-tabs, .body-pairing, .feature-chips) { display: flex; flex: none; align-items: baseline; }
+  .canvas.wm-grid--bleed .mode-row .body-pairing { padding-left: 0; }
+  .canvas.wm-grid--bleed .scene-bar .drawer-label { flex: none; white-space: nowrap; padding-inline: var(--spacing-03, 8px) var(--spacing-02, 6px); }
+  .canvas.wm-grid--bleed .scene-bar .ui-credit { grid-column: auto; padding: 0 var(--spacing-05, 16px) var(--spacing-03, 8px) var(--spacing-03, 8px); }
+
+  .canvas.wm-grid--bleed .try {
+    position: relative; left: auto; right: auto; bottom: auto; background: var(--bg); pointer-events: auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-02, 6px) var(--spacing-04, 12px);
+    padding: var(--spacing-03, 8px) var(--spacing-05, 16px) var(--spacing-04, 12px); border-top: 1px solid var(--border);
+  }
+  .canvas.wm-grid--bleed .try > * { grid-column: 1 / -1; }
+  .canvas.wm-grid--bleed .try > .try-lbl { grid-column: 1; grid-row: 1; min-height: 0; }
+  .canvas.wm-grid--bleed .try > .try-c-r { grid-column: 2; grid-row: 1; justify-self: end; align-self: center; }
+  .canvas.wm-grid--bleed .try-c-r .preview-reset { width: auto; margin-left: 0; }
+  .try-col::after { display: none; }
+  /* The dials drop their small marks here: at half a row a 166px "Tracking" pill has no room for a mark, its name
+     and its number, and the name ran into the number. The names say what the marks said; the buttons keep theirs. */
+  .try .try-pill-ic { display: none; }
+  .try .try-pill--ic .slider-label-left { padding-left: var(--spacing-01, 4px); }
+  /* THE DIALS KEEP THEIR OWN ROW HEIGHT, as in font-proofer's sidebar. On touch the primitive makes a dial's row 48px
+     (the 30px bar sits in it with a shelf above and below) and lets the bar grow to fill the row while it is held; a
+     row only stays clear of its neighbours if it is allowed to BE 48px. So no cell here pins a height: rows size to
+     their content, 6px apart (the sidebar's gap), and the buttons (Italic, Features, Styles, Alignment) stay 30. */
+  .canvas.wm-grid--bleed .try-c-r .preview-reset { padding-block: 0; min-height: 24px; height: 24px; }
+  .try-col { grid-template-rows: none; grid-auto-rows: auto; }
+  /* Size | Tracking and Styles | Alignment: the group on one row (a lone control takes the row) */
+  .try-col--a, .try-col--d { grid-template-rows: auto; }
+  .try-col--a > :nth-child(1), .try-col--d > :nth-child(1) { grid-column: 1; grid-row: 1; }
+  .try-col--a > :nth-child(2), .try-col--d > :nth-child(2) { grid-column: 2; grid-row: 1; }
+  .try-col--a > :only-child, .try-col--d > :only-child { grid-column: 1 / -1; }
+  /* Italic | Features: half a row each */
+  .try-row > :first-child { grid-column: 1; }
+  .try-row > :last-child { grid-column: 2; }
+
+  .canvas.wm-grid--bleed .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) {
+    padding: var(--spacing-05, 16px) var(--spacing-05, 16px) var(--spacing-06, 24px);
+  }
+
+  /* GLYPHS: the picker's 280px side column would push the grid off the right edge. Stacked instead: the chosen
+     glyph and its console in one compact band that stays at the top, the grid under it, scrolling beneath. */
+  /* The Info panel starts under the tab row, not at the top of the screen: it covered the Info tab (so it could not be
+     closed) and the theme switch. It spans the canvas. */
+  .info-panel { top: var(--bar-h, 58px); left: 0; width: auto; }
+  /* a group of a menu and a dial (Scale: tier menu, Measure) is two full rows: a dial needs more than half a row */
+  .try-col--d:has(> .try-pill) > :nth-child(n) { grid-column: 1 / -1; grid-row: auto; }
+
+  .stage-pad--glyphs .gp { flex-direction: column; align-items: stretch; width: 100%; gap: var(--spacing-03, 8px); }
+  .stage-pad--glyphs .gp-side {
+    flex: none !important; align-self: stretch; position: sticky; top: calc(var(--spacing-05, 16px) * -1); z-index: 1;
+    display: grid; grid-template-columns: 40% minmax(0, 1fr); column-gap: var(--spacing-04, 12px); align-items: center;
+    padding: var(--spacing-02, 6px) 0 var(--spacing-03, 8px) var(--spacing-06, 24px); background: var(--bg);
+  }
+  .stage-pad--glyphs .gp-specimen { font-size: 30cqw; }
+  .stage-pad--glyphs .gp-console { gap: var(--spacing-02, 6px); min-width: 0; }
+  .stage-pad--glyphs .gp-copy { justify-content: flex-start; padding-inline: 0; }
+  .stage-pad--glyphs .gp-name { font-size: var(--type-ui-size, 0.75rem); }
 }
 /* a control icon: absolute inside the pill, the label shifted clear of it */
 .try-pill { position: relative; }
