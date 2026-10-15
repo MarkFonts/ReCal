@@ -1,5 +1,9 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+
+// iOS Safari only applies :active to a tapped element when a touchstart listener exists somewhere on the page.
+// Without one, the Download pill's pressed state (its light tightening, the 1px drop) never shows on a phone.
+document.addEventListener('touchstart', () => {}, { passive: true })
 import App from './App'
 import InstrumentApp from './instrument/InstrumentApp'
 import '../shared/src/space.css'     // --spacing-NN scale (wm-primitives). Top-level, not in
