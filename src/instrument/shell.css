@@ -626,7 +626,12 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 }
 /* a control icon: absolute inside the pill, the label shifted clear of it */
 .try-pill { position: relative; }
-.try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
+.try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(calc(-50% - 1px)); z-index: 2; pointer-events: none; }   /* 1px up: the mark's optical middle sits low */
+/* On the fill (Shell.tsx TryDial, try-pill--under) the rest grade reads thin, so the mark gains GRAD.
+   Specific enough to beat icon.css's theme and active rules, (0,4,0) at most. */
+:root .try-pill.try-pill--under > .try-pill-ic.wm-icon { --icon-grad: 125; }
+:root[data-theme="light"] .try-pill.try-pill--under > .try-pill-ic.wm-icon { --icon-grad: 175; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .try-pill.try-pill--under > .try-pill-ic.wm-icon { --icon-grad: 175; } }
 .try-pill--ic .slider-label-left { padding-left: calc(var(--spacing-05, 16px) + var(--spacing-02, 6px)); }   /* clear of the icon */
 .try .preview-reset:disabled { visibility: hidden; }
 .preview-reset {
