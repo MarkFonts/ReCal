@@ -27,6 +27,7 @@ import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
 import { Freezer, freezerName } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
+import { effectiveLineHeightEm } from './vmetrics'
 import { ShapePad, AscenderPad } from './ShapePad'
 
 const TAG_TEXT: Record<ReturnType<typeof stateTag>, { label: string; color: string }> = {
@@ -829,8 +830,16 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   const trackingDial = has('tracking')
     ? <TryDial label="Tracking" icon="format_letter_spacing" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
     : null
+  // With the Vertical Metrics row open, the Paragraph and Scale previews set their line spacing from
+  // the font's own line metrics (scenes.tsx, vmLH) so a preset change reflows the text. Leading cannot
+  // reach them then: the dial rests disabled and reads the metrics' value instead of a number that
+  // would not match the lines on screen.
+  const vmLeading = state.railGroup === 3 ? effectiveLineHeightEm(state.defaults.vmetrics) : null
   const leadingDial = has('leading')
-    ? <TryDial label="Leading" icon="format_line_spacing" value={leading} min={0.8} max={2.5} step={0.01} onChange={v => setLeading(v as number)} />
+    ? <TryDial label="Leading" icon="format_line_spacing" value={vmLeading ?? leading} min={0.8} max={2.5} step={0.01}
+        disabled={vmLeading !== null} display={vmLeading !== null ? vmLeading.toFixed(2) : undefined}
+        title={vmLeading !== null ? 'Line spacing follows the font\u2019s line metrics while Vertical Metrics is open' : undefined}
+        onChange={v => setLeading(v as number)} />
     : null
   const weightDial = (
     <TryDial label="Weight" icon="line_weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}

@@ -284,10 +284,16 @@ ${appCss}
        so it reserves its box instead of shifting the text under it.
        THE JPG IS BAKED, SO IT GOES STALE SILENTLY. It is rendered by scripts/render-og-cards.mjs,
        which npm run build does NOT call -- re-run it whenever a preset's axes or freezes change,
-       and commit public/og/*.jpg with them. -->
+       and commit public/og/*.jpg with them.
+       Two <img>s, not <picture>: the theme switch stores its choice on <html data-theme>, which a
+       prefers-color-scheme media query cannot see. landing.css shows the one that matches the theme
+       (the light one is lazy, so it only loads once shown, and is alt="" -- the same card).
+       og:image stays the dark JPG: a share preview has no theme. -->
   <figure class="card-fig">
-    <img src="${ogImage}" width="1200" height="630" fetchpriority="high" decoding="async"
+    <img class="card-img--dark" src="${ogImage}" width="1200" height="630" fetchpriority="high" decoding="async"
          alt="${esc(ogAlt)}">
+    <img class="card-img--light" src="${BASE}/og/${p.slug}-light.jpg" width="1200" height="630" loading="lazy" decoding="async"
+         alt="">
   </figure>
 
   <div class="specimen-grid" data-nosnap aria-label="ReCal Sans specimen, all weights and italics, tuned toward ${esc(p.referent)}">

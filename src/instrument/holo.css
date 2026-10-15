@@ -161,8 +161,35 @@
 
 /* LIGHT GROUND. The color band is screened over the metal; screening brightens, so on a light page the seam
    title washed out to pastel. There the band MULTIPLIES over a darker metal (tokens.css): the hues deepen
-   instead, and the band's white core is neutral. The metal tokens are set in tokens.css's light blocks. */
+   instead, and the band's white core is neutral. The metal tokens are set in tokens.css's light blocks.
+
+   The seam tab goes one step further. Multiply over the metal's ~#4a average left the band so dark that the
+   foil read as a muddy olive and maroon on gray ink, nothing like the dark theme's spectrum. On light the
+   band is painted NORMAL, in its own deep ramp (--holo-band-light: the same hue order, every stop dark
+   enough to hold ~4.5:1 on white, the white core swapped for a deep violet because white is the page).
+   Where the band is clear the metal shows, so the title still rests as ink and the foil sweeps through it.
+   Only the seam tab (label + chevrons) takes this; the ✓ Saved word and the Building label keep multiply. */
+:root {
+  --holo-band-light: linear-gradient(90deg,
+      transparent 0 40%,
+      rgba(200,0,120,0) 40%, #c8007a 42.5%, #a87400 45%, #008f3c 47%, #1f3ad6 49%,
+      #5a1fd0 50.5%,
+      rgba(200,0,120,.9) 52%, rgba(168,116,0,.9) 54.5%, rgba(31,58,214,.9) 57%,
+      rgba(31,58,214,0) 60%);
+}
 :root[data-theme="light"] :is(.rail-seam.is-next .rail-seam-lbl, .rail-seam.is-next .rail-seam-chv-t, .mc-word, .holo-loading) { background-blend-mode: multiply, normal; }
+:root[data-theme="light"] :is(.rail-seam.is-next .rail-seam-lbl, .rail-seam.is-next .rail-seam-chv-t) {
+  background-blend-mode: normal, normal;
+  background-image: var(--holo-band-light),
+    linear-gradient(100deg, var(--holo-metal-dark) 0%, var(--holo-metal-light) 28%,
+      var(--holo-metal-dark) 52%, var(--holo-metal-light) 78%, var(--holo-metal-dark) 100%);
+}
 @media (prefers-color-scheme: light) {
   :root[data-theme="auto"] :is(.rail-seam.is-next .rail-seam-lbl, .rail-seam.is-next .rail-seam-chv-t, .mc-word, .holo-loading) { background-blend-mode: multiply, normal; }
+  :root[data-theme="auto"] :is(.rail-seam.is-next .rail-seam-lbl, .rail-seam.is-next .rail-seam-chv-t) {
+    background-blend-mode: normal, normal;
+    background-image: var(--holo-band-light),
+      linear-gradient(100deg, var(--holo-metal-dark) 0%, var(--holo-metal-light) 28%,
+        var(--holo-metal-dark) 52%, var(--holo-metal-light) 78%, var(--holo-metal-dark) 100%);
+  }
 }

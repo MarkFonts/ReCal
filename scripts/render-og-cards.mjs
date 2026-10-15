@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 /**
  * Render OG cards (1200×630) from cards.source.html using Puppeteer.
- * Run: npm install puppeteer && node scripts/render-og-cards.mjs
+ * Run: npm install puppeteer && node scripts/render-og-cards.mjs [all|dark|light]
+ *
+ * Two sets: <slug>.jpg (dark; the og:image, since a share preview has no theme) and
+ * <slug>-light.jpg (the same card on the house light ramp, shown on the landing pages in light mode).
+ * `dark` or `light` renders one set, so a light-only change does not rewrite the dark JPGs' bytes.
  */
 
 import puppeteer from 'puppeteer'
@@ -12,6 +16,9 @@ import { resolve } from 'node:path'
 const CARDS_HTML = resolve('./public/og/cards.source.html')
 const OUT_DIR = resolve('./public/og')
 const VIEWPORT = { width: 1200, height: 630 }
+
+const WHICH = process.argv[2] ?? 'all'
+const THEMES = WHICH === 'light' ? [true] : WHICH === 'dark' ? [false] : [false, true]
 
 const SLUGS = ['poppins', 'inter', 'geist', 'futura', 'neutra', 'circular', 'gotham', 'gt-america']
 
@@ -37,29 +44,32 @@ async function renderCards() {
     await page.evaluateHandle(() => document.fonts.ready)
     await new Promise(resolve => setTimeout(resolve, 800))
 
-    // Render each card by hiding others and showing just one
-    for (let idx = 0; idx < SLUGS.length; idx++) {
-      const slug = SLUGS[idx]
-      await page.evaluate((targetIdx, feat) => {
-        // Hide all cards except the one we want, and give it its preset's freezes.
-        // Set here rather than in the markup so the table stays the only place that
-        // states them -- a card edited by hand is a copy that will drift.
-        document.querySelectorAll('.card').forEach((card, i) => {
-          card.style.display = i === targetIdx ? 'block' : 'none'
-          if (i === targetIdx && feat) card.style.setProperty('--feat', `'kern' 1, ${feat}`)
-        })
-      }, idx, ff(PRESET_OF[slug]))
-      await page.evaluateHandle(() => document.fonts.ready)
+    for (const light of THEMES) {
+      await page.evaluate(l => document.body.classList.toggle('light', l), light)
+      // Render each card by hiding others and showing just one
+      for (let idx = 0; idx < SLUGS.length; idx++) {
+        const slug = SLUGS[idx]
+        await page.evaluate((targetIdx, feat) => {
+          // Hide all cards except the one we want, and give it its preset's freezes.
+          // Set here rather than in the markup so the table stays the only place that
+          // states them -- a card edited by hand is a copy that will drift.
+          document.querySelectorAll('.card').forEach((card, i) => {
+            card.style.display = i === targetIdx ? 'block' : 'none'
+            if (i === targetIdx && feat) card.style.setProperty('--feat', `'kern' 1, ${feat}`)
+          })
+        }, idx, ff(PRESET_OF[slug]))
+        await page.evaluateHandle(() => document.fonts.ready)
 
-      const path = `${OUT_DIR}/${slug}.jpg`
-      await page.screenshot({ path, type: 'jpeg', quality: 85 })
-      console.log(`✓ ${slug}`)
+        const path = `${OUT_DIR}/${slug}${light ? '-light' : ''}.jpg`
+        await page.screenshot({ path, type: 'jpeg', quality: 85 })
+        console.log(`✓ ${slug}${light ? ' (light)' : ''}`)
+      }
     }
   } finally {
     await browser.close()
   }
 
-  console.log('\nDone. Commit with:\n  git add public/og/*.jpg\n  git commit -m "regen OG cards with corrected preset axes"')
+  console.log('\nDone. Commit with:\n  git add public/og/*.jpg\n  git commit -m "regen OG cards"')
 }
 
 renderCards().catch(e => {
