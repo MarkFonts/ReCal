@@ -533,13 +533,6 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .try-pill { position: relative; }
 .try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
 .try-pill--ic .slider-label-left { padding-left: calc(var(--spacing-05, 16px) + var(--spacing-02, 6px)); }   /* clear of the icon */
-/* LOCAL REVIEW ONLY: the shared subset lacks text_increase and format_letter_spacing, so these
-   two draw from a one-off Google Fonts cut of just those ligatures until the subset grows. */
-@font-face {
-  font-family: 'Material Symbols Review'; font-style: normal; font-weight: 100 700; font-display: block;
-  src: url(https://fonts.gstatic.com/l/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsLjBuVYLBrbrM8iVqo6h9UPXPrH2QOL1xsuOvg3WMHqOg&skey=b8dc2088854b122f&v=v377) format('woff2');
-}
-.wm-icon.icon-full { font-family: 'Material Symbols Review'; }
 .try .preview-reset:disabled { visibility: hidden; }
 .preview-reset {
   display: inline-flex;

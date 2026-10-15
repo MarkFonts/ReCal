@@ -705,9 +705,9 @@ function TryPop({ label, icon, end, caret = true, children }: { label: string; i
   )
 }
 
-function TryDial({ label, icon, iconFull, value, min, max, step, suffix, disabled, display, title, autoValue, onChange }: {
+function TryDial({ label, icon, value, min, max, step, suffix, disabled, display, title, autoValue, onChange }: {
   label: string; value: number | 'auto'
-  icon?: string; iconFull?: boolean   // iconFull: not in the shared subset yet, drawn from the review font
+  icon?: string
   min: number; max: number; step: number
   suffix?: string; disabled?: boolean; display?: string; title?: string
   autoValue?: number                      // set → the dial can rest at 'auto' (onChange then gets 'auto' too)
@@ -723,7 +723,7 @@ function TryDial({ label, icon, iconFull, value, min, max, step, suffix, disable
       onPointerDown={() => { setHeld(true); window.addEventListener('pointerup', () => setHeld(false), { once: true }) }}
       onFocus={e => { if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'text') setTyping(true) }}
       onBlur={() => setTyping(false)}>
-      {icon && <Icon name={icon} size={16} state={(held || typing) && !disabled ? 'active' : 'rest'} className={`try-pill-ic${iconFull ? ' icon-full' : ''}`} />}
+      {icon && <Icon name={icon} size={16} state={(held || typing) && !disabled ? 'active' : 'rest'} className="try-pill-ic" />}
       <AxisSlider variant="track" label={label} value={value} min={min} max={max} step={step}
         suffix={suffix} disabled={disabled} display={display}
         allowAuto={autoValue !== undefined} autoValue={autoValue} onChange={onChange} />
@@ -806,7 +806,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   // them on four grid columns (below). Proofing controls (not ◆ defaults) → the track variant
   // with no diamond/marker/reference, as font-proofer's TYPOGRAPHY has them.
   const sizeDial = has('size')
-    ? <TryDial label="Size" icon="text_increase" iconFull value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
+    ? <TryDial label="Size" icon="text_increase" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
     : null
   // Preview-only optical size. At rest it reads "auto" (the browser follows the type size);
   // moved, it overrides opsz in the preview text. The range is the preview font's relabeled
@@ -822,7 +822,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       onChange={v => dispatch({ type: 'setPreviewOpsz', value: v === 'auto' ? null : v })} />
   ) : null
   const trackingDial = has('tracking')
-    ? <TryDial label="Tracking" icon="format_letter_spacing" iconFull value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
+    ? <TryDial label="Tracking" icon="format_letter_spacing" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
     : null
   const leadingDial = has('leading')
     ? <TryDial label="Leading" icon="format_line_spacing" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
