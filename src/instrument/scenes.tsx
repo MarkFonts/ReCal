@@ -61,7 +61,7 @@ export function SceneControls({ mode, source, setSource, pairs, togglePair, glyp
     <div className="scene-bar">
       <div className="text-tabs">
         {GLYPH_SET_KEYS.map(k => (
-          <button key={k} data-label={k} data-gk={`sub:${k}`} style={gp?.(`sub:${k}`)} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k}</button>
+          <button key={k} data-label={k === 'All' ? 'All Glyphs' : k} data-gk={`sub:${k}`} style={gp?.(`sub:${k}`)} className={`text-tab${glyphSet === k ? ' on' : ''}`} onClick={() => setGlyphSet(k)}>{k === 'All' ? 'All Glyphs' : k}</button>
         ))}
       </div>
     </div>
