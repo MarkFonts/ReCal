@@ -724,8 +724,29 @@ function TryDial({ label, icon, value, min, max, step, suffix, disabled, display
   // or focus inside it until focus leaves.
   const [held, setHeld] = useState(false)
   const [typing, setTyping] = useState(false)
+  // UNDER: once the slider's fill reaches the mark's middle the mark sits on the lighter fill,
+  // where its rest grade reads thin, so shell.css raises its GRAD. The fill is the bar's own
+  // width times the value's place on the track, measured the same way AxisSlider paints it.
+  const pillRef = useRef<HTMLDivElement>(null)
+  const [under, setUnder] = useState(false)
+  const shown = value === 'auto' ? (autoValue ?? (min + max) / 2) : value
+  const frac = Math.max(0, Math.min(1, (shown - min) / (max - min)))
+  useLayoutEffect(() => {
+    const pill = pillRef.current
+    if (!pill || !icon) return
+    const check = () => {
+      const bar = pill.querySelector<HTMLElement>('.slider-label'), ic = pill.querySelector<HTMLElement>('.try-pill-ic')
+      if (!bar || !ic) return
+      const b = bar.getBoundingClientRect(), i = ic.getBoundingClientRect()
+      setUnder(b.left + frac * b.width >= i.left + i.width / 2)
+    }
+    check()
+    const ro = new ResizeObserver(check)
+    ro.observe(pill)
+    return () => ro.disconnect()
+  }, [frac, icon])
   return (
-    <div className={`try-pill${autoValue !== undefined ? ' try-pill--auto' : ''}${icon ? ' try-pill--ic' : ''}`} title={title}
+    <div ref={pillRef} className={`try-pill${autoValue !== undefined ? ' try-pill--auto' : ''}${icon ? ' try-pill--ic' : ''}${under ? ' try-pill--under' : ''}`} title={title}
       onPointerDown={() => { setHeld(true); window.addEventListener('pointerup', () => setHeld(false), { once: true }) }}
       onFocus={e => { if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'text') setTyping(true) }}
       onBlur={() => setTyping(false)}>
@@ -841,9 +862,12 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
         title={vmLeading !== null ? 'Line spacing follows the font\u2019s line metrics while Vertical Metrics is open' : undefined}
         onChange={v => setLeading(v as number)} />
     : null
+  // On Paragraph each block draws with its own style's wght (scenes.tsx), so the dial edits the
+  // selected style there; the global preview wght would never reach the text.
   const weightDial = (
-    <TryDial label="Weight" icon="line_weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
-      display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
+    <TryDial label="Weight" icon="line_weight" value={para ? paraStyles[activeParaStyle].wght : merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
+      display={naWght ? '—' : undefined}
+      onChange={v => para ? patchPara({ wght: Math.round(v as number) }) : dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
   )
   const italicBtn = (
     <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
