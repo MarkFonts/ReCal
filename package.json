@@ -6,7 +6,8 @@
     "dev": "vite",
     "build": "tsc && vite build && node scripts/gen-landing.mjs",
     "preview": "vite preview",
-    "lint:tokens": "node shared/scripts/lint-tokens.mjs"
+    "lint:tokens": "node shared/scripts/lint-tokens.mjs",
+    "lint:colors": "node scripts/lint-colors.mjs"
   },
   "dependencies": {
     "@use-gesture/react": "^10.3.1",

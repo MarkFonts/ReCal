@@ -3,16 +3,16 @@
 // stock rclt (custom swap-point *editing* is Phase 6). No scenes/gestures yet.
 import './shell.css'
 import './holo.css'
-import { useState, useRef, useEffect, useLayoutEffect } from 'react'
+import { useState, useRef, useEffect, useLayoutEffect, useMemo, type CSSProperties } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
-  type FitOptions, Chevron, AccentButton } from '../../shared/index' // wm-primitives (git submodule)
+  type FitOptions, Chevron, AccentButton, Icon, ThemeSwitch, bootTheme } from '../../shared/index' // wm-primitives (git submodule)
 import {
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
 } from './store'
-import { renderVarSettings } from './render'
+import { renderVarSettings, clampTryOpsz } from './render'
 import { BOOT } from './boot'
 import {
   Modebar, Scene, SceneControls, FEATURE_CHIPS, SCENES, type SceneMode,
@@ -23,6 +23,7 @@ import {
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
+import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
 import { Freezer, freezerName } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
@@ -346,12 +347,37 @@ const TYPE_ROWS: Record<string, string[]> = {
   scale: ['tracking', 'leading', 'measure'],
 }
 
+// Keep an open popover inside the canvas: after it mounts, shift it sideways by however far it
+// overhangs the canvas edge (8px breathing room). `translate`, so no anchor rule has to change.
+function useKeepInside(open: boolean, ref: React.RefObject<HTMLElement | null>) {
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!open || !el) return
+    el.style.translate = ''
+    const r = el.getBoundingClientRect()
+    const box = (el.closest('.canvas') ?? document.documentElement).getBoundingClientRect()
+    const pad = 8
+    let dx = 0
+    if (r.right > box.right - pad) dx = box.right - pad - r.right
+    if (r.left + dx < box.left + pad) dx = box.left + pad - r.left
+    if (dx) el.style.translate = `${dx}px 0`
+  }, [open, ref])
+}
+
 // Paragraph style menu — pick which style (H1/H2/H3/P) the controls target.
-function StyleMenu({ active, setActive, paraStyles }: {
+// The Material marks (in the subset the apps ship) for the four paragraph styles.
+const STYLE_ICON: Record<ParaStyleKey, string> = {
+  h1: 'format_h1', h2: 'format_h2', h3: 'format_h3', p: 'format_paragraph',
+}
+
+function StyleMenu({ active, setActive, paraStyles, label }: {
+  label?: string   // shown on the trigger instead of the current style's name
   active: ParaStyleKey; setActive: (k: ParaStyleKey) => void; paraStyles: ParaStyles
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  useKeepInside(open, listRef)
   useEffect(() => {
     if (!open) return
     const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -361,10 +387,10 @@ function StyleMenu({ active, setActive, paraStyles }: {
   return (
     <div className="style-menu" ref={ref}>
       <button className="style-menu-btn" onClick={() => setOpen(o => !o)}>
-        {PARA_STYLE_LABEL[active]}<Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
+        <span className="style-menu-val"><Icon name="text_fields" size={16} state={open ? 'active' : 'rest'} className="style-menu-ic" />{label ?? PARA_STYLE_LABEL[active]}</span><Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
       </button>
       {open && (
-        <div className="style-menu-list">
+        <div className="style-menu-list" ref={listRef}>
           {/* migrated to shared StyleScopeList (wm-primitives) */}
           <StyleScopeList
             inline
@@ -376,6 +402,7 @@ function StyleMenu({ active, setActive, paraStyles }: {
               return {
                 id: k,
                 label: PARA_STYLE_LABEL[k],
+                icon: STYLE_ICON[k],
                 chips: [
                   { text: `${Math.round(s.size)}px`, kind: 'size' as const },
                   { text: `wght ${s.wght}`, kind: 'axis' as const },
@@ -397,6 +424,8 @@ function TierMenu({ selected, toggle, scaleStyles }: {
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  useKeepInside(open, listRef)
   useEffect(() => {
     if (!open) return
     const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -411,7 +440,7 @@ function TierMenu({ selected, toggle, scaleStyles }: {
         {label}<Chevron dir={-1} width={10} height={6} className="style-menu-caret" />
       </button>
       {open && (
-        <div className="style-menu-list style-menu-list--scroll">
+        <div className="style-menu-list style-menu-list--scroll" ref={listRef}>
           {/* migrated to shared StyleScopeList (wm-primitives), multi-select */}
           <StyleScopeList
             inline
@@ -436,6 +465,81 @@ function TierMenu({ selected, toggle, scaleStyles }: {
       )}
     </div>
   )
+}
+
+// The house theme switch (Auto / Light / Dark) is always on: the stored choice (or Auto, which follows the OS)
+// is stamped on <html data-theme> before the first render, so there is no flash of the wrong palette.
+bootTheme()
+// ?grid draws the grid's columns and 3px lines (gridSnap.js, a plain script) -- a review/measuring aid.
+if (/[?&]grid\b/.test(window.location.search)) {
+  const sc = document.createElement('script'); sc.src = gridSnapUrl; sc.defer = true; document.head.appendChild(sc)
+}
+
+// The float's top rows on the canvas columns. Measures the canvas (width, the house column count and
+// gutter) and each label's text, then hands back, per label, a --start/--span: whole columns, wide
+// enough for the text, packed left, each label's text starting on a column edge. The tab row starts at
+// column 1 (Words' text one gutter in, as TRY's is); the scene's sub-row starts at the column "Scale"
+// starts on, so "Sample" sits exactly under "Scale" and every sub-row hangs from the same line.
+function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boolean) {
+  type G = { W: number; cols: number; g: number; tabs: [string, number][]; sub: [string, number][] }
+  const [g0, setG] = useState<G | null>(null)
+  useLayoutEffect(() => {
+    const root = rootRef.current
+    if (!on || !root) return
+    const textW = (e: Element) => { const r = document.createRange(); r.selectNodeContents(e); return Math.ceil(r.getBoundingClientRect().width) }
+    const read = () => {
+      const cs = getComputedStyle(document.documentElement)
+      const next: G = {
+        W: root.getBoundingClientRect().width, cols: +cs.getPropertyValue('--grid-cols') || 24, g: parseFloat(cs.getPropertyValue('--grid-gutter')) || 24,
+        tabs: [...root.querySelectorAll('.canvas-bar [data-gk]')].map(e => [e.getAttribute('data-gk')!, textW(e)]),
+        sub: [...root.querySelectorAll('.mode-row [data-gk]')].map(e => [e.getAttribute('data-gk')!, textW(e)]),
+      }
+      setG(p => (p && JSON.stringify(p) === JSON.stringify(next) ? p : next))
+    }
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(root)
+    document.fonts?.ready.then(read)
+    return () => ro.disconnect()
+  })
+  return useMemo(() => {
+    const out = { tab: {} as Record<string, CSSProperties>, sub: {} as Record<string, CSSProperties>, S: 6, base: 2, themeStart: 0, themeSpan: 0, cols: g0?.cols ?? 24 }
+    if (!g0) return out
+    const { W, cols, g } = g0
+    const col = (W - (cols - 1) * g) / cols
+    const spanFor = (px: number) => Math.min(cols, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
+    const sty = (start: number, span: number): CSSProperties =>
+      ({ ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span } as CSSProperties)
+    const SAFE = 6   // the selected label is bold, a touch wider than the measured one
+    // TRY and Words begin ON column 2 (their text on its left edge, no inset); every top category
+    // is exactly 2 columns, so the tabs fall on 2, 4, 6 ... If a row runs out of columns (12 on
+    // narrow windows) the next category wraps to a second row from column 2.
+    // On a phone-width canvas (< 640px) two columns are narrower than the words, so there the span is
+    // the label's own width in whole columns instead of a flat 2.
+    const BASE = 2
+    const flat = W >= 640
+    let cur = BASE
+    g0.tabs.forEach(([k, w]) => {
+      const s = flat ? 2 : spanFor(w + SAFE)
+      if (cur + s - 1 > cols) cur = BASE
+      out.tab[k] = sty(cur, s)
+      if (k === 'tab:scale') out.S = cur
+      cur += s
+    })
+    const S = out.S
+    cur = S
+    g0.sub.forEach(([k, w]) => {
+      const s = spanFor(w + SAFE)
+      if (cur + s - 1 > cols) cur = S
+      out.sub[k] = { ['--start' as string]: cur - S + 1, ['--span' as string]: s } as CSSProperties   // local to the sub-row's subgrid
+      cur += s
+    })
+    out.sub['sub:credit'] = { ['--start' as string]: 1, ['--span' as string]: cols - S + 1 } as CSSProperties
+    out.themeSpan = spanFor(112)
+    out.themeStart = cols - out.themeSpan + 1
+    out.base = BASE
+    return out
+  }, [g0])
 }
 
 function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, feats, toggleFeat, resetFeats, featStr }: {
@@ -495,6 +599,8 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   // (transparent, no background of its own) instead of pushing it down — measured so
   // UiKitBoard knows where row 0 should rest to clear the nav, same as it looked before
   // the nav overlaid anything. Other tabs are untouched (nav stays in normal flow there).
+  const rootRef = useRef<HTMLDivElement>(null)
+  const fg = useFloatGrid(rootRef, true)
   const navRef = useRef<HTMLDivElement>(null)
   const [navHeight, setNavHeight] = useState(0)
   const uiOverlay = mode === 'ui' && !vmActive
@@ -508,19 +614,44 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
     return () => ro.disconnect()
   }, [])
 
+  const tryBar = (mode !== 'ui' || vmActive) && (
+    <TryBar mode={mode} vmActive={vmActive}
+      size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
+      leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
+      activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
+      patchPara={patchPara}
+      selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
+      fit={fit} setFit={setFit} feats={feats} toggleFeat={toggleFeat}
+      canReset={previewDrifted(inst) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)}
+      onReset={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats() }} />
+  )
+  const scene = vmActive
+    ? <VMetricsScene />
+    : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
+        source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet}
+        paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
+        fit={fit} topInset={uiOverlay ? navHeight : 0} />
+
   return (
-    <div className={`canvas${vmActive ? ' canvas--vm' : ''}`}>
+    <div ref={rootRef} className={`canvas wm-grid--bleed${vmActive ? ' canvas--vm' : ''}`}>
       <div ref={navRef} className={`canvas-nav${uiOverlay ? ' canvas-nav--overlay' : ''}`}>
-        <div className="canvas-bar">
-          <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)} />
+        <div className="canvas-bar wm-grid wm-lines">
+          <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)}
+            gp={k => fg.tab[k]} />
+          {fg.themeSpan > 0 && (
+            <div className="theme-cell" style={{ ['--start' as string]: fg.themeStart, ['--span' as string]: fg.themeSpan, ['--start-md' as string]: fg.themeStart, ['--span-md' as string]: fg.themeSpan } as CSSProperties}>
+              <ThemeSwitch />
+            </div>
+          )}
         </div>
         {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
             disappearing never shifts the label (or stage) vertically. */}
-        <div className="mode-row">
+        <div className="mode-row wm-grid wm-lines" style={{ ['--s' as string]: fg.S, ['--s1' as string]: fg.S - fg.base } as CSSProperties}>
           <ModeLabel />
           <SceneControls mode={mode} source={source} setSource={setSource}
             pairs={pairs} togglePair={togglePair}
-            glyphSet={glyphSet} setGlyphSet={setGlyphSet} />
+            glyphSet={glyphSet} setGlyphSet={setGlyphSet}
+            gp={k => fg.sub[k]} />
         </div>
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
@@ -528,25 +659,10 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
       <div className={`canvas-body${uiOverlay ? ' canvas-body--full' : ''}${vmActive ? ' canvas-body--vm' : ''}`}>
         <div className="stage">
           <div className={`stage-scroll${uiOverlay ? ' stage-scroll--flush' : ''}${vmActive ? ' stage-scroll--bleed' : ''}`}>
-            {vmActive
-              ? <VMetricsScene />
-              : <Scene mode={mode} size={size} ls={ls} leading={leading} featStr={featStr}
-                  source={source} setSource={setSource} measure={measure} pairs={pairs} glyphSet={glyphSet}
-                  paraStyles={paraStyles} scaleStyles={scaleStyles} selectedTiers={selectedTiers}
-                  fit={fit} topInset={uiOverlay ? navHeight : 0} />}
+            {scene}
           </div>
         </div>
-        {(mode !== 'ui' || vmActive) && (
-          <TryBar mode={mode} vmActive={vmActive}
-            size={tSize} setSize={tSetSize} tracking={tTracking} setTracking={tSetTracking}
-            leading={tLeading} setLeading={tSetLeading} measure={measure} setMeasure={setMeasure}
-            activeParaStyle={activeParaStyle} setActiveParaStyle={setActiveParaStyle} paraStyles={paraStyles}
-            patchPara={patchPara}
-            selectedTiers={selectedTiers} toggleTier={toggleTier} scaleStyles={scaleStyles}
-            fit={fit} setFit={setFit} feats={feats} toggleFeat={toggleFeat}
-            canReset={previewDrifted(inst) || size !== SIZE_DEFAULT || tracking !== 0 || leading !== 1 || featsDrifted(feats)}
-            onReset={() => { dispatch({ type: 'clearPreview' }); setSize(SIZE_DEFAULT); setTracking(0); setLeading(1); resetFeats() }} />
-        )}
+        {tryBar}
       </div>
       {/* Anchored to .canvas (not canvas-body) so it aligns to the top of the screen. */}
       {showInfo && <Info />}
@@ -565,9 +681,11 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
 
 // A pill that opens a small popover ABOVE itself (the bar sits at the bottom edge). `end`
 // hangs it off the pill's right edge, for pills near the bar's right side.
-function TryPop({ label, end, children }: { label: string; end?: boolean; children: React.ReactNode }) {
+function TryPop({ label, icon, end, caret = true, children }: { label: string; icon?: string; end?: boolean; caret?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  useKeepInside(open, listRef)
   useEffect(() => {
     if (!open) return
     const onDoc = (e: PointerEvent) => { if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false) }
@@ -580,22 +698,35 @@ function TryPop({ label, end, children }: { label: string; end?: boolean; childr
     <div className="try-pop" ref={ref}>
       <AccentButton look="q5" shape="chip" lit={open} className={open ? undefined : 'try-btn'}
         aria-expanded={open} onClick={() => setOpen(o => !o)}>
-        {label}<Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />
+        {icon && <Icon name={icon} size={16} state={open ? 'active' : 'rest'} className="try-btn-ic" />}{label}{caret && <Chevron dir={open ? -1 : 1} width={10} height={6} className="try-btn-caret" />}
       </AccentButton>
-      {open && <div className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
+      {open && <div ref={listRef} className={`try-pop-list${end ? ' try-pop-list--end' : ''}`}>{children}</div>}
     </div>
   )
 }
 
-function TryDial({ label, value, min, max, step, suffix, disabled, display, onChange }: {
-  label: string; value: number; min: number; max: number; step: number
-  suffix?: string; disabled?: boolean; display?: string
-  onChange: (n: number) => void
+function TryDial({ label, icon, iconFull, value, min, max, step, suffix, disabled, display, title, autoValue, onChange }: {
+  label: string; value: number | 'auto'
+  icon?: string; iconFull?: boolean   // iconFull: not in the shared subset yet, drawn from the review font
+  min: number; max: number; step: number
+  suffix?: string; disabled?: boolean; display?: string; title?: string
+  autoValue?: number                      // set → the dial can rest at 'auto' (onChange then gets 'auto' too)
+  onChange: (n: number | 'auto') => void
 }) {
+  // The mark lights (the primitive's active state, HDR in dark) while the dial is held or its
+  // number is being typed in: pointer down anywhere on the pill until the pointer comes up,
+  // or focus inside it until focus leaves.
+  const [held, setHeld] = useState(false)
+  const [typing, setTyping] = useState(false)
   return (
-    <div className="try-pill">
+    <div className={`try-pill${autoValue !== undefined ? ' try-pill--auto' : ''}${icon ? ' try-pill--ic' : ''}`} title={title}
+      onPointerDown={() => { setHeld(true); window.addEventListener('pointerup', () => setHeld(false), { once: true }) }}
+      onFocus={e => { if ((e.target as HTMLElement).tagName === 'INPUT' && (e.target as HTMLInputElement).type === 'text') setTyping(true) }}
+      onBlur={() => setTyping(false)}>
+      {icon && <Icon name={icon} size={16} state={(held || typing) && !disabled ? 'active' : 'rest'} className={`try-pill-ic${iconFull ? ' icon-full' : ''}`} />}
       <AxisSlider variant="track" label={label} value={value} min={min} max={max} step={step}
-        suffix={suffix} disabled={disabled} display={display} onChange={v => onChange(v as number)} />
+        suffix={suffix} disabled={disabled} display={display}
+        allowAuto={autoValue !== undefined} autoValue={autoValue} onChange={onChange} />
     </div>
   )
 }
@@ -615,6 +746,42 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
+  // A hairline closes each column except the last on its band: mark the columns that end a band
+  // (the next one sits lower) so CSS can drop the rule there. Pure DOM, no state.
+  const barRef = useRef<HTMLDivElement>(null)
+  useLayoutEffect(() => {
+    const bar = barRef.current
+    if (!bar) return
+    const mark = () => {
+      const gs = [...bar.querySelectorAll<HTMLElement>('.try-col')]
+      gs.forEach((g, i) => {
+        const next = gs[i + 1]
+        if (!next || Math.abs(next.offsetTop - g.offsetTop) > 2) g.setAttribute('data-eol', ''); else g.removeAttribute('data-eol')
+      })
+    }
+    mark()
+    const ro = new ResizeObserver(mark)
+    ro.observe(bar)
+    return () => ro.disconnect()
+  })
+  // The float's grid, measured: the bar's width and the house columns/gutter (grid.css), so the
+  // packer below can give each column a whole number of grid columns.
+  const [geo, setGeo] = useState<{ W: number; cols: number; g: number } | null>(null)
+  useLayoutEffect(() => {
+    const bar = barRef.current
+    if (!bar) return
+    const read = () => {
+      const cs = getComputedStyle(document.documentElement)
+      const next = { W: bar.getBoundingClientRect().width, cols: +cs.getPropertyValue('--grid-cols') || 24, g: parseFloat(cs.getPropertyValue('--grid-gutter')) || 24 }
+      const cv = bar.closest('.canvas')?.getBoundingClientRect()
+      if (cv) { document.documentElement.style.setProperty('--ov-left', cv.left + 'px'); document.documentElement.style.setProperty('--ov-right', (document.documentElement.clientWidth - cv.right) + 'px') }
+      setGeo(p => (p && p.W === next.W && p.cols === next.cols && p.g === next.g ? p : next))
+    }
+    read()
+    const ro = new ResizeObserver(read)
+    ro.observe(bar)
+    return () => ro.disconnect()
+  }, [])
   // The metrics stage has its own type; only the preview-only pills apply there.
   const rows = vmActive ? [] : TYPE_ROWS[mode] ?? []
   const has = (k: string) => rows.includes(k)
@@ -626,68 +793,148 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   const comparingSvg = !!cmp?.svg
   const naWght = !!cmp && (!!cmp.svg || !cmp.css)
   const naItal = !!cmp && (!!cmp.svg || !cmp.css || !cmp.italic)
-  const inScene = !vmActive && (mode === 'paragraph' || mode === 'scale')
   const { min: wMin, max: wMax } = AXIS_RANGES.wght
+  const resetBtn = (
+    <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
+      <ResetIcon /><span className="preview-reset-text">Reset</span>
+    </button>
+  )
+  const para = !vmActive && mode === 'paragraph'
+  const alignIcon = `format_align_${paraStyles[activeParaStyle].align}`
+
+  // ── The controls, built once; the docked bar runs them in feature groups, the float lays
+  // them on four grid columns (below). Proofing controls (not ◆ defaults) → the track variant
+  // with no diamond/marker/reference, as font-proofer's TYPOGRAPHY has them.
+  const sizeDial = has('size')
+    ? <TryDial label="Size" icon="text_increase" iconFull value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
+    : null
+  // Preview-only optical size. At rest it reads "auto" (the browser follows the type size);
+  // moved, it overrides opsz in the preview text. The range is the preview font's relabeled
+  // axis (stock × Optical scale). A frozen font has no opsz axis, and a compared webfont sets
+  // its own, so both disable it. Never baked: it is not in the ◆ layer and buildConfig never reads it.
+  const opticalDial = !vmActive ? (
+    <TryDial label="Optical size" icon="mystery" value={state.previewOpsz ?? 'auto'}
+      min={8 * state.defaults.opszMultiplier} max={45 * state.defaults.opszMultiplier} step={1}
+      autoValue={clampTryOpsz(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier)}
+      disabled={state.defaults.freezeOpsz || !!cmp}
+      display={state.defaults.freezeOpsz ? String(state.defaults.frozenOpszValue ?? 14) : cmp ? '—' : undefined}
+      title={state.defaults.freezeOpsz ? `The font is frozen at ${state.defaults.frozenOpszValue ?? 14}` : cmp ? 'The compared font sets its own optical size' : undefined}
+      onChange={v => dispatch({ type: 'setPreviewOpsz', value: v === 'auto' ? null : v })} />
+  ) : null
+  const trackingDial = has('tracking')
+    ? <TryDial label="Tracking" icon="format_letter_spacing" iconFull value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
+    : null
+  const leadingDial = has('leading')
+    ? <TryDial label="Leading" icon="format_line_spacing" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
+    : null
+  const weightDial = (
+    <TryDial label="Weight" icon="line_weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
+      display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v as number })} />
+  )
+  const italicBtn = (
+    <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
+      aria-pressed={merged.ital >= 0.5} disabled={naItal}
+      onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}><Icon name="format_italic" size={16} state={merged.ital >= 0.5 ? 'active' : 'rest'} className="try-btn-ic" />Italic</AccentButton>
+  )
+  const featuresPop = (
+    <TryPop label="Features" icon="discover_tune" caret={false}>
+      {FEATURE_CHIPS.map(f => (
+        <label key={f.tag} className="rail-toggle" title={f.tag}>
+          <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
+          {f.label}
+        </label>
+      ))}
+    </TryPop>
+  )
+  const styleMenu = para
+    ? <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} label="Styles" />
+    : null
+  // Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
+  // controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
+  // and hyphenation belong to the style the menu selects; only the H&J bands in `fit`
+  // are the document's, because they are the typeface's. On the compare pages a
+  // pre-made SVG has nothing live to fit, so the alignment and fitting controls are
+  // dropped (they would only promise something the page cannot deliver) and the
+  // measure stays. In the float it is "Alignment", with the icon of the current alignment.
+  const layoutPop = para ? (
+    <TryPop label="Alignment" icon={alignIcon} end>
+      {!comparingSvg && (
+        <>
+          <div className="try-aligns">
+            <AlignmentButtons value={paraStyles[activeParaStyle].align}
+              onChange={a => patchPara({ align: a })} />
+          </div>
+          <FittingControls value={fit} onChange={setFit}
+            mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
+            swissRag={paraStyles[activeParaStyle].swissRag}
+            onSwissRag={on => patchPara({ swissRag: on })}
+            hyphenate={paraStyles[activeParaStyle].hyphenate}
+            onHyphenate={on => patchPara({ hyphenate: on })} />
+        </>
+      )}
+      <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} />
+    </TryPop>
+  ) : null
+  const tierMenu = !vmActive && mode === 'scale'
+    ? <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} /> : null
+  const scaleMeasure = has('measure')
+    ? <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} /> : null
+
+  // Columns that have no controls on this tab are not rendered, and what is left packs left
+  // from the first grid column after TRY, each column a whole number of grid columns wide
+  // (its pills' natural width, rounded up), whole columns wrapping to a band that starts under
+  // the first control. Column 1 Size/Tracking, 2 Optical size/Leading, 3 Weight/Italic+Features,
+  // 4 the scene's (Styles/Alignment on Paragraph, tier menu/Measure on Scale); Reset after the last.
+  const colA = [sizeDial, trackingDial].filter(Boolean)
+  const colB = [opticalDial, leadingDial].filter(Boolean)
+  const colD = para ? [styleMenu, layoutPop] : tierMenu ? [tierMenu, scaleMeasure] : []
+  const present: { key: string; px: number }[] = []
+  if (colA.length) present.push({ key: 'a', px: 150 })
+  if (colB.length) present.push({ key: 'b', px: 214 })
+  present.push({ key: 'c', px: 0 })   // Weight over Italic | Features: two EQUAL whole-column spans a gutter apart (below)
+  if (colD.length) present.push({ key: 'd', px: 156 })
+  present.push({ key: 'r', px: 92 })
+  const at: Record<string, CSSProperties> = {}
+  if (geo) {
+    const { W, cols, g } = geo
+    const col = (W - (cols - 1) * g) / cols
+    const spanFor = (px: number, from: number) => Math.min(cols - from + 1, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
+    const put = (k: string, start: number, span: number, extra?: Record<string, number>) => {
+      at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span, ...(extra ?? {}) } as CSSProperties
+    }
+    const L = spanFor(34, 2)               // the TRY label: the word
+    put('lbl', 2, L)                       // TRY begins on column 2, its text on the column's left edge
+    const x0 = 2 + L
+    let cur = x0
+    for (const it of present) {
+      let s: number, extra: Record<string, number> | undefined
+      if (it.key === 'c') {
+        // Features (icon + word, no caret) is the longer half; Italic gets the same span. The column is
+        // 2k grid columns: Italic = k, Features = k, the house gutter between, Weight across both.
+        const k = Math.max(1, Math.min(Math.floor((cols - x0 + 1) / 2), Math.ceil((100 + g) / (col + g) - 1e-6)))
+        s = 2 * k; extra = { ['--k' as string]: k }
+      } else s = spanFor(it.px, x0)
+      if (cur + s - 1 > cols) {
+        cur = x0                             // whole column wraps to a new band ...
+        if (it.key === 'r') {                // ... except Reset: alone on a band it would add an empty row while
+          put('r', 2, L)                     // disabled, so it sits under TRY (same two columns, bottom row) instead
+          at.r = { ...at.r, gridRow: 1 }
+          continue
+        }
+      }
+      put(it.key, cur, s, extra)
+      cur += s
+    }
+  }
   return (
-    <div className="try" role="group" aria-label="Try"
+    <div className="try wm-grid wm-lines" role="group" aria-label="Try" ref={barRef}
       onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
-      <span className="try-lbl">Try</span>
-      {/* Proofing controls (not ◆ defaults) → the track variant with no diamond/marker/reference,
-          as font-proofer's TYPOGRAPHY has them. */}
-      {has('size') && <TryDial label="Size" value={size} min={16} max={200} step={1} suffix="px" onChange={setSize} />}
-      {has('tracking') && <TryDial label="Tracking" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={setTracking} />}
-      {has('leading') && <TryDial label="Leading" value={leading} min={0.8} max={2.5} step={0.1} onChange={setLeading} />}
-      {rows.length > 0 && <span className="try-sep" aria-hidden="true" />}
-      <TryDial label="Weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
-        display={naWght ? '—' : undefined} onChange={v => dispatch({ type: 'setPreview', tag: 'wght', value: v })} />
-      <AccentButton look="q5" shape="chip" lit={merged.ital >= 0.5} className={merged.ital >= 0.5 ? undefined : 'try-btn'}
-        aria-pressed={merged.ital >= 0.5} disabled={naItal}
-        onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}>Italic</AccentButton>
-      <TryPop label="Features">
-        {FEATURE_CHIPS.map(f => (
-          <label key={f.tag} className="rail-toggle" title={f.tag}>
-            <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
-            {f.label}
-          </label>
-        ))}
-      </TryPop>
-      {inScene && <span className="try-sep" aria-hidden="true" />}
-      {!vmActive && mode === 'paragraph' && (
-        <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} />
-      )}
-      {!vmActive && mode === 'scale' && (
-        <TierMenu selected={selectedTiers} toggle={toggleTier} scaleStyles={scaleStyles} />
-      )}
-      {/* Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
-          controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
-          and hyphenation belong to the style the menu selects; only the H&J bands in `fit`
-          are the document's, because they are the typeface's. On the compare pages a
-          pre-made SVG has nothing live to fit, so the alignment and fitting controls are
-          dropped (they would only promise something the page cannot deliver) and the
-          measure stays. */}
-      {!vmActive && mode === 'paragraph' && (
-        <TryPop label="Layout" end>
-          {!comparingSvg && (
-            <>
-              <div className="try-aligns">
-                <AlignmentButtons value={paraStyles[activeParaStyle].align}
-                  onChange={a => patchPara({ align: a })} />
-              </div>
-              <FittingControls value={fit} onChange={setFit}
-                mode={fittingMode(paraStyles[activeParaStyle].align, paraStyles[activeParaStyle].swissRag)}
-                swissRag={paraStyles[activeParaStyle].swissRag}
-                onSwissRag={on => patchPara({ swissRag: on })}
-                hyphenate={paraStyles[activeParaStyle].hyphenate}
-                onHyphenate={on => patchPara({ hyphenate: on })} />
-            </>
-          )}
-          <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />
-        </TryPop>
-      )}
-      {has('measure') && <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={setMeasure} />}
-      <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
-        <ResetIcon /><span className="preview-reset-text">Reset</span>
-      </button>
+      <span className="try-lbl try-c-lbl" style={at.lbl}>Try</span>
+      {colA.length > 0 && <div className="try-col" style={at.a}>{colA}</div>}
+      {colB.length > 0 && <div className="try-col" style={at.b}>{colB}</div>}
+      <div className="try-col" style={at.c}>{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
+      {colD.length > 0 && <div className="try-col" style={at.d}>{colD}</div>}
+      <div className="try-c-r" style={at.r}>{resetBtn}</div>
     </div>
   )
 }

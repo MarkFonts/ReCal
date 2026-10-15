@@ -203,6 +203,10 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;        /* let the 1fr row shrink so the stage scrolls, not the floor */
+  /* The left edge of the tab row's text = canvas-bar's inset + a tab button's own padding.
+     Named so the floating Try label can start on exactly the same x. */
+  --canvas-inset: var(--spacing-06, 24px);
+  --tab-pad: var(--spacing-03, 8px);
 }
 /* Everything below the top bar; anchors the Font info overlay (this box doesn't
    scroll — the stage inside it does), so the overlay stays put vertically and
@@ -216,7 +220,7 @@
   overflow: hidden;
 }
 /* UI (COSS) has no bottom ● dock, so it reclaims that reserved height (no bottom crop),
-   AND covers the whole .canvas box (position:absolute, ignoring flex flow) so the board
+   AND covers the whole .canvas.wm-grid--bleed box (position:absolute, ignoring flex flow) so the board
    fills the full browser height with .canvas-nav floating over it (z-index) instead of
    pushing it down. UiKitBoard's own topInset prop (measured from the nav) keeps row 0
    resting exactly where the old pushed-down layout would have shown it. */
@@ -237,7 +241,7 @@
   /* +2px: "Words" (12px, in an 8px-padded button) shares a baseline with the rail's
      "ReCal Builder" (16px bold under the header's 16px). Measured, and held by the
      alignment spec's baseline pairs -- change either side and it fails. */
-  padding: calc(var(--spacing-04, 12px) + 2px) 24px 0;
+  padding: calc(var(--spacing-04, 12px) + 2px) var(--canvas-inset) 0;
 }
 
 /* Mode label + its per-mode submenu on ONE BASELINE, in every mode. The row aligns its
@@ -357,14 +361,14 @@
   scrollbar-gutter: stable;
   padding: var(--spacing-05, 16px) var(--spacing-05, 16px) var(--spacing-06, 24px);
   text-align: right;
-  --info-color: rgba(201, 112, 80, .6);   /* 0.6 opacity of the A11y hue (#c97050) */
+  --info-color: rgba(201, 112, 80, var(--info-a, .6));   /* 0.6 opacity of the A11y hue (#c97050) */
   color: var(--info-color);
   font-size: var(--type-ui-size, 0.75rem);                          /* UI font size — every piece the same */
   line-height: 1.5;
   background: var(--bg);           /* opaque — masks whatever is behind it in the canvas */
 }
 .info-sec { margin-bottom: 16px; }
-.info-h { font-weight: 700; color: rgba(201, 112, 80, .85); margin-bottom: 3px; }
+.info-h { font-weight: 700; color: rgba(201, 112, 80, var(--info-ha, .85)); margin-bottom: 3px; }
 .info-row {
   display: flex;
   justify-content: flex-end;
@@ -372,8 +376,8 @@
   gap: 6px;
   flex-wrap: wrap;
 }
-.info-k { color: rgba(201, 112, 80, .5); }
-.info-arrow { color: rgba(201, 112, 80, .4); }
+.info-k { color: rgba(201, 112, 80, var(--info-ka, .5)); }
+.info-arrow { color: rgba(201, 112, 80, var(--info-aa, .4)); }
 .info-v { color: var(--info-color); }
 .info-yours { color: var(--signal-acid); font-weight: 700; }
 .info-block { color: var(--info-color); }
@@ -391,24 +395,17 @@
 }
 .info-nameinput:focus { outline: none; border-bottom-color: var(--signal-acid); }
 
-/* ── Try bar (●) — the always-visible row of value pills at the foot of the stage ──
-   In flow under the stage (no bloom, no collapsed state), so the stage is simply what's
-   left above it. The pills are the AxisSlider track variant: drag, click-to-type, arrows. */
-.try {
-  position: relative;      /* above the stage, so the popovers open over it */
-  z-index: 3;
-  display: flex; flex-wrap: wrap; align-items: center;
-  gap: var(--spacing-02, 6px);
-  padding: var(--spacing-04, 12px) var(--spacing-06, 24px);
-  border-top: 1px solid transparent;     /* no rule along the top of the Try bar */
-  background: var(--surface);
-}
+/* ── Try (●) — the controls floating over the foot of the canvas ─────────────────────────────────
+   No bar: the stage keeps its full height and the controls sit over it. The pills are the AxisSlider
+   track variant (drag, click-to-type, arrows). The layout itself -- columns on the house grid -- is
+   under "THE FLOATING TRY BLOCK" below. */
+.try { z-index: 3; }
 .try-lbl {
   font-size: var(--type-label-size, 0.75rem); letter-spacing: var(--track-caps); text-transform: uppercase;
-  color: var(--text-dim); margin-right: var(--spacing-02, 6px);
+  color: var(--text-dim); min-height: 32px; display: flex; align-items: center;
 }
 .try-pill { width: 9rem; }
-.try-sep { width: 1px; height: 24px; background: var(--border); margin: 0 var(--spacing-02, 6px); }
+.try-pill--auto { width: 13rem; }     /* room for the label, the named auto switch and the value */
 /* The non-dial pills: the same box as the dial bars beside them (32px, 1px --border,
    --radius). A chip that is ON is the primitive's AccentButton (look q5) and carries no .try-btn;
    this is the chip when it is off. Its rollover never inverts to a light --text fill: the hairline
@@ -438,19 +435,110 @@
    in a row, and open upward. */
 .try .style-menu-btn { width: auto; gap: var(--spacing-02, 6px); }
 .try .style-menu-list { top: auto; bottom: calc(100% + 4px); }
-/* Narrow window (the rail's own breakpoint): the pills share rows two to a line instead of
-   one each, so six 48px touch rows do not eat the stage. The label and rules go; with
-   wrapping they would only strand at a line's edge. */
-@media (max-width: 800px) {
-  .try { padding: var(--spacing-04, 12px) var(--spacing-05, 16px); }
-  .try-lbl, .try-sep { display: none; }
-  .try-pill, .try-pop, .try .style-menu { flex: 1 1 8rem; width: auto; }
-  .try-btn, .try .wm-accent, .try .style-menu-btn { flex: 1 1 6rem; width: 100%; justify-content: center; }
-  /* Popovers span the bar rather than hang off a pill that may sit at the right edge. */
-  .try-pop, .try .style-menu { position: static; }
-  .try-pop-list, .try .style-menu-list { left: var(--spacing-05, 16px); right: var(--spacing-05, 16px); width: auto; min-width: 0; }
+
+/* ── THE FLOATING TRY BLOCK — the controls float over the foot of the canvas and the stage keeps
+   its full height. The block is the house grid (grid.css, 24 columns / 12 below 1024) over the
+   CANVAS width only -- the rail stays a fixed 264px, off the columns. A tool has no page margin:
+   text sits one gutter in (the bleed rule), so the TRY label and the tab row's text both start
+   at the column-1 content edge. Up to four columns of two rows:
+     1 Size / Tracking   2 Optical size / Leading   3 Weight / Italic + Features   4 Styles / Alignment
+   A column with no controls on the tab is not rendered; the rest pack left from the first grid column
+   after TRY. Spans and starts are computed in TryBar (--start / --span set inline: each column is
+   its pills' natural width rounded up to whole grid columns). Whole columns wrap to a band that
+   starts under the first control; a column never splits. The box ignores the pointer except on the controls. */
+.canvas.wm-grid--bleed .try {
+  position: absolute; left: 0; right: 0; bottom: 0;
+  display: grid; align-items: start; gap: var(--spacing-04, 12px) var(--grid-gutter, 24px);
+  background: none; pointer-events: none; border-top: 0;   /* no 1px rule, so the pills' tops land on the 3px line (12, 48) */
+  padding: var(--spacing-04, 12px) 0;
 }
-.try .preview-reset { margin-left: auto; }
+.canvas.wm-grid--bleed .try > * { pointer-events: auto; }
+.canvas.wm-grid--bleed .try-lbl { margin: 0; align-items: center; }
+.try-c-r { align-self: end; }
+/* each column: its two rows, a hairline in the gutter after it (not after the last of a band) */
+/* Each column is a SUBGRID of the block's grid: its pills are placed on the same column lines, so every
+   pill's left and right edge is a column edge by construction, at any width (no measuring). Two
+   30px rows; stacked pills span the whole column, the Italic | Features pair gets k columns each. */
+.try-col {
+  position: relative; display: grid; grid-template-columns: subgrid; column-gap: inherit;
+  grid-template-rows: repeat(2, 30px); row-gap: var(--spacing-02, 6px); align-content: start;
+}
+.try > :not(.try-lbl) { padding-inline: 0; }
+.try-col > * { grid-column: 1 / -1; }
+.try-col::after {
+  content: ''; position: absolute; top: 0; bottom: 0; width: 1px;
+  right: calc(var(--grid-gutter, 24px) / -2 - .5px); background: var(--border);
+}
+.try-col[data-eol]::after { display: none; }
+.try-col > * { width: 100%; min-width: 0; }
+.try-row { display: contents; }
+.try-col > :first-child:has(+ .try-row) { grid-row: 1; }
+.try-row > * { grid-row: 2; min-width: 0; }
+.try-row > :first-child { grid-column: 1 / span var(--k, 1); }          /* Italic: k columns ... */
+.try-row > :last-child { grid-column: calc(var(--k, 1) + 1) / span var(--k, 1); }   /* ... Features: k, a gutter later */
+.try-col .try-pill, .try-col .style-menu, .try-col .try-pop { width: 100%; }
+.try-col .style-menu-btn, .try-col .try-pop > button { width: 100%; justify-content: flex-start; }   /* the button fills its cell, so its edges are the column's */
+.try-row > .wm-accent { justify-content: flex-start; }
+.try-col .try-pop .wm-accent .try-btn-caret, .try-col .style-menu-caret { margin-left: auto; }
+.canvas.wm-grid--bleed .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) { padding-bottom: calc(var(--spacing-09, 64px) * 2); }   /* scroll room inside the scroller, so text can clear the controls; no band on the full-bleed scenes */
+/* every control stands on the ground: opaque, so content scrolling behind never shows through */
+.canvas.wm-grid--bleed .try-pill { background-color: var(--bg); border-radius: var(--radius, 8px); }
+.canvas.wm-grid--bleed .try .wm-accent, .canvas.wm-grid--bleed .try .try-btn,
+.canvas.wm-grid--bleed .try .style-menu-btn, .canvas.wm-grid--bleed .try .preview-reset { background-color: var(--bg); }
+/* ... in every state: pressed is the raised ground (also opaque), hover keeps the ground, disabled dims by ink not by opacity
+   (an opacity on the pill would let the content behind it show through) */
+.canvas.wm-grid--bleed .try .try-btn:active:not(:disabled), .canvas.wm-grid--bleed .try .style-menu-btn:active:not(:disabled),
+.canvas.wm-grid--bleed .try .preview-reset:active:not(:disabled) { background-color: var(--surface-hi); }
+.canvas.wm-grid--bleed .try .try-btn:disabled, .canvas.wm-grid--bleed .try .wm-accent:disabled { opacity: 1; color: var(--text-dim); }
+/* Reset fills its grid span, so its edges are column edges like every other control */
+.canvas.wm-grid--bleed .try-c-r .preview-reset { margin-left: 0; width: 100%; justify-content: center; }
+/* THE TOP ROWS on the same columns. The tab row and the scene's sub-row are grids over the canvas
+   (wm-grid / subgrid, like the Try block); each label is placed with --start/--span (TryBar-style:
+   chosen in Shell from the measured text, whole columns, packed left). The label text starts on a column
+   edge, with Words on column 1's content edge (one gutter in, where TRY's text is). Tabs have no visible
+   box, so a button's box is the text plus an 8px halo to its left (negative margin) for the hover frame.
+   The sub-row hangs from the column "Scale" starts on (--s), so "Sample" sits exactly under "Scale". */
+.canvas.wm-grid--bleed .canvas-bar { display: grid; align-items: center; padding-inline: 0; column-gap: var(--grid-gutter, 24px); }
+.canvas.wm-grid--bleed .canvas-bar .modebar { display: contents; }
+.canvas.wm-grid--bleed :is(.canvas-bar, .scene-bar) [data-gk] {
+  grid-column: var(--start, auto) / span var(--span, 1); justify-self: start; white-space: nowrap;
+}
+.canvas.wm-grid--bleed :is(.mode-btn, .text-tab, .chip) {
+  padding-inline: var(--tab-pad, 8px); margin-left: calc(var(--tab-pad, 8px) * -1);
+  align-items: flex-start;   /* the label sits at the box's left, bold or not (it was centered in a bold-width box) */
+}
+.canvas.wm-grid--bleed .theme-cell { grid-row: 1; justify-self: end; padding-inline: 0 var(--grid-gutter, 24px); }   /* always the top row, top right (on narrow windows it may sit over a free column of the tab row) */
+.canvas.wm-grid--bleed .mode-row {
+  display: grid; align-items: baseline; padding: 0 0 var(--spacing-03, 8px); column-gap: var(--grid-gutter, 24px);
+}
+.canvas.wm-grid--bleed .mode-row .mode-label { grid-column: 2 / span var(--s1, 4); width: auto; padding: calc(var(--spacing-03, 8px) - 3px) 0 0; }   /* the building / saved status: column 2, like TRY and Words */
+.canvas.wm-grid--bleed .mode-row .scene-bar {
+  grid-column: var(--s, 3) / -1; display: grid; grid-template-columns: subgrid; column-gap: inherit; row-gap: 0;
+  align-items: baseline; padding: 0;
+}
+.canvas.wm-grid--bleed .scene-bar :is(.text-tabs, .body-pairing, .feature-chips) { display: contents; }
+.canvas.wm-grid--bleed .scene-bar .drawer-label { width: auto; }
+.canvas.wm-grid--bleed .scene-bar .ui-credit { grid-column: var(--start, 1) / span var(--span, 1); padding-left: 0; }
+.canvas.wm-grid--bleed .mode-row .body-pairing { padding-left: 0; }
+/* ?grid draws the columns over the canvas only (the rail is off the grid) */
+body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-right, 0px); }
+/* PHONE (<= 680px): the controls are five bands tall there, so floating them would bury the text. They sit in
+   the flow under the stage instead (on the ground), and the stage's own bottom padding is the ordinary one. */
+@media (max-width: 680px) {
+  .canvas.wm-grid--bleed .try { position: relative; left: auto; right: auto; bottom: auto; background: var(--bg); pointer-events: auto; }
+  .canvas.wm-grid--bleed .stage-scroll:not(.stage-scroll--flush, .stage-scroll--bleed) { padding-bottom: var(--spacing-09, 64px); }
+}
+/* a control icon: absolute inside the pill, the label shifted clear of it */
+.try-pill { position: relative; }
+.try-pill-ic { position: absolute; left: var(--spacing-04, 12px); top: 50%; transform: translateY(-50%); z-index: 2; pointer-events: none; }
+.try-pill--ic .slider-label-left { padding-left: calc(var(--spacing-05, 16px) + var(--spacing-02, 6px)); }   /* clear of the icon */
+/* LOCAL REVIEW ONLY: the shared subset lacks text_increase and format_letter_spacing, so these
+   two draw from a one-off Google Fonts cut of just those ligatures until the subset grows. */
+@font-face {
+  font-family: 'Material Symbols Review'; font-style: normal; font-weight: 100 700; font-display: block;
+  src: url(https://fonts.gstatic.com/l/font?kit=kJEhBvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oFsLjBuVYLBrbrM8iVqo6h9UPXPrH2QOL1xsuOvg3WMHqOg&skey=b8dc2088854b122f&v=v377) format('woff2');
+}
+.wm-icon.icon-full { font-family: 'Material Symbols Review'; }
 .try .preview-reset:disabled { visibility: hidden; }
 .preview-reset {
   display: inline-flex;
@@ -534,6 +622,7 @@
 .dl-act {
   display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-03, 8px);
   --edge: 16px;
+  /* color-lint: allow -- an alpha mask: only the alpha of these stops is used, never their colour */
   --fade: rgba(0,0,0,0) 0, rgba(0,0,0,.05) calc(var(--edge) * .25), rgba(0,0,0,.22) calc(var(--edge) * .5), rgba(0,0,0,.6) calc(var(--edge) * .75), #000 var(--edge);
   margin: 0 -16px -16px;
   padding: 14px 16px 16px;               /* token-lint: allow -- 14px is the pill spill's reach above the button */
@@ -580,6 +669,7 @@
    presets select was cured of above. Sized to the stepper's 10x6; the SVG follows
    currentColor, so the hover inversion still works. */
 .style-menu-caret { color: var(--text-dim); margin-left: var(--spacing-02, 6px); vertical-align: middle; }
+.style-menu-val { display: inline-flex; align-items: center; gap: var(--spacing-02, 6px); }
 .style-menu-list {
   position: absolute; top: calc(100% + 4px); left: 0; min-width: 212px; z-index: 60;
   display: flex; flex-direction: column; padding: 4px;
@@ -629,14 +719,14 @@
   width: 100%;   /* full-width hit area — padding/margins never shrink the rollover */
   row-gap: 3px; cursor: pointer; user-select: none; padding: var(--spacing-04, 12px) 0 var(--spacing-03, 9px);
   font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); letter-spacing: var(--track-caps);
-  color: rgba(232,232,232,.35);
+  color: rgba(var(--text-rgb, 232, 232, 232), var(--rail-ink, .35));
 }
 .rail-seam:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 3px; border-radius: 4px; }
 .rail-seam-num { font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim); }
 .rail-seam.is-open .rail-seam-num { color: var(--text); }
 .rail-seam-lbl { display: block; min-width: 0; white-space: nowrap; text-transform: uppercase; }
 .rail-seam.is-open { color: var(--text); }
-.rail-seam:not(.is-next):hover:not(.is-open) { color: rgba(232,232,232,.6); }
+.rail-seam:not(.is-next):hover:not(.is-open) { color: rgba(var(--text-rgb, 232, 232, 232), var(--rail-ink-hover, .6)); }
 .rail-seam-sum {
   grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim);
@@ -859,7 +949,7 @@
   background: var(--accent); transform: rotate(45deg);
   box-shadow: 0 0 0 1px var(--bg); cursor: ew-resize; touch-action: none; z-index: 3;
 }
-.matrix-handle:hover { background: #fff; }
+.matrix-handle:hover { background: var(--handle-hover); }
 
 /* THE ACTIVE BAND IS PAINTED ABOVE SDR WHITE, same argument as the zone chips: the colour
    IS the state, so the boost is that statement said louder rather than decoration. The
@@ -1004,6 +1094,28 @@
    is already --bg ink. GlyphPicker.css is not layered and loads after this file, so it
    needs the extra class to win on specificity rather than on order. */
 .gp .gp-cell:hover { background: var(--signal-acid); }
+
+.try-btn-ic { margin-right: var(--spacing-02, 6px); vertical-align: -3px; }
+
+/* Reset buttons take the acid while there is something to reset (they disable otherwise, and
+   stay grey). --signal-acid, not --signal-ink: ReCal pins --signal-ink to grey. It is #eeff41 in
+   dark and #557b00 in light (tokens.css). Color only -- fills and borders are as they were, and
+   hover keeps the same color (no acid hover effects). */
+.rail-reset:not(:disabled), .rail-reset:hover:not(:disabled),
+.rail-seam-reset:not(:disabled), .rail-seam-reset:hover:not(:disabled),
+.preview-reset:not(:disabled), .preview-reset:not(:disabled):hover { color: var(--signal-acid); }
+
+/* TEMPORARY, for this review build: the Try controls are 30px tall (Mark), 12 + 18 on the 3px line,
+   but the shared AxisSlider track variant sets min-height: 32px (shared/src/AxisSlider.css). Until the
+   wm-primitives change lands, this scoped rule sets the Try dials -- and their non-dial neighbors,
+   so the two rows match -- to 30. Delete it when the primitive is 30. */
+.canvas.wm-grid--bleed .try .slider-row--track .slider-label { min-height: 30px; }
+.canvas.wm-grid--bleed .try .wm-accent, .canvas.wm-grid--bleed .try .try-btn, .canvas.wm-grid--bleed .try .style-menu-btn,
+.canvas.wm-grid--bleed .try .preview-reset { height: 30px; min-height: 30px; box-sizing: border-box; padding-block: 0; }
+.canvas.wm-grid--bleed .try-lbl { min-height: 30px; }
+
+/* The Info panel, when open, starts below the theme switch in the top right. */
+.canvas.wm-grid--bleed .info-panel { padding-top: calc(var(--spacing-09, 64px)); }
 
 /* On an HDR screen the Download pill's light is an opaque PQ image (AccentButton, "Q5 in HDR"), so it covers
    what sits under its spill instead of glowing through it. The OFL line is 8px under the pill: positioned, it

@@ -9,7 +9,7 @@
    rule, never a fill. Scoped under .canvas so it beats App.css's global button rules.
    Transparent padding keeps hit targets ≥32px. House-style focus, never the UA ring. */
 .canvas .mode-btn, .canvas .text-tab, .canvas .chip {
-  padding: 8px 8px;
+  padding: var(--tab-pad, 8px) var(--tab-pad, 8px);
   border: none;
   background: none;
   border-radius: var(--radius);

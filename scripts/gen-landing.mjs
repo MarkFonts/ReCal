@@ -36,7 +36,9 @@ else console.warn('[seo] shared/src/letterbox.js missing — run `git submodule 
 // and gridSnap.js (what CSS cannot place). The article's own sheet is src/landing.css --
 // a real file so the token lint can read it (.tokenlint.json `lines`); only what varies
 // per page stays inline below.
-for (const f of ['grid.css', 'gridSnap.js']) {
+// THE THEME ENGINE, same way: theme.js (+ the confirm.js it imports) drives the page's own Auto / Light / Dark
+// switch in the article. The app above has its own, on the same key.
+for (const f of ['grid.css', 'gridSnap.js', 'theme.js', 'confirm.js']) {
   const src = join(__dirname, '..', 'shared', 'src', f)
   if (!existsSync(src)) throw new Error(`[seo] shared/src/${f} missing — run \`git submodule update --init\``)
   writeFileSync(join(OUT, f), readFileSync(src))
@@ -191,6 +193,7 @@ function page(p, all) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>(function(){var t='auto';try{var v=localStorage.getItem('wm-theme');if(v==='light'||v==='dark'||v==='auto')t=v}catch(e){}document.documentElement.dataset.theme=t})();</script>
 <title>${esc(p.title)}</title>
 <meta name="description" content="${esc(p.description)}">
 <link rel="canonical" href="${url}">
@@ -268,7 +271,9 @@ ${appCss}
 <main class="seo-below wm-lines" id="about">
 <article class="wrap wm-grid">
 <div class="seo-col">
-  <div class="live-note">▲ Live above, already set to ${esc(p.referent)}. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></div>
+  <div class="live-note"><span>▲ Live above, already set to ${esc(p.referent)}. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></span>
+    <div class="wm-theme" id="theme-switch" role="group" aria-label="Colour scheme">${[['auto','brightness_auto','Auto','Follow the system setting'],['light','light_mode','Light','Force the light palette'],['dark','dark_mode','Dark','Force the dark palette']].map(([m, ic, w, t]) => `<button type="button" data-mode="${m}" aria-pressed="false" aria-label="${w} colour scheme" title="${t}" class="wm-icon-btn"><span class="wm-icon material-symbols-outlined wm-icon--rest" style="font-size:20px;--icon-opsz:20;--icon-fill:0" aria-hidden="true" translate="no">${ic}</span></button>`).join('')}</div>
+  </div>
   <nav class="crumb"><a href="${ORIGIN}/">WORDMARK</a> › <a href="${BASE}/">ReCal Sans</a> › ${esc(p.referent)} alternative</nav>
 
   <h1>${esc(p.h1)}</h1>
@@ -366,12 +371,17 @@ ${(() => {
     largeFontFamily: "'CalSansSEO', system-ui, sans-serif",
     fillFontFamily:  "'CalSansSEO', system-ui, sans-serif",
     fillSize: 10, widthFraction: 0.98, minFillSize: 6, bleedTop: 180,
-    ink: '#e8e8e8',
-    signal: 'color(display-p3 0.9333 1 0.2549)',
+    // custom property NAMES, read live: the letterbox follows the theme (ink and the signal, acid in dark and #557b00 in light)
+    ink: '--text',
+    signal: '--signal-acid',
     colorSpace: 'display-p3',
     speckle: { share: 1 / 6, groups: 5 },
   })
   if (lb) document.fonts?.ready.then(lb.init) ?? lb.init()
+</script>
+<script type="module">
+  import { mountThemeSwitch } from '${BASE}/theme.js'
+  mountThemeSwitch(document.getElementById('theme-switch'))
 </script>
 </body>
 </html>

@@ -62,20 +62,28 @@ export function opszForSize(size: number, multiplier: number, min = 8, max = 45)
   return Math.min(Math.max(size / (multiplier || 1), min), max)
 }
 
+// The preview font's opsz axis is relabeled by the Optical scale (see previewFont in the
+// worker), so the Try bar's range is stock min..max times the multiplier.
+export const clampTryOpsz = (v: number, multiplier = 1): number =>
+  Math.min(Math.max(v, 8 * multiplier), 45 * multiplier)
+
 // Resolve opsz for a specimen element WITHOUT re-baking the font. opsz FREEZE is a
 // fixed value applied live via CSS (the browser interpolates the deltas per frame —
 // the ~5s instancer only ever mattered for the static download, never the preview).
 // The SCALER stays baked as a cheap axis relabel, so font-optical-sizing:auto handles
 // per-size mapping for free — hence no per-element opsz here for that case.
 export function opszCss(
-  d: { freezeOpsz: boolean; frozenOpszValue: number | null },
+  d: { freezeOpsz: boolean; frozenOpszValue: number | null; opszMultiplier?: number },
   opszAuto: boolean,
   opszDefault = 14,
+  tryOpsz: number | null = null,
 ): { renderOpts: { opszOverride?: number; skipOpsz?: boolean }; optical: 'auto' | 'none' } {
   if (d.freezeOpsz) {
     const v = Math.min(Math.max(d.frozenOpszValue ?? opszDefault, 8), 45)
     return { renderOpts: { opszOverride: v }, optical: 'none' }
   }
+  // The Try bar's opsz: preview only, in the relabeled preview font's range (stock × scale).
+  if (tryOpsz !== null) return { renderOpts: { opszOverride: clampTryOpsz(tryOpsz, d.opszMultiplier) }, optical: 'none' }
   if (opszAuto) return { renderOpts: { skipOpsz: true }, optical: 'auto' }
   return { renderOpts: {}, optical: 'none' }
 }

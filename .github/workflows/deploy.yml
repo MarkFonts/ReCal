@@ -65,6 +65,8 @@ jobs:
       - run: npm ci
       # Fails the deploy if chrome has drifted off the scale or the type roles.
       - run: node shared/scripts/lint-tokens.mjs
+      # Fails the deploy on a hard-coded grey/white/light ink in src/ CSS (ReCal has a light theme now).
+      - run: node scripts/lint-colors.mjs
       - run: npm run build
 
       - name: Push to MarkFonts/wordmark
