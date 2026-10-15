@@ -1004,3 +1004,8 @@
    is already --bg ink. GlyphPicker.css is not layered and loads after this file, so it
    needs the extra class to win on specificity rather than on order. */
 .gp .gp-cell:hover { background: var(--signal-acid); }
+
+/* On an HDR screen the Download pill's light is an opaque PQ image (AccentButton, "Q5 in HDR"), so it covers
+   what sits under its spill instead of glowing through it. The OFL line is 8px under the pill: positioned, it
+   comes after the button in the stacking order and sits on the light. SDR keeps today's stacking. */
+@media (dynamic-range: high) { .dl-ofl { position: relative; } }
