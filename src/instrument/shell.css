@@ -574,7 +574,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 
   .canvas.wm-grid--bleed .try {
     position: relative; left: auto; right: auto; bottom: auto; background: var(--bg); pointer-events: auto;
-    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-03, 8px) var(--spacing-04, 12px);
+    grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--spacing-02, 6px) var(--spacing-04, 12px);
     padding: var(--spacing-03, 8px) var(--spacing-05, 16px) var(--spacing-04, 12px); border-top: 1px solid var(--border);
   }
   .canvas.wm-grid--bleed .try > * { grid-column: 1 / -1; }
@@ -586,15 +586,14 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
      and its number, and the name ran into the number. The names say what the marks said; the buttons keep theirs. */
   .try .try-pill-ic { display: none; }
   .try .try-pill--ic .slider-label-left { padding-left: var(--spacing-01, 4px); }
-  /* On touch the primitive makes each dial's ROW 48px with its 30px bar centered (an inert shelf above and below).
-     In a 30px cell that pushed every bar 9px down, so the dial above Italic touched it and TRY floated away from
-     the first row. Here the bar rests at the top of its cell; the row's extra height still hangs below it as
-     the shelf, and the bar still grows to fill the row while it is held. */
-  .try-pill .slider-row--track { justify-content: flex-start; }
+  /* THE DIALS KEEP THEIR OWN ROW HEIGHT, as in font-proofer's sidebar. On touch the primitive makes a dial's row 48px
+     (the 30px bar sits in it with a shelf above and below) and lets the bar grow to fill the row while it is held; a
+     row only stays clear of its neighbours if it is allowed to BE 48px. So no cell here pins a height: rows size to
+     their content, 6px apart (the sidebar's gap), and the buttons (Italic, Features, Styles, Alignment) stay 30. */
   .canvas.wm-grid--bleed .try-c-r .preview-reset { padding-block: 0; min-height: 24px; height: 24px; }
-  .try-col { grid-template-rows: none; grid-auto-rows: 30px; }   /* a group with one control (Glyphs: Optical size) is one row tall */
+  .try-col { grid-template-rows: none; grid-auto-rows: auto; }
   /* Size | Tracking and Styles | Alignment: the group on one row (a lone control takes the row) */
-  .try-col--a, .try-col--d { grid-template-rows: 30px; }
+  .try-col--a, .try-col--d { grid-template-rows: auto; }
   .try-col--a > :nth-child(1), .try-col--d > :nth-child(1) { grid-column: 1; grid-row: 1; }
   .try-col--a > :nth-child(2), .try-col--d > :nth-child(2) { grid-column: 2; grid-row: 1; }
   .try-col--a > :only-child, .try-col--d > :only-child { grid-column: 1 / -1; }
@@ -612,7 +611,6 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
      closed) and the theme switch. It spans the canvas. */
   .info-panel { top: var(--bar-h, 58px); left: 0; width: auto; }
   /* a group of a menu and a dial (Scale: tier menu, Measure) is two full rows: a dial needs more than half a row */
-  .try-col--d:has(> .try-pill) { grid-template-rows: none; grid-auto-rows: 30px; }
   .try-col--d:has(> .try-pill) > :nth-child(n) { grid-column: 1 / -1; grid-row: auto; }
 
   .stage-pad--glyphs .gp { flex-direction: column; align-items: stretch; width: 100%; gap: var(--spacing-03, 8px); }
