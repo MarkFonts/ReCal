@@ -615,22 +615,16 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .dl-opt input { accent-color: var(--accent); margin: 1px 0 0; flex-shrink: 0; }
 .dl-opt b { font-weight: inherit; color: var(--text); }
 .dl-opt--locked { cursor: default; }
-/* The Download pill's light (AccentButton, look q5) spills 52px to each side and 62px below, wider than the
-   footer it sits in. .dl-act bleeds to the footer's edges (and to its bottom when nothing sits below it) and
-   clips the spill at its own edge; its 16px padding band at the sides and bottom holds nothing but light, so it
-   is faded to zero across exactly that band and the light dies there instead of ending in a hard edge. */
+/* The Download pill's light (AccentButton, look q5) is wider than the footer it sits in. It is cut hard by the
+   rail itself: the panel's edges (and the window's bottom) are where the light stops, like light under a card.
+   No clip or mask here on .dl-act, which would cut it again inside the panel, above the button. The light is an
+   opaque image on HDR screens, so the footer's text is lifted over it (as .dl-ofl already is). */
 .dl-act {
   display: flex; flex-direction: column; align-items: stretch; gap: var(--spacing-03, 8px);
-  --edge: 16px;
-  /* color-lint: allow -- an alpha mask: only the alpha of these stops is used, never their colour */
-  --fade: rgba(0,0,0,0) 0, rgba(0,0,0,.05) calc(var(--edge) * .25), rgba(0,0,0,.22) calc(var(--edge) * .5), rgba(0,0,0,.6) calc(var(--edge) * .75), #000 var(--edge);
   margin: 0 -16px -16px;
   padding: 14px 16px 16px;               /* token-lint: allow -- 14px is the pill spill's reach above the button */
-  overflow: hidden;
-  mask-image: linear-gradient(90deg, var(--fade)), linear-gradient(270deg, var(--fade)), linear-gradient(0deg, var(--fade));
-  mask-composite: intersect;
-  -webkit-mask-composite: source-in;
 }
+.rail-dl > :not(.dl-act) { position: relative; z-index: 1; }   /* the download line and options sit on the light */
 .rail-dl:has(.dl-progress) .dl-act { margin-bottom: 0; }   /* the bake line sits under it */
 /* "Building…" keeps its looping shimmer, over the unlit grey ink instead of its dark base (the base was for
    an acid face); the one-shot "ready" flourish keeps its band, over the pale label instead of --bg. */
