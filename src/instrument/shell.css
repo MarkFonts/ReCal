@@ -548,12 +548,11 @@
   padding-inline: var(--tab-pad, 8px); margin-left: calc(var(--tab-pad, 8px) * -1);
   align-items: flex-start;   /* the label sits at the box's left, bold or not (it was centered in a bold-width box) */
 }
-.canvas[data-try="float"] .mode-btn[data-gk="tab:words"] { margin-left: calc(var(--grid-gutter, 24px) - var(--tab-pad, 8px)); }
-.canvas[data-try="float"] .theme-cell { justify-self: end; padding-inline: 0 var(--grid-gutter, 24px); }
+.canvas[data-try="float"] .theme-cell { grid-row: 1; justify-self: end; padding-inline: 0 var(--grid-gutter, 24px); }   /* always the top row, top right (on narrow windows it may sit over a free column of the tab row) */
 .canvas[data-try="float"] .mode-row {
   display: grid; align-items: baseline; padding: 0 0 var(--spacing-03, 8px); column-gap: var(--grid-gutter, 24px);
 }
-.canvas[data-try="float"] .mode-row .mode-label { grid-column: 1 / span var(--s1, 2); width: auto; padding: calc(var(--spacing-03, 8px) - 3px) 0 0 var(--grid-gutter, 24px); }
+.canvas[data-try="float"] .mode-row .mode-label { grid-column: 2 / span var(--s1, 4); width: auto; padding: calc(var(--spacing-03, 8px) - 3px) 0 0; }   /* the building / saved status: column 2, like TRY and Words */
 .canvas[data-try="float"] .mode-row .scene-bar {
   grid-column: var(--s, 3) / -1; display: grid; grid-template-columns: subgrid; column-gap: inherit; row-gap: 0;
   align-items: baseline; padding: 0;

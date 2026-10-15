@@ -507,7 +507,7 @@ function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boole
     return () => ro.disconnect()
   })
   return useMemo(() => {
-    const out = { tab: {} as Record<string, CSSProperties>, sub: {} as Record<string, CSSProperties>, S: 3, themeStart: 0, themeSpan: 0, cols: g0?.cols ?? 24 }
+    const out = { tab: {} as Record<string, CSSProperties>, sub: {} as Record<string, CSSProperties>, S: 6, base: 2, themeStart: 0, themeSpan: 0, cols: g0?.cols ?? 24 }
     if (!g0) return out
     const { W, cols, g } = g0
     const col = (W - (cols - 1) * g) / cols
@@ -515,13 +515,16 @@ function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boole
     const sty = (start: number, span: number): CSSProperties =>
       ({ ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span } as CSSProperties)
     const SAFE = 6   // the selected label is bold, a touch wider than the measured one
-    let cur = 1
-    g0.tabs.forEach(([k, w], i) => {
-      const s = spanFor(w + SAFE + (i === 0 ? g : 0))      // Words carries the one-gutter inset in its box
-      if (cur + s - 1 > cols) cur = 1
-      out.tab[k] = sty(cur, s)
+    // TRY and Words begin ON column 2 (their text on its left edge, no inset); every top category
+    // is exactly 2 columns, so the tabs fall on 2, 4, 6 ... If a row runs out of columns (12 on
+    // narrow windows) the next category wraps to a second row from column 2.
+    const BASE = 2
+    let cur = BASE
+    g0.tabs.forEach(([k]) => {
+      if (cur + 1 > cols) cur = BASE
+      out.tab[k] = sty(cur, 2)
       if (k === 'tab:scale') out.S = cur
-      cur += s
+      cur += 2
     })
     const S = out.S
     cur = S
@@ -534,6 +537,7 @@ function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boole
     out.sub['credit'] = { ['--start' as string]: 1, ['--span' as string]: cols - S + 1 } as CSSProperties
     out.themeSpan = spanFor(112)
     out.themeStart = cols - out.themeSpan + 1
+    out.base = BASE
     return out
   }, [g0])
 }
@@ -643,7 +647,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         </div>
         {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
             disappearing never shifts the label (or stage) vertically. */}
-        <div className={`mode-row${flt ? ' wm-grid wm-lines' : ''}`} style={flt ? { ['--s' as string]: fg.S, ['--s1' as string]: fg.S - 1 } as CSSProperties : undefined}>
+        <div className={`mode-row${flt ? ' wm-grid wm-lines' : ''}`} style={flt ? { ['--s' as string]: fg.S, ['--s1' as string]: fg.S - fg.base } as CSSProperties : undefined}>
           <ModeLabel />
           <SceneControls mode={mode} source={source} setSource={setSource}
             pairs={pairs} togglePair={togglePair}
@@ -905,9 +909,9 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       const put = (k: string, start: number, span: number, extra?: Record<string, number>) => {
         at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span, ...(extra ?? {}) } as CSSProperties
       }
-      const L = spanFor(54, 1)               // the TRY label: its gutter + the word
-      put('lbl', 1, L)
-      const x0 = L + 1
+      const L = spanFor(34, 2)               // the TRY label: the word
+      put('lbl', 2, L)                       // TRY begins on column 2, its text on the column's left edge
+      const x0 = 2 + L
       let cur = x0
       for (const it of present) {
         let s: number, extra: Record<string, number> | undefined
@@ -917,7 +921,14 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
           const k = Math.max(1, Math.min(Math.floor((cols - x0 + 1) / 2), Math.ceil((100 + g) / (col + g) - 1e-6)))
           s = 2 * k; extra = { ['--k' as string]: k }
         } else s = spanFor(it.px, x0)
-        if (cur + s - 1 > cols) cur = x0       // whole column wraps to a new band
+        if (cur + s - 1 > cols) {
+          cur = x0                             // whole column wraps to a new band ...
+          if (it.key === 'r') {                // ... except Reset: alone on a band it would add an empty row while
+            put('r', 2, L)                     // disabled, so it sits under TRY (same two columns, bottom row) instead
+            at.r = { ...at.r, gridRow: 1 }
+            continue
+          }
+        }
         put(it.key, cur, s, extra)
         cur += s
       }
