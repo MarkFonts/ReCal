@@ -625,6 +625,9 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   padding: 14px 16px 16px;               /* token-lint: allow -- 14px is the pill spill's reach above the button */
 }
 .rail-dl > :not(.dl-act) { position: relative; z-index: 1; }   /* the download line and options sit on the light */
+/* overflow: clip, not hidden: it cuts the light at the footer's edges without making the footer (or the rail)
+   scroll, so the light can't add scrollbars. A rectangular clip keeps the HDR (a mask would not). */
+.rail-dl { overflow: clip; }
 .rail-dl:has(.dl-progress) .dl-act { margin-bottom: 0; }   /* the bake line sits under it */
 /* "Building…" keeps its looping shimmer, over the unlit grey ink instead of its dark base (the base was for
    an acid face); the one-shot "ready" flourish keeps its band, over the pale label instead of --bg. */
