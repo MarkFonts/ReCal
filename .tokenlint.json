@@ -7,7 +7,7 @@
   "tokenSources": [
     "shared/src"
   ],
-  "_runtimeTokens": "Set by JS as an inline style on the element itself, so no stylesheet declares them: the zone/tab colours and --labels-w from App.tsx + GlyphGroups.tsx, --flash-color from scenes.tsx, and --vs/--vm-lh/--vm-shift from CossScene.tsx.",
+  "_runtimeTokens": "Set by JS as an inline style on the element itself, so no stylesheet declares them: the zone/tab colours and --labels-w from App.tsx + GlyphGroups.tsx, --flash-color from scenes.tsx, and --vs/--vm-lh/--vm-shift from CossScene.tsx. Also --k/--s/--s1 (the float's column spans, from Shell.tsx) and --ov-left/--ov-right (the ?grid overlay's box, from TryBar).",
   "_lines": "On the house grid (wm-primitives GRID.md): the compare pages' article, written into dist/landing.css by scripts/gen-landing.mjs. linesSkip names what in it is not on the line: the specimen (data-nosnap in the page, its rows the preset at its own size and leading) and the letterbox, which sits outside the .wm-lines root and pulls its canvas up by the bleed.",
   "lines": [
     "src/landing.css"
@@ -15,7 +15,12 @@
   "linesSkip": "\\.specimen-(?:grid|row)|\\.style-cap|\\.seo-lb",
   "runtimeTokens": [
     "--flash-color",
+    "--k",
     "--labels-w",
+    "--ov-left",
+    "--ov-right",
+    "--s",
+    "--s1",
     "--tab-color",
     "--vm-lh",
     "--vm-shift",

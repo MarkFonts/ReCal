@@ -467,15 +467,11 @@ function TierMenu({ selected, toggle, scaleStyles }: {
   )
 }
 
-// Where the Try controls live, for review: ?try=float (columns floating over the canvas foot);
-// anything else is the docked bar.
-type TryPlace = 'dock' | 'float'
-const TRY_PLACE: TryPlace = new URLSearchParams(window.location.search).get('try') === 'float' ? 'float' : 'dock'
-// ?grid draws the grid's columns and 3px lines (gridSnap.js, a plain script) -- review only.
-// float carries the house theme switch (Auto / Light / Dark), so the stored choice is stamped on <html>
-// before first paint; the other placements never touch data-theme.
-if (TRY_PLACE === 'float') bootTheme()
-if (TRY_PLACE === 'float' && /[?&]grid\b/.test(window.location.search)) {
+// The house theme switch (Auto / Light / Dark) is always on: the stored choice (or Auto, which follows the OS)
+// is stamped on <html data-theme> before the first render, so there is no flash of the wrong palette.
+bootTheme()
+// ?grid draws the grid's columns and 3px lines (gridSnap.js, a plain script) -- a review/measuring aid.
+if (/[?&]grid\b/.test(window.location.search)) {
   const sc = document.createElement('script'); sc.src = gridSnapUrl; sc.defer = true; document.head.appendChild(sc)
 }
 
@@ -518,13 +514,17 @@ function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boole
     // TRY and Words begin ON column 2 (their text on its left edge, no inset); every top category
     // is exactly 2 columns, so the tabs fall on 2, 4, 6 ... If a row runs out of columns (12 on
     // narrow windows) the next category wraps to a second row from column 2.
+    // On a phone-width canvas (< 640px) two columns are narrower than the words, so there the span is
+    // the label's own width in whole columns instead of a flat 2.
     const BASE = 2
+    const flat = W >= 640
     let cur = BASE
-    g0.tabs.forEach(([k]) => {
-      if (cur + 1 > cols) cur = BASE
-      out.tab[k] = sty(cur, 2)
+    g0.tabs.forEach(([k, w]) => {
+      const s = flat ? 2 : spanFor(w + SAFE)
+      if (cur + s - 1 > cols) cur = BASE
+      out.tab[k] = sty(cur, s)
       if (k === 'tab:scale') out.S = cur
-      cur += 2
+      cur += s
     })
     const S = out.S
     cur = S
@@ -534,7 +534,7 @@ function useFloatGrid(rootRef: React.RefObject<HTMLDivElement | null>, on: boole
       out.sub[k] = { ['--start' as string]: cur - S + 1, ['--span' as string]: s } as CSSProperties   // local to the sub-row's subgrid
       cur += s
     })
-    out.sub['credit'] = { ['--start' as string]: 1, ['--span' as string]: cols - S + 1 } as CSSProperties
+    out.sub['sub:credit'] = { ['--start' as string]: 1, ['--span' as string]: cols - S + 1 } as CSSProperties
     out.themeSpan = spanFor(112)
     out.themeStart = cols - out.themeSpan + 1
     out.base = BASE
@@ -600,8 +600,7 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
   // UiKitBoard knows where row 0 should rest to clear the nav, same as it looked before
   // the nav overlaid anything. Other tabs are untouched (nav stays in normal flow there).
   const rootRef = useRef<HTMLDivElement>(null)
-  const fg = useFloatGrid(rootRef, TRY_PLACE === 'float')
-  const flt = TRY_PLACE === 'float'
+  const fg = useFloatGrid(rootRef, true)
   const navRef = useRef<HTMLDivElement>(null)
   const [navHeight, setNavHeight] = useState(0)
   const uiOverlay = mode === 'ui' && !vmActive
@@ -634,12 +633,12 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         fit={fit} topInset={uiOverlay ? navHeight : 0} />
 
   return (
-    <div ref={rootRef} className={`canvas${vmActive ? ' canvas--vm' : ''}${TRY_PLACE === 'float' ? ' wm-grid--bleed' : ''}`} data-try={TRY_PLACE}>
+    <div ref={rootRef} className={`canvas wm-grid--bleed${vmActive ? ' canvas--vm' : ''}`}>
       <div ref={navRef} className={`canvas-nav${uiOverlay ? ' canvas-nav--overlay' : ''}`}>
-        <div className={`canvas-bar${TRY_PLACE === 'float' ? ' wm-grid wm-lines' : ''}`}>
+        <div className="canvas-bar wm-grid wm-lines">
           <Modebar mode={mode} setMode={setMode} showInfo={showInfo} toggleInfo={() => setShowInfo(v => !v)}
-            gp={flt ? k => fg.tab[k] : undefined} />
-          {flt && fg.themeSpan > 0 && (
+            gp={k => fg.tab[k]} />
+          {fg.themeSpan > 0 && (
             <div className="theme-cell" style={{ ['--start' as string]: fg.themeStart, ['--span' as string]: fg.themeSpan, ['--start-md' as string]: fg.themeStart, ['--span-md' as string]: fg.themeSpan } as CSSProperties}>
               <ThemeSwitch />
             </div>
@@ -647,12 +646,12 @@ function Canvas({ size, setSize, tracking, setTracking, leading, setLeading, fea
         </div>
         {/* Mode label + its per-mode submenu share one row, so the submenu appearing/
             disappearing never shifts the label (or stage) vertically. */}
-        <div className={`mode-row${flt ? ' wm-grid wm-lines' : ''}`} style={flt ? { ['--s' as string]: fg.S, ['--s1' as string]: fg.S - fg.base } as CSSProperties : undefined}>
+        <div className="mode-row wm-grid wm-lines" style={{ ['--s' as string]: fg.S, ['--s1' as string]: fg.S - fg.base } as CSSProperties}>
           <ModeLabel />
           <SceneControls mode={mode} source={source} setSource={setSource}
             pairs={pairs} togglePair={togglePair}
             glyphSet={glyphSet} setGlyphSet={setGlyphSet}
-            gp={flt ? k => fg.sub[k] : undefined} />
+            gp={k => fg.sub[k]} />
         </div>
       </div>
       {/* UI (COSS) renders the ◆ defaults and manages its own 2D board, so it hides the
@@ -747,14 +746,14 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
 }) {
   const { state, dispatch } = useInstrument()
   const merged = mergedAxes(state)
-  // A divider closes each group except the last on its line: mark the groups that end a line
-  // (the next one sits lower) so CSS can drop the divider there. Pure DOM, no state.
+  // A hairline closes each column except the last on its band: mark the columns that end a band
+  // (the next one sits lower) so CSS can drop the rule there. Pure DOM, no state.
   const barRef = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const bar = barRef.current
     if (!bar) return
     const mark = () => {
-      const gs = [...bar.querySelectorAll<HTMLElement>('.try-group, .try-col')]
+      const gs = [...bar.querySelectorAll<HTMLElement>('.try-col')]
       gs.forEach((g, i) => {
         const next = gs[i + 1]
         if (!next || Math.abs(next.offsetTop - g.offsetTop) > 2) g.setAttribute('data-eol', ''); else g.removeAttribute('data-eol')
@@ -769,7 +768,6 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   // packer below can give each column a whole number of grid columns.
   const [geo, setGeo] = useState<{ W: number; cols: number; g: number } | null>(null)
   useLayoutEffect(() => {
-    if (TRY_PLACE !== 'float') return
     const bar = barRef.current
     if (!bar) return
     const read = () => {
@@ -795,18 +793,14 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   const comparingSvg = !!cmp?.svg
   const naWght = !!cmp && (!!cmp.svg || !cmp.css)
   const naItal = !!cmp && (!!cmp.svg || !cmp.css || !cmp.italic)
-  const inScene = !vmActive && (mode === 'paragraph' || mode === 'scale')
   const { min: wMin, max: wMax } = AXIS_RANGES.wght
   const resetBtn = (
     <button className="preview-reset" disabled={!canReset} title="Reset preview" onClick={onReset}>
       <ResetIcon /><span className="preview-reset-text">Reset</span>
     </button>
   )
-  const sceneGroup = !vmActive && (mode === 'paragraph' || mode === 'scale')
-  const floatPlace = TRY_PLACE === 'float'   // there: four columns on the grid, Reset bottom right
   const para = !vmActive && mode === 'paragraph'
   const alignIcon = `format_align_${paraStyles[activeParaStyle].align}`
-  const slot = <span className="try-slot" aria-hidden="true" />
 
   // ── The controls, built once; the docked bar runs them in feature groups, the float lays
   // them on four grid columns (below). Proofing controls (not ◆ defaults) → the track variant
@@ -843,7 +837,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
       onClick={() => dispatch({ type: 'setPreview', tag: 'ital', value: merged.ital >= 0.5 ? 0 : 1 })}><Icon name="format_italic" size={16} state={merged.ital >= 0.5 ? 'active' : 'rest'} className="try-btn-ic" />Italic</AccentButton>
   )
   const featuresPop = (
-    <TryPop label="Features" icon="discover_tune" caret={!floatPlace}>
+    <TryPop label="Features" icon="discover_tune" caret={false}>
       {FEATURE_CHIPS.map(f => (
         <label key={f.tag} className="rail-toggle" title={f.tag}>
           <input type="checkbox" checked={feats.has(f.tag)} onChange={() => toggleFeat(f.tag)} />
@@ -853,7 +847,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     </TryPop>
   )
   const styleMenu = para
-    ? <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} label={floatPlace ? 'Styles' : undefined} />
+    ? <StyleMenu active={activeParaStyle} setActive={setActiveParaStyle} paraStyles={paraStyles} label="Styles" />
     : null
   // Paragraph layout in one popover: alignment and line fitting (wm-primitives, the same
   // controls font-proofer renders in its sidebar) and the measure. Alignment, the rag
@@ -863,7 +857,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   // dropped (they would only promise something the page cannot deliver) and the
   // measure stays. In the float it is "Alignment", with the icon of the current alignment.
   const layoutPop = para ? (
-    <TryPop label={floatPlace ? 'Alignment' : 'Layout'} icon={floatPlace ? alignIcon : undefined} end>
+    <TryPop label="Alignment" icon={alignIcon} end>
       {!comparingSvg && (
         <>
           <div className="try-aligns">
@@ -886,86 +880,61 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
   const scaleMeasure = has('measure')
     ? <TryDial label="Measure" value={measure} min={16} max={52} step={1} suffix="em" onChange={v => setMeasure(v as number)} /> : null
 
-  if (floatPlace) {
-    // Columns that have no controls on this tab are not rendered, and what is left packs left
-    // from the first grid column after TRY, each column a whole number of grid columns wide
-    // (its pills' natural width, rounded up), whole columns wrapping to a band that starts under
-    // the first control. Column 1 Size/Tracking, 2 Optical size/Leading, 3 Weight/Italic+Features,
-    // 4 the scene's (Styles/Alignment on Paragraph, tier menu/Measure on Scale); Reset after the last.
-    const colA = [sizeDial, trackingDial].filter(Boolean)
-    const colB = [opticalDial, leadingDial].filter(Boolean)
-    const colD = para ? [styleMenu, layoutPop] : tierMenu ? [tierMenu, scaleMeasure] : []
-    const present: { key: string; px: number }[] = []
-    if (colA.length) present.push({ key: 'a', px: 150 })
-    if (colB.length) present.push({ key: 'b', px: 214 })
-    present.push({ key: 'c', px: 0 })   // Weight over Italic | Features: two EQUAL whole-column spans a gutter apart (below)
-    if (colD.length) present.push({ key: 'd', px: 156 })
-    present.push({ key: 'r', px: 92 })
-    const at: Record<string, CSSProperties> = {}
-    if (geo) {
-      const { W, cols, g } = geo
-      const col = (W - (cols - 1) * g) / cols
-      const spanFor = (px: number, from: number) => Math.min(cols - from + 1, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
-      const put = (k: string, start: number, span: number, extra?: Record<string, number>) => {
-        at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span, ...(extra ?? {}) } as CSSProperties
-      }
-      const L = spanFor(34, 2)               // the TRY label: the word
-      put('lbl', 2, L)                       // TRY begins on column 2, its text on the column's left edge
-      const x0 = 2 + L
-      let cur = x0
-      for (const it of present) {
-        let s: number, extra: Record<string, number> | undefined
-        if (it.key === 'c') {
-          // Features (icon + word, no caret) is the longer half; Italic gets the same span. The column is
-          // 2k grid columns: Italic = k, Features = k, the house gutter between, Weight across both.
-          const k = Math.max(1, Math.min(Math.floor((cols - x0 + 1) / 2), Math.ceil((100 + g) / (col + g) - 1e-6)))
-          s = 2 * k; extra = { ['--k' as string]: k }
-        } else s = spanFor(it.px, x0)
-        if (cur + s - 1 > cols) {
-          cur = x0                             // whole column wraps to a new band ...
-          if (it.key === 'r') {                // ... except Reset: alone on a band it would add an empty row while
-            put('r', 2, L)                     // disabled, so it sits under TRY (same two columns, bottom row) instead
-            at.r = { ...at.r, gridRow: 1 }
-            continue
-          }
-        }
-        put(it.key, cur, s, extra)
-        cur += s
-      }
+  // Columns that have no controls on this tab are not rendered, and what is left packs left
+  // from the first grid column after TRY, each column a whole number of grid columns wide
+  // (its pills' natural width, rounded up), whole columns wrapping to a band that starts under
+  // the first control. Column 1 Size/Tracking, 2 Optical size/Leading, 3 Weight/Italic+Features,
+  // 4 the scene's (Styles/Alignment on Paragraph, tier menu/Measure on Scale); Reset after the last.
+  const colA = [sizeDial, trackingDial].filter(Boolean)
+  const colB = [opticalDial, leadingDial].filter(Boolean)
+  const colD = para ? [styleMenu, layoutPop] : tierMenu ? [tierMenu, scaleMeasure] : []
+  const present: { key: string; px: number }[] = []
+  if (colA.length) present.push({ key: 'a', px: 150 })
+  if (colB.length) present.push({ key: 'b', px: 214 })
+  present.push({ key: 'c', px: 0 })   // Weight over Italic | Features: two EQUAL whole-column spans a gutter apart (below)
+  if (colD.length) present.push({ key: 'd', px: 156 })
+  present.push({ key: 'r', px: 92 })
+  const at: Record<string, CSSProperties> = {}
+  if (geo) {
+    const { W, cols, g } = geo
+    const col = (W - (cols - 1) * g) / cols
+    const spanFor = (px: number, from: number) => Math.min(cols - from + 1, Math.max(1, Math.ceil((px + g) / (col + g) - 1e-6)))
+    const put = (k: string, start: number, span: number, extra?: Record<string, number>) => {
+      at[k] = { ['--start' as string]: start, ['--span' as string]: span, ['--start-md' as string]: start, ['--span-md' as string]: span, ...(extra ?? {}) } as CSSProperties
     }
-    return (
-      <div className="try wm-grid wm-lines" role="group" aria-label="Try" ref={barRef}
-        onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
-        <span className="try-lbl try-c-lbl" style={at.lbl}>Try</span>
-        {colA.length > 0 && <div className="try-col" style={at.a}>{colA}</div>}
-        {colB.length > 0 && <div className="try-col" style={at.b}>{colB}</div>}
-        <div className="try-col" style={at.c}>{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
-        {colD.length > 0 && <div className="try-col" style={at.d}>{colD}</div>}
-        <div className="try-c-r" style={at.r}>{resetBtn}</div>
-      </div>
-    )
+    const L = spanFor(34, 2)               // the TRY label: the word
+    put('lbl', 2, L)                       // TRY begins on column 2, its text on the column's left edge
+    const x0 = 2 + L
+    let cur = x0
+    for (const it of present) {
+      let s: number, extra: Record<string, number> | undefined
+      if (it.key === 'c') {
+        // Features (icon + word, no caret) is the longer half; Italic gets the same span. The column is
+        // 2k grid columns: Italic = k, Features = k, the house gutter between, Weight across both.
+        const k = Math.max(1, Math.min(Math.floor((cols - x0 + 1) / 2), Math.ceil((100 + g) / (col + g) - 1e-6)))
+        s = 2 * k; extra = { ['--k' as string]: k }
+      } else s = spanFor(it.px, x0)
+      if (cur + s - 1 > cols) {
+        cur = x0                             // whole column wraps to a new band ...
+        if (it.key === 'r') {                // ... except Reset: alone on a band it would add an empty row while
+          put('r', 2, L)                     // disabled, so it sits under TRY (same two columns, bottom row) instead
+          at.r = { ...at.r, gridRow: 1 }
+          continue
+        }
+      }
+      put(it.key, cur, s, extra)
+      cur += s
+    }
   }
-
-  // Docked bar: feature groups, each one unit that wraps whole (never a lone pill): Size,
-  // Spacing, Style, then the scene's own. Reset rides at the end of the LAST group.
   return (
-    <div className="try" role="group" aria-label="Try" ref={barRef}
+    <div className="try wm-grid wm-lines" role="group" aria-label="Try" ref={barRef}
       onPointerDown={() => state.recalMode !== 'demo' && dispatch({ type: 'setRecalMode', mode: 'demo' })}>
-      <span className="try-lbl">Try</span>
-      <div className="try-groups">
-        {(sizeDial || opticalDial) && <div className="try-group">{sizeDial}{opticalDial}</div>}
-        {(trackingDial || leadingDial) && <div className="try-group">{trackingDial}{leadingDial}</div>}
-        <div className="try-group">
-          {weightDial}{italicBtn}{featuresPop}
-          {!sceneGroup && resetBtn}
-        </div>
-        {sceneGroup && (
-          <div className="try-group">
-            {styleMenu}{tierMenu}{layoutPop}{scaleMeasure}
-            {resetBtn}
-          </div>
-        )}
-      </div>
+      <span className="try-lbl try-c-lbl" style={at.lbl}>Try</span>
+      {colA.length > 0 && <div className="try-col" style={at.a}>{colA}</div>}
+      {colB.length > 0 && <div className="try-col" style={at.b}>{colB}</div>}
+      <div className="try-col" style={at.c}>{weightDial}<div className="try-row">{italicBtn}{featuresPop}</div></div>
+      {colD.length > 0 && <div className="try-col" style={at.d}>{colD}</div>}
+      <div className="try-c-r" style={at.r}>{resetBtn}</div>
     </div>
   )
 }

@@ -1,8 +1,13 @@
 <!doctype html>
-<html lang="en" data-theme="dark">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // The colour scheme (shared/src/theme.js bootTheme): the stored choice, else Auto (follow the OS), stamped
+      // before the first paint so there is no flash of the wrong palette.
+      (function(){var t='auto';try{var v=localStorage.getItem('wm-theme');if(v==='light'||v==='dark'||v==='auto')t=v}catch(e){}document.documentElement.dataset.theme=t})();
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>ReCal Sans — customize a free variable font in the browser</title>
     <meta name="description" content="ReCal Sans is a browser-based customizer for Cal Sans, a free variable font. Tune the geometric, optical-size, weight and ascender axes, remap glyph-swap thresholds, then download a static TTF with your decisions baked in. Open source (OFL), no upload, no account." />

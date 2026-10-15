@@ -158,3 +158,11 @@
   56%  { font-variation-settings: 'opsz' 10, 'GEOM' 25, 'ital' 1; }   /* hold until the band is gone (~0.5s) */
   100% { font-variation-settings: 'opsz' 10, 'GEOM' 25, 'ital' 0; }   /* recline upright, after */
 }
+
+/* LIGHT GROUND. The color band is screened over the metal; screening brightens, so on a light page the seam
+   title washed out to pastel. There the band MULTIPLIES over a darker metal (tokens.css): the hues deepen
+   instead, and the band's white core is neutral. The metal tokens are set in tokens.css's light blocks. */
+:root[data-theme="light"] :is(.rail-seam.is-next .rail-seam-lbl, .rail-seam.is-next .rail-seam-chv-t, .mc-word, .holo-loading) { background-blend-mode: multiply, normal; }
+@media (prefers-color-scheme: light) {
+  :root[data-theme="auto"] :is(.rail-seam.is-next .rail-seam-lbl, .rail-seam.is-next .rail-seam-chv-t, .mc-word, .holo-loading) { background-blend-mode: multiply, normal; }
+}

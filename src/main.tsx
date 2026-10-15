@@ -106,6 +106,9 @@ const Root = params.get('demo') === 'glyphpicker' ? GlyphPickerDemo
 // Scope marker: App.css's element-level defaults (light button pill etc.) apply ONLY
 // under .classic-ui — they must never leak into the instrument or demo harnesses.
 document.documentElement.classList.add(useClassic ? 'classic-ui' : 'instrument-ui')
+// The classic UI is dark-only (App.css is full of dark literals; lint-colors allowlists it), so the theme
+// the instrument just stamped is overridden there.
+if (useClassic) document.documentElement.dataset.theme = 'dark'
 
 /* Vite re-evaluates this module on HMR -- any edit that invalidates it, including the
    CSS imported above -- and createRoot() on a container that already has a root does not

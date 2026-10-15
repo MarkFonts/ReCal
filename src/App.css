@@ -30,8 +30,8 @@ body {
   font-family: 'CalSansVF', sans-serif;
   font-optical-sizing: none;
   font-variation-settings: 'opsz' 10, 'GEOM' 25;
-  background: #0f0f0f;
-  color: #e8e8e8;
+  background: var(--bg, #0f0f0f);
+  color: var(--text, #e8e8e8);
   min-height: 100vh;
   overflow-x: hidden; /* absorb the 100vw full-bleed footer's scrollbar-width overflow */
 }

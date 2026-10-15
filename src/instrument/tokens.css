@@ -38,6 +38,7 @@
   /* ── Lines ── */
   --border:        #333;
   --border-subtle: #222;
+  --handle-hover:  #fff;   /* the Type Matrix handle's rollover: a step past --accent */
   --edit-rail:     rgba(255, 255, 255, 0.28);  /* "you can type here" left rail */
   --scrollbar-thumb:       var(--surface-hi);   /* house 6px scrollbar (wm-primitives) */
   --scrollbar-thumb-hover: var(--text-dim);
@@ -141,6 +142,12 @@
   --text-rgb: 22, 22, 22;
   --border: rgba(22, 22, 22, .16);  --border-subtle: rgba(22, 22, 22, .08);
   --edit-rail: rgba(22, 22, 22, 0.28);
+  --handle-hover: #000;
+  --ok: color-mix(in srgb, #46c07a, var(--text) 40%);  --warn: color-mix(in srgb, #e0a23a, var(--text) 40%);  --err: color-mix(in srgb, #e0603a, var(--text) 30%);   /* status colors, deepened toward ink to hold contrast on a light ground */
+  --stage-deep: #fff;      /* the metrics proofing ground follows the page: white on a light one */
+  --rail-ink: .55;  --rail-ink-hover: .8;   /* closed rail titles: 35% ink is too faint on a light ground */
+  --info-a: .95;  --info-ha: 1;  --info-ka: .8;  --info-aa: .6;   /* the Info panel's A11y hue, fuller on light */
+  --holo-metal-dark: #262626;  --holo-metal-light: #6b6b6b;   /* the seam tab's brushed metal, dark enough to read as ink */
   --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
   --signal-acid: #557b00;
   /* No HDR swatches on a light ground (same gate as the icon primitive: there is nothing brighter than
@@ -158,6 +165,12 @@
     --text-rgb: 22, 22, 22;
     --border: rgba(22, 22, 22, .16);  --border-subtle: rgba(22, 22, 22, .08);
     --edit-rail: rgba(22, 22, 22, 0.28);
+    --handle-hover: #000;
+    --ok: color-mix(in srgb, #46c07a, var(--text) 40%);  --warn: color-mix(in srgb, #e0a23a, var(--text) 40%);  --err: color-mix(in srgb, #e0603a, var(--text) 30%);   /* status colors, deepened toward ink to hold contrast on a light ground */
+    --stage-deep: #fff;      /* the metrics proofing ground follows the page: white on a light one */
+    --rail-ink: .55;  --rail-ink-hover: .8;   /* closed rail titles: 35% ink is too faint on a light ground */
+    --info-a: .95;  --info-ha: 1;  --info-ka: .8;  --info-aa: .6;   /* the Info panel's A11y hue, fuller on light */
+    --holo-metal-dark: #262626;  --holo-metal-light: #6b6b6b;   /* the seam tab's brushed metal, dark enough to read as ink */
     --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
     --signal-acid: #557b00;
     /* No HDR swatches on a light ground (same gate as the icon primitive: there is nothing brighter than
