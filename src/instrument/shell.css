@@ -1153,3 +1153,8 @@ body:has(.canvas[data-try="float"]) .wm-ov-cols { left: var(--ov-left, 264px); r
    panel, when open, starts below it. */
 .theme-corner { position: absolute; top: var(--spacing-04, 12px); right: var(--grid-gutter, 24px); z-index: 5; }
 .canvas[data-try="float"] .info-panel { padding-top: calc(var(--spacing-09, 64px)); }
+
+/* On an HDR screen the Download pill's light is an opaque PQ image (AccentButton, "Q5 in HDR"), so it covers
+   what sits under its spill instead of glowing through it. The OFL line is 8px under the pill: positioned, it
+   comes after the button in the stacking order and sits on the light. SDR keeps today's stacking. */
+@media (dynamic-range: high) { .dl-ofl { position: relative; } }
