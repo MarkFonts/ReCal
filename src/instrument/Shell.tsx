@@ -830,7 +830,7 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     ? <TryDial label="Tracking" icon="format_letter_spacing" value={tracking} min={-10} max={30} step={1} suffix="%" onChange={v => setTracking(v as number)} />
     : null
   const leadingDial = has('leading')
-    ? <TryDial label="Leading" icon="format_line_spacing" value={leading} min={0.8} max={2.5} step={0.1} onChange={v => setLeading(v as number)} />
+    ? <TryDial label="Leading" icon="format_line_spacing" value={leading} min={0.8} max={2.5} step={0.01} onChange={v => setLeading(v as number)} />
     : null
   const weightDial = (
     <TryDial label="Weight" icon="line_weight" value={merged.wght} min={wMin} max={wMax} step={1} disabled={naWght}
