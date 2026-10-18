@@ -9,6 +9,8 @@ const Ctx = createContext<Store | null>(null)
 
 export function InstrumentProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, undefined, () => createInitialState(undefined, BOOT.compare ?? null))
+  // Dev server only: the live store, for browser tests that need the exact ◆ numbers.
+  if (import.meta.env.DEV) (window as unknown as { __recal: Store }).__recal = { state, dispatch }
   return <Ctx.Provider value={{ state, dispatch }}>{children}</Ctx.Provider>
 }
 

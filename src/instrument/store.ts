@@ -10,6 +10,7 @@
 import { GROUP_DEFS } from '../GlyphGroups'
 import type { CompareSpec } from './boot'
 import { DEFAULT_VMETRICS, type VMetrics } from './vmetrics'
+import { type GraveEntry, graveId, laneDef, laneThresholds, removeBand, restoreBand, canRemove, pruneGraveyard } from './graveLogic'
 
 export type AxisMap = Record<string, number>
 
@@ -38,6 +39,9 @@ export interface DefaultsLayer {
   frozenFeatures: string[]                      // ◆ ssXX/cvXX pinned as manual overrides
                                                 //   (baked into the default forms + features stripped on export)
   vmetrics: VMetrics                            // ◆ OS/2 + hhea vertical metrics (baked on export)
+  graveyard: GraveEntry[]                       // ◆ Type Matrix variants taken out of rclt, restorable
+                                                //   (lives in the ◆ layer so ⌘Z/⇧⌘Z and the row reset carry it;
+                                                //   the font itself only ever reads glyphThresholds)
 }
 
 export type PreviewLayer = AxisMap              // ● transient per-axis overrides (incl. ital)
@@ -50,7 +54,7 @@ export interface InstrumentState {
   previewOpsz: number | null                    // ● Try-bar optical size, in the preview font's (scaled) opsz space; null = auto (follows type size)
   stockHold: boolean                            // hold-to-compare: effective() → SHIPPED
   geomDragging: boolean                         // rail GEOM slider held: flash holds color, fades on release
-  thresholdDrag: { glyph: string; idx: number; value: number } | null   // Type Matrix boundary mid-drag (live value, not yet committed)
+  thresholdDrag: { glyph: string; idx: number; value: number; to?: number } | null   // Type Matrix boundary mid-drag (live value, not yet committed); idx..to move together across a buried band
   activePreset: string | null                   // engaged "start from…" entry (§3.3)
   useHoi: boolean                               // Higher-Order Interpolation (swaps to Flex VF)
   buildName: string                             // editable export family name (INFO receipt)
@@ -70,7 +74,7 @@ const cloneVMetrics = (v: VMetrics): VMetrics =>
   ({ ...v, hhea: { ...v.hhea }, typo: { ...v.typo }, win: { ...v.win } })
 
 const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
-  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics) })
+  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics), graveyard: [...d.graveyard] })
 
 // The rail's rows that own ◆ values (Rail in Shell.tsx), for the per-row reset.
 export type Section = 'shape' | 'opsz' | 'asc' | 'matrix' | 'freezer' | 'vmetrics'
@@ -83,7 +87,7 @@ const stockSection = (s: InstrumentState, sec: Section): DefaultsLayer => {
     case 'shape': d.axes.GEOM = s.shipped.GEOM; d.axes.wght = s.shipped.wght; break
     case 'opsz': d.freezeOpsz = false; d.frozenOpszValue = null; d.opszMultiplier = 1; break
     case 'asc': d.axes.YTAS = s.shipped.YTAS; d.axes.SHRP = s.shipped.SHRP; d.autoAscender = false; break
-    case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); break
+    case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); d.graveyard = []; break
     case 'freezer': d.frozenFeatures = []; break
     case 'vmetrics': d.vmetrics = cloneVMetrics(DEFAULT_VMETRICS); break
   }
@@ -111,6 +115,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       autoAscender: false,
       frozenFeatures: [],
       vmetrics: cloneVMetrics(DEFAULT_VMETRICS),
+      graveyard: [],
     },
     preview: {},
     previewOpsz: null,
@@ -141,7 +146,7 @@ export const effectiveThresholds = (s: InstrumentState): Record<string, number[]
 export const liveThresholds = (s: InstrumentState): Record<string, number[]> => {
   const t = effectiveThresholds(s), d = s.thresholdDrag
   if (!d || s.stockHold) return t
-  return { ...t, [d.glyph]: (t[d.glyph] ?? []).map((v, i) => (i === d.idx ? d.value : v)) }
+  return { ...t, [d.glyph]: (t[d.glyph] ?? []).map((v, i) => (i >= d.idx && i <= (d.to ?? d.idx) ? d.value : v)) }
 }
 export const previewDrifted = (s: InstrumentState): boolean => Object.keys(s.preview).length > 0 || s.previewOpsz !== null
 // The Try bar's opsz as the scenes should apply it: held back while comparing to stock.
@@ -188,7 +193,10 @@ export type Action =
   | { type: 'clearPreview' }                                  // Return pill
   | { type: 'setStockHold'; held: boolean }                   // hold-to-compare
   | { type: 'setGeomDragging'; value: boolean }               // rail GEOM slider pointer down/up
-  | { type: 'setThresholdDrag'; drag: { glyph: string; idx: number; value: number } | null }   // Type Matrix boundary drag in flight
+  | { type: 'setThresholdDrag'; drag: { glyph: string; idx: number; value: number; to?: number } | null }   // Type Matrix boundary drag in flight
+  | { type: 'buryVariant'; glyph: string; vi: number }       // Type Matrix: take a variant out of rclt → graveyard (one undo step)
+  | { type: 'restoreVariant'; id: string }                    // graveyard → back into its lane (one undo step)
+  | { type: 'clearGraveyard' }                                // forget the entries; the variants stay removed (one undo step)
   | { type: 'setThresholds'; thresholds: Record<string, number[]> }
   | { type: 'setOpszMultiplier'; value: number }
   | { type: 'setFreezeOpsz'; value: boolean }
@@ -234,11 +242,33 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return s.geomDragging === a.value ? s : { ...s, geomDragging: a.value }
     case 'setThresholdDrag': {
       const o = s.thresholdDrag, n = a.drag
-      if (o === n || (o && n && o.glyph === n.glyph && o.idx === n.idx && o.value === n.value)) return s
+      if (o === n || (o && n && o.glyph === n.glyph && o.idx === n.idx && o.value === n.value && o.to === n.to)) return s
       return { ...s, thresholdDrag: n }
     }
     case 'setThresholds':
-      return { ...s, defaults: { ...s.defaults, glyphThresholds: a.thresholds } }
+      // An entry whose band is open again (preset, drag, anything) is no longer buried.
+      return { ...s, defaults: { ...s.defaults, glyphThresholds: a.thresholds, graveyard: pruneGraveyard(s.defaults.graveyard, a.thresholds) } }
+    case 'buryVariant': {
+      const def = laneDef(a.glyph)
+      const cur = laneThresholds(s.defaults.glyphThresholds, a.glyph)
+      if (!def || !canRemove(cur, a.vi)) return s
+      const after = removeBand(cur, a.vi)
+      const entry: GraveEntry = { id: graveId(a.glyph, a.vi), glyph: a.glyph, vi: a.vi, label: def.variants[a.vi].label, before: cur, after, at: Date.now() }
+      const thr = { ...s.defaults.glyphThresholds, [a.glyph]: after }
+      const graveyard = [...pruneGraveyard(s.defaults.graveyard, thr).filter(e => e.id !== entry.id), entry]
+      return { ...s, defaults: { ...s.defaults, glyphThresholds: thr, graveyard }, past: [...s.past, cloneDefaults(s.defaults)], future: [] }
+    }
+    case 'restoreVariant': {
+      const e = s.defaults.graveyard.find(x => x.id === a.id)
+      if (!e) return s
+      const thr = { ...s.defaults.glyphThresholds, [e.glyph]: restoreBand(laneThresholds(s.defaults.glyphThresholds, e.glyph), e) }
+      const graveyard = pruneGraveyard(s.defaults.graveyard.filter(x => x.id !== e.id), thr)
+      return { ...s, defaults: { ...s.defaults, glyphThresholds: thr, graveyard }, past: [...s.past, cloneDefaults(s.defaults)], future: [] }
+    }
+    case 'clearGraveyard':
+      return s.defaults.graveyard.length
+        ? { ...s, defaults: { ...s.defaults, graveyard: [] }, past: [...s.past, cloneDefaults(s.defaults)], future: [] }
+        : s
     case 'setOpszMultiplier':
       /* The Try bar's opsz lives in the scaled range, so a new scale invalidates it. */
       return { ...s, defaults: { ...s.defaults, opszMultiplier: a.value }, previewOpsz: null }

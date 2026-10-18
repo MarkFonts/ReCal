@@ -25,6 +25,7 @@ import { PRESETS, applyPreset } from './presets'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
+import { GraveMenu, GraveSwitcher, useGraveOption } from './Graveyard'
 import { Freezer, freezerName } from './Freezer'
 import { VMetricsPanel, VMetricsScene } from './VMetricsView'
 import { effectiveLineHeightEm } from './vmetrics'
@@ -125,6 +126,7 @@ function RailRow({ n, label, section, summary, open, above, pinBelow, next, dir,
 }) {
   const { state, dispatch } = useInstrument()
   const dirty = open && sectionDirty(state, section)
+  const graveOpt = useGraveOption()
   return (
     <div className="rail-row" data-pin={open ? undefined : above ? 'top' : pinBelow ? 'bottom' : undefined} data-open={open ? '' : undefined}>
       {/* One box for the seam and (when open) its reset, so the pinned header and its reset
@@ -141,6 +143,8 @@ function RailRow({ n, label, section, summary, open, above, pinBelow, next, dir,
           <button className="rail-seam-reset" disabled={!dirty} aria-label={`Reset ${label}`} title={`Reset ${label}`}
             onClick={() => dispatch({ type: 'resetSection', section })}><ResetIcon /></button>
         )}
+        {/* ?grave=c: the Type Matrix graveyard is a mark in this heading, left of the reset. */}
+        {open && section === 'matrix' && graveOpt === 'c' && <GraveMenu />}
       </div>
       {open && <div className={`rail-row-open rail-descent--${dir}`}>{children}</div>}
     </div>
@@ -180,6 +184,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       let bottom = foot.offsetHeight
       rows[open].style.setProperty('--pin-top', `${top}px`)   // the open row's own header sticks below the rows above it
       for (let i = rows.length - 1; i > open; i--) { rows[i].style.setProperty('--pin-bottom', `${bottom}px`); bottom += rows[i].offsetHeight }
+      rows[open].style.setProperty('--pin-open-bottom', `${bottom}px`)   // what the open row's own sticky foot clears (the Type Matrix graveyard dock)
     }
     apply()
     const ro = new ResizeObserver(apply)
@@ -206,7 +211,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     `GEOM ${Math.round(d.axes.GEOM)} · ${Math.round(d.axes.wght)}`,
     d.freezeOpsz ? `frozen ${d.frozenOpszValue ?? 14}` : `auto · ${d.opszMultiplier}×`,
     `Asc ${Math.round(d.axes.YTAS)} · Sharpness ${Math.round(d.axes.SHRP)}${d.autoAscender ? ' · auto' : ''}`,
-    edited ? `${edited} moved` : 'stock swaps',
+    [edited ? `${edited} moved` : 'stock swaps', d.graveyard.length ? `${d.graveyard.length} removed` : ''].filter(Boolean).join(' · '),
     frozenTags.length ? `${freezerName(frozenTags[0])}${frozenTags.length > 1 ? ` · +${frozenTags.length - 1}` : ''}` : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
   ]
@@ -1240,6 +1245,7 @@ export default function Shell() {
   return (
     <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
       <Rail engine={engine} collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
+      <GraveSwitcher />
       <Canvas
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}

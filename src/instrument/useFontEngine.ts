@@ -157,10 +157,17 @@ export function useFontEngine(useHoi: boolean) {
     if (workerRef.current) loadMain(workerRef.current)
   }, [useHoi, loadMain])
 
+  // Null the refs as well as tearing down: React StrictMode (the dev server) mounts, unmounts
+  // and remounts once on purpose, and a terminated worker left in workerRef made init() a
+  // no-op on the remount, so `npm run dev` never rebuilt a preview face ("Rebuilding…" forever).
   useEffect(() => () => {
     workerRef.current?.terminate()
+    workerRef.current = null
+    readyRef.current = false
     if (faceUrlRef.current) URL.revokeObjectURL(faceUrlRef.current)
+    faceUrlRef.current = null
     faceStyleRef.current?.remove()
+    faceStyleRef.current = null
   }, [])
 
   // Single-flight bake: one job per config key. Returns a cached promise for a key

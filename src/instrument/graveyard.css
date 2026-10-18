@@ -1,0 +1,190 @@
+/* The Type Matrix graveyard (Graveyard.tsx, Matrix.tsx; ?grave=a|b|c).
+   Everything here is the matrix's own grammar: 3px bands in the zone hues, ◆ handles, the
+   .matrix-val chip, the freezer's caps titles and its "reset" text button. Acid appears in
+   two places only, both ENGAGED states: a band armed for removal (selected, hovered for its
+   ×, or lifted off the lanes) and the bin / ghost while a release would act. Chosen states
+   (the switcher's option) stay grey. Sizes are on the 3px line. */
+
+/* ── in the lanes ── */
+/* A band's hit area: the whole lane height over its GEOM span. Under the ◆ handles (z 3)
+   and the default line's grabber (z 2), so neither loses its pointer. */
+.matrix-hit { position: absolute; top: 0; bottom: 0; z-index: 1; border-radius: 3px; }
+.matrix--grave-a .matrix-hit { cursor: pointer; }
+.matrix--grave-b .matrix-hit { cursor: grab; touch-action: pan-y; }
+.matrix-hit.is-last { cursor: not-allowed; }
+.matrix-hit:focus { outline: none; }
+.matrix-hit:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: -1.5px; }
+
+/* Armed: the band is what a Delete, a release or the × would remove. */
+.matrix-band.is-armed { opacity: 1; background: var(--signal-acid-fill); }
+.matrix-vglyph.is-armed { color: var(--text); opacity: 1; }
+.matrix-vglyph.is-lifted { opacity: .12; }
+
+/* Two boundaries meeting over a buried band draw as one ◆ with a pip: something is under it. */
+.matrix-handle.is-merged::after {
+  content: ''; position: absolute; left: 50%; top: 50%; width: 4px; height: 4px; margin: -2px 0 0 -2px;
+  border-radius: 1px; background: var(--bg);
+}
+
+/* a: the selected band's chip, the .matrix-val chip made pressable (touch has no Delete key). */
+.matrix-armchip {
+  position: absolute; top: 30px; z-index: 6; transform: translateX(-50%);
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: var(--type-micro-lead, 12px);
+  color: var(--text); background: var(--surface-hi); padding: 3px 6px; border: 0; border-radius: 5px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .4); white-space: nowrap; cursor: pointer;
+  animation: matrix-val-in .18s var(--spring);
+}
+.matrix-armchip.is-l { transform: translateX(-12px); animation: none; }
+.matrix-armchip.is-r { transform: translateX(calc(-100% + 12px)); animation: none; }
+.matrix-armchip:disabled { color: var(--text-dim); cursor: default; }
+.matrix-armchip kbd {
+  font: inherit; padding: 0 3px; border: 1px solid var(--border); border-radius: 3px; color: var(--text);
+}
+
+/* c: the × sits on the band's midpoint, over the 3px line. */
+.matrix-x {
+  position: absolute; top: 18px; z-index: 4; width: 18px; height: 18px; transform: translateX(-50%); padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  border: 0; border-radius: 50%; background: var(--surface-hi); color: var(--text);
+  box-shadow: 0 0 0 1.5px var(--bg); cursor: pointer;
+}
+.matrix-x:hover { background: var(--text); color: var(--bg); }
+.matrix-x .wm-icon { color: inherit; }
+
+/* b: a token dragged back over the matrix. Its lane lifts and the range it will take comes
+   up dashed in its own zone hue; the lanes take an acid edge while a release would restore. */
+.matrix-lane.is-target { background: color-mix(in srgb, var(--text) 6%, transparent); border-radius: 3px; }
+.matrix-restore-preview {
+  position: absolute; top: 21px; height: 12px; z-index: 2; pointer-events: none; box-sizing: border-box;
+  border: 1.5px dashed var(--zone-color); border-radius: 3px;
+}
+.matrix-rows.is-receiving { box-shadow: inset 0 0 0 1.5px var(--signal-acid); }
+/* While something is in the hand nothing selects, and the cursor says so everywhere. */
+.grave-lifting, .grave-lifting * { user-select: none; -webkit-user-select: none; cursor: grabbing !important; }
+
+/* ── under the lanes ── */
+.rail-row[data-open] { --pin-open-bottom: 0px; }   /* unmeasured default; Shell.tsx's inline value wins */
+.grave-dock {
+  position: sticky; bottom: var(--pin-open-bottom, 0px); z-index: 4;
+  background: var(--surface); padding-bottom: 6px;
+}
+.grave-dock--c { padding-bottom: 0; }
+/* Never silent: what just happened, with Undo. Reserves its line so the rail doesn't jump. */
+.grave-notice {
+  margin: 6px 0 0; min-height: var(--type-ui-lead, 15px);
+  font-size: var(--type-ui-size, 0.75rem); line-height: var(--type-ui-lead, 15px); color: var(--text-muted);
+}
+.grave-notice-in { animation: matrix-val-in .18s var(--spring); display: inline-block; }
+.grave-notice-undo {
+  all: unset; cursor: pointer; color: var(--text); font-weight: 600;
+  text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--text-dim);
+}
+.grave-notice-undo:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; border-radius: 3px; }
+.grave-notice-key { color: var(--text-dim); }
+
+.grave-head { display: flex; align-items: center; justify-content: space-between; gap: var(--spacing-03, 8px); }
+.grave-title {
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: var(--type-micro-lead, 12px);
+  letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim);
+}
+.grave-empty { margin: 6px 0 0; font-size: var(--type-ui-size, 0.75rem); line-height: var(--type-ui-lead, 15px); color: var(--text-dim); }
+
+/* a: REMOVED, a strip of tiles. Each tile is the variant drawn in its own form over its zone
+   bar (the lane's own vocabulary), the label under it. Click brings it back. */
+.grave-strip { margin-top: 6px; }
+.grave-tiles { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.grave-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  width: 45px; padding: 6px 0 3px; box-sizing: border-box;
+  border: 1px solid var(--border-subtle); border-radius: 6px; background: var(--bg);
+  color: var(--text); cursor: pointer; animation: matrix-val-in .18s var(--spring);
+}
+.grave-tile:hover { border-color: var(--text-dim); }
+.grave-tile:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+.grave-tile-glyph { font-size: var(--type-body-size, 1rem); line-height: 1.2; }
+.grave-tile-bar { width: 24px; height: 3px; border-radius: 2px; }
+.grave-tile-name {
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: var(--type-micro-lead, 12px); color: var(--text-dim);
+}
+
+/* b: the bin, a dashed well. While a lifted glyph would be removed on release it goes solid acid. */
+.grave-bin {
+  margin-top: 6px; padding: var(--spacing-02, 6px) var(--spacing-03, 8px) var(--spacing-03, 8px); border: 1px dashed var(--border); border-radius: var(--radius);
+  transition: border-color var(--dur-fast), background-color var(--dur-fast);
+}
+.grave-bin.is-armed { border-style: solid; border-color: var(--signal-acid); background: color-mix(in srgb, var(--signal-acid-fill) 8%, transparent); }
+.grave-bin.is-armed .grave-title { color: var(--text); }
+.grave-bin-head { display: flex; align-items: center; gap: 6px; }
+.grave-bin-head .grave-title { flex: 1; }
+.grave-bin-ic { margin-left: -3px; }
+.grave-tokens { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 6px; }
+.grave-token {
+  width: 30px; height: 30px; display: grid; place-items: center; border-radius: 6px; background: var(--bg);
+  cursor: grab; touch-action: none; user-select: none; animation: matrix-val-in .18s var(--spring);
+}
+.grave-token:hover { box-shadow: inset 0 0 0 1px var(--text-dim); }
+.grave-token:focus { outline: none; }
+.grave-token:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+.grave-token-glyph { font-size: var(--type-lede-size, 1.125rem); line-height: 1; }
+.grave-bin-hint { font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); }
+
+/* b: what is in the hand. Portalled to <body>, so it names its own font. */
+.grave-ghost {
+  position: fixed; z-index: 1000; pointer-events: none; transform: translate(-50%, calc(-100% - 12px));
+  display: flex; flex-direction: column; align-items: center; gap: 3px; padding: var(--spacing-02, 6px) var(--spacing-03, 8px);
+  background: var(--surface-hi); border-radius: var(--radius); box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+  font-family: var(--ui-font); color: var(--text);
+}
+.grave-ghost.is-armed { box-shadow: 0 0 0 1.5px var(--signal-acid-fill), 0 6px 18px rgba(0, 0, 0, .35); }
+.grave-ghost-glyph { font-size: var(--type-title-size, 1.625rem); line-height: 1.2; }
+.grave-ghost-lbl { font-size: var(--type-micro-size, 0.5625rem); line-height: var(--type-micro-lead, 12px); color: var(--text-muted); white-space: nowrap; }
+.grave-ghost.is-armed .grave-ghost-lbl { color: var(--text); }
+
+/* c: the bin mark in the open Type Matrix heading, left of its reset, and its list. */
+.grave-menu { position: absolute; top: 9px; right: 24px; z-index: 2; }
+.grave-menu-btn { --icon-btn-pad: 2px 3px; height: 21px; gap: 1px; color: var(--text); }
+/* The house touch floor makes the mark's button 44px square on a coarse pointer; keep the mark
+   itself on the reset's centerline (20px down) and clear of it. */
+@media (pointer: coarse) { .grave-menu { top: -2px; right: 18px; } .grave-pop { top: 42px; right: -18px; } }
+.grave-menu-count { font-size: var(--type-micro-size, 0.5625rem); line-height: 1; color: var(--text-muted); }
+.grave-pop {
+  position: absolute; top: 27px; right: -24px; width: 225px; box-sizing: border-box; padding: var(--spacing-03, 8px);
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .35); animation: matrix-val-in .18s var(--spring);
+}
+.grave-list { list-style: none; margin: 6px 0 0; padding: 0; }
+.grave-row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: var(--spacing-03, 8px); padding: 6px 0; border-top: 1px solid var(--border-subtle); }
+.grave-row-glyph { font-size: var(--type-lede-size, 1.125rem); line-height: 1.2; text-align: center; color: var(--text); }
+.grave-row-mid { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.grave-row-name { font-size: var(--type-ui-size, 0.75rem); line-height: var(--type-ui-lead, 15px); color: var(--text); }
+.grave-row-bar { width: 24px; height: 3px; border-radius: 2px; }
+.grave-row-range { font-size: var(--type-micro-size, 0.5625rem); line-height: var(--type-micro-lead, 12px); color: var(--text-dim); }
+.grave-row-restore {
+  all: unset; display: inline-flex; align-items: center; gap: 3px; padding: 3px 6px 3px 3px; border-radius: 5px;
+  font-family: var(--ui-font); font-size: var(--type-ui-size, 0.75rem); color: var(--text); background: var(--surface-hi); cursor: pointer;
+}
+.grave-row-restore:hover { background: var(--bg); }
+.grave-row-restore:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+
+/* ── demo only: the option switcher ── */
+.grave-switch {
+  position: fixed; top: 60px; right: 18px; z-index: 2000; display: flex; align-items: center; gap: var(--spacing-03, 8px);
+  padding: 3px 3px 3px var(--spacing-03, 8px); background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .25); font-family: var(--ui-font); font-variation-settings: 'GEOM' 25;
+}
+.grave-switch-lbl {
+  font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim);
+}
+.grave-switch-seg { display: flex; gap: 3px; }
+.grave-switch-seg button {
+  all: unset; padding: 3px var(--spacing-03, 8px); border-radius: 6px; cursor: pointer; white-space: nowrap;
+  font-size: var(--type-ui-size, 0.75rem); line-height: var(--type-ui-lead, 15px); color: var(--text-muted);
+}
+.grave-switch-seg button b { font-weight: 700; color: var(--text); }
+.grave-switch-seg button:hover:not(.on) { color: var(--text); }
+.grave-switch-seg button.on { background: var(--surface-hi); color: var(--text); }
+.grave-switch-seg button:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 1px; }
+@media (max-width: 800px) {
+  .grave-switch { top: auto; bottom: 12px; right: 50%; transform: translateX(50%); gap: 6px; padding-left: 6px; }
+  .grave-switch-seg button { padding: 3px 6px; }
+}

@@ -295,7 +295,7 @@ function useGeomFlash(): { flashes: Flashes; clear: (ch: string) => void; draggi
   const drag = state.thresholdDrag
   const thresholdDragging = drag !== null
   const liveThr = useMemo(() => drag
-    ? { ...thresholds, [drag.glyph]: (thresholds[drag.glyph] ?? GROUP_DEFS.find(d => d.glyph === drag.glyph)?.defaultThresholds ?? []).map((v, i) => (i === drag.idx ? drag.value : v)) }
+    ? { ...thresholds, [drag.glyph]: (thresholds[drag.glyph] ?? GROUP_DEFS.find(d => d.glyph === drag.glyph)?.defaultThresholds ?? []).map((v, i) => (i >= drag.idx && i <= (drag.to ?? drag.idx) ? drag.value : v)) }
     : thresholds, [thresholds, drag])
   const prevLive = useRef(liveThr)
   useEffect(() => {
