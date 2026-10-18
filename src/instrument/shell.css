@@ -1176,6 +1176,15 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    beats the package's @layer wm.controls rule at any specificity. */
 :is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after { background: var(--signal-acid); }
 
+/* The Try dials' bar does not ease between its two heights. On touch the primitive grows a held track dial's bar
+   30 -> 48px (and gives it back 3s after lift) with a min-height transition. WebKit samples a layout transition on a
+   rendering update only, so a read of the bar's height is whatever the last painted frame left; the Try bar sits on the
+   heaviest frame this page paints on a phone (3x pixels, the backdrop, the masked tab scrollers), and on a slow runner
+   that frame lands late, so the bar read 47.98 where the contract is 48 (wm-primitives rail.spec G11-13, iPhone, linux
+   WebKit: 47.98, 47.94, 47.09). The ROW is 48px either way and nothing reflows; the bar's edge now arrives with the
+   class instead of easing over .12s. Unlayered, so it beats the package's @layer wm.controls rule. */
+.try .slider-row--track .slider-label { transition: none; }
+
 /* Focus rings, wherever the package or the app draws one. Colour only: each ring keeps its
    own width and offset, and a rule that sets `outline: none` still draws nothing. :root:root
    lifts it over the package files that are not layered (Fitting, StopSlider, Specimen). */
