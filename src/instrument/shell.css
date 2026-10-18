@@ -889,7 +889,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .shape-pad-ylab--off { opacity: .38; }   /* the axis is locked (Auto ascender) */
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
-  background: var(--signal-acid);   /* the knob is the signal on every pad; only the zone label keeps the HDR swatch */
+  background: var(--signal-acid-fill);   /* the knob is the signal on every pad; only the zone label keeps the HDR swatch */
   box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
 }
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
@@ -1174,17 +1174,18 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    dragging the track focuses the range input) does it take acid. Only that pseudo-element is
    opted in; --accent is not touched, so nothing else on the row recolors. Unlayered, so it
    beats the package's @layer wm.controls rule at any specificity. */
-:is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after { background: var(--signal-acid); }
+:is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after { background: var(--signal-acid-fill); }
 
 /* Focus rings, wherever the package or the app draws one. Colour only: each ring keeps its
    own width and offset, and a rule that sets `outline: none` still draws nothing. :root:root
    lifts it over the package files that are not layered (Fitting, StopSlider, Specimen). */
 :root:root :is(:focus-visible, .wm-chip:has(> input:focus-visible)) { outline-color: var(--signal-acid); }
 
-/* Glyph grid rollover: the package inverts to --accent; this cell is the signal. The glyph
-   is already --bg ink. GlyphPicker.css is not layered and loads after this file, so it
-   needs the extra class to win on specificity rather than on order. */
-.gp .gp-cell:hover { background: var(--signal-acid); }
+/* Glyph grid rollover: the package inverts to --accent; this cell is the signal (a
+   FILL, so --signal-acid-fill). The glyph is already --bg ink. GlyphPicker.css is not layered
+   and loads after this file, so it needs the extra class to win on specificity rather than on
+   order. */
+.gp .gp-cell:hover { background: var(--signal-acid-fill); }
 
 .try-btn-ic { margin-right: var(--spacing-02, 6px); vertical-align: -3px; }
 

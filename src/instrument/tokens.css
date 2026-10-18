@@ -64,6 +64,12 @@
      where the screen has the gamut. Fills put --bg ink on it; thin uses (rules, rings) use
      it as is. */
   --signal-acid:    #eeff41;
+  /* The acid's FILL form (wm-primitives#115, "granny apple"). Two tokens, because a fill and a
+     hairline want different greens on a light ground: --signal-acid is the thin-use ink (text,
+     rings, underlines, hairlines; #557b00 in light), --signal-acid-fill is what a surface is
+     painted with (handles, dots, the knob, hovered cells; #96d500 in light). In dark the two
+     are the same acid, #eeff41. */
+  --signal-acid-fill: #eeff41;
   --marker-preview: #999;           /* ● PREVIEWING */
   /* STOCK narrator only. It takes the A11Y zone hue BY REFERENCE, not by coincidence:
      one literal written twice gets changed for one reason and silently breaks the other.
@@ -150,6 +156,7 @@
   --holo-metal-dark: #262626;  --holo-metal-light: #6b6b6b;   /* the seam tab's brushed metal, dark enough to read as ink */
   --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
   --signal-acid: #557b00;
+  --signal-acid-fill: #96d500;
   /* No HDR swatches on a light ground (same gate as the icon primitive: there is nothing brighter than
      white to boost into, and the swatch would paint the chosen chip white on white). The chips keep
      their flat zone color; the UI zone's chip is ink instead of white. */
@@ -173,6 +180,7 @@
     --holo-metal-dark: #262626;  --holo-metal-light: #6b6b6b;   /* the seam tab's brushed metal, dark enough to read as ink */
     --accent: #161616;  --marker-preview: rgba(22, 22, 22, .5);
     --signal-acid: #557b00;
+    --signal-acid-fill: #96d500;
     /* No HDR swatches on a light ground (same gate as the icon primitive: there is nothing brighter than
        white to boost into, and the swatch would paint the chosen chip white on white). The chips keep
        their flat zone color; the UI zone's chip is ink instead of white. */
@@ -219,5 +227,14 @@
 /* --signal-acid in display-p3 where the screen has it. @supports, not a second declaration:
    a custom property takes any value at parse time, so the hex would never fall back. */
 @supports (color: color(display-p3 1 1 1)) {
-  :root { --signal-acid: color(display-p3 0.9333 1 0.2549); }
+  :root { --signal-acid: color(display-p3 0.9333 1 0.2549); --signal-acid-fill: color(display-p3 0.9333 1 0.2549); }
+  /* Light's fill in display-p3 too. The :root rule above is lower specificity than the light
+     blocks' hex, so light needs its own p3 line to get the gamut. (The thin ink, #557b00,
+     stays hex.) */
+  :root[data-theme="light"] { --signal-acid-fill: color(display-p3 0.6240 0.8394 0); }
+}
+@media (prefers-color-scheme: light) {
+  @supports (color: color(display-p3 1 1 1)) {
+    :root[data-theme="auto"] { --signal-acid-fill: color(display-p3 0.6240 0.8394 0); }
+  }
 }
