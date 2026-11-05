@@ -1,5 +1,6 @@
 <!doctype html>
-<!-- Source for og/default.mp4 — the ReCal GEOM control, dragged 25 → 100 → 25 once.
+<!-- Source for og/default.mp4 — the ReCal GEOM control: dragged 25 → 100 → A11y, then the UI chip
+     clicked to bring it back to 25.
      Same layout as default.source.html; window.setT(seconds) poses every element for one
      frame, and scripts/render-og-video.mjs steps it at 30 fps into frames, then ffmpeg.
      Frame 0 and the last frame are the og:image pose.
@@ -34,7 +35,7 @@ background:#e8e8e8;transform:rotate(45deg);border-radius:4px;box-shadow:0 0 0 5p
 </style></head><body>
 <div class="eyebrow">wordmark.nyc &middot; customize a free variable font</div>
 <div class="name">ReCal Sans</div>
-<div class="word"><span id="gM">M</span><span id="ga">a</span>g<span id="gi">i</span><span id="gc">c</span></div>
+<div class="word"><span id="gM">M</span><span id="ga">a</span><span id="gg">g</span><span id="gi">i</span><span id="gc">c</span></div>
 <div class="chips"><span class="chip hov" id="cA" style="color:#e08a63;">A11y</span>
     <span class="chip on" id="cU" style="color:#ffffff;">UI</span>
     <span class="chip" id="cB" style="color:#6f9ee8;">Base</span>
@@ -48,25 +49,38 @@ background:#e8e8e8;transform:rotate(45deg);border-radius:4px;box-shadow:0 0 0 5p
 stroke="#0f0f0f" stroke-width="1.6" stroke-linejoin="round"/></svg>
 <script>
 // Timeline (s): 0–.4 poster · .4–.9 cursor to handle · .9–2.5 drag 25→100 · 2.5–2.8 hold
-// · 2.8–3.9 drag back to 25 · 3.9–4.4 cursor home · 4.4–4.8 poster.
-const DUR = 4.8
+// · 2.8–4.5 drag 100→3 (into A11y) · 4.5–4.8 hold · 4.8 release: held glyphs fade to rest
+// · 4.8–5.4 cursor to the UI chip · 5.4 click: GEOM snaps to 25, hard-off (the app's chip
+// click to the neutral master) · 5.7–6.2 cursor home to A11y · 6.2–6.6 poster.
+const DUR = 6.6
 const ease = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2) / 2
 const seg = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)))
-const geomAt = t => t < .9 ? 25 : t < 2.5 ? 25 + 75*ease(seg(t,.9,2.5)) : t < 2.8 ? 100 : t < 3.9 ? 100 - 75*ease(seg(t,2.8,3.9)) : 25
-const dragging = t => t >= .9 && t < 3.9
-// Swap thresholds from src/data/substitutions.json (a → Base at 34; M, c → Geo at 79; g, i never
-// move between 25 and 100). Colours are the chip accents, which are the zone accents on dark.
+const LOW = 3
+const geomAt = t => t < .9 ? 25 : t < 2.5 ? 25 + 75*ease(seg(t,.9,2.5)) : t < 2.8 ? 100
+  : t < 4.5 ? 100 - (100-LOW)*ease(seg(t,2.8,4.5)) : t < 5.4 ? LOW : 25
+const dragging = t => t >= .9 && t < 4.8
+// Swap thresholds from src/data/substitutions.json: a → A11y below 13, Base from 34;
+// g → A11y below 16; M, c → Geo from 79. Colours are the chip accents (the zone accents on dark).
+const A11Y = '#e08a63', BASE = '#6f9ee8', GEO = '#5fc678'
 const ZONES = [['cA',0,10],['cU',15,30],['cB',40,60],['cG',80,100]]
 const TRACK_L = 72, TRACK_W = 1056, TRACK_Y = 630 - 62 - 1.5
-const CUR_HOME = [118, 452]
+const CUR_HOME = [118, 452], CUR_UI = [207, 452]
 const curAtHandle = g => [TRACK_L + TRACK_W*g/100 - 2.3, TRACK_Y - 2.3]
+const lerp = (a, b, k) => [a[0] + (b[0]-a[0])*k, a[1] + (b[1]-a[1])*k]
+// Release fade, as .geom-flash: hold the zone colour 40% of .5 s, then ease to rest.
+const fade = (t, t0) => { const k = seg(t, t0, t0 + .5); return k < .4 ? 1 : 1 - ease((k - .4) / .6) }
+const mix = (hex, k) => { // zone colour → resting #e8e8e8 by (1-k)
+  const c = [1,3,5].map(i => parseInt(hex.slice(i, i+2), 16)), r = 232
+  return `rgb(${c.map(v => Math.round(r + (v - r)*k)).join(',')})` }
 window.setT = t => {
   const g = geomAt(t), d = dragging(t)
   document.querySelector('.word').style.fontVariationSettings = `"GEOM" ${g},"SHRP" 0,"wght" 400`
   document.getElementById('handle').style.left = g + '%'
   document.getElementById('val').textContent = 'GEOM ' + Math.round(g)
-  document.getElementById('ga').style.color = d && g >= 34 ? '#6f9ee8' : ''
-  for (const id of ['gM','gc']) document.getElementById(id).style.color = d && g >= 79 ? '#5fc678' : ''
+  const held = (on, hex) => d && on ? hex : (!d && on && t >= 4.8 && t < 5.4) ? mix(hex, fade(t, 4.8)) : ''
+  document.getElementById('ga').style.color = d && g >= 34 ? BASE : held(g < 13, A11Y)
+  document.getElementById('gg').style.color = held(g < 16, A11Y)
+  for (const id of ['gM','gc']) document.getElementById(id).style.color = held(g >= 79, GEO)
   for (const [id,lo,hi] of ZONES) {
     const el = document.getElementById(id), on = g >= lo && g <= hi
     el.classList.toggle('on', on)
@@ -74,12 +88,15 @@ window.setT = t => {
   }
   let cur
   if (t < .4) cur = CUR_HOME
-  else if (t < .9) { const k = ease(seg(t,.4,.9)), h = curAtHandle(25); cur = [CUR_HOME[0] + (h[0]-CUR_HOME[0])*k, CUR_HOME[1] + (h[1]-CUR_HOME[1])*k] }
-  else if (t < 3.9) cur = curAtHandle(g)
-  else if (t < 4.4) { const k = ease(seg(t,3.9,4.4)), h = curAtHandle(25); cur = [h[0] + (CUR_HOME[0]-h[0])*k, h[1] + (CUR_HOME[1]-h[1])*k] }
+  else if (t < .9) cur = lerp(CUR_HOME, curAtHandle(25), ease(seg(t,.4,.9)))
+  else if (t < 4.8) cur = curAtHandle(g)
+  else if (t < 5.4) cur = lerp(curAtHandle(LOW), CUR_UI, ease(seg(t,4.8,5.4)))
+  else if (t < 5.7) cur = CUR_UI
+  else if (t < 6.2) cur = lerp(CUR_UI, CUR_HOME, ease(seg(t,5.7,6.2)))
   else cur = CUR_HOME
   const c = document.getElementById('cur'); c.style.left = cur[0] + 'px'; c.style.top = cur[1] + 'px'
-  document.getElementById('cA').classList.toggle('hov', t < .45 || t >= 4.35)
+  document.getElementById('cA').classList.toggle('hov', t < .45 || t >= 6.15)
+  document.getElementById('cU').classList.toggle('hov', t >= 5.3 && t < 5.75)
 }
 window.OG_DUR = DUR
 setT(0)
