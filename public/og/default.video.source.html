@@ -1,0 +1,87 @@
+<!doctype html>
+<!-- Source for og/default.mp4 — the ReCal GEOM control, dragged 25 → 100 → 25 once.
+     Same layout as default.source.html; window.setT(seconds) poses every element for one
+     frame, and scripts/render-og-video.mjs steps it at 30 fps into frames, then ffmpeg.
+     Frame 0 and the last frame are the og:image pose.
+     Font loads over file:// only with --allow-file-access-from-files (the render script
+     passes it); serve over http to eyeball it. -->
+<html><head><meta charset="utf-8"><style>
+@font-face{font-family:"Cal";src:url("../../shared/fonts/CalSansVF.ttf") format("truetype")}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:1200px;height:630px;overflow:hidden}
+body{background:#0f0f0f;font-family:"Cal",sans-serif;font-optical-sizing:auto;color:#e8e8e8;
+position:relative;-webkit-font-smoothing:antialiased}
+.eyebrow{position:absolute;left:72px;top:48px;font-size:21px;letter-spacing:.16em;
+text-transform:uppercase;font-variation-settings:"GEOM" 100,"wght" 500;color:rgba(232,232,232,.46)}
+.name{position:absolute;right:72px;top:40px;font-size:40px;
+font-variation-settings:"GEOM" 50,"wght" 620;letter-spacing:-.02em}
+.word{position:absolute;left:72px;right:72px;top:132px;font-size:222px;line-height:1;
+text-align:center;letter-spacing:-.015em;
+font-variation-settings:"GEOM" 25,"SHRP" 0,"wght" 400}
+.chips{position:absolute;left:72px;top:430px;display:flex;gap:12px;align-items:center}
+.chip{font-size:27px;padding:9px 21px;border-radius:999px;corner-shape:superellipse(1.2);
+font-variation-settings:"GEOM" 25,"wght" 500}
+.chip.on{color:#0f0f0f!important;font-variation-settings:"GEOM" 25,"wght" 640}
+.chip.hov{box-shadow:inset 0 0 0 1.6px currentColor}
+.lbl{position:absolute;left:72px;bottom:96px;font-size:27px;
+font-variation-settings:"GEOM" 25,"wght" 450;color:rgba(232,232,232,.8)}
+.val{position:absolute;right:72px;bottom:96px;font-size:27px;font-variant-numeric:tabular-nums;
+font-variation-settings:"GEOM" 25,"wght" 450}
+.track{position:absolute;left:72px;right:72px;bottom:62px;height:3px;background:rgba(232,232,232,.2)}
+.handle{position:absolute;top:-11px;width:25px;height:25px;margin-left:-12px;left:25%;
+background:#e8e8e8;transform:rotate(45deg);border-radius:4px;box-shadow:0 0 0 5px #0f0f0f}
+.cur{position:absolute;left:118px;top:452px;z-index:9}
+</style></head><body>
+<div class="eyebrow">wordmark.nyc &middot; customize a free variable font</div>
+<div class="name">ReCal Sans</div>
+<div class="word"><span id="gM">M</span><span id="ga">a</span>g<span id="gi">i</span><span id="gc">c</span></div>
+<div class="chips"><span class="chip hov" id="cA" style="color:#e08a63;">A11y</span>
+    <span class="chip on" id="cU" style="color:#ffffff;">UI</span>
+    <span class="chip" id="cB" style="color:#6f9ee8;">Base</span>
+    <span class="chip" id="cG" style="color:#5fc678;">Geo</span>
+    </div>
+<div class="lbl">Geometric form</div>
+<div class="val" id="val">GEOM 25</div>
+<div class="track"><i class="handle" id="handle"></i></div>
+<svg class="cur" id="cur" width="30" height="39" viewBox="0 0 26 34">
+<path d="M2 2 L2 25 L8.5 19.5 L12.5 28.5 L16.5 26.5 L12.5 18 L21 17.5 Z" fill="#e8e8e8"
+stroke="#0f0f0f" stroke-width="1.6" stroke-linejoin="round"/></svg>
+<script>
+// Timeline (s): 0–.4 poster · .4–.9 cursor to handle · .9–2.5 drag 25→100 · 2.5–2.8 hold
+// · 2.8–3.9 drag back to 25 · 3.9–4.4 cursor home · 4.4–4.8 poster.
+const DUR = 4.8
+const ease = x => x < .5 ? 2*x*x : 1 - Math.pow(-2*x + 2, 2) / 2
+const seg = (t, a, b) => Math.min(1, Math.max(0, (t - a) / (b - a)))
+const geomAt = t => t < .9 ? 25 : t < 2.5 ? 25 + 75*ease(seg(t,.9,2.5)) : t < 2.8 ? 100 : t < 3.9 ? 100 - 75*ease(seg(t,2.8,3.9)) : 25
+const dragging = t => t >= .9 && t < 3.9
+// Swap thresholds from src/data/substitutions.json (a → Base at 34; M, c → Geo at 79; g, i never
+// move between 25 and 100). Colours are the chip accents, which are the zone accents on dark.
+const ZONES = [['cA',0,10],['cU',15,30],['cB',40,60],['cG',80,100]]
+const TRACK_L = 72, TRACK_W = 1056, TRACK_Y = 630 - 62 - 1.5
+const CUR_HOME = [118, 452]
+const curAtHandle = g => [TRACK_L + TRACK_W*g/100 - 2.3, TRACK_Y - 2.3]
+window.setT = t => {
+  const g = geomAt(t), d = dragging(t)
+  document.querySelector('.word').style.fontVariationSettings = `"GEOM" ${g},"SHRP" 0,"wght" 400`
+  document.getElementById('handle').style.left = g + '%'
+  document.getElementById('val').textContent = 'GEOM ' + Math.round(g)
+  document.getElementById('ga').style.color = d && g >= 34 ? '#6f9ee8' : ''
+  for (const id of ['gM','gc']) document.getElementById(id).style.color = d && g >= 79 ? '#5fc678' : ''
+  for (const [id,lo,hi] of ZONES) {
+    const el = document.getElementById(id), on = g >= lo && g <= hi
+    el.classList.toggle('on', on)
+    el.style.background = on ? el.style.color : ''
+  }
+  let cur
+  if (t < .4) cur = CUR_HOME
+  else if (t < .9) { const k = ease(seg(t,.4,.9)), h = curAtHandle(25); cur = [CUR_HOME[0] + (h[0]-CUR_HOME[0])*k, CUR_HOME[1] + (h[1]-CUR_HOME[1])*k] }
+  else if (t < 3.9) cur = curAtHandle(g)
+  else if (t < 4.4) { const k = ease(seg(t,3.9,4.4)), h = curAtHandle(25); cur = [h[0] + (CUR_HOME[0]-h[0])*k, h[1] + (CUR_HOME[1]-h[1])*k] }
+  else cur = CUR_HOME
+  const c = document.getElementById('cur'); c.style.left = cur[0] + 'px'; c.style.top = cur[1] + 'px'
+  document.getElementById('cA').classList.toggle('hov', t < .45 || t >= 4.35)
+}
+window.OG_DUR = DUR
+setT(0)
+</script>
+</body></html>
