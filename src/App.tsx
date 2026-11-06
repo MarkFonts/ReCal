@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useIosFocusGuardRef } from './useIosFocusGuardRef'
 import { ZONE_COLOR, ZONE_COLOR_FALLBACK, type ZoneLabel } from './zoneColors'
 import './App.css'
 import { Slider } from 'dialkit'
@@ -126,6 +127,9 @@ export default function App() {
   const zoneGridRef = useRef<HTMLDivElement | null>(null)
   const paletteTrashRef = useRef<HTMLDivElement | null>(null)
   const typeTesterRef = useRef<HTMLTextAreaElement | null>(null)
+  const typeTesterGuard = useIosFocusGuardRef<HTMLTextAreaElement>()
+  const setTypeTesterRef = useCallback((el: HTMLTextAreaElement | null) => { typeTesterRef.current = el; typeTesterGuard(el) }, [typeTesterGuard])
+  const modalGuardRef = useIosFocusGuardRef<HTMLDivElement>()
 
   const workerRef = useRef<Worker | null>(null)
   const defaultsRef = useRef<Record<string, number>>({})
@@ -963,7 +967,7 @@ export default function App() {
                       </div>
 
                       <textarea
-                        ref={typeTesterRef}
+                        ref={setTypeTesterRef}
                         className="zone-type-tester"
                         value={typeTesterText}
                         spellCheck={false}
@@ -1259,6 +1263,7 @@ export default function App() {
               </div>
 
               <div
+                ref={modalGuardRef}
                 className="preview-modal-text"
                 contentEditable
                 suppressContentEditableWarning

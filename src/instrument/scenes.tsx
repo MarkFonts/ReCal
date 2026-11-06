@@ -7,6 +7,7 @@ import { ZONE_COLOR_SHORT } from '../zoneColors'
 import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, lazy, Suspense, Fragment, type CSSProperties, type ReactNode, type KeyboardEvent } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { Icon, placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fitOptionsFor, PARA_STYLE_DEFAULTS, PARA_STYLE_ORDER, PARA_STYLE_LABEL, loadSpecimen, specimenChunks, SpecimenNav, type ParaStyleBase, type ParaStyleKey, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
+import { useIosFocusGuardRef } from '../useIosFocusGuardRef'
 import { effectiveAxes, effectiveThresholds, livePreviewOpsz } from './store'
 import { renderVarSettings, opszForSize, opszCss, clampTryOpsz, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
@@ -544,9 +545,10 @@ function Words({ size, ls, leading, featStr }: SceneProps) {
   const gold = useFrozenGold(state.defaults.frozenFeatures)
   const [text, setText] = useState('2160 just Groovy, I’ll Magic')
   const [focused, setFocused] = useState(false)
+  const guardRef = useIosFocusGuardRef<HTMLDivElement>()
   return (
     <div className="stage-pad words-scene">
-      <div className="words-edit specimen edit-rail" contentEditable suppressContentEditableWarning
+      <div ref={guardRef} className="words-edit specimen edit-rail" contentEditable suppressContentEditableWarning
         style={{ fontSize: size, lineHeight: leading, textAlign: 'center', whiteSpace: 'pre-wrap', fontVariationSettings: vs, fontOpticalSizing: op.optical, fontFeatureSettings: featStr, letterSpacing: ls, ...(cmp ? compareStyle(cmp, effectiveAxes(state), { opszAuto: true }) : {}) }}
         onFocus={() => setFocused(true)}
         // innerText (not textContent) preserves soft line breaks: Enter inserts <br>/<div>
@@ -631,6 +633,7 @@ function CompareSvg({ url }: { url: string }) {
 
 function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: SceneProps) {
   const { state } = useInstrument()
+  const guardRef = useIosFocusGuardRef<HTMLDivElement>()
   const axes = effectiveAxes(state)
   const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state))
   const boldVs = renderVarSettings({ ...axes, wght: 700 }, op.renderOpts)
@@ -749,7 +752,7 @@ function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: Sce
           its own to inherit from. Its font-size is the body style's, so the measure dial's
           `em` is a body em, not the page's 16px (wm-primitives NEXT.md D, 2026-09-19);
           every block sets its own size below, so nothing else changes. */}
-      <div className="para-doc" style={{ maxWidth: `${measure}em`, fontSize: paraStyles.p.size }}>
+      <div ref={guardRef} className="para-doc" style={{ maxWidth: `${measure}em`, fontSize: paraStyles.p.size }}>
         {blocks.map((b, i) => {
           const st = paraStyles[b.type]
           const blockVs = renderVarSettings({ ...axes, wght: st.wght }, op.renderOpts)

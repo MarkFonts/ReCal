@@ -15,7 +15,8 @@
 // Reference lines are analytic, not measured: SVG getBBox returns the em/ascent box, not
 // per-glyph ink (every normal glyph reports the same top), so the recorded design metrics
 // are the honest source. The specimen itself renders every axis live.
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useCallback } from 'react'
+import { useIosFocusGuardRef } from '../useIosFocusGuardRef'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes } from './store'
 import { renderVarSettings } from './render'
@@ -128,7 +129,9 @@ export function VMetricsScene() {
   const vs = renderVarSettings(axes)
   // Editable specimen: seed the initial text once via the ref (uncontrolled) so re-renders
   // from axis/metric changes never reset the caret — only the style updates.
-  const editRef = useRef<HTMLDivElement>(null)
+  const editRef = useRef<HTMLDivElement | null>(null)
+  const guardRef = useIosFocusGuardRef<HTMLDivElement>()
+  const setEditRef = useCallback((el: HTMLDivElement | null) => { editRef.current = el; guardRef(el) }, [guardRef])
   useEffect(() => { if (editRef.current && !editRef.current.textContent) editRef.current.textContent = SPECIMEN }, [])
   const yOf = (u: number) => BASE - (u / FONT_METRICS.upm) * FS
   // The Ascender line IS the YTAS value (the ascender-height axis) — at the 1440 default it
@@ -162,7 +165,7 @@ export function VMetricsScene() {
             the ascent (Ắ), negative side-bearings to the left, long typed text to the right.
             The SVG viewBox is the only bound. y puts the baseline on BASE (0.825 = measured). */}
         <foreignObject x={X0} y={BASE - FS * 0.825} width={FS} height={FS} style={{ overflow: 'visible' }}>
-          <div ref={editRef} contentEditable suppressContentEditableWarning spellCheck={false}
+          <div ref={setEditRef} contentEditable suppressContentEditableWarning spellCheck={false}
             className="vm-spec-edit"
             style={{ fontFamily: "'CalSansVF', sans-serif", fontVariationSettings: vs, fontSize: `${FS}px`, lineHeight: `${FS}px` }} />
         </foreignObject>
