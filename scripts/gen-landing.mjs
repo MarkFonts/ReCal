@@ -382,6 +382,8 @@ ${(() => {
     signal: '--signal-acid',
     colorSpace: 'display-p3',
     speckle: { share: 1 / 6, groups: 5 },
+    // the twinkle rides over the speckle; the engine gates it to HDR displays with WebGPU, and dark-on-light themes hold gain 1
+    hdr: { gain: 1, twinkle: { mode: 'stars', share: 1 / 6, peak: 2.5 } },
   })
   if (lb) document.fonts?.ready.then(lb.init) ?? lb.init()
 </script>
