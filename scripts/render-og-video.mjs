@@ -32,7 +32,12 @@ try {
 } finally {
   await browser.close()
 }
+// RGB → BT.709 limited-range YUV, and say so in the stream: untagged, players guess BT.601 and
+// the zone colours drift (the Base blue went grey-blue, the A11y orange went brown).
 execFileSync('ffmpeg', ['-y', '-framerate', String(FPS), '-i', `${FRAMES}/f%04d.png`,
-  '-c:v', 'libx264', '-profile:v', 'high', '-level', '4.0', '-pix_fmt', 'yuv420p',
+  '-c:v', 'libx264', '-profile:v', 'high', '-level', '4.0',
+  '-vf', 'scale=out_color_matrix=bt709:out_range=tv,format=yuv420p',
+  '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709', '-color_range', 'tv',
+  '-x264-params', 'colorprim=bt709:transfer=bt709:colormatrix=bt709',
   '-crf', '20', '-preset', 'slow', '-movflags', '+faststart', '-an', OUT], { stdio: 'inherit' })
 console.log(`→ ${OUT}`)
