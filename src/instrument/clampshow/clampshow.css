@@ -1,0 +1,17 @@
+/* The clamp readout: while a clamp edge, corner or frame is held, the new limit rides the
+   grabber in the Type Matrix's value bubble (.matrix-val). Unlayered, like shell.css. Nothing
+   here is in flow: every tag is absolute, so a drag never reflows. */
+.clampshow-val-tag { color: var(--text-dim); margin-right: 3px; letter-spacing: var(--track-caps); text-transform: uppercase; }
+.clampshow-val-sep { color: var(--text-dim); margin: 0 4px; }
+.clampshow-val-unit { color: var(--text-dim); margin-left: 1px; }
+
+/* ── A · bubble (Bubble.tsx) ── the Type Matrix's .matrix-val, unchanged; only lifted over
+   the grabbers. Its --in / --out keyframes carry the translateX(-50%) Tag.tsx relies on. */
+.clampshow-val { z-index: 6; }
+
+/* A's band value: the bar's own micro type on a knock-out, not a floating pill. */
+.clampshow-bandval {
+  position: absolute; z-index: 6; transform: translateX(-50%); padding: 0 4px; border-radius: 4px;
+  background: var(--bg); color: var(--text); white-space: nowrap; pointer-events: none;
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 16px;
+}

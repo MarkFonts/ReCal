@@ -234,7 +234,8 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     <div className="rail-row-body"><ShapePad /></div>,
     <OpticalSize note={opszNote} onNote={() => setOpszNote(true)} />,
     <div className="rail-row-body">
-      <AscenderPad />
+      {/* Auto ascender: YTAS follows opsz, so only Sharpness is left to set; one axis, one slider */}
+      {d.autoAscender ? <ClampSlider tag="SHRP" label="Sharpness" big={10} /> : <AscenderPad />}
       <label className="rail-toggle" title={d.freezeOpsz ? AUTO_ASC_BLOCKED : undefined}
         style={d.freezeOpsz ? { opacity: .38, cursor: 'default' } : undefined}>
         <input type="checkbox" checked={d.autoAscender} disabled={d.freezeOpsz}
