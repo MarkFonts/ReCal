@@ -11,7 +11,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { AXIS_RANGES, effectiveLimits } from './store'
+import { AXIS_RANGES, effectiveAxes, effectiveLimits } from './store'
+// ── REVIEW-ONLY clamp-show (see clampshow/mode.tsx): delete with the losing options ──
+import { ClampShowSwitch, useClampShow } from './clampshow/mode'
+import { PadBubble } from './clampshow/Bubble'
+import { LitRange, PadLabels, xLabelsLive, yLabelsLive } from './clampshow/Labels'
+import { PadSample } from './clampshow/Sample'
+import { moving } from './clampshow/types'
+import type { PadView, Show } from './clampshow/types'
+// ── end clamp-show imports ──
 import { LANDING_ZONES } from '../GlyphGroups'
 import { GEOM_INSET, axisFromClientX, axisLeft, chipColor, geomLeft, geomSpan, zoneBandBackground } from './geomAxis'
 
@@ -33,7 +41,7 @@ interface PadAxis { tag: string; nudge: number; big: number }
 
 // What a pointer is holding: the knob (set the ◆), one clamp edge (set a limit, pushing the ◆
 // if it must), or the frame (slide the whole clamp, the ◆ rides inside). One undo grain each.
-type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'   // the last four: a corner, both axes at once
+type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'   // the last four: a corner, both axes at once (clampshow/types.ts repeats it)
 type Drag = { kind: 'knob' | 'edge' | 'box'; side?: Side; pushed: boolean; x0: number; y0: number; rect: DOMRect; lx: [number, number]; ly: [number, number] }
 const STATUS_IDLE = 'Drag edges to clamp axes'
 
@@ -58,6 +66,32 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   const fy = state.defaults.frozenAxes.includes(y.tag) || !!yAuto
   const padRef = useRef<HTMLDivElement>(null)
   const [held, setHeld] = useState<Drag | null>(null)   // mirrors drag.current for the paint
+
+  // ── REVIEW-ONLY clamp-show: what the dragged limit becomes. `show` is the edge / corner /
+  // frame being shown (held, or a keyboard nudge), `fading` once let go; it clears 240ms
+  // later, the matrix bubble's fade. `size` is the pad in px, for the layers' placement.
+  const clampShow = useClampShow()
+  const [show, setShow] = useState<Show | null>(null)
+  const [size, setSize] = useState<{ W: number; H: number } | null>(null)
+  const showTimer = useRef<number>()
+  const fadeShow = () => {
+    window.clearTimeout(showTimer.current)
+    setShow(s => (s ? { ...s, fading: true } : s))
+    showTimer.current = window.setTimeout(() => setShow(null), 240)
+  }
+  const flashShow = (kind: Show['kind'], side: Side | undefined, hold: number) => {
+    window.clearTimeout(showTimer.current)
+    setShow({ kind, side, fading: false })
+    if (hold) showTimer.current = window.setTimeout(fadeShow, hold)
+  }
+  useEffect(() => {
+    const el = padRef.current
+    if (!el || clampShow === 'off') return
+    const ro = new ResizeObserver(() => setSize({ W: el.clientWidth, H: el.clientHeight }))
+    ro.observe(el)
+    return () => { ro.disconnect(); window.clearTimeout(showTimer.current) }
+  }, [clampShow])
+  // ── end clamp-show state ──
 
   const setX = (v: number) => dispatch({ type: 'setDefaultAxis', tag: x.tag, value: v })
   const setY = (v: number) => dispatch({ type: 'setDefaultAxis', tag: y.tag, value: v })
@@ -99,6 +133,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     const was = drag.current.kind
     drag.current = null
     setHeld(null)
+    if (was !== 'knob') fadeShow()   // clamp-show
     if (was !== 'edge') onDragState?.(false)
   }
   // Each handle captures its own pointer; the pad root is the knob's handle (tap anywhere to
@@ -112,6 +147,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     drag.current = d
     setHeld(d)
     if (kind !== 'edge') onDragState?.(true)
+    if (kind !== 'knob') flashShow(kind, side, 0)   // clamp-show
     step(e)
   }
   const handle = (kind: Drag['kind'], side?: Side) => ({
@@ -144,6 +180,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     const lo = side === 'left' || side === 'bottom'
     dispatch({ type: 'pushHistory' })
     dispatch({ type: 'setLimit', tag: a.tag, side: lo ? 'lo' : 'hi', value: lim[lo ? 0 : 1] + dir * (e.shiftKey ? a.big : a.nudge) })
+    flashShow('edge', side, 700)   // clamp-show: a nudge shows the value briefly
     e.preventDefault(); e.stopPropagation()
   }
 
@@ -165,6 +202,31 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     return frozen ? 'frozen' : l[0] === r.min && l[1] === r.max ? null : `${l[0]}–${l[1]}`
   }
   const limX = lim(x, lx, fx), limY = yAuto ? null : lim(y, ly, fy)
+
+  // ── REVIEW-ONLY clamp-show: the layer for the chosen option, and B's readout lighting ──
+  const plotTopPx = top, plotBotPx = size ? size.H - PAD_BOT : 0
+  const view: PadView | null = size && {
+    W: size.W, H: size.H, plotTop: plotTopPx, plotBottom: plotBotPx,
+    px: v => PAD_X + (size.W - 2 * PAD_X) * ((v - xMin) / (xMax - xMin)),
+    py: v => plotTopPx + (plotBotPx - plotTopPx) * (1 - (v - yMin) / (yMax - yMin)),
+    x: { tag: x.tag, min: xMin, max: xMax, lim: lx, value: xv, frozen: fx },
+    y: { tag: y.tag, min: yMin, max: yMax, lim: ly, value: yv, frozen: fy },
+    zone: x.tag === 'GEOM' ? nearestZone : undefined,
+    axes: effectiveAxes(state),
+  }
+  const showLayer = !view || clampShow === 'off' ? null
+    : clampShow === 'labels' ? <PadLabels v={view} show={show} />
+    : !show ? null
+    : clampShow === 'bubble' ? <PadBubble v={view} show={show} />
+    : <PadSample v={view} show={show} />
+  const yStaticOff = clampShow === 'labels' && yLabelsLive(show, fy)
+  const statusOff = clampShow === 'labels' && xLabelsLive(show, fx)
+  const mv = moving(show), lit = clampShow === 'labels' && !!show && !show.fading
+  const limNode = (l: [number, number], frozen: boolean, isX: boolean, s: string | null) =>
+    clampShow === 'labels' && s && !frozen
+      ? <LitRange l={l} lo={isX ? mv.xlo : mv.ylo} hi={isX ? mv.xhi : mv.yhi} on={lit} />
+      : s
+  // ── end clamp-show layer ──
 
   const grabber = (side: Side) => {
     const horiz = side === 'top' || side === 'bottom'
@@ -210,8 +272,8 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         <div className="shape-pad-dim" style={{ left: axisLeft(lx[1], xMin, xMax), right: 0, top: 0, bottom: 0 }} />
         <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: 0, height: box.top }} />
         <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: yTop(ly[0]), bottom: 0 }} />
-        <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yMax}</span>
-        <span className={ylab} style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{yMin}</span>
+        <span className={`${ylab} clampshow-static`} style={{ top: top - 6 }} aria-hidden="true" data-off={yStaticOff ? '' : undefined}>{yMax}</span>
+        <span className={`${ylab} clampshow-static`} style={{ bottom: PAD_BOT - 3 }} aria-hidden="true" data-off={yStaticOff ? '' : undefined}>{yMin}</span>
         {/* the clamp: a frame you can drag by its edge; its visual twin underneath takes no pointer */}
         <div className="shape-pad-box" style={box} aria-hidden="true" />
         {!dead && <div className="shape-pad-frame" style={box} {...handle('box')} />}
@@ -221,12 +283,14 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         {!fy && grabber('bottom')}
         {!fx && !fy && (['tl', 'tr', 'bl', 'br'] as const).map(corner)}
         <div className="shape-pad-knob" data-zone={knobZone} style={{ left: axisLeft(xv, xMin, xMax), top: yTop(yv) }} />
-        <span className="shape-pad-status" aria-live="polite">{status}</span>
+        {showLayer /* clamp-show */}
+        <span className="shape-pad-status" aria-live="polite" data-off={statusOff ? '' : undefined /* clamp-show B */}>{status}</span>
       </div>
       <div className="shape-readout">
-        <div><span>{xLabel}{limX && <em className="shape-readout-lim tnum">{limX}</em>}</span><span className="tnum">{Math.round(xv)}</span></div>
-        <div><span>{yLabel}{limY && <em className="shape-readout-lim tnum">{limY}</em>}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
+        <div><span>{xLabel}{limX && <em className="shape-readout-lim tnum">{limNode(lx, fx, true, limX)}</em>}</span><span className="tnum">{Math.round(xv)}</span></div>
+        <div><span>{yLabel}{limY && <em className="shape-readout-lim tnum">{limNode(ly, fy, false, limY)}</em>}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
       </div>
+      {x.tag === 'GEOM' && <ClampShowSwitch /> /* REVIEW-ONLY clamp-show */}
     </>
   )
 }

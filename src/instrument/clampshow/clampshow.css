@@ -1,0 +1,48 @@
+/* REVIEW-ONLY (clamp-show): how a clamp drag shows what its new min / max becomes. Three
+   candidates (mode.tsx); each block below belongs to one and goes with it. Unlayered, like
+   shell.css. Nothing here is in flow: every tag is absolute, so a drag never reflows. */
+
+/* ── shared ─────────────────────────────────────────────────────────────────────────── */
+.clampshow-switch {
+  position: fixed; z-index: 50; right: 16px; top: 64px;   /* under the theme buttons, clear of the Try bar and the rail */
+  display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 12px;
+  background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,.35);
+}
+.clampshow-switch .rail-seg { grid-template-columns: repeat(4, auto); }
+.clampshow-switch .rail-seg button { padding: 4px 8px; }
+.clampshow-switch-title { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); white-space: nowrap; }
+.clampshow-val-tag { color: var(--text-dim); margin-right: 3px; letter-spacing: var(--track-caps); text-transform: uppercase; }
+.clampshow-val-sep { color: var(--text-dim); margin: 0 4px; }
+.clampshow-val-unit { color: var(--text-dim); margin-left: 1px; }
+
+/* ── A · bubble (Bubble.tsx) ── the Type Matrix's .matrix-val, unchanged; only lifted over
+   the grabbers. Its --in / --out keyframes carry the translateX(-50%) Tag.tsx relies on. */
+.clampshow-val { z-index: 6; }
+
+/* ── B · labels (Labels.tsx) ── the pad's own corner numbers, moved onto the frame. */
+.clampshow-lab { transition: opacity var(--dur-fast, .12s) var(--ease, ease), color var(--dur-fast, .12s) var(--ease, ease); }
+.clampshow-lab { white-space: nowrap; }
+.clampshow-lab--x { right: auto; padding: 0 4px; transform: translateX(-50%); }
+.shape-pad-status[data-off] { opacity: 0; }
+.rail[data-clampshow="labels"] .shape-pad-knob { z-index: 2; }   /* a ylab riding the frame never covers the ◆ */
+.clampshow-lab[data-off],
+.shape-pad-ylab.clampshow-static[data-off] { opacity: 0; }
+.shape-pad-ylab.clampshow-static { transition: opacity var(--dur-fast, .12s) var(--ease, ease); }
+.clampshow-lab[data-lit],
+.clampshow-lit[data-lit] { color: var(--signal-acid); }
+.clampshow-lit { transition: color var(--dur-fast, .12s) var(--ease, ease); }
+.clampshow-lab--band { position: absolute; z-index: 3; transform: translateX(-50%); pointer-events: none; }
+.clampshow-lab-px { color: var(--text-dim); }
+
+/* ── C · sample (Sample.tsx) ── the bubble with a glyph in it: same fill, radius, shadow
+   and motion as .matrix-val, a "Cal" at the limit over a micro caption. */
+.clampshow-chip {
+  position: absolute; z-index: 6; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 6px;
+  background: var(--surface-hi); border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+  color: var(--text); white-space: nowrap; pointer-events: none;
+}
+.clampshow-chip-cal { font-size: var(--type-body-size, 1rem); line-height: 18px; }
+.clampshow-chip-cal--opsz { line-height: 1; }
+.clampshow-chip-cap { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 12px; }
+@media (prefers-reduced-motion: reduce) { .clampshow-lab, .clampshow-lit, .shape-pad-ylab.clampshow-static { transition: none; } }
