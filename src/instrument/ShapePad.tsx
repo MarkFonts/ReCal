@@ -183,7 +183,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   }
 
   const corner = (side: 'tl' | 'tr' | 'bl' | 'br') => (
-    <div key={side} className="shape-pad-grab shape-pad-grab--c"
+    <div key={side} className={`shape-pad-grab shape-pad-grab--c shape-pad-grab--${side}`}
       style={{ left: axisLeft(side[1] === 'l' ? lx[0] : lx[1], xMin, xMax), top: yTop(side[0] === 't' ? ly[1] : ly[0]) }}
       aria-hidden="true" data-held={held?.kind === 'edge' && held.side === side ? '' : undefined}
       {...handle('edge', side)} />
