@@ -6,6 +6,7 @@
     "dev": "vite",
     "build": "tsc && vite build && node scripts/gen-landing.mjs",
     "preview": "vite preview",
+    "test": "esbuild tests/url-state.test.ts --bundle --platform=node --format=esm --jsx=automatic --log-level=warning --outfile=tests/.build/url-state.test.mjs && node --test tests/*.test.mjs tests/.build/*.test.mjs",
     "lint:tokens": "node shared/scripts/lint-tokens.mjs",
     "lint:colors": "node scripts/lint-colors.mjs"
   },

@@ -11,14 +11,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import { useInstrument } from './InstrumentProvider'
-import { AXIS_RANGES } from './store'
+import { AXIS_RANGES, effectiveLimits } from './store'
 import { LANDING_ZONES } from '../GlyphGroups'
 import { GEOM_INSET, axisFromClientX, axisLeft, chipColor, geomLeft, geomSpan, zoneBandBackground } from './geomAxis'
 
 // Inset of the plotted area inside the pad, in px. CSS reads the top one as a custom
 // property (--pad-top) so the knob, dots and pointer math can't drift apart.
 const PAD_X = GEOM_INSET
-const PAD_BOT = 9
+const PAD_BOT = 24   // room for the status line under the lattice
 const COLS = 17      // dot lattice: x every 1/16 of the axis (GEOM every 6.25)
 const COL_PAD = 3    // horizontal padding of a column label (the pill when active)
 const ROWS = 4       // dot lattice: y every 1/3 of the axis (weight every 100)
@@ -30,6 +30,12 @@ export const nearestZone = (geom: number) =>
 
 // An axis on a pad: the tag, and the keyboard step (⇧ = the big one).
 interface PadAxis { tag: string; nudge: number; big: number }
+
+// What a pointer is holding: the knob (set the ◆), one clamp edge (set a limit, pushing the ◆
+// if it must), or the frame (slide the whole clamp, the ◆ rides inside). One undo grain each.
+type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'   // the last four: a corner, both axes at once
+type Drag = { kind: 'knob' | 'edge' | 'box'; side?: Side; pushed: boolean; x0: number; y0: number; rect: DOMRect; lx: [number, number]; ly: [number, number] }
+const STATUS_IDLE = 'Drag edges to clamp axes'
 
 function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, onDragState, bands, cols }: {
   x: PadAxis; y: PadAxis
@@ -46,67 +52,151 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   const yv = state.defaults.axes[y.tag]
   const { min: xMin, max: xMax } = AXIS_RANGES[x.tag]
   const { min: yMin, max: yMax } = AXIS_RANGES[y.tag]
+  const lx = effectiveLimits(state.defaults, x.tag)
+  const ly = effectiveLimits(state.defaults, y.tag)
+  const fx = state.defaults.frozenAxes.includes(x.tag)
+  const fy = state.defaults.frozenAxes.includes(y.tag) || !!yAuto
   const padRef = useRef<HTMLDivElement>(null)
+  const [held, setHeld] = useState<Drag | null>(null)   // mirrors drag.current for the paint
 
   const setX = (v: number) => dispatch({ type: 'setDefaultAxis', tag: x.tag, value: v })
   const setY = (v: number) => dispatch({ type: 'setDefaultAxis', tag: y.tag, value: v })
 
-  const fromPointer = (e: { clientX: number; clientY: number }) => {
-    const r = padRef.current!.getBoundingClientRect()
-    const t = clamp01((e.clientY - r.top - top) / (r.height - top - PAD_BOT))
-    return {
-      px: Math.round(axisFromClientX(e.clientX, r, xMin, xMax)),
-      py: yAuto ? yv : Math.round(yMax - t * (yMax - yMin)),
-    }
-  }
+  const plotH = (r: DOMRect) => r.height - top - PAD_BOT
+  const xFrom = (clientX: number, r: DOMRect) => Math.round(axisFromClientX(clientX, r, xMin, xMax))
+  const yFrom = (clientY: number, r: DOMRect) => Math.round(yMax - clamp01((clientY - r.top - top) / plotH(r)) * (yMax - yMin))
 
-  // Grab: one undo grain per drag (like a matrix drag), snapshotted on the first real move.
-  const drag = useRef<{ pushed: boolean } | null>(null)
-  const apply = (e: ReactPointerEvent) => {
-    const { px, py } = fromPointer(e)
-    if (px === xv && py === yv) return
-    if (drag.current && !drag.current.pushed) { dispatch({ type: 'pushHistory' }); drag.current.pushed = true }
-    if (px !== xv) setX(px)
-    if (py !== yv) setY(py)
+  const drag = useRef<Drag | null>(null)
+  const pushOnce = () => { if (drag.current && !drag.current.pushed) { dispatch({ type: 'pushHistory' }); drag.current.pushed = true } }
+  const step = (e: ReactPointerEvent) => {
+    const d = drag.current
+    if (!d) return
+    const r = d.rect
+    if (d.kind === 'knob') {
+      const px = fx ? xv : xFrom(e.clientX, r)
+      const py = fy ? yv : yFrom(e.clientY, r)
+      if (px === xv && py === yv) return
+      pushOnce()
+      if (px !== xv) setX(px)
+      if (py !== yv) setY(py)
+    } else if (d.kind === 'edge') {
+      pushOnce()
+      if (d.side!.length === 2) {   // corner: x and y edges together
+        if (!fx) dispatch({ type: 'setLimit', tag: x.tag, side: d.side![1] === 'l' ? 'lo' : 'hi', value: xFrom(e.clientX, r) })
+        if (!fy) dispatch({ type: 'setLimit', tag: y.tag, side: d.side![0] === 'b' ? 'lo' : 'hi', value: yFrom(e.clientY, r) })
+      } else if (d.side === 'left' || d.side === 'right')
+        dispatch({ type: 'setLimit', tag: x.tag, side: d.side === 'left' ? 'lo' : 'hi', value: xFrom(e.clientX, r) })
+      else
+        dispatch({ type: 'setLimit', tag: y.tag, side: d.side === 'bottom' ? 'lo' : 'hi', value: yFrom(e.clientY, r) })
+    } else {
+      pushOnce()
+      if (!fx) dispatch({ type: 'slideLimits', tag: x.tag, lo: Math.round(d.lx[0] + (e.clientX - d.x0) / (r.width - 2 * PAD_X) * (xMax - xMin)) })
+      if (!fy) dispatch({ type: 'slideLimits', tag: y.tag, lo: Math.round(d.ly[0] - (e.clientY - d.y0) / plotH(r) * (yMax - yMin)) })
+    }
   }
   const end = () => {
     if (!drag.current) return
+    const was = drag.current.kind
     drag.current = null
-    onDragState?.(false)
+    setHeld(null)
+    if (was !== 'edge') onDragState?.(false)
   }
-  const onPointerDown = (e: ReactPointerEvent<HTMLDivElement>) => {
+  // Each handle captures its own pointer; the pad root is the knob's handle (tap anywhere to
+  // place the ◆, as before). The rect is taken once at grab so the mapping can't drift mid-drag.
+  const grab = (kind: Drag['kind'], side?: Side) => (e: ReactPointerEvent<HTMLElement>) => {
+    if (e.button !== 0) return
+    if (fx && fy) return
+    e.stopPropagation()
     e.currentTarget.setPointerCapture(e.pointerId)
-    drag.current = { pushed: false }
-    onDragState?.(true)
-    apply(e)
+    const d: Drag = { kind, side, pushed: false, x0: e.clientX, y0: e.clientY, rect: padRef.current!.getBoundingClientRect(), lx, ly }
+    drag.current = d
+    setHeld(d)
+    if (kind !== 'edge') onDragState?.(true)
+    step(e)
   }
+  const handle = (kind: Drag['kind'], side?: Side) => ({
+    onPointerDown: grab(kind, side),
+    onPointerMove: (e: ReactPointerEvent<HTMLElement>) => { if (drag.current) step(e) },
+    onPointerUp: end, onPointerCancel: end, onLostPointerCapture: end,
+  })
 
   // Keyboard: ←/→ nudge x, ↑/↓ nudge y (⇧ = the big step). Like the pins, keyboard changes
   // don't set geomDragging, so swaps read as instant one-shot flashes. ↑/↓ do nothing while
-  // y is locked.
+  // y is locked. On a grabber the same keys move that edge.
   const onKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
     const big = e.shiftKey
     if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+      if (fx) return
       const d = (e.key === 'ArrowRight' ? 1 : -1) * (big ? x.big : x.nudge)
       setX(Math.max(xMin, Math.min(xMax, xv + d)))
-    } else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !yAuto) {
+    } else if ((e.key === 'ArrowUp' || e.key === 'ArrowDown') && !fy) {
       const d = (e.key === 'ArrowUp' ? 1 : -1) * (big ? y.big : y.nudge)
       setY(Math.max(yMin, Math.min(yMax, yv + d)))
     } else return
     e.preventDefault()
   }
+  const onEdgeKey = (side: Side) => (e: ReactKeyboardEvent<HTMLDivElement>) => {
+    const horiz = side === 'left' || side === 'right'
+    const a = horiz ? x : y, lim = horiz ? lx : ly
+    const k = e.key
+    const dir = k === 'ArrowRight' || k === 'ArrowUp' ? 1 : k === 'ArrowLeft' || k === 'ArrowDown' ? -1 : 0
+    if (!dir) return
+    const lo = side === 'left' || side === 'bottom'
+    dispatch({ type: 'pushHistory' })
+    dispatch({ type: 'setLimit', tag: a.tag, side: lo ? 'lo' : 'hi', value: lim[lo ? 0 : 1] + dir * (e.shiftKey ? a.big : a.nudge) })
+    e.preventDefault(); e.stopPropagation()
+  }
 
   const yTop = (v: number) => `calc(${top}px + (100% - ${top + PAD_BOT}px) * ${1 - (v - yMin) / (yMax - yMin)})`
-  const ylab = `shape-pad-ylab geom-num tnum${yAuto ? ' shape-pad-ylab--off' : ''}`
+  const xSpan = (a: number, b: number) => `calc((100% - ${2 * PAD_X}px) * ${(b - a) / (xMax - xMin)})`
+  const ySpan = (a: number, b: number) => `calc((100% - ${top + PAD_BOT}px) * ${(b - a) / (yMax - yMin)})`
+  const ylab = `shape-pad-ylab geom-num tnum${fy ? ' shape-pad-ylab--off' : ''}`
+  const box: CSSProperties = { left: axisLeft(lx[0], xMin, xMax), width: xSpan(lx[0], lx[1]), top: yTop(ly[1]), height: ySpan(ly[0], ly[1]) }
+  const dead = fx && fy
+  const tag = (a: PadAxis) => a.tag.toUpperCase()
+  const status = dead ? `${tag(x)} frozen at default`
+    : !held ? STATUS_IDLE
+    : held.kind === 'knob' ? 'Setting the default'
+    : held.kind === 'box' ? 'Moving the range'
+    : held.side!.length === 2 ? `Clamping ${tag(x)} ${held.side![1] === 'r' ? 'max' : 'min'} · ${tag(y)} ${held.side![0] === 't' ? 'max' : 'min'}`
+    : `Clamping ${held.side === 'left' || held.side === 'right' ? tag(x) : tag(y)} ${held.side === 'right' || held.side === 'top' ? 'max' : 'min'}`
+  const lim = (a: PadAxis, l: [number, number], frozen: boolean) => {
+    const r = AXIS_RANGES[a.tag]
+    return frozen ? 'frozen' : l[0] === r.min && l[1] === r.max ? null : `${l[0]}–${l[1]}`
+  }
+  const limX = lim(x, lx, fx), limY = yAuto ? null : lim(y, ly, fy)
+
+  const grabber = (side: Side) => {
+    const horiz = side === 'top' || side === 'bottom'
+    const pos: CSSProperties = horiz
+      ? { left: axisLeft((lx[0] + lx[1]) / 2, xMin, xMax), top: yTop(side === 'top' ? ly[1] : ly[0]) }
+      : { left: axisLeft(side === 'left' ? lx[0] : lx[1], xMin, xMax), top: yTop((ly[0] + ly[1]) / 2) }
+    const v = horiz ? ly[side === 'top' ? 1 : 0] : lx[side === 'left' ? 0 : 1]
+    const a = horiz ? y : x
+    return (
+      <div key={side} className={`shape-pad-grab shape-pad-grab--${horiz ? 'h' : 'v'}`} style={pos}
+        role="slider" tabIndex={0} aria-label={`${a.tag} ${side === 'right' || side === 'top' ? 'maximum' : 'minimum'}`}
+        aria-valuemin={AXIS_RANGES[a.tag].min} aria-valuemax={AXIS_RANGES[a.tag].max} aria-valuenow={v}
+        data-held={held?.kind === 'edge' && held.side === side ? '' : undefined}
+        onKeyDown={onEdgeKey(side)} {...handle('edge', side)} />
+    )
+  }
+
+  const corner = (side: 'tl' | 'tr' | 'bl' | 'br') => (
+    <div key={side} className={`shape-pad-grab shape-pad-grab--c shape-pad-grab--${side}`}
+      style={{ left: axisLeft(side[1] === 'l' ? lx[0] : lx[1], xMin, xMax), top: yTop(side[0] === 't' ? ly[1] : ly[0]) }}
+      aria-hidden="true" data-held={held?.kind === 'edge' && held.side === side ? '' : undefined}
+      {...handle('edge', side)} />
+  )
 
   return (
     <>
       <div ref={padRef} className="shape-pad" tabIndex={0} role="group"
-        style={{ height, '--pad-top': `${top}px` } as CSSProperties}
+        style={{ '--pad-h': `${height}px`, '--pad-top': `${top}px` } as CSSProperties}
         aria-label={`${ariaLabel}. Arrow keys nudge.`}
-        onPointerDown={onPointerDown}
-        onPointerMove={e => { if (drag.current) apply(e) }}
-        onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end}
+        aria-disabled={dead || undefined}
+        data-held={held?.kind}
+        {...handle('knob')}
         onKeyDown={onKeyDown}>
         {bands}
         <svg className="shape-pad-dots" aria-hidden="true">
@@ -115,13 +205,27 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
           ))}
         </svg>
         {cols}
+        {/* outside the clamp the pad goes under a wash: the range is the lit part */}
+        <div className="shape-pad-dim" style={{ left: 0, width: axisLeft(lx[0], xMin, xMax), top: 0, bottom: 0 }} />
+        <div className="shape-pad-dim" style={{ left: axisLeft(lx[1], xMin, xMax), right: 0, top: 0, bottom: 0 }} />
+        <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: 0, height: box.top }} />
+        <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: yTop(ly[0]), bottom: 0 }} />
         <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yMax}</span>
         <span className={ylab} style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{yMin}</span>
+        {/* the clamp: a frame you can drag by its edge; its visual twin underneath takes no pointer */}
+        <div className="shape-pad-box" style={box} aria-hidden="true" />
+        {!dead && <div className="shape-pad-frame" style={box} {...handle('box')} />}
+        {!fx && grabber('left')}
+        {!fx && grabber('right')}
+        {!fy && grabber('top')}
+        {!fy && grabber('bottom')}
+        {!fx && !fy && (['tl', 'tr', 'bl', 'br'] as const).map(corner)}
         <div className="shape-pad-knob" data-zone={knobZone} style={{ left: axisLeft(xv, xMin, xMax), top: yTop(yv) }} />
+        <span className="shape-pad-status" aria-live="polite">{status}</span>
       </div>
       <div className="shape-readout">
-        <div><span>{xLabel}</span><span className="tnum">{Math.round(xv)}</span></div>
-        <div><span>{yLabel}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
+        <div><span>{xLabel}{limX && <em className="shape-readout-lim tnum">{limX}</em>}</span><span className="tnum">{Math.round(xv)}</span></div>
+        <div><span>{yLabel}{limY && <em className="shape-readout-lim tnum">{limY}</em>}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
       </div>
     </>
   )
@@ -129,7 +233,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
 
 // Column labels sit centered on their band, clamped so none crosses the plot's inner edge.
 // Widths are measured (the glyphs are variable and the font loads late), so positions are px.
-function ZoneCols({ active }: { active: string }) {
+function ZoneCols({ active, lim }: { active: string; lim: [number, number] }) {
   const { min: gMin, max: gMax } = AXIS_RANGES.GEOM
   const { min: wMin } = AXIS_RANGES.wght
   const colsRef = useRef<HTMLDivElement>(null)
@@ -164,6 +268,7 @@ function ZoneCols({ active }: { active: string }) {
       {LANDING_ZONES.map((z, i) => (
         <span key={z.label} className={`shape-pad-col${z.label === active ? ' on' : ''}`}
           data-zone={z.label}
+          data-out={z.label !== active && (z.mid < lim[0] || z.mid > lim[1]) ? '' : undefined}
           ref={el => { colRefs.current[i] = el }}
           style={{
             fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${wMin}, 'opsz' 8.2`,
@@ -187,7 +292,7 @@ export function ShapePad() {
   return (
     <Pad
       x={{ tag: 'GEOM', nudge: 1, big: 10 }} y={{ tag: 'wght', nudge: 10, big: 50 }}
-      top={42} height={198}
+      top={42} height={213}
       ariaLabel={`Shape: GEOM ${Math.round(geom)}, weight ${Math.round(wght)}`}
       xLabel={`GEOM ${active}`} yLabel="Weight"
       knobZone={active}
@@ -199,7 +304,7 @@ export function ShapePad() {
             background: zoneBandBackground(z.label),
           }} />
       ))}
-      cols={<ZoneCols active={active} />} />
+      cols={<ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
   )
 }
 
@@ -212,7 +317,7 @@ export function AscenderPad() {
   return (
     <Pad
       x={{ tag: 'SHRP', nudge: 1, big: 10 }} y={{ tag: 'YTAS', nudge: 10, big: 50 }}
-      top={12} height={150}
+      top={12} height={165}
       ariaLabel={`Ascender and Sharpness: Sharpness ${Math.round(SHRP)}, ascender ${auto ? 'auto' : Math.round(YTAS)}`}
       xLabel="Sharpness" yLabel="Ascender" yAuto={auto} />
   )

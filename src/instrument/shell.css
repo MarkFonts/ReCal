@@ -864,7 +864,9 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    pad sets --pad-top and its own height. Shape: GEOM × weight. Ascender & Sharpness: SHRP × YTAS. */
 .shape-pad {
   --pad-top: 42px; --zone-flat: var(--marker-default);   /* a pad with no zones has a plain knob */
-  position: relative; height: 198px; border-radius: var(--radius); background: var(--bg);
+  position: relative; border-radius: var(--radius); background: var(--bg);
+  /* --pad-h is the pad's own height (ShapePad.tsx); --pad-max is what the rail can spare (Shell.tsx measures it), floored so the lattice stays usable */
+  height: min(var(--pad-h, 198px), max(100px, var(--pad-max, 9999px)));
   cursor: crosshair; touch-action: none; user-select: none; overflow: hidden;
 }
 .shape-pad:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
@@ -885,13 +887,78 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .shape-pad [data-zone="Geo"]  { --zone-flat: var(--zone-geo-chip);   --zone-hdr: var(--zone-hdr-geo); }
 /* One number style for every GEOM / weight figure on the pad and the matrix rulers. */
 .geom-num { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); color: var(--text-dim); font-variant-numeric: tabular-nums; line-height: 12px; }
-.shape-pad-ylab { position: absolute; right: 9px; pointer-events: none; }
+.shape-pad-ylab { position: absolute; right: 7px; padding: 0 2px; z-index: 1; background: var(--bg); pointer-events: none; }   /* knocks the clamp frame out behind the number */
 .shape-pad-ylab--off { opacity: .38; }   /* the axis is locked (Auto ascender) */
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
   background: var(--signal-acid-fill);   /* the knob is the signal on every pad; only the zone label keeps the HDR swatch */
   box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
 }
+/* The clamp (clampMath.ts): a dashed frame at rest, solid while anything on the pad is held.
+   The frame's hit area is a ring around its edge (clip-path), so the inside still places the
+   knob. Grabbers sit at the edge midpoints. Outside the clamp the pad goes under --bg. */
+.shape-pad-dim { position: absolute; pointer-events: none; background: color-mix(in srgb, var(--bg) 62%, transparent); }
+.shape-pad-box { position: absolute; box-sizing: border-box; border: 1.5px dashed var(--text-dim); border-radius: 6px; pointer-events: none; transition: border-color var(--dur-fast, .12s) var(--ease, ease); }
+.shape-pad[data-held] .shape-pad-box { border-style: solid; border-color: var(--text); }
+.shape-pad-frame { position: absolute; cursor: move; clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 8px 8px, 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 8px, 8px 8px); }
+.shape-pad-grab {
+  position: absolute; transform: translate(-50%, -50%); border-radius: var(--radius-pill);
+  background: var(--text-muted); cursor: grab; touch-action: none;
+  transition: background-color var(--dur-fast, .12s) var(--ease, ease);
+}
+.shape-pad-grab--h { width: 28px; height: 10px; cursor: ns-resize; }
+.shape-pad-grab--v { width: 10px; height: 28px; cursor: ew-resize; }
+.shape-pad-grab--c { width: 16px; height: 16px; background: none; border-radius: 0; }   /* a corner: both axes at once, cursor only */
+.shape-pad-grab--c::before { display: none; }
+.shape-pad-grab--c:hover, .shape-pad-grab--c[data-held] { background: none; }
+.shape-pad-grab--tl, .shape-pad-grab--br { cursor: nwse-resize; }
+.shape-pad-grab--tr, .shape-pad-grab--bl { cursor: nesw-resize; }
+.shape-pad-grab::after { content: ''; position: absolute; inset: -8px; }   /* the hit area, 26 / 44px */
+.shape-pad-grab::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border-radius: 1px; }
+.shape-pad-grab--h::before { width: 10px; height: 2px; }
+.shape-pad-grab--v::before { width: 2px; height: 10px; }
+.shape-pad-grab:hover, .shape-pad-grab[data-held] { background: var(--signal-acid-fill); }
+.shape-pad-grab:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+.shape-pad[aria-disabled="true"] { opacity: .4; cursor: default; }
+.shape-pad-col[data-out] { opacity: .35; }
+.shape-pad-status {
+  position: absolute; left: 0; right: 0; bottom: 5px; text-align: center; pointer-events: none;
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--text-dim); transition: color var(--dur-fast, .12s) var(--ease, ease);
+}
+.shape-pad[data-held] .shape-pad-status { color: var(--text); }
+.shape-readout-lim { font-style: normal; color: var(--text-dim); margin-left: 6px; font-size: var(--type-micro-size, 0.5625rem); }
+@media (pointer: coarse) { .shape-pad-grab::after { inset: -17px; } }
+@media (prefers-reduced-motion: reduce) { .shape-pad-box, .shape-pad-grab, .shape-pad-status { transition: none; } }
+
+/* One-axis clamp (ClampSlider.tsx): the track slider with a grabber at each end of the clamp
+   and a wash outside it. --lo / --hi are percentages of the bar, which spans the whole row.
+   A grabber is the primitive's grip (AxisSlider.css, .slider-row--track .slider-label::after):
+   a 4px pill, 4px off the bar's top and bottom, kept 6px INSIDE the clamp's edge the way the
+   grip sits 6px inside the fill's end. So at the axis minimum it sits 6px in from the bar's
+   corner, never on it, and the two grabbers and the ◆ grip read as three of one thing. */
+.clamp-slider { position: relative; }
+.clamp-slider-dim { position: absolute; top: 0; bottom: 0; z-index: 2; pointer-events: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
+.clamp-slider-dim--lo { left: 0; width: var(--lo); border-radius: var(--radius) 0 0 var(--radius); }
+.clamp-slider-dim--hi { left: var(--hi); right: 0; border-radius: 0 var(--radius) var(--radius) 0; }
+.clamp-slider-grab {
+  position: absolute; z-index: 3; top: 4px; bottom: 4px; width: 4px;
+  border-radius: var(--radius-pill); background: var(--text-dim); cursor: ew-resize; touch-action: none;
+  transition: width var(--dur-fast, .12s) var(--ease, ease), background-color var(--dur-fast, .12s) var(--ease, ease);
+}
+.clamp-slider-grab--lo { left: calc(var(--lo) + 6px); }
+.clamp-slider-grab--hi { left: calc(var(--hi) - 6px - 4px); }
+.clamp-slider-grab::after { content: ''; position: absolute; inset: -8px; }   /* the hit area, 20px wide */
+.clamp-slider-grab:hover, .clamp-slider-grab[data-held] { width: 6px; background: var(--signal-acid-fill); }
+.clamp-slider-grab:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+@media (pointer: coarse) { .clamp-slider-grab::after { inset: -17px; } }
+@media (prefers-reduced-motion: reduce) { .clamp-slider-grab { transition: none; } }
+
+.subset-title { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); padding-top: var(--spacing-02, 6px); }
+.subset-tag { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.subset-at { margin-left: auto; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.subset-charset { justify-content: space-between; }
+
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
 .shape-readout > div {
   display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; white-space: nowrap;

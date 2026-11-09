@@ -10,6 +10,7 @@
 import { GROUP_DEFS } from '../GlyphGroups'
 import type { CompareSpec } from './boot'
 import { DEFAULT_VMETRICS, type VMetrics } from './vmetrics'
+import { normalizeAxis, setLimit, slideLimits, type Limits } from './clampMath'
 
 export type AxisMap = Record<string, number>
 
@@ -38,7 +39,29 @@ export interface DefaultsLayer {
   frozenFeatures: string[]                      // ◆ ssXX/cvXX pinned as manual overrides
                                                 //   (baked into the default forms + features stripped on export)
   vmetrics: VMetrics                            // ◆ OS/2 + hhea vertical metrics (baked on export)
+  limits: Limits                                // ◆ per-axis clamp [lo, hi], in axis units (fvar range on export)
+  frozenAxes: string[]                          // ◆ axes baked at their default (clamp reads as a point); never ital
+  subsetKeepFeatures: boolean                   // ◆ export: keep calt/liga
+  subsetCharset: 'latin1' | 'latinx' | 'all'    // ◆ export: character set
 }
+
+export type SubsetOpt = 'subsetKeepFeatures' | 'subsetCharset'
+
+export const stockLimits = (): Limits =>
+  Object.fromEntries(Object.entries(AXIS_RANGES).map(([t, r]) => [t, [r.min, r.max]]))
+
+/** Is the axis baked at one value? opsz keeps its own flag (freezeOpsz drives the bake today). */
+export const axisFrozen = (d: DefaultsLayer, tag: string): boolean =>
+  tag === 'opsz' ? d.freezeOpsz : d.frozenAxes.includes(tag)
+
+/** The clamp an axis exports with: a frozen axis is a point at its default. */
+export const effectiveLimits = (d: DefaultsLayer, tag: string): [number, number] => {
+  if (tag === 'opsz' && d.freezeOpsz) { const v = d.frozenOpszValue ?? d.axes.opsz; return [v, v] }
+  return d.frozenAxes.includes(tag) ? [d.axes[tag], d.axes[tag]] : d.limits[tag]
+}
+
+const cloneLimits = (l: Limits): Limits =>
+  Object.fromEntries(Object.entries(l).map(([k, v]) => [k, [v[0], v[1]]]))
 
 export type PreviewLayer = AxisMap              // ● transient per-axis overrides (incl. ital)
 
@@ -70,22 +93,23 @@ const cloneVMetrics = (v: VMetrics): VMetrics =>
   ({ ...v, hhea: { ...v.hhea }, typo: { ...v.typo }, win: { ...v.win } })
 
 const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
-  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics) })
+  ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics), limits: cloneLimits(d.limits), frozenAxes: [...d.frozenAxes] })
 
 // The rail's rows that own ◆ values (Rail in Shell.tsx), for the per-row reset.
-export type Section = 'shape' | 'opsz' | 'asc' | 'matrix' | 'freezer' | 'vmetrics'
+export type Section = 'shape' | 'opsz' | 'asc' | 'matrix' | 'freezer' | 'vmetrics' | 'subset'
 
 // The ◆ layer with ONE row's values put back to stock (shipped axes and thresholds, the
 // initial opsz / freezer / metrics); everything outside that row is untouched.
 const stockSection = (s: InstrumentState, sec: Section): DefaultsLayer => {
-  const d = cloneDefaults(s.defaults)
+  const d = cloneDefaults(s.defaults), stock = stockLimits()
   switch (sec) {
-    case 'shape': d.axes.GEOM = s.shipped.GEOM; d.axes.wght = s.shipped.wght; break
-    case 'opsz': d.freezeOpsz = false; d.frozenOpszValue = null; d.opszMultiplier = 1; break
-    case 'asc': d.axes.YTAS = s.shipped.YTAS; d.axes.SHRP = s.shipped.SHRP; d.autoAscender = false; break
+    case 'shape': d.axes.GEOM = s.shipped.GEOM; d.axes.wght = s.shipped.wght; d.limits.GEOM = stock.GEOM; d.limits.wght = stock.wght; break
+    case 'opsz': d.freezeOpsz = false; d.frozenOpszValue = null; d.opszMultiplier = 1; d.limits.opsz = stock.opsz; break
+    case 'asc': d.axes.YTAS = s.shipped.YTAS; d.axes.SHRP = s.shipped.SHRP; d.autoAscender = false; d.limits.YTAS = stock.YTAS; d.limits.SHRP = stock.SHRP; break
     case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); break
     case 'freezer': d.frozenFeatures = []; break
     case 'vmetrics': d.vmetrics = cloneVMetrics(DEFAULT_VMETRICS); break
+    case 'subset': d.frozenAxes = []; d.subsetKeepFeatures = true; d.subsetCharset = 'latin1'; break
   }
   return d
 }
@@ -111,6 +135,10 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       autoAscender: false,
       frozenFeatures: [],
       vmetrics: cloneVMetrics(DEFAULT_VMETRICS),
+      limits: stockLimits(),
+      frozenAxes: [],
+      subsetKeepFeatures: true,
+      subsetCharset: 'latin1',
     },
     preview: {},
     previewOpsz: null,
@@ -177,12 +205,19 @@ export const defaultsDirty = (s: InstrumentState): boolean =>
   s.defaults.autoAscender ||
   s.defaults.frozenFeatures.length > 0 ||
   s.defaults.vmetrics.preset !== DEFAULT_VMETRICS.preset ||
+  JSON.stringify(s.defaults.limits) !== JSON.stringify(stockLimits()) ||
+  s.defaults.frozenAxes.length > 0 ||
+  !s.defaults.subsetKeepFeatures || s.defaults.subsetCharset !== 'latin1' ||
   s.activePreset !== null
 
 // ── Actions / reducer ───────────────────────────────────────────────────────────
 export type Action =
   | { type: 'init'; shipped: AxisMap }                        // re-seed from live axisInfo
   | { type: 'setDefaultAxis'; tag: string; value: number }    // rail ◆ pin; clears matching ●
+  | { type: 'setLimit'; tag: string; side: 'lo' | 'hi'; value: number }   // pad edge drag; pushes the ◆ inside
+  | { type: 'slideLimits'; tag: string; lo: number }          // pad box drag: the clamp moves, its span holds
+  | { type: 'setFrozenAxis'; tag: string; frozen: boolean }   // subset: bake the axis at its ◆
+  | { type: 'setSubsetOpt'; key: SubsetOpt; value: boolean | string }
   | { type: 'setPreview'; tag: string; value: number }        // dock / Previewer ●
   | { type: 'setPreviewOpsz'; value: number | null }          // Try bar optical size (null = auto)
   | { type: 'clearPreview' }                                  // Return pill
@@ -209,6 +244,12 @@ export type Action =
   | { type: 'undo' }
   | { type: 'redo' }
 
+// One axis' ◆ and clamp written together, through the invariants (clampMath.ts).
+const withAxis = (d: DefaultsLayer, tag: string, value: number, limits: [number, number]): DefaultsLayer => {
+  const n = normalizeAxis(value, limits, AXIS_RANGES[tag])
+  return { ...d, axes: { ...d.axes, [tag]: n.value }, limits: { ...d.limits, [tag]: n.limits } }
+}
+
 export function reducer(s: InstrumentState, a: Action): InstrumentState {
   switch (a.type) {
     case 'init':
@@ -218,8 +259,22 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       // (mirrors the classic app's handleSliderChange).
       const preview = { ...s.preview }
       delete preview[a.tag]
-      return { ...s, defaults: { ...s.defaults, axes: { ...s.defaults.axes, [a.tag]: a.value } }, preview }
+      return { ...s, defaults: withAxis(s.defaults, a.tag, a.value, s.defaults.limits[a.tag]), preview }
     }
+    case 'setLimit':
+      return { ...s, defaults: withAxis(s.defaults, a.tag, s.defaults.axes[a.tag], setLimit(s.defaults.limits[a.tag], a.side, a.value)) }
+    case 'slideLimits':
+      return { ...s, defaults: withAxis(s.defaults, a.tag, s.defaults.axes[a.tag], slideLimits(s.defaults.limits[a.tag], a.lo, AXIS_RANGES[a.tag])) }
+    case 'setFrozenAxis': {
+      if (a.tag === 'opsz')   // opsz freezes through its own flag; the value it pins is its ◆
+        return { ...s, defaults: { ...s.defaults, freezeOpsz: a.frozen, frozenOpszValue: a.frozen ? s.defaults.frozenOpszValue ?? s.defaults.axes.opsz : null } }
+      const cur = s.defaults.frozenAxes
+      if (a.tag === 'ital' || cur.includes(a.tag) === a.frozen) return s
+      const next = a.frozen ? [...cur, a.tag].sort() : cur.filter(t => t !== a.tag)
+      return { ...s, defaults: { ...s.defaults, frozenAxes: next } }
+    }
+    case 'setSubsetOpt':
+      return { ...s, defaults: { ...s.defaults, [a.key]: a.value } }
     case 'setPreview':
       return { ...s, preview: { ...s.preview, [a.tag]: a.value } }
     case 'clearPreview':

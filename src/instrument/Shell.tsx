@@ -8,7 +8,7 @@ import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
   type FitOptions, Chevron, AccentButton, Icon, ThemeSwitch, bootTheme } from '../../shared/index' // wm-primitives (git submodule)
-import {
+import { effectiveLimits,
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
 } from './store'
@@ -22,6 +22,9 @@ import {
 } from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
+import { applyUrlState, decodeDefaults } from './urlState'
+import { ClampSlider } from './ClampSlider'
+import { Subset, subsetSummary } from './Subset'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
@@ -53,9 +56,9 @@ function ResetIcon() {
 }
 
 // The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
-const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics']
+const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics', 'Subset']
 const VMETRICS_ROW = 5
-const ROW_SECTIONS: Section[] = ['shape', 'opsz', 'asc', 'matrix', 'freezer', 'vmetrics']
+const ROW_SECTIONS: Section[] = ['shape', 'opsz', 'asc', 'matrix', 'freezer', 'vmetrics', 'subset']
 const OPSZ_FROZEN_BLOCKED = 'Turn off Auto ascender to freeze optical size: it needs the optical size axis.'
 const AUTO_ASC_BLOCKED = 'Unavailable while optical size is frozen: the ascender follows the optical size axis, and freezing removes it.'
 const VM_LABEL: Record<string, string> = { wordmark: 'Cal Sans', arrowtype: 'ArrowType', googlefonts: 'Google Fonts', custom: 'custom' }
@@ -106,6 +109,8 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
                 onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
             ))}
           </div>
+          {/* the axis range the font keeps, and its ◆ default */}
+          <ClampSlider tag="opsz" label="Optical size" />
         </div>
       )}
     </div>
@@ -180,10 +185,24 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       let bottom = foot.offsetHeight
       rows[open].style.setProperty('--pin-top', `${top}px`)   // the open row's own header sticks below the rows above it
       for (let i = rows.length - 1; i > open; i--) { rows[i].style.setProperty('--pin-bottom', `${bottom}px`); bottom += rows[i].offsetHeight }
+      // The open row's pad takes what is left once everything else is on screen, so the
+      // rail fits a short window without scrolling the readouts under the pinned rows.
+      // Summed from the rail's children (scrollHeight would read as the viewport once the
+      // content is shorter than it); the pad's own height is added back, so it is stable.
+      const pad = rows[open].querySelector<HTMLElement>('.shape-pad')
+      if (pad) {
+        const px = (v: string) => parseFloat(v) || 0
+        const kids = (Array.from(rail.children) as HTMLElement[]).filter(k => getComputedStyle(k).display !== 'none')
+        // bottom margins only: the footer's `margin-top: auto` computes to whatever space is spare, which is the number being looked for
+        const need = kids.reduce((n, k) => n + k.offsetHeight + px(getComputedStyle(k).marginBottom), 0)
+          + px(getComputedStyle(rail).rowGap) * (kids.length - 1)
+        rail.style.setProperty('--pad-max', `${rail.clientHeight - need + pad.offsetHeight}px`)
+      }
     }
     apply()
     const ro = new ResizeObserver(apply)
     ro.observe(foot)
+    ro.observe(rail)
     rows.forEach((r, i) => { if (i !== open) ro.observe(r) })
     return () => ro.disconnect()
   }, [open, collapsed])
@@ -209,6 +228,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     edited ? `${edited} moved` : 'stock swaps',
     frozenTags.length ? `${freezerName(frozenTags[0])}${frozenTags.length > 1 ? ` · +${frozenTags.length - 1}` : ''}` : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
+    subsetSummary(d),
   ]
   const bodies: React.ReactNode[] = [
     <div className="rail-row-body"><ShapePad /></div>,
@@ -232,6 +252,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     </div>,
     <div className="rail-row-body"><Freezer /></div>,
     <div className="rail-row-body"><VMetricsPanel /></div>,
+    <div className="rail-row-body"><Subset note={opszNote} onNote={() => setOpszNote(true)} blocked={OPSZ_FROZEN_BLOCKED} /></div>,
   ]
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.
@@ -985,7 +1006,7 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
   const [expanded, setExpanded] = useState(false)
   const [statics, setStatics] = useState(false)
   const footRef = useRef<HTMLDivElement>(null)
-  const { min: wMin, max: wMax } = AXIS_RANGES.wght
+  const [wMin, wMax] = effectiveLimits(state.defaults, 'wght')   // the weight range the export keeps
   const family = (state.buildName || 'ReCal Sans').trim() || 'ReCal Sans'
 
   // The exact export config for the current ◆ (deterministic → cacheable). Kept in a
@@ -1001,6 +1022,10 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
       thresholds: d.glyphThresholds,
       frozenFeatures: d.frozenFeatures,
       vmetrics: d.vmetrics,
+      limits: Object.fromEntries(Object.keys(d.axes).filter(t => t !== 'ital').map(t => [t, effectiveLimits(d, t)])),
+      frozenAxes: d.frozenAxes,
+      subsetKeepFeatures: d.subsetKeepFeatures,
+      subsetCharset: d.subsetCharset,
       familyName: family,
     }
   }
@@ -1138,14 +1163,16 @@ export default function Shell() {
   useEffect(() => {
     const want = BOOT.preset
     const p = want && PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
-    if (p) { applyPreset(dispatch, p); return }
-    if (BOOT.axes) {
+    if (p) applyPreset(dispatch, p)
+    else if (BOOT.axes) {
       for (const [tag, value] of Object.entries(BOOT.axes)) dispatch({ type: 'setDefaultAxis', tag, value })
       if (BOOT.freezeOpsz != null) {
         dispatch({ type: 'setFreezeOpsz', value: true })
         dispatch({ type: 'setFrozenOpszValue', value: BOOT.freezeOpsz })
       }
     }
+    // A shared link's ◆ layer (urlState.ts) lands on top: its keys are the specifics.
+    applyUrlState(dispatch, decodeDefaults(window.location.search))
   }, [dispatch])
   // Lazy-load the referent webfont the first time Compare is turned on — the
   // stylesheet URL rides BOOT.compare.css, injected once, so pure-preview visitors

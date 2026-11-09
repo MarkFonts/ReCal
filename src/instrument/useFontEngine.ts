@@ -27,6 +27,10 @@ export interface ExportConfig {
   thresholds: Record<string, number[]>   // ◆ GEOM swap map → FeatureVariations
   frozenFeatures: string[]               // ◆ ssXX/cvXX (into the rclt lookups, GEOM wins) and tnum/pnum/zero (fused into the cmap)
   vmetrics: VMetrics                     // ◆ OS/2 + hhea vertical metrics
+  limits?: Record<string, [number, number]>   // ◆ per-axis clamp, UNSCALED axis units; becomes the fvar range (data outside is dropped). opsz and YTAS are left alone under autoAscender
+  frozenAxes?: string[]                  // ◆ axes pinned at their default and removed (opsz still travels on freezeOpsz)
+  subsetKeepFeatures?: boolean           // ◆ false drops calt and liga; the GEOM machinery (rclt) always stays
+  subsetCharset?: 'latin1' | 'latinx' | 'all'   // ◆ glyph set kept; 'all' skips the subsetter
   statics?: boolean                      // also cut wght 400/500/600/700 (× italic if the font has `ital`) → .zip
   familyName?: string                    // build name: the VF's internal family in EVERY bake, and the statics' names + file names (default 'ReCal Sans')
 }
