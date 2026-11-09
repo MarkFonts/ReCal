@@ -13,7 +13,7 @@ import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent a
 import { useInstrument } from './InstrumentProvider'
 import { AXIS_RANGES, effectiveAxes, effectiveLimits } from './store'
 // ── REVIEW-ONLY clamp-show (see clampshow/mode.tsx): delete with the losing options ──
-import { ClampShowSwitch, useClampShow } from './clampshow/mode'
+import { useClampShow } from './clampshow/mode'
 import { PadBubble } from './clampshow/Bubble'
 import { LitRange, PadLabels, xLabelsLive, yLabelsLive } from './clampshow/Labels'
 import { PadSample } from './clampshow/Sample'
@@ -290,7 +290,6 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         <div><span>{xLabel}{limX && <em className="shape-readout-lim tnum">{limNode(lx, fx, true, limX)}</em>}</span><span className="tnum">{Math.round(xv)}</span></div>
         <div><span>{yLabel}{limY && <em className="shape-readout-lim tnum">{limNode(ly, fy, false, limY)}</em>}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
       </div>
-      {x.tag === 'GEOM' && <ClampShowSwitch /> /* REVIEW-ONLY clamp-show */}
     </>
   )
 }

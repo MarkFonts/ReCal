@@ -24,6 +24,7 @@ import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { applyUrlState, decodeDefaults } from './urlState'
 import { ClampSlider } from './ClampSlider'
+import { ClampShowSwitch } from './clampshow/mode'   // REVIEW-ONLY clamp-show
 import { Subset, subsetSummary } from './Subset'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import gridSnapUrl from '../../shared/src/gridSnap.js?url'
@@ -1267,6 +1268,7 @@ export default function Shell() {
   return (
     <div className={`shell${state.recalMode === 'demo' ? ' shell--demo' : ''}${railCollapsed ? ' shell--rail-collapsed' : ''}`}>
       <Rail engine={engine} collapsed={railCollapsed} onToggle={() => setRailCollapsed(c => !c)} />
+      <ClampShowSwitch /> {/* REVIEW-ONLY clamp-show: lives on the shell so it survives a row change */}
       <Canvas
         size={size} setSize={setSize}
         tracking={tracking} setTracking={setTracking}
