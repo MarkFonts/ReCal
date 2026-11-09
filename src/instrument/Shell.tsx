@@ -23,6 +23,7 @@ import {
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { applyUrlState, decodeDefaults } from './urlState'
+import { ClampSlider } from './ClampSlider'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
@@ -107,6 +108,8 @@ function OpticalSize({ note, onNote }: { note: boolean; onNote: () => void }) {
                 onClick={() => dispatch({ type: 'setOpszMultiplier', value: n })}>{n}</button>
             ))}
           </div>
+          {/* the axis range the font keeps, and its ◆ default */}
+          <ClampSlider tag="opsz" label="Optical size" />
         </div>
       )}
     </div>
