@@ -1,0 +1,7 @@
+/* Cascade-layer order for the whole app. A layer's rank is fixed the first time any
+   stylesheet names it, and the FIRST name ranks LOWEST. This file is main.tsx's first
+   import, so this line is the first thing in the bundle and no later import can reorder it.
+   app.base (the `* { padding: 0 }` reset) must rank below the primitives, or it wipes
+   their padding: in Nov 2026 an early `shared/index` import put wm.controls first and every
+   slider label, value, and select lost its inset. App.css repeats the line; keep them equal. */
+@layer app.base, wm.color, wm.type, wm.controls, wm.icon;
