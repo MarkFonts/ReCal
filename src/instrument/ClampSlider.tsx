@@ -48,7 +48,11 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
     return () => { ro.disconnect(); window.clearTimeout(showTimer.current) }
   }, [])
   const W = box.W
-  const band: BandView = { W, H: box.H, tag, min, max, lim: [lo, hi], mult: tag === 'opsz' ? d.opszMultiplier : 1, axes: effectiveAxes(state) }
+  // opsz reads in the exported font's units: the worker relabels the axis by the Optical scale
+  // (stock 8–45 at 2× ships as 16–90), so every number on this bar is stock × m. The store
+  // keeps stock units; one slider step is one stock unit.
+  const m = tag === 'opsz' ? d.opszMultiplier : 1
+  const band: BandView = { W, H: box.H, tag, min, max, lim: [lo, hi], mult: m, axes: effectiveAxes(state) }
 
   const step = (e: ReactPointerEvent) => {
     const g = drag.current
@@ -79,7 +83,7 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
   const grabber = (side: Side) => (
     <div className={`clamp-slider-grab clamp-slider-grab--${side}`}
       role="slider" tabIndex={0} aria-label={`${tag} ${side === 'lo' ? 'minimum' : 'maximum'}`}
-      aria-valuemin={min} aria-valuemax={max} aria-valuenow={side === 'lo' ? lo : hi}
+      aria-valuemin={min * m} aria-valuemax={max * m} aria-valuenow={(side === 'lo' ? lo : hi) * m}
       data-held={held === side ? '' : undefined}
       onPointerDown={grab(side)} onPointerMove={e => { if (drag.current) step(e) }}
       onPointerUp={end} onPointerCancel={end} onLostPointerCapture={end} onKeyDown={onKey(side)} />
@@ -89,9 +93,9 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
     <div ref={wrapRef} className="clamp-slider" data-held={held ?? undefined}
       style={{ '--lo': pct(lo), '--hi': pct(hi) } as CSSProperties}>
       <AxisSlider
-        label={label} tag={tag} value={d.axes[tag]} min={min} max={max} step={1}
-        variant="track" reference={state.shipped[tag]} disabled={frozen}
-        onChange={v => dispatch({ type: 'setDefaultAxis', tag, value: v as number })} />
+        label={label} tag={tag} value={d.axes[tag] * m} min={min * m} max={max * m} step={m}
+        variant="track" reference={state.shipped[tag] * m} disabled={frozen}
+        onChange={v => dispatch({ type: 'setDefaultAxis', tag, value: Math.round((v as number) / m) })} />
       <div className="clamp-slider-dim clamp-slider-dim--lo" aria-hidden="true" />
       <div className="clamp-slider-dim clamp-slider-dim--hi" aria-hidden="true" />
       {!frozen && grabber('lo')}
