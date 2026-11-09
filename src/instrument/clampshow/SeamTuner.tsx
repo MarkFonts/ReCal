@@ -9,15 +9,16 @@
 // his numbers: put them in .rail-seam in shell.css, delete this file and its CSS block.
 import { useEffect, useState } from 'react'
 
-type Key = 'pt' | 'pb' | 'gap'
-const LABEL: Record<Key, string> = { pt: 'Top', pb: 'Bottom', gap: 'Title–summary' }
-const VAR: Record<Key, string> = { pt: '--review-seam-pt', pb: '--review-seam-pb', gap: '--review-seam-gap' }
+type Key = 'pt' | 'pb' | 'gap' | 'lh'
+const LABEL: Record<Key, string> = { pt: 'Top', pb: 'Bottom', gap: 'Title–summary', lh: 'Line height' }
+const VAR: Record<Key, string> = { pt: '--review-seam-pt', pb: '--review-seam-pb', gap: '--review-seam-gap', lh: '--review-seam-lh' }
 
 function readToday(): Record<Key, number> | null {
   const seam = document.querySelector<HTMLElement>('.rail-seam--row')
   if (!seam) return null
   const cs = getComputedStyle(seam)
-  return { pt: parseFloat(cs.paddingTop), pb: parseFloat(cs.paddingBottom), gap: parseFloat(cs.rowGap) }
+  const lbl = seam.querySelector<HTMLElement>('.rail-seam-lbl')
+  return { pt: parseFloat(cs.paddingTop), pb: parseFloat(cs.paddingBottom), gap: parseFloat(cs.rowGap), lh: lbl ? Math.round(lbl.getBoundingClientRect().height) : 15 }
 }
 
 export function SeamTuner() {
@@ -36,8 +37,11 @@ export function SeamTuner() {
   if (!v || !today) return null
   const step = (k: Key, dir: 1 | -1) => setV(s => {
     if (!s) return s
-    const n = dir > 0 ? Math.floor(s[k] / 3) * 3 + 3 : Math.ceil(s[k] / 3) * 3 - 3
-    return { ...s, [k]: Math.max(0, Math.min(36, n)) }
+    // line height steps 1px (it is a type size, not spacing); the rest snap to the 3px grid.
+    // The gap may go negative: it pulls the summary up into the title's leading.
+    const n = k === 'lh' ? s[k] + dir : dir > 0 ? Math.floor(s[k] / 3) * 3 + 3 : Math.ceil(s[k] / 3) * 3 - 3
+    const lo = k === 'gap' ? -12 : k === 'lh' ? 6 : 0
+    return { ...s, [k]: Math.max(lo, Math.min(36, n)) }
   })
   const changed = (Object.keys(v) as Key[]).some(k => v[k] !== today[k])
   return (

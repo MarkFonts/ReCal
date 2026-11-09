@@ -912,7 +912,6 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .shape-pad-grab--v { width: 10px; height: 28px; cursor: ew-resize; }
 .shape-pad-grab--c { width: 16px; height: 16px; background: none; border-radius: 0; }   /* a corner: both axes at once, cursor only */
 .shape-pad-grab--c::before { display: none; }
-.shape-pad-grab--c:hover, .shape-pad-grab--c[data-held] { background: none; }
 .shape-pad-grab--tl, .shape-pad-grab--br { cursor: nwse-resize; }
 .shape-pad-grab--tr, .shape-pad-grab--bl { cursor: nesw-resize; }
 .shape-pad-grab::after { content: ''; position: absolute; inset: -8px; }   /* the hit area, 26 / 44px */
@@ -920,6 +919,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .shape-pad-grab--h::before { width: 10px; height: 2px; }
 .shape-pad-grab--v::before { width: 2px; height: 10px; }
 .shape-pad-grab:hover, .shape-pad-grab[data-held] { background: var(--signal-acid-fill); }
+.shape-pad-grab--c:hover, .shape-pad-grab--c[data-held] { background: none; }   /* after the acid rule: same specificity, so order decides. Corners are cursor-only. */
 .shape-pad-grab:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
 .shape-pad[aria-disabled="true"] { opacity: .4; cursor: default; }
 .shape-pad-col[data-out] { opacity: .35; }
@@ -940,6 +940,9 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    grip sits 6px inside the fill's end. So at the axis minimum it sits 6px in from the bar's
    corner, never on it, and the two grabbers and the ◆ grip read as three of one thing. */
 .clamp-slider { position: relative; --lo: 0%; --hi: 100%; }   /* ClampSlider.tsx sets both inline */
+/* The grabbers stand in the bar's 12px text inset (6px in + 4px grip), leaving the label and the
+   value's stepper 2px of air, or under the stepper. Push the text in by one more 6px step. */
+.clamp-slider .slider-row--track .slider-label { padding-inline: calc(var(--spacing-04, 12px) + var(--spacing-02, 6px)); }
 .clamp-slider-dim { position: absolute; top: 0; bottom: 0; z-index: 2; pointer-events: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
 .clamp-slider-dim--lo { left: 0; width: var(--lo); border-radius: var(--radius) 0 0 var(--radius); }
 .clamp-slider-dim--hi { left: var(--hi); right: 0; border-radius: 0 var(--radius) var(--radius) 0; }

@@ -60,8 +60,11 @@
 /* ── Section-row tuner (SeamTuner.tsx) ── live padding for .rail-seam while the review pill is
    up. The custom properties are set inline on .rail by SeamTuner (declared here too, so the
    token lint sees them; the inline values win). Delete with SeamTuner.tsx. */
-.rail[data-seamtune] { --review-seam-pt: var(--spacing-04, 12px); --review-seam-pb: var(--spacing-03, 8px); --review-seam-gap: 3px; }
+.rail[data-seamtune] { --review-seam-pt: var(--spacing-04, 12px); --review-seam-pb: var(--spacing-03, 8px); --review-seam-gap: 3px; --review-seam-lh: normal; }
 .rail[data-seamtune] .rail-seam { padding-top: var(--review-seam-pt); padding-bottom: var(--review-seam-pb); row-gap: var(--review-seam-gap); }
+.rail[data-seamtune] .rail-seam-lbl, .rail[data-seamtune] .rail-seam-sum, .rail[data-seamtune] .rail-seam-num { line-height: var(--review-seam-lh); }
+.rail[data-seamtune] .rail-seam { row-gap: max(0px, var(--review-seam-gap)); }
+.rail[data-seamtune] .rail-seam-sum { margin-top: min(0px, var(--review-seam-gap)); }
 .clampshow-tune { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; width: 100%; padding-top: 6px; border-top: 1px solid var(--border-subtle); }
 .clampshow-tune-item { display: inline-flex; align-items: center; gap: 4px; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); }
 .clampshow-tune-lbl { margin-right: 2px; }
