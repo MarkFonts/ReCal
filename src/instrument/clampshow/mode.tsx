@@ -9,6 +9,7 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { createPortal } from 'react-dom'
 import './clampshow.css'
+import { SeamTuner } from './SeamTuner'   // REVIEW-ONLY section-row tuner; delete with its file
 
 export type ClampShow = 'off' | 'bubble' | 'labels' | 'sample'
 const MODES: ClampShow[] = ['off', 'bubble', 'labels', 'sample']
@@ -48,6 +49,7 @@ export function ClampShowSwitch() {
           <button key={k} className={m === k ? 'on' : ''} aria-pressed={m === k} onClick={() => setMode(k)}>{LABEL[k]}</button>
         ))}
       </div>
+      <SeamTuner />
     </div>,
     document.body,
   )

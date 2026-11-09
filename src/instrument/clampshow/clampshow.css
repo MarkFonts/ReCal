@@ -5,7 +5,7 @@
 /* ── shared ─────────────────────────────────────────────────────────────────────────── */
 .clampshow-switch {
   position: fixed; z-index: 50; right: 16px; top: 64px;   /* under the theme buttons, clear of the Try bar and the rail */
-  display: flex; align-items: center; gap: 12px; padding: 6px 6px 6px 12px;
+  display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 12px; max-width: 420px; padding: 6px 6px 6px 12px;
   background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,.35);
 }
 .clampshow-switch .rail-seg { grid-template-columns: repeat(4, auto); }
@@ -56,3 +56,17 @@
 }
 .clampshow-chip-cap { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 12px; }
 @media (prefers-reduced-motion: reduce) { .clampshow-lab, .clampshow-lit, .shape-pad-ylab.clampshow-static { transition: none; } }
+
+/* ── Section-row tuner (SeamTuner.tsx) ── live padding for .rail-seam while the review pill is
+   up. The custom properties are set inline on .rail by SeamTuner (declared here too, so the
+   token lint sees them; the inline values win). Delete with SeamTuner.tsx. */
+.rail[data-seamtune] { --review-seam-pt: var(--spacing-04, 12px); --review-seam-pb: var(--spacing-03, 8px); --review-seam-gap: 3px; }
+.rail[data-seamtune] .rail-seam { padding-top: var(--review-seam-pt); padding-bottom: var(--review-seam-pb); row-gap: var(--review-seam-gap); }
+.clampshow-tune { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; width: 100%; padding-top: 6px; border-top: 1px solid var(--border-subtle); }
+.clampshow-tune-item { display: inline-flex; align-items: center; gap: 4px; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); }
+.clampshow-tune-lbl { margin-right: 2px; }
+.clampshow-tune-val { min-width: 32px; text-align: center; color: var(--text); }
+.clampshow-tune-val[data-moved] { color: var(--signal-acid); }
+.clampshow-tune button { padding: 2px 6px; border-radius: 4px; background: var(--bg); color: var(--text); font-size: var(--type-micro-size, 0.5625rem); line-height: 12px; cursor: pointer; }
+.clampshow-tune button:disabled { opacity: .38; cursor: default; }
+.clampshow-tune-reset { margin-left: auto; }
