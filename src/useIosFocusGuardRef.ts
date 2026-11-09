@@ -1,5 +1,6 @@
 import { useCallback, useRef } from 'react'
-import { iosFocusGuard } from '../shared/index' // wm-primitives, GESTURES.md §15
+import { iosFocusGuard } from '../shared/src/iosFocusGuard' // wm-primitives, GESTURES.md §15. The file,
+// not shared/index: the barrel pulls in primitive CSS, and App.tsx imports this above App.css.
 
 /* A ref callback that puts iosFocusGuard on an editable (or a wrapper around editables) for as
  * long as it is mounted. Layer 1 only: a no-op anywhere that isn't an iPhone. Stable identity,
