@@ -16,9 +16,10 @@
 // Round-trip is exact: decode(encode(d)) deep-equals d for any layer reachable in the UI.
 
 import {
-  AXIS_RANGES, SHIPPED_AXES, type AxisMap, type DefaultsLayer,
+  AXIS_RANGES, SHIPPED_AXES, type Action, type AxisMap, type DefaultsLayer, type SubsetOpt,
 } from './store'
-import { DEFAULT_VMETRICS, type VMetrics } from './vmetrics'
+import type { Limits } from './clampMath'
+import { DEFAULT_VMETRICS, presetById, type VMetrics } from './vmetrics'
 
 /* Axis tag -> query key. Short, lowercase, and unambiguous against the flag keys below. */
 const AXIS_KEY: Record<string, string> = {
@@ -37,7 +38,14 @@ const K = {
   name: 'n',            // build name
   vmetrics: 'vm',       // preset id, or 'custom' plus the numbers
   preset: 'p',          // the "start from…" entry this began as, for provenance
+  limits: 'l',          // prefix: lw=450-650 clamps wght; one key per axis letter, never ital
+  frozenAxes: 'fz',     // o.y -- axes baked at their default
+  subsetStrip: 'sx',    // 0 -- keep data the clamps make unreachable
+  subsetKeep: 'sk',     // 0 -- drop calt/liga on export
+  subsetCharset: 'sc',  // latinx | all
 } as const
+/* Axes a clamp can be written for (ital has none). */
+const CLAMPABLE = ['opsz', 'GEOM', 'wght', 'YTAS', 'SHRP']
 
 const num = (v: number) => {
   /* Trailing zeros make links look machine-written and defeat string equality on the OG
@@ -85,6 +93,14 @@ export function encodeDefaults(
   if (d.frozenFeatures?.length) p.set(K.features, [...d.frozenFeatures].sort().join('.'))
   if (d.vmetrics && d.vmetrics.preset !== DEFAULT_VMETRICS.preset)
     p.set(K.vmetrics, d.vmetrics.preset)
+  for (const tag of CLAMPABLE) {
+    const l = d.limits?.[tag], r = AXIS_RANGES[tag]
+    if (l && (l[0] !== r.min || l[1] !== r.max)) p.set(K.limits + AXIS_KEY[tag], `${num(l[0])}-${num(l[1])}`)
+  }
+  if (d.frozenAxes?.length) p.set(K.frozenAxes, d.frozenAxes.filter(t => AXIS_KEY[t]).map(t => AXIS_KEY[t]).sort().join('.'))
+  if (d.subsetStrip === false) p.set(K.subsetStrip, '0')
+  if (d.subsetKeepFeatures === false) p.set(K.subsetKeep, '0')
+  if (d.subsetCharset && d.subsetCharset !== 'latin1') p.set(K.subsetCharset, d.subsetCharset)
   if (opts.buildName) p.set(K.name, opts.buildName)
   if (opts.activePreset) p.set(K.preset, opts.activePreset)
 
@@ -104,6 +120,11 @@ export interface DecodedState {
   vmetricsPreset?: VMetrics['preset']
   buildName?: string
   activePreset?: string
+  limits?: Limits                                // only the axes the URL clamped
+  frozenAxes?: string[]
+  subsetStrip?: boolean
+  subsetKeepFeatures?: boolean
+  subsetCharset?: DefaultsLayer['subsetCharset']
 }
 
 /* A shared link is untrusted input: anything unparseable is dropped rather than thrown, so
@@ -155,12 +176,63 @@ export function decodeDefaults(search: string): DecodedState {
   if (vm && ['wordmark', 'arrowtype', 'googlefonts', 'custom'].includes(vm))
     out.vmetricsPreset = vm as VMetrics['preset']
 
+  /* A clamp is two numbers inside the axis range, low first. Anything else is dropped;
+     the store re-clamps the default into whatever survives, so a link cannot leave the
+     ◆ outside its own clamp. */
+  for (const tag of CLAMPABLE) {
+    const raw = p.get(K.limits + AXIS_KEY[tag])
+    if (raw == null) continue
+    const m = /^(-?\d+(?:\.\d+)?)-(-?\d+(?:\.\d+)?)$/.exec(raw)
+    if (!m) continue
+    const lo = clampAxis(tag, Number(m[1])), hi = clampAxis(tag, Number(m[2]))
+    if (lo > hi) continue
+    ;(out.limits ??= {})[tag] = [lo, hi]
+  }
+  const fz = p.get(K.frozenAxes)
+  if (fz) {
+    const tags = fz.split('.').map(k => KEY_AXIS[k]).filter(t => t && CLAMPABLE.includes(t))
+    if (tags.length) out.frozenAxes = [...new Set(tags)].sort()
+  }
+  if (p.get(K.subsetStrip) === '0') out.subsetStrip = false
+  if (p.get(K.subsetKeep) === '0') out.subsetKeepFeatures = false
+  const sc = p.get(K.subsetCharset)
+  if (sc === 'latinx' || sc === 'all') out.subsetCharset = sc
+
   const n = p.get(K.name)
   if (n) out.buildName = n.slice(0, 64)
   const pre = p.get(K.preset)
   if (pre) out.activePreset = pre.slice(0, 40)
 
   return out
+}
+
+/* ---------------------------------------------------------------- apply */
+
+/** Play a decoded link into the store, on top of whatever is there (the preset or the
+    fused page's BOOT axes). Clamps go first so a default lands inside them. Mirrors
+    applyPreset in presets.ts: existing actions only, so undo and the invariants hold. */
+export function applyUrlState(dispatch: (a: Action) => void, d: DecodedState) {
+  for (const [tag, [lo, hi]] of Object.entries(d.limits ?? {})) {
+    dispatch({ type: 'setLimit', tag, side: 'lo', value: lo })
+    dispatch({ type: 'setLimit', tag, side: 'hi', value: hi })
+  }
+  for (const [tag, value] of Object.entries(d.axes)) dispatch({ type: 'setDefaultAxis', tag, value })
+  if (Object.keys(d.glyphThresholds).length) dispatch({ type: 'setThresholds', thresholds: d.glyphThresholds })
+  if (d.opszMultiplier !== undefined) dispatch({ type: 'setOpszMultiplier', value: d.opszMultiplier })
+  if (d.freezeOpsz) {
+    dispatch({ type: 'setFreezeOpsz', value: true })
+    dispatch({ type: 'setFrozenOpszValue', value: d.frozenOpszValue ?? null })
+  }
+  if (d.autoAscender) dispatch({ type: 'setAutoAscender', value: true })
+  for (const tag of d.frozenFeatures ?? []) dispatch({ type: 'toggleFrozenFeature', tag })
+  for (const tag of d.frozenAxes ?? []) dispatch({ type: 'setFrozenAxis', tag, frozen: true })
+  const subset: [SubsetOpt, boolean | string | undefined][] =
+    [['subsetStrip', d.subsetStrip], ['subsetKeepFeatures', d.subsetKeepFeatures], ['subsetCharset', d.subsetCharset]]
+  for (const [key, value] of subset) if (value !== undefined) dispatch({ type: 'setSubsetOpt', key, value })
+  const vm = d.vmetricsPreset && presetById(d.vmetricsPreset)
+  if (vm) dispatch({ type: 'setVMetrics', value: { preset: vm.id, ...vm.metrics } })
+  if (d.buildName) dispatch({ type: 'setBuildName', name: d.buildName })
+  if (d.activePreset) dispatch({ type: 'setActivePreset', name: d.activePreset })
 }
 
 /* ---------------------------------------------------------------- helpers */

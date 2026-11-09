@@ -22,6 +22,7 @@ import {
 } from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
+import { applyUrlState, decodeDefaults } from './urlState'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
@@ -1138,14 +1139,16 @@ export default function Shell() {
   useEffect(() => {
     const want = BOOT.preset
     const p = want && PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
-    if (p) { applyPreset(dispatch, p); return }
-    if (BOOT.axes) {
+    if (p) applyPreset(dispatch, p)
+    else if (BOOT.axes) {
       for (const [tag, value] of Object.entries(BOOT.axes)) dispatch({ type: 'setDefaultAxis', tag, value })
       if (BOOT.freezeOpsz != null) {
         dispatch({ type: 'setFreezeOpsz', value: true })
         dispatch({ type: 'setFrozenOpszValue', value: BOOT.freezeOpsz })
       }
     }
+    // A shared link's ◆ layer (urlState.ts) lands on top: its keys are the specifics.
+    applyUrlState(dispatch, decodeDefaults(window.location.search))
   }, [dispatch])
   // Lazy-load the referent webfont the first time Compare is turned on — the
   // stylesheet URL rides BOOT.compare.css, injected once, so pure-preview visitors
