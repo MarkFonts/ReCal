@@ -19,7 +19,8 @@ test('clamps, frozen axes, and subset options round-trip exactly', () => {
   const s = play(q)
   assert.deepEqual(s.defaults.limits.wght, [450, 650])
   assert.deepEqual(s.defaults.limits.GEOM, [40, 80])
-  assert.deepEqual(s.defaults.frozenAxes, ['YTAS', 'opsz'])
+  assert.deepEqual(s.defaults.frozenAxes, ['YTAS'])
+  assert.equal(s.defaults.freezeOpsz, true)   // opsz freezes through its own flag
   assert.equal(s.defaults.subsetStrip, false)
   assert.equal(s.defaults.subsetCharset, 'all')
   const again = play(enc(s))

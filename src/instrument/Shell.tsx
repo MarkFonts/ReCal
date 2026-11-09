@@ -24,6 +24,7 @@ import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
 import { applyUrlState, decodeDefaults } from './urlState'
 import { ClampSlider } from './ClampSlider'
+import { Subset, subsetSummary } from './Subset'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
 import gridSnapUrl from '../../shared/src/gridSnap.js?url'
 import { Matrix } from './Matrix'
@@ -55,9 +56,9 @@ function ResetIcon() {
 }
 
 // The stack's rows, top to bottom. Index 5 (Vertical metrics) is the one the canvas reacts to.
-const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics']
+const ROW_LABELS = ['Shape', 'Optical size', 'Ascender & Sharpness', 'Type Matrix', 'Freezer', 'Vertical metrics', 'Subset']
 const VMETRICS_ROW = 5
-const ROW_SECTIONS: Section[] = ['shape', 'opsz', 'asc', 'matrix', 'freezer', 'vmetrics']
+const ROW_SECTIONS: Section[] = ['shape', 'opsz', 'asc', 'matrix', 'freezer', 'vmetrics', 'subset']
 const OPSZ_FROZEN_BLOCKED = 'Turn off Auto ascender to freeze optical size: it needs the optical size axis.'
 const AUTO_ASC_BLOCKED = 'Unavailable while optical size is frozen: the ascender follows the optical size axis, and freezing removes it.'
 const VM_LABEL: Record<string, string> = { wordmark: 'Cal Sans', arrowtype: 'ArrowType', googlefonts: 'Google Fonts', custom: 'custom' }
@@ -213,6 +214,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     edited ? `${edited} moved` : 'stock swaps',
     frozenTags.length ? `${freezerName(frozenTags[0])}${frozenTags.length > 1 ? ` · +${frozenTags.length - 1}` : ''}` : 'nothing frozen',
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
+    subsetSummary(d),
   ]
   const bodies: React.ReactNode[] = [
     <div className="rail-row-body"><ShapePad /></div>,
@@ -236,6 +238,7 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     </div>,
     <div className="rail-row-body"><Freezer /></div>,
     <div className="rail-row-body"><VMetricsPanel /></div>,
+    <div className="rail-row-body"><Subset note={opszNote} onNote={() => setOpszNote(true)} blocked={OPSZ_FROZEN_BLOCKED} /></div>,
   ]
   // Collapsed (narrow window): a strip showing just the label; clicking it expands.
   // Otherwise it's the normal rail; touching it enters EDIT as before.

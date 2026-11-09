@@ -97,7 +97,7 @@ export function encodeDefaults(
     const l = d.limits?.[tag], r = AXIS_RANGES[tag]
     if (l && (l[0] !== r.min || l[1] !== r.max)) p.set(K.limits + AXIS_KEY[tag], `${num(l[0])}-${num(l[1])}`)
   }
-  if (d.frozenAxes?.length) p.set(K.frozenAxes, d.frozenAxes.filter(t => AXIS_KEY[t]).map(t => AXIS_KEY[t]).sort().join('.'))
+  if (d.frozenAxes?.length) p.set(K.frozenAxes, d.frozenAxes.filter(t => AXIS_KEY[t] && t !== 'opsz').map(t => AXIS_KEY[t]).sort().join('.'))   // opsz rides on f
   if (d.subsetStrip === false) p.set(K.subsetStrip, '0')
   if (d.subsetKeepFeatures === false) p.set(K.subsetKeep, '0')
   if (d.subsetCharset && d.subsetCharset !== 'latin1') p.set(K.subsetCharset, d.subsetCharset)

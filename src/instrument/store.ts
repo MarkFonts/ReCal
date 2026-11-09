@@ -51,9 +51,15 @@ export type SubsetOpt = 'subsetStrip' | 'subsetKeepFeatures' | 'subsetCharset'
 export const stockLimits = (): Limits =>
   Object.fromEntries(Object.entries(AXIS_RANGES).map(([t, r]) => [t, [r.min, r.max]]))
 
+/** Is the axis baked at one value? opsz keeps its own flag (freezeOpsz drives the bake today). */
+export const axisFrozen = (d: DefaultsLayer, tag: string): boolean =>
+  tag === 'opsz' ? d.freezeOpsz : d.frozenAxes.includes(tag)
+
 /** The clamp an axis exports with: a frozen axis is a point at its default. */
-export const effectiveLimits = (d: DefaultsLayer, tag: string): [number, number] =>
-  d.frozenAxes.includes(tag) ? [d.axes[tag], d.axes[tag]] : d.limits[tag]
+export const effectiveLimits = (d: DefaultsLayer, tag: string): [number, number] => {
+  if (tag === 'opsz' && d.freezeOpsz) { const v = d.frozenOpszValue ?? d.axes.opsz; return [v, v] }
+  return d.frozenAxes.includes(tag) ? [d.axes[tag], d.axes[tag]] : d.limits[tag]
+}
 
 const cloneLimits = (l: Limits): Limits =>
   Object.fromEntries(Object.entries(l).map(([k, v]) => [k, [v[0], v[1]]]))
@@ -91,7 +97,7 @@ const cloneDefaults = (d: DefaultsLayer): DefaultsLayer =>
   ({ ...d, axes: { ...d.axes }, glyphThresholds: cloneThresholds(d.glyphThresholds), frozenFeatures: [...d.frozenFeatures], vmetrics: cloneVMetrics(d.vmetrics), limits: cloneLimits(d.limits), frozenAxes: [...d.frozenAxes] })
 
 // The rail's rows that own ◆ values (Rail in Shell.tsx), for the per-row reset.
-export type Section = 'shape' | 'opsz' | 'asc' | 'matrix' | 'freezer' | 'vmetrics'
+export type Section = 'shape' | 'opsz' | 'asc' | 'matrix' | 'freezer' | 'vmetrics' | 'subset'
 
 // The ◆ layer with ONE row's values put back to stock (shipped axes and thresholds, the
 // initial opsz / freezer / metrics); everything outside that row is untouched.
@@ -104,6 +110,7 @@ const stockSection = (s: InstrumentState, sec: Section): DefaultsLayer => {
     case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); break
     case 'freezer': d.frozenFeatures = []; break
     case 'vmetrics': d.vmetrics = cloneVMetrics(DEFAULT_VMETRICS); break
+    case 'subset': d.frozenAxes = []; d.subsetStrip = true; d.subsetKeepFeatures = true; d.subsetCharset = 'latin1'; break
   }
   return d
 }
@@ -261,6 +268,8 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
     case 'slideLimits':
       return { ...s, defaults: withAxis(s.defaults, a.tag, s.defaults.axes[a.tag], slideLimits(s.defaults.limits[a.tag], a.lo, AXIS_RANGES[a.tag])) }
     case 'setFrozenAxis': {
+      if (a.tag === 'opsz')   // opsz freezes through its own flag; the value it pins is its ◆
+        return { ...s, defaults: { ...s.defaults, freezeOpsz: a.frozen, frozenOpszValue: a.frozen ? s.defaults.frozenOpszValue ?? s.defaults.axes.opsz : null } }
       const cur = s.defaults.frozenAxes
       if (a.tag === 'ital' || cur.includes(a.tag) === a.frozen) return s
       const next = a.frozen ? [...cur, a.tag].sort() : cur.filter(t => t !== a.tag)

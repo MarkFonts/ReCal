@@ -942,6 +942,11 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 @media (pointer: coarse) { .clamp-slider-grab::after { inset: -17px; } }
 @media (prefers-reduced-motion: reduce) { .clamp-slider-grab { transition: none; } }
 
+.subset-title { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); padding-top: var(--spacing-02, 6px); }
+.subset-tag { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+.subset-at { margin-left: auto; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.subset-charset { justify-content: space-between; }
+
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
 .shape-readout > div {
   display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; white-space: nowrap;
