@@ -1,3 +1,4 @@
+import './layers.css'  // FIRST: fixes the cascade-layer order (see the file)
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 
