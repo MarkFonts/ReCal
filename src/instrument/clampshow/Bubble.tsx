@@ -1,4 +1,5 @@
-// REVIEW-ONLY (clamp-show) — option A: the new limit rides the grabber in the Type Matrix's
+import './clampshow.css'
+// The clamp readout: the new limit rides the grabber in the Type Matrix's
 // value bubble (.matrix-val, --in while held, --out on release). A side edge's bubble sits
 // above its grabber, a top / bottom edge's beside it; a corner shows both numbers; a frame
 // slide shows the two far corners (low-low and high-high), the whole range in two bubbles.

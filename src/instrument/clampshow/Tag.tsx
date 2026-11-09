@@ -1,4 +1,4 @@
-// REVIEW-ONLY (clamp-show). An absolutely positioned tag anchored to a point, measured and
+// The clamp readout. An absolutely positioned tag anchored to a point, measured and
 // kept inside its container, so a bubble near the pad's edge slides in rather than clips.
 // `left` is the tag's CENTRE: the classes it carries (.matrix-val and kin) translate -50%.
 // Nothing here is in flow, so a drag never reflows the pad.

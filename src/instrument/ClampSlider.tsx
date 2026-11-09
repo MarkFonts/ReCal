@@ -7,13 +7,9 @@ import type { CSSProperties, KeyboardEvent as ReactKeyboardEvent, PointerEvent a
 import { AxisSlider } from '../../shared/index'
 import { useInstrument } from './InstrumentProvider'
 import { AXIS_RANGES, effectiveAxes, effectiveLimits } from './store'
-// ── REVIEW-ONLY clamp-show (see clampshow/mode.tsx): delete with the losing options ──
-import { useClampShow } from './clampshow/mode'
+// The clamp readout (clampshow/): while a grabber is held, the new limit shows beside it.
 import { BandBubble } from './clampshow/Bubble'
-import { BandLabels } from './clampshow/Labels'
-import { BandSample } from './clampshow/Sample'
 import type { BandView, Show } from './clampshow/types'
-// ── end clamp-show imports ──
 
 type Side = 'lo' | 'hi'
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
@@ -30,8 +26,7 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
   const drag = useRef<{ side: Side; rect: DOMRect; dx: number; pushed: boolean } | null>(null)
   const [held, setHeld] = useState<Side | null>(null)
 
-  // ── REVIEW-ONLY clamp-show: the side being shown (held or nudged), fading once let go ──
-  const clampShow = useClampShow()
+  // The clamp readout: the side being shown (held or nudged), fading once let go.
   const [show, setShow] = useState<(Show & { band: Side }) | null>(null)
   const [box, setBox] = useState({ W: 0, H: 0 })
   const showTimer = useRef<number>()
@@ -47,14 +42,13 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
   }
   useEffect(() => {
     const el = wrapRef.current
-    if (!el || clampShow === 'off') return
+    if (!el) return
     const ro = new ResizeObserver(() => setBox({ W: el.clientWidth, H: el.clientHeight }))
     ro.observe(el)
     return () => { ro.disconnect(); window.clearTimeout(showTimer.current) }
-  }, [clampShow])
+  }, [])
   const W = box.W
   const band: BandView = { W, H: box.H, tag, min, max, lim: [lo, hi], mult: tag === 'opsz' ? d.opszMultiplier : 1, axes: effectiveAxes(state) }
-  // ── end clamp-show state ──
 
   const step = (e: ReactPointerEvent) => {
     const g = drag.current
@@ -102,10 +96,7 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
       <div className="clamp-slider-dim clamp-slider-dim--hi" aria-hidden="true" />
       {!frozen && grabber('lo')}
       {!frozen && grabber('hi')}
-      {/* REVIEW-ONLY clamp-show A / B / C */}
-      {W > 0 && show && clampShow === 'bubble' && <BandBubble b={band} side={show.band} show={show} />}
-      {W > 0 && clampShow === 'labels' && <BandLabels b={band} side={show?.band ?? 'lo'} on={!!show && !show.fading} />}
-      {W > 0 && show && clampShow === 'sample' && <BandSample b={band} side={show.band} show={show} />}
+      {W > 0 && show && <BandBubble b={band} side={show.band} show={show} />}
     </div>
   )
 }

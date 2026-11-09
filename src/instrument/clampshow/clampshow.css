@@ -1,16 +1,6 @@
-/* REVIEW-ONLY (clamp-show): how a clamp drag shows what its new min / max becomes. Three
-   candidates (mode.tsx); each block below belongs to one and goes with it. Unlayered, like
-   shell.css. Nothing here is in flow: every tag is absolute, so a drag never reflows. */
-
-/* ── shared ─────────────────────────────────────────────────────────────────────────── */
-.clampshow-switch {
-  position: fixed; z-index: 50; right: 16px; top: 64px;   /* under the theme buttons, clear of the Try bar and the rail */
-  display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 12px; max-width: 420px; padding: 6px 6px 6px 12px;
-  background: var(--surface); border: 1px solid var(--border-subtle); border-radius: var(--radius); box-shadow: 0 4px 16px rgba(0,0,0,.35);
-}
-.clampshow-switch .rail-seg { grid-template-columns: repeat(4, auto); }
-.clampshow-switch .rail-seg button { padding: 4px 8px; }
-.clampshow-switch-title { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase; color: var(--text-dim); white-space: nowrap; }
+/* The clamp readout: while a clamp edge, corner or frame is held, the new limit rides the
+   grabber in the Type Matrix's value bubble (.matrix-val). Unlayered, like shell.css. Nothing
+   here is in flow: every tag is absolute, so a drag never reflows. */
 .clampshow-val-tag { color: var(--text-dim); margin-right: 3px; letter-spacing: var(--track-caps); text-transform: uppercase; }
 .clampshow-val-sep { color: var(--text-dim); margin: 0 4px; }
 .clampshow-val-unit { color: var(--text-dim); margin-left: 1px; }
@@ -19,57 +9,9 @@
    the grabbers. Its --in / --out keyframes carry the translateX(-50%) Tag.tsx relies on. */
 .clampshow-val { z-index: 6; }
 
-/* ── B · labels (Labels.tsx) ── the pad's own corner numbers, moved onto the frame. */
-.clampshow-lab { transition: opacity var(--dur-fast, .12s) var(--ease, ease), color var(--dur-fast, .12s) var(--ease, ease); }
-.clampshow-lab { white-space: nowrap; }
-/* x numbers take the status line's own box (.shape-pad-status: bottom 5px, micro, normal
-   leading), so a pad floored at 100px still holds them whole. No knock-out needed there. */
-.clampshow-lab--x { top: auto; right: auto; bottom: 5px; padding: 0 4px; background: none; line-height: normal; transform: translateX(-50%); }
-.shape-pad-status[data-off] { opacity: 0; }
-.rail[data-clampshow="labels"] .shape-pad-knob { z-index: 2; }   /* a ylab riding the frame never covers the ◆ */
-.clampshow-lab[data-off],
-.shape-pad-ylab.clampshow-static[data-off] { opacity: 0; }
-.shape-pad-ylab.clampshow-static { transition: opacity var(--dur-fast, .12s) var(--ease, ease); }
-.clampshow-lab[data-lit],
-.clampshow-lit[data-lit] { color: var(--signal-acid); }
-.clampshow-lit { transition: color var(--dur-fast, .12s) var(--ease, ease); }
-.clampshow-lab--band { position: absolute; z-index: 3; transform: translateX(-50%); pointer-events: none; }
-.clampshow-lab-px { color: var(--text-dim); }
-
-/* ── C · sample (Sample.tsx) ── the bubble with a glyph in it: same fill, radius, shadow
-   and motion as .matrix-val, a "Cal" at the limit over a micro caption. */
-.clampshow-chip {
-  position: absolute; z-index: 6; transform: translateX(-50%);
-  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 6px;
-  background: var(--surface-hi); border-radius: 5px; box-shadow: 0 1px 4px rgba(0,0,0,.4);
-  color: var(--text); white-space: nowrap; pointer-events: none;
-}
-.clampshow-chip-cal { font-size: var(--type-body-size, 1rem); line-height: 18px; }
-.clampshow-chip-cal--opsz { line-height: 1; }
-/* The band's chip lies flat inside the bar: glyph then number on one line. */
-.clampshow-chip--band { flex-direction: row; align-items: baseline; gap: 4px; padding: 1px 6px; }
 /* A's band value: the bar's own micro type on a knock-out, not a floating pill. */
 .clampshow-bandval {
   position: absolute; z-index: 6; transform: translateX(-50%); padding: 0 4px; border-radius: 4px;
   background: var(--bg); color: var(--text); white-space: nowrap; pointer-events: none;
   font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 16px;
 }
-.clampshow-chip-cap { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 12px; }
-@media (prefers-reduced-motion: reduce) { .clampshow-lab, .clampshow-lit, .shape-pad-ylab.clampshow-static { transition: none; } }
-
-/* ── Section-row tuner (SeamTuner.tsx) ── live padding for .rail-seam while the review pill is
-   up. The custom properties are set inline on .rail by SeamTuner (declared here too, so the
-   token lint sees them; the inline values win). Delete with SeamTuner.tsx. */
-.rail[data-seamtune] { --review-seam-pt: var(--spacing-04, 12px); --review-seam-pb: var(--spacing-03, 8px); --review-seam-gap: 3px; --review-seam-lh: normal; }
-.rail[data-seamtune] .rail-seam { padding-top: var(--review-seam-pt); padding-bottom: var(--review-seam-pb); row-gap: var(--review-seam-gap); }
-.rail[data-seamtune] .rail-seam-lbl, .rail[data-seamtune] .rail-seam-sum, .rail[data-seamtune] .rail-seam-num { line-height: var(--review-seam-lh); }
-.rail[data-seamtune] .rail-seam { row-gap: max(0px, var(--review-seam-gap)); }
-.rail[data-seamtune] .rail-seam-sum { margin-top: min(0px, var(--review-seam-gap)); }
-.clampshow-tune { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 12px; width: 100%; padding-top: 6px; border-top: 1px solid var(--border-subtle); }
-.clampshow-tune-item { display: inline-flex; align-items: center; gap: 4px; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); color: var(--text-dim); }
-.clampshow-tune-lbl { margin-right: 2px; }
-.clampshow-tune-val { min-width: 32px; text-align: center; color: var(--text); }
-.clampshow-tune-val[data-moved] { color: var(--signal-acid); }
-.clampshow-tune button { padding: 2px 6px; border-radius: 4px; background: var(--bg); color: var(--text); font-size: var(--type-micro-size, 0.5625rem); line-height: 12px; cursor: pointer; }
-.clampshow-tune button:disabled { opacity: .38; cursor: default; }
-.clampshow-tune-reset { margin-left: auto; }

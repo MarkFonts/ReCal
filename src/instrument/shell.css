@@ -822,6 +822,8 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .rail-seam-sum {
   grid-column: 2; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   font-size: var(--type-micro-size, 0.5625rem); letter-spacing: 0; color: var(--text-dim);
+  line-height: 9px;   /* Mark, 2026-11-09: the collapsed summary sits tight under its title */
+  padding-block: 2px; margin-block: -2px;   /* room for descenders inside overflow:hidden, at no cost to the row */
 }
 .rail-row { border-top: 1px solid var(--border-subtle); }
 .rail-row:first-child { border-top: 0; }
@@ -894,8 +896,10 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
   background: var(--signal-acid-fill);   /* the knob is the signal on every pad; only the zone label keeps the HDR swatch */
-  box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
+  box-shadow: 0 0 0 3px var(--bg); cursor: grab; touch-action: none;
 }
+.shape-pad-knob::after { content: ''; position: absolute; inset: -4px; border-radius: 50%; }   /* hit area 23px: beats the frame ring and grabbers it sits on */
+.shape-pad[aria-disabled] .shape-pad-knob { pointer-events: none; }
 /* The clamp (clampMath.ts): a dashed frame at rest, solid while anything on the pad is held.
    The frame's hit area is a ring around its edge (clip-path), so the inside still places the
    knob. Grabbers sit at the edge midpoints. Outside the clamp the pad goes under --bg. */

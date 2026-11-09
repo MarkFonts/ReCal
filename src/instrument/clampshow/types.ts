@@ -1,4 +1,4 @@
-// REVIEW-ONLY (clamp-show). What a pad / band hands a clamp-show layer.
+// The clamp readout. What a pad / band hands a clamp-show layer.
 import type { AxisMap } from '../store'
 
 export type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'
