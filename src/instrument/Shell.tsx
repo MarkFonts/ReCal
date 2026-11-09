@@ -858,14 +858,14 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     ? <TryDial label="Size" icon="text_increase" value={size} min={16} max={200} step={1} suffix="px" onChange={v => setSize(v as number)} />
     : null
   // Preview-only optical size. At rest it reads "auto" (the browser follows the type size);
-  // moved, it overrides opsz in the preview text. The range is the preview font's relabeled
-  // axis (stock × Optical scale), inside the export's opsz clamp. A frozen font has no opsz axis, and a compared webfont sets
+  // moved, it overrides opsz in the preview text. The range is in the export's units (stock ×
+  // Optical scale), inside the export's opsz clamp; render.ts turns it back into stock for CSS. A frozen font has no opsz axis, and a compared webfont sets
   // its own, so both disable it. Never baked: it is not in the ◆ layer and buildConfig never reads it.
   const opszLim = effectiveLimits(state.defaults, 'opsz')   // the export's clamp, so AUTO reads what the canvas renders
   const opticalDial = !vmActive ? (
     <TryDial label="Optical size" icon="mystery" value={state.previewOpsz ?? 'auto'}
       min={opszLim[0] * state.defaults.opszMultiplier} max={opszLim[1] * state.defaults.opszMultiplier} step={1}
-      autoValue={opszPreviewForSize(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier, opszLim)}
+      autoValue={opszPreviewForSize(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier, opszLim) * state.defaults.opszMultiplier}
       disabled={state.defaults.freezeOpsz || !!cmp}
       display={state.defaults.freezeOpsz ? String(state.defaults.frozenOpszValue ?? 14) : cmp ? '—' : undefined}
       title={state.defaults.freezeOpsz ? `The font is frozen at ${state.defaults.frozenOpszValue ?? 14}` : cmp ? 'The compared font sets its own optical size' : undefined}
@@ -1254,14 +1254,15 @@ export default function Shell() {
   // opsz FREEZE is applied live via CSS now (opszCss in the scenes) — it no longer
   // needs a Pyodide rebuild. Only the SCALER relabel, threshold (matrix) edits, and
   // auto-ascender still require the worker.
-  const needsRebuild = d.opszMultiplier !== 1 || glyphsEditedCount(state) > 0 || d.autoAscender || d.frozenFeatures.some(t => LOOKUP_FROZEN.test(t))
+  // The Optical scale is not a reason to rebuild: the preview does it in CSS (render.ts).
+  const needsRebuild = glyphsEditedCount(state) > 0 || d.autoAscender || d.frozenFeatures.some(t => LOOKUP_FROZEN.test(t))
   useEffect(() => {
     const t = setTimeout(() => {
-      if (needsRebuild) rebuildPreview({ thresholds: d.glyphThresholds, frozenFeatures: d.frozenFeatures, opszMultiplier: d.opszMultiplier, freezeOpsz: d.freezeOpsz, frozenOpszValue: d.frozenOpszValue, autoAscender: d.autoAscender })
+      if (needsRebuild) rebuildPreview({ thresholds: d.glyphThresholds, frozenFeatures: d.frozenFeatures, opszMultiplier: 1, freezeOpsz: d.freezeOpsz, frozenOpszValue: d.frozenOpszValue, autoAscender: d.autoAscender })
       else clearPreviewFont()
     }, 250)
     return () => clearTimeout(t)
-  }, [needsRebuild, d.opszMultiplier, d.glyphThresholds, d.frozenFeatures, d.freezeOpsz, d.frozenOpszValue, d.autoAscender, state.useHoi, rebuildPreview, clearPreviewFont])
+  }, [needsRebuild, d.glyphThresholds, d.frozenFeatures, d.freezeOpsz, d.frozenOpszValue, d.autoAscender, state.useHoi, rebuildPreview, clearPreviewFont])
 
   // Real Cal Sans italic/bold for the emphasis-bubble labels — same axes renderInline uses.
   const emphItalVs = renderVarSettings({ ...effectiveAxes(state), ital: 1 }, {})

@@ -62,16 +62,17 @@ export function opszForSize(size: number, multiplier: number, min = 8, max = 45)
   return Math.min(Math.max(size / (multiplier || 1), min), max)
 }
 
-// The preview font's opsz axis is relabeled by the Optical scale (see previewFont in the
-// worker), so the Try bar's range is stock min..max times the multiplier.
-export const clampTryOpsz = (v: number, multiplier = 1): number =>
-  Math.min(Math.max(v, 8 * multiplier), 45 * multiplier)
-
-// The preview font's CSS 'opsz' N is in RELABELED space (the worker scales the axis by the
-// multiplier so font-optical-sizing:auto lands on px). A stock-space clamp [lo, hi] therefore
-// becomes [lo × mult, hi × mult], and the size-derived value is just the px itself.
+// The preview font keeps the STOCK opsz axis (8–45): the Optical scale is pure arithmetic in
+// CSS, never a rebuild. A size px under scale m renders at stock opsz px / m, held inside the
+// export's clamp [lo, hi] (stock units). That is exactly what the exported font does at px:
+// its axis is the stock one relabelled ×m, so its opsz px is stock px / m. Changing the scale
+// is therefore instant, and the numbers and the face can never disagree mid-rebuild.
 export const opszPreviewForSize = (px: number, multiplier = 1, limits: [number, number] = [8, 45]): number =>
-  Math.min(Math.max(px, limits[0] * multiplier), limits[1] * multiplier)
+  Math.min(Math.max(px / (multiplier || 1), limits[0]), limits[1])
+
+// The Try bar's opsz is given in the export's units (stock × scale); in stock units for CSS.
+export const clampTryOpsz = (v: number, multiplier = 1, limits: [number, number] = [8, 45]): number =>
+  opszPreviewForSize(v, multiplier, limits)
 
 // Is the export's opsz clamp narrower than the stock axis? Then auto can't be left to the browser.
 export const opszClamped = (limits?: [number, number]): boolean =>
@@ -80,9 +81,10 @@ export const opszClamped = (limits?: [number, number]): boolean =>
 // Resolve opsz for a specimen element WITHOUT re-baking the font. opsz FREEZE is a
 // fixed value applied live via CSS (the browser interpolates the deltas per frame —
 // the ~5s instancer only ever mattered for the static download, never the preview).
-// The SCALER stays baked as a cheap axis relabel, so font-optical-sizing:auto handles
-// per-size mapping for free — unless the export clamps opsz, which auto ignores: then
-// each element resolves clamp(size-derived, lo, hi) itself (needs its rendered size).
+// At scale 1× with the stock range, font-optical-sizing:auto is already right. Under any
+// other scale, or a clamp (which auto ignores), each element sets stock opsz
+// clamp(px / m, lo, hi) itself, from its rendered size. With no size known (the Glyphs grid
+// mixes sizes) it stays on auto: right at 1×, stock sizing otherwise.
 export function opszCss(
   d: { freezeOpsz: boolean; frozenOpszValue: number | null; opszMultiplier?: number },
   opszAuto: boolean,
@@ -95,13 +97,13 @@ export function opszCss(
     return { renderOpts: { opszOverride: v }, optical: 'none' }
   }
   const narrow = opszClamped(clamp.limits)
-  // The Try bar's opsz: preview only, in the relabeled preview font's range (stock × scale),
-  // and inside the clamp — the export cannot render a value outside it.
+  const m = d.opszMultiplier ?? 1
+  // The Try bar's opsz: preview only, given in the export's units (stock × scale), and held
+  // inside the clamp — the export cannot render a value outside it.
   if (tryOpsz !== null) {
-    const v = narrow ? opszPreviewForSize(tryOpsz, d.opszMultiplier, clamp.limits) : clampTryOpsz(tryOpsz, d.opszMultiplier)
-    return { renderOpts: { opszOverride: v }, optical: 'none' }
+    return { renderOpts: { opszOverride: clampTryOpsz(tryOpsz, m, narrow ? clamp.limits : undefined) }, optical: 'none' }
   }
-  if (opszAuto && narrow && clamp.sizePx !== undefined) {
+  if (opszAuto && (narrow || m !== 1) && clamp.sizePx !== undefined) {
     return { renderOpts: { opszOverride: opszPreviewForSize(clamp.sizePx, d.opszMultiplier, clamp.limits) }, optical: 'none' }
   }
   if (opszAuto) return { renderOpts: { skipOpsz: true }, optical: 'auto' }

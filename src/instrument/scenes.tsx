@@ -829,7 +829,7 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   const frozen = state.defaults.freezeOpsz ? Math.min(Math.max(state.defaults.frozenOpszValue ?? 14, 8), 45) : null
   const tryOpsz = livePreviewOpsz(state)
   const opLimits = effectiveLimits(state.defaults, 'opsz')
-  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? (tryOpsz !== null ? clampTryOpsz(tryOpsz, mult) : opszPreviewForSize(px, mult, opLimits)) })
+  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? (tryOpsz !== null ? clampTryOpsz(tryOpsz, mult, opLimits) : opszPreviewForSize(px, mult, opLimits)) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
   const [head, setHead] = useState(HEAD_WORD)
