@@ -40,7 +40,6 @@ const K = {
   preset: 'p',          // the "start from…" entry this began as, for provenance
   limits: 'l',          // prefix: lw=450-650 clamps wght; one key per axis letter, never ital
   frozenAxes: 'fz',     // o.y -- axes baked at their default
-  subsetStrip: 'sx',    // 0 -- keep data the clamps make unreachable
   subsetKeep: 'sk',     // 0 -- drop calt/liga on export
   subsetCharset: 'sc',  // latinx | all
 } as const
@@ -98,7 +97,6 @@ export function encodeDefaults(
     if (l && (l[0] !== r.min || l[1] !== r.max)) p.set(K.limits + AXIS_KEY[tag], `${num(l[0])}-${num(l[1])}`)
   }
   if (d.frozenAxes?.length) p.set(K.frozenAxes, d.frozenAxes.filter(t => AXIS_KEY[t] && t !== 'opsz').map(t => AXIS_KEY[t]).sort().join('.'))   // opsz rides on f
-  if (d.subsetStrip === false) p.set(K.subsetStrip, '0')
   if (d.subsetKeepFeatures === false) p.set(K.subsetKeep, '0')
   if (d.subsetCharset && d.subsetCharset !== 'latin1') p.set(K.subsetCharset, d.subsetCharset)
   if (opts.buildName) p.set(K.name, opts.buildName)
@@ -122,7 +120,6 @@ export interface DecodedState {
   activePreset?: string
   limits?: Limits                                // only the axes the URL clamped
   frozenAxes?: string[]
-  subsetStrip?: boolean
   subsetKeepFeatures?: boolean
   subsetCharset?: DefaultsLayer['subsetCharset']
 }
@@ -193,7 +190,6 @@ export function decodeDefaults(search: string): DecodedState {
     const tags = fz.split('.').map(k => KEY_AXIS[k]).filter(t => t && CLAMPABLE.includes(t))
     if (tags.length) out.frozenAxes = [...new Set(tags)].sort()
   }
-  if (p.get(K.subsetStrip) === '0') out.subsetStrip = false
   if (p.get(K.subsetKeep) === '0') out.subsetKeepFeatures = false
   const sc = p.get(K.subsetCharset)
   if (sc === 'latinx' || sc === 'all') out.subsetCharset = sc
@@ -227,7 +223,7 @@ export function applyUrlState(dispatch: (a: Action) => void, d: DecodedState) {
   for (const tag of d.frozenFeatures ?? []) dispatch({ type: 'toggleFrozenFeature', tag })
   for (const tag of d.frozenAxes ?? []) dispatch({ type: 'setFrozenAxis', tag, frozen: true })
   const subset: [SubsetOpt, boolean | string | undefined][] =
-    [['subsetStrip', d.subsetStrip], ['subsetKeepFeatures', d.subsetKeepFeatures], ['subsetCharset', d.subsetCharset]]
+    [['subsetKeepFeatures', d.subsetKeepFeatures], ['subsetCharset', d.subsetCharset]]
   for (const [key, value] of subset) if (value !== undefined) dispatch({ type: 'setSubsetOpt', key, value })
   const vm = d.vmetricsPreset && presetById(d.vmetricsPreset)
   if (vm) dispatch({ type: 'setVMetrics', value: { preset: vm.id, ...vm.metrics } })

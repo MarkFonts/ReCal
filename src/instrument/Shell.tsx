@@ -8,7 +8,7 @@ import { useInstrument } from './InstrumentProvider'
 import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   AlignmentButtons, FittingControls, fittingMode, FLATTERSATZ_DEFAULTS,
   type FitOptions, Chevron, AccentButton, Icon, ThemeSwitch, bootTheme } from '../../shared/index' // wm-primitives (git submodule)
-import {
+import { effectiveLimits,
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
 } from './store'
@@ -992,7 +992,7 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
   const [expanded, setExpanded] = useState(false)
   const [statics, setStatics] = useState(false)
   const footRef = useRef<HTMLDivElement>(null)
-  const { min: wMin, max: wMax } = AXIS_RANGES.wght
+  const [wMin, wMax] = effectiveLimits(state.defaults, 'wght')   // the weight range the export keeps
   const family = (state.buildName || 'ReCal Sans').trim() || 'ReCal Sans'
 
   // The exact export config for the current ◆ (deterministic → cacheable). Kept in a
@@ -1008,6 +1008,10 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
       thresholds: d.glyphThresholds,
       frozenFeatures: d.frozenFeatures,
       vmetrics: d.vmetrics,
+      limits: Object.fromEntries(Object.keys(d.axes).filter(t => t !== 'ital').map(t => [t, effectiveLimits(d, t)])),
+      frozenAxes: d.frozenAxes,
+      subsetKeepFeatures: d.subsetKeepFeatures,
+      subsetCharset: d.subsetCharset,
       familyName: family,
     }
   }

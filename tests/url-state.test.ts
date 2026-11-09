@@ -15,13 +15,13 @@ test('an untouched instrument serialises to the empty string', () => {
 })
 
 test('clamps, frozen axes, and subset options round-trip exactly', () => {
-  const q = 'g=60&lw=450-650&lg=40-80&fz=o.y&sx=0&sk=0&sc=all'
+  const q = 'g=60&lw=450-650&lg=40-80&fz=o.y&sk=0&sc=all'
   const s = play(q)
   assert.deepEqual(s.defaults.limits.wght, [450, 650])
   assert.deepEqual(s.defaults.limits.GEOM, [40, 80])
   assert.deepEqual(s.defaults.frozenAxes, ['YTAS'])
   assert.equal(s.defaults.freezeOpsz, true)   // opsz freezes through its own flag
-  assert.equal(s.defaults.subsetStrip, false)
+  assert.equal(s.defaults.subsetKeepFeatures, false)
   assert.equal(s.defaults.subsetCharset, 'all')
   const again = play(enc(s))
   assert.deepEqual(again.defaults, s.defaults)

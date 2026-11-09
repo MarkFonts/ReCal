@@ -49,10 +49,6 @@ export function Subset({ note, onNote, blocked }: { note: boolean; onNote: () =>
 
       <div className="subset-title">Data optimization</div>
       <label className="rail-toggle">
-        <input type="checkbox" checked={d.subsetStrip} onChange={e => dispatch({ type: 'setSubsetOpt', key: 'subsetStrip', value: e.target.checked })} />
-        Strip data inaccessible via limits
-      </label>
-      <label className="rail-toggle">
         <input type="checkbox" checked={d.subsetKeepFeatures} onChange={e => dispatch({ type: 'setSubsetOpt', key: 'subsetKeepFeatures', value: e.target.checked })} />
         Retain OpenType layout features <span className="subset-tag">calt, liga</span>
       </label>
@@ -66,7 +62,7 @@ export function Subset({ note, onNote, blocked }: { note: boolean; onNote: () =>
           <Chevron dir={-1} width={12} height={7} />
         </span>
       </label>
-      <p className="rail-help">The export keeps only what the clamps and this list reach. Nothing here changes the preview.</p>
+      <p className="rail-help">The export keeps only what the clamps and this list reach: outlines outside a clamp go. Nothing here changes the preview.</p>
     </>
   )
 }

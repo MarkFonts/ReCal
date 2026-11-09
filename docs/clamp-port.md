@@ -36,7 +36,7 @@ New fields on `DefaultsLayer` (add to `cloneDefaults`, `createInitialState` l.10
 ```ts
 limits: Record<string, [number, number]>   // per axis; stock = [AXIS_RANGES.min, max]
 frozenAxes: string[]                       // sorted tags; ital never appears
-subsetStrip: boolean                       // proto "Strip data inaccessible via limits", default true
+// (the prototype's "Strip data inaccessible via limits" was dropped in step 7: L4 instancing always drops what lies outside a clamp, so the option could never be off)
 subsetKeepFeatures: boolean                // default true
 subsetCharset: 'latin1' | 'latinx' | 'all' // default 'latin1' (proto:310; confirm with Mark)
 ```

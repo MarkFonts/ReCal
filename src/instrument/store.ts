@@ -41,12 +41,11 @@ export interface DefaultsLayer {
   vmetrics: VMetrics                            // ◆ OS/2 + hhea vertical metrics (baked on export)
   limits: Limits                                // ◆ per-axis clamp [lo, hi], in axis units (fvar range on export)
   frozenAxes: string[]                          // ◆ axes baked at their default (clamp reads as a point); never ital
-  subsetStrip: boolean                          // ◆ export: strip data unreachable within the clamps
   subsetKeepFeatures: boolean                   // ◆ export: keep calt/liga
   subsetCharset: 'latin1' | 'latinx' | 'all'    // ◆ export: character set
 }
 
-export type SubsetOpt = 'subsetStrip' | 'subsetKeepFeatures' | 'subsetCharset'
+export type SubsetOpt = 'subsetKeepFeatures' | 'subsetCharset'
 
 export const stockLimits = (): Limits =>
   Object.fromEntries(Object.entries(AXIS_RANGES).map(([t, r]) => [t, [r.min, r.max]]))
@@ -110,7 +109,7 @@ const stockSection = (s: InstrumentState, sec: Section): DefaultsLayer => {
     case 'matrix': d.glyphThresholds = cloneThresholds(s.shippedThresholds); break
     case 'freezer': d.frozenFeatures = []; break
     case 'vmetrics': d.vmetrics = cloneVMetrics(DEFAULT_VMETRICS); break
-    case 'subset': d.frozenAxes = []; d.subsetStrip = true; d.subsetKeepFeatures = true; d.subsetCharset = 'latin1'; break
+    case 'subset': d.frozenAxes = []; d.subsetKeepFeatures = true; d.subsetCharset = 'latin1'; break
   }
   return d
 }
@@ -138,7 +137,6 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
       vmetrics: cloneVMetrics(DEFAULT_VMETRICS),
       limits: stockLimits(),
       frozenAxes: [],
-      subsetStrip: true,
       subsetKeepFeatures: true,
       subsetCharset: 'latin1',
     },
@@ -209,7 +207,7 @@ export const defaultsDirty = (s: InstrumentState): boolean =>
   s.defaults.vmetrics.preset !== DEFAULT_VMETRICS.preset ||
   JSON.stringify(s.defaults.limits) !== JSON.stringify(stockLimits()) ||
   s.defaults.frozenAxes.length > 0 ||
-  !s.defaults.subsetStrip || !s.defaults.subsetKeepFeatures || s.defaults.subsetCharset !== 'latin1' ||
+  !s.defaults.subsetKeepFeatures || s.defaults.subsetCharset !== 'latin1' ||
   s.activePreset !== null
 
 // ── Actions / reducer ───────────────────────────────────────────────────────────
