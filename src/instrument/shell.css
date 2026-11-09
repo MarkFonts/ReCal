@@ -864,6 +864,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    pad sets --pad-top and its own height. Shape: GEOM × weight. Ascender & Sharpness: SHRP × YTAS. */
 .shape-pad {
   --pad-top: 42px; --zone-flat: var(--marker-default);   /* a pad with no zones has a plain knob */
+  --pad-h: 198px; --pad-max: 9999px;   /* resting values; ShapePad.tsx sets --pad-h inline, Shell.tsx measures --pad-max onto .rail */
   position: relative; border-radius: var(--radius); background: var(--bg);
   /* --pad-h is the pad's own height (ShapePad.tsx); --pad-max is what the rail can spare (Shell.tsx measures it), floored so the lattice stays usable */
   height: min(var(--pad-h, 198px), max(100px, var(--pad-max, 9999px)));
@@ -937,7 +938,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    a 4px pill, 4px off the bar's top and bottom, kept 6px INSIDE the clamp's edge the way the
    grip sits 6px inside the fill's end. So at the axis minimum it sits 6px in from the bar's
    corner, never on it, and the two grabbers and the ◆ grip read as three of one thing. */
-.clamp-slider { position: relative; }
+.clamp-slider { position: relative; --lo: 0%; --hi: 100%; }   /* ClampSlider.tsx sets both inline */
 .clamp-slider-dim { position: absolute; top: 0; bottom: 0; z-index: 2; pointer-events: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
 .clamp-slider-dim--lo { left: 0; width: var(--lo); border-radius: var(--radius) 0 0 var(--radius); }
 .clamp-slider-dim--hi { left: var(--hi); right: 0; border-radius: 0 var(--radius) var(--radius) 0; }
