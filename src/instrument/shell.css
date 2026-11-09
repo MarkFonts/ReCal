@@ -892,6 +892,38 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   background: var(--signal-acid-fill);   /* the knob is the signal on every pad; only the zone label keeps the HDR swatch */
   box-shadow: 0 0 0 3px var(--bg); pointer-events: none;
 }
+/* The clamp (clampMath.ts): a dashed frame at rest, solid while anything on the pad is held.
+   The frame's hit area is a ring around its edge (clip-path), so the inside still places the
+   knob. Grabbers sit at the edge midpoints. Outside the clamp the pad goes under --bg. */
+.shape-pad-dim { position: absolute; pointer-events: none; background: color-mix(in srgb, var(--bg) 62%, transparent); }
+.shape-pad-box { position: absolute; box-sizing: border-box; border: 1.5px dashed var(--text-dim); border-radius: 6px; pointer-events: none; transition: border-color var(--dur-fast, .12s) var(--ease, ease); }
+.shape-pad[data-held] .shape-pad-box { border-style: solid; border-color: var(--text); }
+.shape-pad-frame { position: absolute; cursor: move; clip-path: polygon(evenodd, 0 0, 100% 0, 100% 100%, 0 100%, 0 0, 8px 8px, 8px calc(100% - 8px), calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) 8px, 8px 8px); }
+.shape-pad-grab {
+  position: absolute; transform: translate(-50%, -50%); border-radius: var(--radius-pill);
+  background: var(--text-muted); cursor: grab; touch-action: none;
+  transition: background-color var(--dur-fast, .12s) var(--ease, ease);
+}
+.shape-pad-grab--h { width: 28px; height: 10px; cursor: ns-resize; }
+.shape-pad-grab--v { width: 10px; height: 28px; cursor: ew-resize; }
+.shape-pad-grab::after { content: ''; position: absolute; inset: -8px; }   /* the hit area, 26 / 44px */
+.shape-pad-grab::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border-radius: 1px; }
+.shape-pad-grab--h::before { width: 10px; height: 2px; }
+.shape-pad-grab--v::before { width: 2px; height: 10px; }
+.shape-pad-grab:hover, .shape-pad-grab[data-held] { background: var(--signal-acid-fill); }
+.shape-pad-grab:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+.shape-pad[aria-disabled="true"] { opacity: .4; cursor: default; }
+.shape-pad-col[data-out] { opacity: .35; }
+.shape-pad-status {
+  position: absolute; left: 0; right: 0; bottom: 5px; text-align: center; pointer-events: none;
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
+  color: var(--text-dim); transition: color var(--dur-fast, .12s) var(--ease, ease);
+}
+.shape-pad[data-held] .shape-pad-status { color: var(--text); }
+.shape-readout-lim { font-style: normal; color: var(--text-dim); margin-left: 6px; font-size: var(--type-micro-size, 0.5625rem); }
+@media (pointer: coarse) { .shape-pad-grab::after { inset: -17px; } }
+@media (prefers-reduced-motion: reduce) { .shape-pad-box, .shape-pad-grab, .shape-pad-status { transition: none; } }
+
 .shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
 .shape-readout > div {
   display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; white-space: nowrap;
