@@ -12,6 +12,7 @@
 /* ── Rail — the font mutator (◆ file layer) ── */
 .rail {
   grid-area: rail;
+  --pad-max: 9999px;   /* resting value: Shell.tsx measures the real one onto this element inline, the pads read it (.shape-pad) */
   border-right: 1px solid transparent;   /* no rule between the rail and the canvas; the box keeps its width */
   background: var(--surface);
   /* No vertical padding: it lives on the header (below) so the sticky seams pin flush
@@ -864,7 +865,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    pad sets --pad-top and its own height. Shape: GEOM × weight. Ascender & Sharpness: SHRP × YTAS. */
 .shape-pad {
   --pad-top: 42px; --zone-flat: var(--marker-default);   /* a pad with no zones has a plain knob */
-  --pad-h: 198px; --pad-max: 9999px;   /* resting values; ShapePad.tsx sets --pad-h inline, Shell.tsx measures --pad-max onto .rail */
+  --pad-h: 198px;   /* resting value; ShapePad.tsx sets it inline. --pad-max is declared on .rail (below the .rail rule), NOT here: declared on the pad it shadowed the value Shell.tsx measures onto .rail, and the pad never shrank */
   position: relative; border-radius: var(--radius); background: var(--bg);
   /* --pad-h is the pad's own height (ShapePad.tsx); --pad-max is what the rail can spare (Shell.tsx measures it), floored so the lattice stays usable */
   height: min(var(--pad-h, 198px), max(100px, var(--pad-max, 9999px)));

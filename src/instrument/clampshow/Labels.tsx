@@ -29,7 +29,7 @@ export function PadLabels({ v, show }: { v: PadView; show: Show | null }) {
   const xOn = on && !v.x.frozen && (m.xlo || m.xhi)
   const refs = useRef<(HTMLSpanElement | null)[]>([])
   // Place the four numbers in px: y ones centred on their edge (the high one lifted if the two
-  // would touch); x ones in the pad's bottom gutter (the status line steps aside for them),
+  // would touch); x ones exactly in the status line's box (bottom 5px, its type; the status steps aside),
   // centred under their edge, kept inside the pad and pushed apart if they meet.
   useLayoutEffect(() => {
     const [yl, yh, xl, xh] = refs.current
@@ -42,7 +42,7 @@ export function PadLabels({ v, show }: { v: PadView; show: Show | null }) {
     let ch = Math.max(wh / 2 + 2, Math.min(v.W - wh / 2 - 2, v.px(v.x.lim[1])))
     const gap = (ch - wh / 2) - (cl + wl / 2) - 6
     if (gap < 0) { cl += gap / 2; ch -= gap / 2 }
-    for (const [el, c] of [[xl, cl], [xh, ch]] as const) { el.style.left = `${c}px`; el.style.top = `${v.H - 15}px` }
+    for (const [el, c] of [[xl, cl], [xh, ch]] as const) { el.style.left = `${c}px`; el.style.top = '' }   // vertical: the status line's box, in CSS
   })
   const xNum = (val: number) => v.zone
     ? <><span style={{ color: chipColor(v.zone(val)) }}>{v.zone(val)}</span> {val}</>

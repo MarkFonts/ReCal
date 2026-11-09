@@ -5,7 +5,7 @@
 // corners, the lightest-most-humanist and the heaviest-most-geometric the range now allows.
 // Same placement and in/out motion as the matrix bubble; the chip is the bubble with a glyph.
 import type { CSSProperties } from 'react'
-import { OpszValue, Tag } from './Tag'
+import { BandTag, OpszValue, Tag, bandX } from './Tag'
 import type { Place } from './Tag'
 import { renderVarSettings } from '../render'
 import { chipColor } from '../geomAxis'
@@ -51,16 +51,19 @@ export function PadSample({ v, show }: { v: PadView; show: Show }) {
   ))}</>
 }
 
-// The opsz band: "Cal" at the optical size the limit lands on, set AT that size (capped so a
-// display size fits the chip). In the stock face opsz N is the preview face's N × scale.
+// The opsz band: a flat chip INSIDE the bar beside its grabber ("Cal" at the limit's optical
+// size, then its number), or below the bar when the grabbers are too close; never above, where
+// the stepper is. The "Cal" is set at the size the limit lands at, capped to the bar's height,
+// so small sizes are honest and display sizes show their form, not their scale. In the stock
+// face opsz N is the preview face's N × scale.
 export function BandSample({ b, side, show }: { b: BandView; side: 'lo' | 'hi'; show: Show }) {
   const v = b.lim[side === 'lo' ? 0 : 1]
-  const px = v * b.mult
-  const x = b.W * ((v - b.min) / (b.max - b.min)) + (side === 'lo' ? 8 : -8)
+  const o = side === 'lo' ? 'hi' : 'lo'
   return (
-    <Tag x={x} y={0} place="above" W={b.W} H={0} clampY={false} className={cls(show)}>
-      <span className="clampshow-chip-cal clampshow-chip-cal--opsz" style={{ ...calStyle(b.axes, v), fontSize: `${Math.max(10, Math.min(32, px))}px` }}>Cal</span>
+    <BandTag x={bandX(b, v, side)} other={bandX(b, b.lim[o === 'lo' ? 0 : 1], o)} side={side} W={b.W} H={b.H}
+      className={`clampshow-chip clampshow-chip--band ${show.fading ? 'matrix-val--out' : 'matrix-val--in'}`}>
+      <span className="clampshow-chip-cal clampshow-chip-cal--opsz" style={{ ...calStyle(b.axes, v), fontSize: `${Math.max(9, Math.min(14, v * b.mult))}px` }}>Cal</span>
       <span className="clampshow-chip-cap"><OpszValue v={v} mult={b.mult} /></span>
-    </Tag>
+    </BandTag>
   )
 }

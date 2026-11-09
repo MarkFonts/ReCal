@@ -4,6 +4,7 @@
 // Nothing here is in flow, so a drag never reflows the pad.
 import { useLayoutEffect, useRef } from 'react'
 import type { CSSProperties, ReactNode } from 'react'
+import type { BandView } from './types'
 
 export type Place = 'above' | 'below' | 'left' | 'right'
 const GAP = 4
@@ -39,3 +40,34 @@ export const OpszValue = ({ v, mult }: { v: number; mult: number }) => <>
   <span className="clampshow-val-tag">opsz</span><span className="tnum">{v}</span>
   {mult > 1 && <><span className="clampshow-val-sep">·</span><span className="tnum">{v * mult}</span><span className="clampshow-val-unit">px</span></>}
 </>
+
+/** The opsz band's tag: INSIDE the bar, beside its grabber (right of lo, left of hi), centred
+ *  on the bar's height; on the grabber's far side when the two grabbers are close; BELOW the
+ *  bar only when both sides are crowded. Never above: the Optical scale stepper and
+ *  its head live there. `x` / `other` are the two grabbers' centres in px. */
+export function BandTag({ x, other, side, W, H, className, children }: {
+  x: number; other: number; side: 'lo' | 'hi'; W: number; H: number; className: string; children: ReactNode
+}) {
+  const ref = useRef<HTMLSpanElement>(null)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const w = el.offsetWidth, h = el.offsetHeight, G = 8   // 8: clear of the grabber's widened 6px pill
+    // 1. inside the clamp, beside the grabber; 2. outside it, on the grabber's far side (the
+    // grabbers are close); 3. below the bar (both are crowded, e.g. a point clamp at an end).
+    const inner = side === 'lo' ? x + G : x - G - w
+    const innerFits = side === 'lo' ? inner + w <= Math.min(W - 4, other - G) : inner >= Math.max(4, other + G)
+    const outer = side === 'lo' ? x - G - w : x + G
+    const outerFits = side === 'lo' ? outer >= 4 : outer + w <= W - 4
+    let cx: number, top: number
+    if (h <= H && (innerFits || outerFits)) { cx = (innerFits ? inner : outer) + w / 2; top = (H - h) / 2 }
+    else { cx = Math.max(w / 2 + 2, Math.min(W - w / 2 - 2, x)); top = H + 2 }
+    el.style.left = `${cx}px`
+    el.style.top = `${top}px`
+  })
+  return <span ref={ref} className={className} aria-hidden="true">{children}</span>
+}
+
+/** A band grabber's centre in px (the grabbers sit 6px inside the clamp's edge, 4px wide). */
+export const bandX = (b: BandView, v: number, side: 'lo' | 'hi') =>
+  b.W * ((v - b.min) / (b.max - b.min)) + (side === 'lo' ? 8 : -8)

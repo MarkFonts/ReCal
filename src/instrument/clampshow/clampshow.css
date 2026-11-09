@@ -22,7 +22,9 @@
 /* ── B · labels (Labels.tsx) ── the pad's own corner numbers, moved onto the frame. */
 .clampshow-lab { transition: opacity var(--dur-fast, .12s) var(--ease, ease), color var(--dur-fast, .12s) var(--ease, ease); }
 .clampshow-lab { white-space: nowrap; }
-.clampshow-lab--x { right: auto; padding: 0 4px; transform: translateX(-50%); }
+/* x numbers take the status line's own box (.shape-pad-status: bottom 5px, micro, normal
+   leading), so a pad floored at 100px still holds them whole. No knock-out needed there. */
+.clampshow-lab--x { top: auto; right: auto; bottom: 5px; padding: 0 4px; background: none; line-height: normal; transform: translateX(-50%); }
 .shape-pad-status[data-off] { opacity: 0; }
 .rail[data-clampshow="labels"] .shape-pad-knob { z-index: 2; }   /* a ylab riding the frame never covers the ◆ */
 .clampshow-lab[data-off],
@@ -44,5 +46,13 @@
 }
 .clampshow-chip-cal { font-size: var(--type-body-size, 1rem); line-height: 18px; }
 .clampshow-chip-cal--opsz { line-height: 1; }
+/* The band's chip lies flat inside the bar: glyph then number on one line. */
+.clampshow-chip--band { flex-direction: row; align-items: baseline; gap: 4px; padding: 1px 6px; }
+/* A's band value: the bar's own micro type on a knock-out, not a floating pill. */
+.clampshow-bandval {
+  position: absolute; z-index: 6; transform: translateX(-50%); padding: 0 4px; border-radius: 4px;
+  background: var(--bg); color: var(--text); white-space: nowrap; pointer-events: none;
+  font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 16px;
+}
 .clampshow-chip-cap { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); line-height: 12px; }
 @media (prefers-reduced-motion: reduce) { .clampshow-lab, .clampshow-lit, .shape-pad-ylab.clampshow-static { transition: none; } }

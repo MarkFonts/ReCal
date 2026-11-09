@@ -2,7 +2,7 @@
 // value bubble (.matrix-val, --in while held, --out on release). A side edge's bubble sits
 // above its grabber, a top / bottom edge's beside it; a corner shows both numbers; a frame
 // slide shows the two far corners (low-low and high-high), the whole range in two bubbles.
-import { OpszValue, Tag } from './Tag'
+import { BandTag, OpszValue, Tag, bandX } from './Tag'
 import type { Place } from './Tag'
 import { moving } from './types'
 import type { BandView, PadView, Show } from './types'
@@ -27,14 +27,16 @@ export function PadBubble({ v, show }: { v: PadView; show: Show }) {
   return <>{tags.map(t => <Tag key={t.k} x={t.ax} y={t.ay} place={t.place} W={v.W} H={v.H} className={cls(show)}>{t.body}</Tag>)}</>
 }
 
-// The opsz band: the bubble stands above the grabber, over the stepper (OpszValue: the
-// slider's own number, plus the px it lands at under the Optical scale).
+// The opsz band: the value sits INSIDE the bar beside its grabber, in the bar's own micro
+// type on a knock-out (BandTag; below the bar if the grabbers are too close). OpszValue: the
+// slider's own number, plus the px it lands at under the Optical scale.
 export function BandBubble({ b, side, show }: { b: BandView; side: 'lo' | 'hi'; show: Show }) {
   const v = b.lim[side === 'lo' ? 0 : 1]
-  const x = b.W * ((v - b.min) / (b.max - b.min)) + (side === 'lo' ? 8 : -8)
+  const o = side === 'lo' ? 'hi' : 'lo'
   return (
-    <Tag x={x} y={0} place="above" W={b.W} H={0} clampY={false} className={cls(show)}>
+    <BandTag x={bandX(b, v, side)} other={bandX(b, b.lim[o === 'lo' ? 0 : 1], o)} side={side} W={b.W} H={b.H}
+      className={`clampshow-bandval ${show.fading ? 'matrix-val--out' : 'matrix-val--in'}`}>
       <OpszValue v={v} mult={b.mult} />
-    </Tag>
+    </BandTag>
   )
 }
