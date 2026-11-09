@@ -864,7 +864,9 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
    pad sets --pad-top and its own height. Shape: GEOM × weight. Ascender & Sharpness: SHRP × YTAS. */
 .shape-pad {
   --pad-top: 42px; --zone-flat: var(--marker-default);   /* a pad with no zones has a plain knob */
-  position: relative; height: 198px; border-radius: var(--radius); background: var(--bg);
+  position: relative; border-radius: var(--radius); background: var(--bg);
+  /* --pad-h is the pad's own height (ShapePad.tsx); --pad-max is what the rail can spare (Shell.tsx measures it), floored so the lattice stays usable */
+  height: min(var(--pad-h, 198px), max(100px, var(--pad-max, 9999px)));
   cursor: crosshair; touch-action: none; user-select: none; overflow: hidden;
 }
 .shape-pad:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
@@ -885,7 +887,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .shape-pad [data-zone="Geo"]  { --zone-flat: var(--zone-geo-chip);   --zone-hdr: var(--zone-hdr-geo); }
 /* One number style for every GEOM / weight figure on the pad and the matrix rulers. */
 .geom-num { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); color: var(--text-dim); font-variant-numeric: tabular-nums; line-height: 12px; }
-.shape-pad-ylab { position: absolute; right: 9px; pointer-events: none; }
+.shape-pad-ylab { position: absolute; right: 7px; padding: 0 2px; z-index: 1; background: var(--bg); pointer-events: none; }   /* knocks the clamp frame out behind the number */
 .shape-pad-ylab--off { opacity: .38; }   /* the axis is locked (Auto ascender) */
 .shape-pad-knob {
   position: absolute; width: 15px; height: 15px; transform: translate(-50%, -50%); border-radius: 50%;
@@ -906,6 +908,8 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 }
 .shape-pad-grab--h { width: 28px; height: 10px; cursor: ns-resize; }
 .shape-pad-grab--v { width: 10px; height: 28px; cursor: ew-resize; }
+.shape-pad-grab--c { width: 12px; height: 12px; }   /* a corner: both axes at once */
+.shape-pad-grab--c::before { display: none; }
 .shape-pad-grab::after { content: ''; position: absolute; inset: -8px; }   /* the hit area, 26 / 44px */
 .shape-pad-grab::before { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: var(--bg); border-radius: 1px; }
 .shape-pad-grab--h::before { width: 10px; height: 2px; }

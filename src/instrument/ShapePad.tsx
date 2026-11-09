@@ -33,7 +33,7 @@ interface PadAxis { tag: string; nudge: number; big: number }
 
 // What a pointer is holding: the knob (set the ◆), one clamp edge (set a limit, pushing the ◆
 // if it must), or the frame (slide the whole clamp, the ◆ rides inside). One undo grain each.
-type Side = 'left' | 'right' | 'top' | 'bottom'
+type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'   // the last four: a corner, both axes at once
 type Drag = { kind: 'knob' | 'edge' | 'box'; side?: Side; pushed: boolean; x0: number; y0: number; rect: DOMRect; lx: [number, number]; ly: [number, number] }
 const STATUS_IDLE = 'Drag edges to clamp axes'
 
@@ -81,7 +81,10 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
       if (py !== yv) setY(py)
     } else if (d.kind === 'edge') {
       pushOnce()
-      if (d.side === 'left' || d.side === 'right')
+      if (d.side!.length === 2) {   // corner: x and y edges together
+        if (!fx) dispatch({ type: 'setLimit', tag: x.tag, side: d.side![1] === 'l' ? 'lo' : 'hi', value: xFrom(e.clientX, r) })
+        if (!fy) dispatch({ type: 'setLimit', tag: y.tag, side: d.side![0] === 'b' ? 'lo' : 'hi', value: yFrom(e.clientY, r) })
+      } else if (d.side === 'left' || d.side === 'right')
         dispatch({ type: 'setLimit', tag: x.tag, side: d.side === 'left' ? 'lo' : 'hi', value: xFrom(e.clientX, r) })
       else
         dispatch({ type: 'setLimit', tag: y.tag, side: d.side === 'bottom' ? 'lo' : 'hi', value: yFrom(e.clientY, r) })
@@ -155,6 +158,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     : !held ? STATUS_IDLE
     : held.kind === 'knob' ? 'Setting the default'
     : held.kind === 'box' ? 'Moving the range'
+    : held.side!.length === 2 ? `Clamping ${tag(x)} ${held.side![1] === 'r' ? 'max' : 'min'} · ${tag(y)} ${held.side![0] === 't' ? 'max' : 'min'}`
     : `Clamping ${held.side === 'left' || held.side === 'right' ? tag(x) : tag(y)} ${held.side === 'right' || held.side === 'top' ? 'max' : 'min'}`
   const lim = (a: PadAxis, l: [number, number], frozen: boolean) => {
     const r = AXIS_RANGES[a.tag]
@@ -178,10 +182,17 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     )
   }
 
+  const corner = (side: 'tl' | 'tr' | 'bl' | 'br') => (
+    <div key={side} className="shape-pad-grab shape-pad-grab--c"
+      style={{ left: axisLeft(side[1] === 'l' ? lx[0] : lx[1], xMin, xMax), top: yTop(side[0] === 't' ? ly[1] : ly[0]) }}
+      aria-hidden="true" data-held={held?.kind === 'edge' && held.side === side ? '' : undefined}
+      {...handle('edge', side)} />
+  )
+
   return (
     <>
       <div ref={padRef} className="shape-pad" tabIndex={0} role="group"
-        style={{ height, '--pad-top': `${top}px` } as CSSProperties}
+        style={{ '--pad-h': `${height}px`, '--pad-top': `${top}px` } as CSSProperties}
         aria-label={`${ariaLabel}. Arrow keys nudge.`}
         aria-disabled={dead || undefined}
         data-held={held?.kind}
@@ -208,6 +219,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         {!fx && grabber('right')}
         {!fy && grabber('top')}
         {!fy && grabber('bottom')}
+        {!fx && !fy && (['tl', 'tr', 'bl', 'br'] as const).map(corner)}
         <div className="shape-pad-knob" data-zone={knobZone} style={{ left: axisLeft(xv, xMin, xMax), top: yTop(yv) }} />
         <span className="shape-pad-status" aria-live="polite">{status}</span>
       </div>

@@ -185,10 +185,24 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
       let bottom = foot.offsetHeight
       rows[open].style.setProperty('--pin-top', `${top}px`)   // the open row's own header sticks below the rows above it
       for (let i = rows.length - 1; i > open; i--) { rows[i].style.setProperty('--pin-bottom', `${bottom}px`); bottom += rows[i].offsetHeight }
+      // The open row's pad takes what is left once everything else is on screen, so the
+      // rail fits a short window without scrolling the readouts under the pinned rows.
+      // Summed from the rail's children (scrollHeight would read as the viewport once the
+      // content is shorter than it); the pad's own height is added back, so it is stable.
+      const pad = rows[open].querySelector<HTMLElement>('.shape-pad')
+      if (pad) {
+        const px = (v: string) => parseFloat(v) || 0
+        const kids = (Array.from(rail.children) as HTMLElement[]).filter(k => getComputedStyle(k).display !== 'none')
+        // bottom margins only: the footer's `margin-top: auto` computes to whatever space is spare, which is the number being looked for
+        const need = kids.reduce((n, k) => n + k.offsetHeight + px(getComputedStyle(k).marginBottom), 0)
+          + px(getComputedStyle(rail).rowGap) * (kids.length - 1)
+        rail.style.setProperty('--pad-max', `${rail.clientHeight - need + pad.offsetHeight}px`)
+      }
     }
     apply()
     const ro = new ResizeObserver(apply)
     ro.observe(foot)
+    ro.observe(rail)
     rows.forEach((r, i) => { if (i !== open) ro.observe(r) })
     return () => ro.disconnect()
   }, [open, collapsed])
