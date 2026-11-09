@@ -8,8 +8,8 @@ import { useState, useEffect, useLayoutEffect, useMemo, useCallback, useRef, laz
 import { useInstrument } from './InstrumentProvider'
 import { Icon, placeCaretAtStart, placeCaretAtEnd, placeCaretAtOffset, caretCharOffset, splitInlineMarkup, isPlainRun, EditableTextBlock, GlyphPicker, measureGlyphMetrics, FittedParagraph, fitOptionsFor, PARA_STYLE_DEFAULTS, PARA_STYLE_ORDER, PARA_STYLE_LABEL, loadSpecimen, specimenChunks, SpecimenNav, type ParaStyleBase, type ParaStyleKey, type FitOptions, type GlyphPickerGroup, type GlyphPickerMetrics, type GlyphCellState } from '../../shared/index' // wm-primitives
 import { useIosFocusGuardRef } from '../useIosFocusGuardRef'
-import { effectiveAxes, effectiveThresholds, livePreviewOpsz } from './store'
-import { renderVarSettings, opszForSize, opszCss, clampTryOpsz, compareStyle } from './render'
+import { effectiveAxes, effectiveLimits, effectiveThresholds, livePreviewOpsz } from './store'
+import { renderVarSettings, opszPreviewForSize, opszCss, clampTryOpsz, compareStyle } from './render'
 import { GLYPH_SETS, GLYPH_SET_KEYS, parseCmapRanges, isSupported, allGlyphsWithAlternates, type CmapRanges, type GlyphCell } from './glyphset'
 import { GROUP_DEFS } from '../GlyphGroups'
 import { GRID_SWAPS } from './rcltSwaps'
@@ -536,7 +536,7 @@ function EditableText({ value, onCommit, className, style, boldVs, italVs, flash
 
 function Words({ size, ls, leading, featStr }: SceneProps) {
   const { state } = useInstrument()
-  const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state))
+  const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state), { sizePx: size, limits: effectiveLimits(state.defaults, 'opsz') })
   const vs = renderVarSettings(effectiveAxes(state), op.renderOpts)
   // Words/Scale only swap for a live webfont; static-SVG referents render only their
   // Paragraph specimen, so here they fall back to Cal Sans.
@@ -635,9 +635,9 @@ function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: Sce
   const { state } = useInstrument()
   const guardRef = useIosFocusGuardRef<HTMLDivElement>()
   const axes = effectiveAxes(state)
-  const op = opszCss(state.defaults, true, 14, livePreviewOpsz(state))
-  const boldVs = renderVarSettings({ ...axes, wght: 700 }, op.renderOpts)
-  const italVs = renderVarSettings({ ...axes, ital: 1 }, op.renderOpts)
+  const opLimits = effectiveLimits(state.defaults, 'opsz')
+  // opsz resolves per block (headings and body differ in size) once the export clamps it.
+  const opFor = (sizePx: number) => opszCss(state.defaults, true, 14, livePreviewOpsz(state), { sizePx, limits: opLimits })
   // Comparing to a referent with a live webfont → restyle the blocks (compareStyle).
   // Comparing to a no-webfont referent with a static specimen → show the SVG instead.
   const cmp = state.compareOn && state.compare?.css ? state.compare : null
@@ -755,7 +755,10 @@ function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: Sce
       <div ref={guardRef} className="para-doc" style={{ maxWidth: `${measure}em`, fontSize: paraStyles.p.size }}>
         {blocks.map((b, i) => {
           const st = paraStyles[b.type]
+          const op = opFor(st.size)
           const blockVs = renderVarSettings({ ...axes, wght: st.wght }, op.renderOpts)
+          const boldVs = renderVarSettings({ ...axes, wght: 700 }, op.renderOpts)
+          const italVs = renderVarSettings({ ...axes, ital: 1 }, op.renderOpts)
           const focused = focusedId === b.id
           return (
             <div key={b.id}
@@ -825,7 +828,8 @@ function Scale({ featStr, pairs, measure, scaleStyles, selectedTiers }: ScenePro
   // following size (the export's multiplier). Both live in CSS now — no re-bake.
   const frozen = state.defaults.freezeOpsz ? Math.min(Math.max(state.defaults.frozenOpszValue ?? 14, 8), 45) : null
   const tryOpsz = livePreviewOpsz(state)
-  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? (tryOpsz !== null ? clampTryOpsz(tryOpsz, mult) : opszForSize(px, mult)) })
+  const opLimits = effectiveLimits(state.defaults, 'opsz')
+  const vsFor = (px: number) => renderVarSettings(axes, { opszOverride: frozen ?? (tryOpsz !== null ? clampTryOpsz(tryOpsz, mult) : opszPreviewForSize(px, mult, opLimits)) })
   const use = BODY_TIERS.filter(t => pairs.has(t.key))   // none selected → no body pairings
   const flash: FlashCtx = { ...useGeomFlash(), frozen: useFrozenGold(state.defaults.frozenFeatures)?.chars }
   const [head, setHead] = useState(HEAD_WORD)
