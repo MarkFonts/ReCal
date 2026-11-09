@@ -932,19 +932,24 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 @media (prefers-reduced-motion: reduce) { .shape-pad-box, .shape-pad-grab, .shape-pad-status { transition: none; } }
 
 /* One-axis clamp (ClampSlider.tsx): the track slider with a grabber at each end of the clamp
-   and a wash outside it. --lo / --hi are percentages of the bar, which spans the whole row. */
+   and a wash outside it. --lo / --hi are percentages of the bar, which spans the whole row.
+   A grabber is the primitive's grip (AxisSlider.css, .slider-row--track .slider-label::after):
+   a 4px pill, 4px off the bar's top and bottom, kept 6px INSIDE the clamp's edge the way the
+   grip sits 6px inside the fill's end. So at the axis minimum it sits 6px in from the bar's
+   corner, never on it, and the two grabbers and the ◆ grip read as three of one thing. */
 .clamp-slider { position: relative; }
 .clamp-slider-dim { position: absolute; top: 0; bottom: 0; z-index: 2; pointer-events: none; background: color-mix(in srgb, var(--bg) 55%, transparent); }
 .clamp-slider-dim--lo { left: 0; width: var(--lo); border-radius: var(--radius) 0 0 var(--radius); }
 .clamp-slider-dim--hi { left: var(--hi); right: 0; border-radius: 0 var(--radius) var(--radius) 0; }
 .clamp-slider-grab {
-  position: absolute; z-index: 3; top: 50%; width: 10px; height: 22px; transform: translate(-50%, -50%);
-  border-radius: var(--radius-pill); background: var(--text-muted); cursor: ew-resize; touch-action: none;
-  transition: background-color var(--dur-fast, .12s) var(--ease, ease);
+  position: absolute; z-index: 3; top: 4px; bottom: 4px; width: 4px;
+  border-radius: var(--radius-pill); background: var(--text-dim); cursor: ew-resize; touch-action: none;
+  transition: width var(--dur-fast, .12s) var(--ease, ease), background-color var(--dur-fast, .12s) var(--ease, ease);
 }
-.clamp-slider-grab::after { content: ''; position: absolute; inset: -8px; }
-.clamp-slider-grab::before { content: ''; position: absolute; left: 50%; top: 50%; width: 2px; height: 10px; transform: translate(-50%, -50%); background: var(--bg); border-radius: 1px; }
-.clamp-slider-grab:hover, .clamp-slider-grab[data-held] { background: var(--signal-acid-fill); }
+.clamp-slider-grab--lo { left: calc(var(--lo) + 6px); }
+.clamp-slider-grab--hi { left: calc(var(--hi) - 6px - 4px); }
+.clamp-slider-grab::after { content: ''; position: absolute; inset: -8px; }   /* the hit area, 20px wide */
+.clamp-slider-grab:hover, .clamp-slider-grab[data-held] { width: 6px; background: var(--signal-acid-fill); }
 .clamp-slider-grab:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
 @media (pointer: coarse) { .clamp-slider-grab::after { inset: -17px; } }
 @media (prefers-reduced-motion: reduce) { .clamp-slider-grab { transition: none; } }

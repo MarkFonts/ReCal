@@ -19,14 +19,15 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
   const frozen = d.frozenAxes.includes(tag)
   const pct = (v: number) => `${((v - min) / (max - min)) * 100}%`
   const wrapRef = useRef<HTMLDivElement>(null)
-  const drag = useRef<{ side: Side; rect: DOMRect; pushed: boolean } | null>(null)
+  // dx: where in the grabber the pointer landed, so a grab does not jump the edge to the pointer.
+  const drag = useRef<{ side: Side; rect: DOMRect; dx: number; pushed: boolean } | null>(null)
   const [held, setHeld] = useState<Side | null>(null)
 
   const step = (e: ReactPointerEvent) => {
     const g = drag.current
     if (!g) return
     if (!g.pushed) { dispatch({ type: 'pushHistory' }); g.pushed = true }
-    const v = Math.round(min + clamp01((e.clientX - g.rect.left) / g.rect.width) * (max - min))
+    const v = Math.round(min + clamp01((e.clientX - g.dx - g.rect.left) / g.rect.width) * (max - min))
     dispatch({ type: 'setLimit', tag, side: g.side, value: v })
   }
   const end = () => { drag.current = null; setHeld(null) }
@@ -34,9 +35,10 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
     if (e.button !== 0) return
     e.stopPropagation(); e.preventDefault()
     e.currentTarget.setPointerCapture(e.pointerId)
-    drag.current = { side, rect: wrapRef.current!.getBoundingClientRect(), pushed: false }
+    const rect = wrapRef.current!.getBoundingClientRect()
+    const edgeX = rect.left + rect.width * (((side === 'lo' ? lo : hi) - min) / (max - min))
+    drag.current = { side, rect, dx: e.clientX - edgeX, pushed: false }
     setHeld(side)
-    step(e)
   }
   const onKey = (side: Side) => (e: ReactKeyboardEvent<HTMLElement>) => {
     const dir = e.key === 'ArrowRight' || e.key === 'ArrowUp' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowDown' ? -1 : 0
@@ -46,7 +48,7 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
     e.preventDefault()
   }
   const grabber = (side: Side) => (
-    <div className="clamp-slider-grab" style={{ left: pct(side === 'lo' ? lo : hi) }}
+    <div className={`clamp-slider-grab clamp-slider-grab--${side}`}
       role="slider" tabIndex={0} aria-label={`${tag} ${side === 'lo' ? 'minimum' : 'maximum'}`}
       aria-valuemin={min} aria-valuemax={max} aria-valuenow={side === 'lo' ? lo : hi}
       data-held={held === side ? '' : undefined}
