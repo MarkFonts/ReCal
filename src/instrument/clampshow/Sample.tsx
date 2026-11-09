@@ -62,8 +62,10 @@ export function BandSample({ b, side, show }: { b: BandView; side: 'lo' | 'hi'; 
   return (
     <BandTag x={bandX(b, v, side)} other={bandX(b, b.lim[o === 'lo' ? 0 : 1], o)} side={side} W={b.W} H={b.H}
       className={`clampshow-chip clampshow-chip--band ${show.fading ? 'matrix-val--out' : 'matrix-val--in'}`}>
-      <span className="clampshow-chip-cal clampshow-chip-cal--opsz" style={{ ...calStyle(b.axes, v), fontSize: `${Math.max(9, Math.min(14, v * b.mult))}px` }}>Cal</span>
-      <span className="clampshow-chip-cap"><OpszValue v={v} mult={b.mult} /></span>
+      {b.tag === 'opsz'
+        ? <span className="clampshow-chip-cal clampshow-chip-cal--opsz" style={{ ...calStyle(b.axes, v), fontSize: `${Math.max(9, Math.min(14, v * b.mult))}px` }}>Cal</span>
+        : <span className="clampshow-chip-cal" style={calStyle({ ...b.axes, [b.tag]: v })}>Cal</span>}
+      <span className="clampshow-chip-cap"><OpszValue v={v} mult={b.mult} tag={b.tag} /></span>
     </BandTag>
   )
 }

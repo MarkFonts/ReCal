@@ -36,7 +36,7 @@ export function BandBubble({ b, side, show }: { b: BandView; side: 'lo' | 'hi'; 
   return (
     <BandTag x={bandX(b, v, side)} other={bandX(b, b.lim[o === 'lo' ? 0 : 1], o)} side={side} W={b.W} H={b.H}
       className={`clampshow-bandval ${show.fading ? 'matrix-val--out' : 'matrix-val--in'}`}>
-      <OpszValue v={v} mult={b.mult} />
+      <OpszValue v={v} mult={b.mult} tag={b.tag} />
     </BandTag>
   )
 }

@@ -53,7 +53,7 @@ export function ClampSlider({ tag, label, nudge = 1, big = 5 }: { tag: string; l
     return () => { ro.disconnect(); window.clearTimeout(showTimer.current) }
   }, [clampShow])
   const W = box.W
-  const band: BandView = { W, H: box.H, tag, min, max, lim: [lo, hi], mult: d.opszMultiplier, axes: effectiveAxes(state) }
+  const band: BandView = { W, H: box.H, tag, min, max, lim: [lo, hi], mult: tag === 'opsz' ? d.opszMultiplier : 1, axes: effectiveAxes(state) }
   // ── end clamp-show state ──
 
   const step = (e: ReactPointerEvent) => {

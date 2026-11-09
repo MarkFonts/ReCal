@@ -36,8 +36,8 @@ export function Tag({ x, y, place, W, H, clampY = true, className, style, childr
 
 /** The opsz band's number, in the slider's own units (stock opsz, as its ◆ field reads) and,
  *  under an Optical scale above 1×, the px size that limit lands at in the preview face. */
-export const OpszValue = ({ v, mult }: { v: number; mult: number }) => <>
-  <span className="clampshow-val-tag">opsz</span><span className="tnum">{v}</span>
+export const OpszValue = ({ v, mult, tag = 'opsz' }: { v: number; mult: number; tag?: string }) => <>
+  <span className="clampshow-val-tag">{tag}</span><span className="tnum">{v}</span>
   {mult > 1 && <><span className="clampshow-val-sep">·</span><span className="tnum">{v * mult}</span><span className="clampshow-val-unit">px</span></>}
 </>
 
