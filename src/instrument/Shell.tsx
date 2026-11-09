@@ -12,7 +12,7 @@ import { effectiveLimits,
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
   sectionDirty, type Section,
 } from './store'
-import { renderVarSettings, clampTryOpsz } from './render'
+import { renderVarSettings, opszPreviewForSize } from './render'
 import { BOOT } from './boot'
 import {
   Modebar, Scene, SceneControls, FEATURE_CHIPS, SCENES, type SceneMode,
@@ -860,12 +860,13 @@ function TryBar({ mode, vmActive, size, setSize, tracking, setTracking, leading,
     : null
   // Preview-only optical size. At rest it reads "auto" (the browser follows the type size);
   // moved, it overrides opsz in the preview text. The range is the preview font's relabeled
-  // axis (stock × Optical scale). A frozen font has no opsz axis, and a compared webfont sets
+  // axis (stock × Optical scale), inside the export's opsz clamp. A frozen font has no opsz axis, and a compared webfont sets
   // its own, so both disable it. Never baked: it is not in the ◆ layer and buildConfig never reads it.
+  const opszLim = effectiveLimits(state.defaults, 'opsz')   // the export's clamp, so AUTO reads what the canvas renders
   const opticalDial = !vmActive ? (
     <TryDial label="Optical size" icon="mystery" value={state.previewOpsz ?? 'auto'}
-      min={8 * state.defaults.opszMultiplier} max={45 * state.defaults.opszMultiplier} step={1}
-      autoValue={clampTryOpsz(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier)}
+      min={opszLim[0] * state.defaults.opszMultiplier} max={opszLim[1] * state.defaults.opszMultiplier} step={1}
+      autoValue={opszPreviewForSize(has('size') ? size : 14 * state.defaults.opszMultiplier, state.defaults.opszMultiplier, opszLim)}
       disabled={state.defaults.freezeOpsz || !!cmp}
       display={state.defaults.freezeOpsz ? String(state.defaults.frozenOpszValue ?? 14) : cmp ? '—' : undefined}
       title={state.defaults.freezeOpsz ? `The font is frozen at ${state.defaults.frozenOpszValue ?? 14}` : cmp ? 'The compared font sets its own optical size' : undefined}

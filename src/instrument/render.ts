@@ -67,23 +67,43 @@ export function opszForSize(size: number, multiplier: number, min = 8, max = 45)
 export const clampTryOpsz = (v: number, multiplier = 1): number =>
   Math.min(Math.max(v, 8 * multiplier), 45 * multiplier)
 
+// The preview font's CSS 'opsz' N is in RELABELED space (the worker scales the axis by the
+// multiplier so font-optical-sizing:auto lands on px). A stock-space clamp [lo, hi] therefore
+// becomes [lo × mult, hi × mult], and the size-derived value is just the px itself.
+export const opszPreviewForSize = (px: number, multiplier = 1, limits: [number, number] = [8, 45]): number =>
+  Math.min(Math.max(px, limits[0] * multiplier), limits[1] * multiplier)
+
+// Is the export's opsz clamp narrower than the stock axis? Then auto can't be left to the browser.
+export const opszClamped = (limits?: [number, number]): boolean =>
+  !!limits && (limits[0] > 8 || limits[1] < 45)
+
 // Resolve opsz for a specimen element WITHOUT re-baking the font. opsz FREEZE is a
 // fixed value applied live via CSS (the browser interpolates the deltas per frame —
 // the ~5s instancer only ever mattered for the static download, never the preview).
 // The SCALER stays baked as a cheap axis relabel, so font-optical-sizing:auto handles
-// per-size mapping for free — hence no per-element opsz here for that case.
+// per-size mapping for free — unless the export clamps opsz, which auto ignores: then
+// each element resolves clamp(size-derived, lo, hi) itself (needs its rendered size).
 export function opszCss(
   d: { freezeOpsz: boolean; frozenOpszValue: number | null; opszMultiplier?: number },
   opszAuto: boolean,
   opszDefault = 14,
   tryOpsz: number | null = null,
+  clamp: { sizePx?: number; limits?: [number, number] } = {},
 ): { renderOpts: { opszOverride?: number; skipOpsz?: boolean }; optical: 'auto' | 'none' } {
   if (d.freezeOpsz) {
     const v = Math.min(Math.max(d.frozenOpszValue ?? opszDefault, 8), 45)
     return { renderOpts: { opszOverride: v }, optical: 'none' }
   }
-  // The Try bar's opsz: preview only, in the relabeled preview font's range (stock × scale).
-  if (tryOpsz !== null) return { renderOpts: { opszOverride: clampTryOpsz(tryOpsz, d.opszMultiplier) }, optical: 'none' }
+  const narrow = opszClamped(clamp.limits)
+  // The Try bar's opsz: preview only, in the relabeled preview font's range (stock × scale),
+  // and inside the clamp — the export cannot render a value outside it.
+  if (tryOpsz !== null) {
+    const v = narrow ? opszPreviewForSize(tryOpsz, d.opszMultiplier, clamp.limits) : clampTryOpsz(tryOpsz, d.opszMultiplier)
+    return { renderOpts: { opszOverride: v }, optical: 'none' }
+  }
+  if (opszAuto && narrow && clamp.sizePx !== undefined) {
+    return { renderOpts: { opszOverride: opszPreviewForSize(clamp.sizePx, d.opszMultiplier, clamp.limits) }, optical: 'none' }
+  }
   if (opszAuto) return { renderOpts: { skipOpsz: true }, optical: 'auto' }
   return { renderOpts: {}, optical: 'none' }
 }
