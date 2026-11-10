@@ -7,7 +7,7 @@ import { axisFrozen, effectiveLimits, type DefaultsLayer } from './store'
 import { Chevron } from '../../shared/index'
 
 const AXES: { tag: string; name: string }[] = [
-  { tag: 'wght', name: 'Weight' }, { tag: 'GEOM', name: 'Shape' }, { tag: 'opsz', name: 'Optical size' },
+  { tag: 'wght', name: 'Weight' }, { tag: 'GEOM', name: 'Geometric form' }, { tag: 'opsz', name: 'Optical size' },
   { tag: 'SHRP', name: 'Sharpness' }, { tag: 'YTAS', name: 'Ascender' },
 ]
 const CHARSETS: { id: DefaultsLayer['subsetCharset']; label: string }[] = [
