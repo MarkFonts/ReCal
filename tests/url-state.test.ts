@@ -2,7 +2,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { createInitialState, reducer, type Action, type InstrumentState } from '../src/instrument/store'
-import { applyUrlState, decodeDefaults, encodeDefaults } from '../src/instrument/urlState'
+import { applyUrlState, decodeDefaults, encodeDefaults, syncQuery } from '../src/instrument/urlState'
 
 const play = (search: string, s: InstrumentState = createInitialState()) => {
   applyUrlState((a: Action) => { s = reducer(s, a) }, decodeDefaults(search))
@@ -47,4 +47,12 @@ test('the legacy f key still freezes opsz', () => {
   const s = play('f=12')
   assert.equal(s.defaults.freezeOpsz, true)
   assert.equal(s.defaults.frozenOpszValue, 12)
+})
+
+test('syncQuery rewrites only the keys urlState owns', () => {
+  // boot's preset, the ui switch and ?grid stay; the old clamp and axis go; the new state lands
+  assert.equal(syncQuery('?preset=Poppins&lw=450-650&g=60&grid&ui=classic', 'w=500&fz=y'),
+    '?preset=Poppins&grid=&ui=classic&w=500&fz=y')
+  assert.equal(syncQuery('?g=60&lw=450-650', ''), '')          // back to stock: no query at all
+  assert.equal(syncQuery('?scene=words', ''), '?scene=words')  // nothing of ours, nothing touched
 })

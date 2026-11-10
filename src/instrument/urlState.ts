@@ -233,6 +233,23 @@ export function applyUrlState(dispatch: (a: Action) => void, d: DecodedState) {
 
 /* ---------------------------------------------------------------- helpers */
 
+/* The keys this file owns in a query string: the axis letters, everything in K, and a clamp
+   key per clampable axis. syncQuery() rewrites exactly these and leaves the rest (boot's
+   preset/scene, the ui/layout switches, ?grid) as they were. */
+const OWNED_KEYS = new Set<string>([
+  ...Object.values(AXIS_KEY), ...Object.values(K), ...CLAMPABLE.map(t => K.limits + AXIS_KEY[t]),
+])
+
+/** The address bar after a change: `search` with this file's keys replaced by `encoded`'s,
+    other keys untouched. Returns '' when nothing is left, or '?…' ready for replaceState. */
+export function syncQuery(search: string, encoded: string): string {
+  const p = new URLSearchParams(search)
+  for (const k of [...p.keys()]) if (OWNED_KEYS.has(k)) p.delete(k)
+  for (const [k, v] of new URLSearchParams(encoded)) p.set(k, v)
+  const q = p.toString()
+  return q ? `?${q}` : ''
+}
+
 /** The canonical share link for a configuration. */
 export function shareUrl(origin: string, base: string, query: string): string {
   return query ? `${origin}${base}/?${query}` : `${origin}${base}/`

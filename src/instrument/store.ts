@@ -121,6 +121,8 @@ export function shippedThresholds(): Record<string, number[]> {
   return Object.fromEntries(GROUP_DEFS.map(g => [g.glyph, [...g.defaultThresholds]]))
 }
 
+export const DEFAULT_BUILD_NAME = 'ReCal Sans'
+
 export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: CompareSpec | null = null): InstrumentState {
   const th = shippedThresholds()
   return {
@@ -147,7 +149,7 @@ export function createInitialState(shipped: AxisMap = SHIPPED_AXES, compare: Com
     thresholdDrag: null,
     activePreset: null,
     useHoi: false,
-    buildName: 'ReCal Sans',
+    buildName: DEFAULT_BUILD_NAME,
     recalMode: 'edit',   // open in EDIT (building the ◆); DEMO is the preview mode you switch to
     past: [],
     future: [],
