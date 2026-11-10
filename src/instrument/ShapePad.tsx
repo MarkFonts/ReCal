@@ -208,7 +208,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     : `Clamping ${held.side === 'left' || held.side === 'right' ? tag(x) : tag(y)} ${held.side === 'right' || held.side === 'top' ? 'max' : 'min'}`
   const lim = (a: PadAxis, l: [number, number], frozen: boolean) => {
     const r = AXIS_RANGES[a.tag]
-    return frozen ? 'frozen' : l[0] === r.min && l[1] === r.max ? null : `${l[0]}–${l[1]}`
+    return frozen ? 'froze' : l[0] === r.min && l[1] === r.max ? null : `${l[0]}–${l[1]}`
   }
   const limX = lim(x, lx, fx), limY = yAuto ? null : lim(y, ly, fy)
 

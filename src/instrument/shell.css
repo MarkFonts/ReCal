@@ -973,7 +973,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .subset-charset { justify-content: space-between; }
 
 .shape-readout { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -6px; }   /* two across; when both captions are long (a zone name, a clamp) the second drops to its own row */
-.shape-readout > div { flex: 1 1 auto; }
+.shape-readout > div { flex: 1 1 calc(50% - 3px); min-width: max-content; }   /* equal halves; a caption wider than its half breaks the pair onto two rows, nothing else moves the seam */
 .shape-readout > div {
   display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; white-space: nowrap;
   border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--bg);
