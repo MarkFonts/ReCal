@@ -11,7 +11,7 @@ export interface PadView {
   plotTop: number; plotBottom: number        // y px of the axis max / min
   px: (v: number) => number; py: (v: number) => number
   x: PadAxisInfo; y: PadAxisInfo
-  zone?: (geom: number) => string            // Shape pad only: GEOM → zone label
+  zone?: (geom: number) => string | undefined   // Shape pad only: GEOM → zone label, none in a gap
   axes: AxisMap                              // effective axes, the base of any sample
 }
 

@@ -874,6 +874,10 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   cursor: crosshair; touch-action: none; user-select: none; overflow: hidden;
 }
 .shape-pad:focus-visible { outline: 1.5px solid var(--signal-acid); outline-offset: 2px; }
+.shape-pad-row { display: flex; align-items: flex-start; gap: 8px; }
+.shape-pad-row > .shape-pad { flex: 1 1 auto; min-width: 0; }
+.shape-pad-aside { flex: 0 0 auto; min-width: 44px; display: flex; justify-content: center; }   /* GEOM frozen: its zone's "Cal", past the weight maximum (ShapePad.tsx ZoneAside) */
+.shape-pad-aside .shape-pad-col { position: static; }
 .shape-pad-band { position: absolute; top: 0; bottom: 0; pointer-events: none; }
 .shape-pad-dots { position: absolute; left: 9px; right: 9px; top: var(--pad-top); bottom: 9px; width: calc(100% - 18px); height: calc(100% - var(--pad-top) - 9px); overflow: visible; fill: var(--border); pointer-events: none; }
 .shape-pad-cols { position: absolute; left: 0; right: 0; top: 6px; height: 30px; pointer-events: none; }
@@ -885,10 +889,10 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   font-size: var(--type-body-size, 1rem); line-height: 22px; white-space: nowrap;
 }
 .shape-pad-col.on { background-color: var(--zone-flat); background-image: var(--zone-hdr, none); background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit; }
-.shape-pad [data-zone="A11Y"] { --zone-flat: var(--zone-a11y-chip);  --zone-hdr: var(--zone-hdr-a11y); }
-.shape-pad [data-zone="UI"]   { --zone-flat: var(--zone-ui-chip);    --zone-hdr: var(--zone-hdr-ui); }
-.shape-pad [data-zone="Base"] { --zone-flat: var(--zone-base-chip);  --zone-hdr: var(--zone-hdr-base); }
-.shape-pad [data-zone="Geo"]  { --zone-flat: var(--zone-geo-chip);   --zone-hdr: var(--zone-hdr-geo); }
+.shape-pad-row [data-zone="A11Y"] { --zone-flat: var(--zone-a11y-chip);  --zone-hdr: var(--zone-hdr-a11y); }
+.shape-pad-row [data-zone="UI"]   { --zone-flat: var(--zone-ui-chip);    --zone-hdr: var(--zone-hdr-ui); }
+.shape-pad-row [data-zone="Base"] { --zone-flat: var(--zone-base-chip);  --zone-hdr: var(--zone-hdr-base); }
+.shape-pad-row [data-zone="Geo"]  { --zone-flat: var(--zone-geo-chip);   --zone-hdr: var(--zone-hdr-geo); }
 /* One number style for every GEOM / weight figure on the pad and the matrix rulers. */
 .geom-num { font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); color: var(--text-dim); font-variant-numeric: tabular-nums; line-height: 12px; }
 .shape-pad-ylab { position: absolute; right: 7px; padding: 0 2px; z-index: 1; background: var(--bg); pointer-events: none; }   /* knocks the clamp frame out behind the number */
@@ -968,7 +972,8 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .subset-at { margin-left: auto; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .subset-charset { justify-content: space-between; }
 
-.shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }
+.shape-readout { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -6px; }   /* two across; when both captions are long (a zone name, a clamp) the second drops to its own row */
+.shape-readout > div { flex: 1 1 auto; }
 .shape-readout > div {
   display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; white-space: nowrap;
   border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--bg);
