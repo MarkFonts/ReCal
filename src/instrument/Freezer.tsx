@@ -26,7 +26,7 @@ import { SUBS } from '../data/substitutions'
 import { Chevron } from '../../shared/index' // wm-primitives (git submodule)
 import type { FeatureSet } from '../data/substitutions'
 
-type Item = { tag: string; name: string; sample: string; locked?: string }
+type Item = { tag: string; name: string; sample: string }
 type Section = { title: string; items: Item[]; folder?: boolean }
 
 // Representative glyphs shown as base → variant: the first three ASCII letters/digits the
@@ -67,15 +67,11 @@ const CV_SAMPLE: Record<string, string> = {
   cv04: 'æ', cv05: 'æ',
 }
 const NAME_BY_TAG: Record<string, string> = {}
-// Every character variant, in cvNN order. The ligature cvs (cv32+) have no SingleSubst
-// (empty `subs`), so the bake can't fuse them: they are listed for completeness but locked,
-// their sample the ligature their name ends in ("Constructed ffi" → ffi).
-const CV_ITEMS: Item[] = SUBS.charVariants.map(cv => {
-  const name = cv.name ?? cv.tag
-  return Object.keys(cv.subs).length > 0
-    ? { tag: cv.tag, name, sample: CV_SAMPLE[cv.tag] ?? (asciiChars(cv) || cv.tag) }
-    : { tag: cv.tag, name, sample: name.split(' ').pop() || cv.tag, locked: 'Ligature: can\u2019t be frozen' }
-})
+// Every freezable character variant, in cvNN order. The ligature cvs (cv32+) have no
+// SingleSubst (empty `subs`), so the bake can't fuse them and they are left out.
+const CV_ITEMS: Item[] = SUBS.charVariants
+  .filter(cv => Object.keys(cv.subs).length > 0)
+  .map(cv => ({ tag: cv.tag, name: cv.name ?? cv.tag, sample: CV_SAMPLE[cv.tag] ?? (asciiChars(cv) || cv.tag) }))
 
 // Off the Freezer: ss17's font entries never apply; hidden until calbuild fixes the set.
 const HIDDEN_SS = new Set(['ss17'])
@@ -162,8 +158,8 @@ export function Freezer() {
               const hid = hidden.find(h => h.tag === it.tag)
               return (
                 <button key={it.tag} className={`freezer-card${on ? ' on' : ''}`}
-                  onClick={() => toggle(it.tag)} disabled={!!it.locked}
-                  title={`${it.tag} — ${it.name}${it.locked ? ` (${it.locked})` : ''}`} aria-pressed={on}>
+                  onClick={() => toggle(it.tag)}
+                  title={`${it.tag} — ${it.name}`} aria-pressed={on}>
                   <span className="freezer-card-top" aria-hidden>
                     <span className="freezer-card-base" style={{ ...base, fontFeatureSettings: "'rclt' 1" }}>{it.sample}</span>
                     <span className="freezer-card-tag">{it.tag}</span>
@@ -171,7 +167,6 @@ export function Freezer() {
                   <span className="freezer-card-glyph" style={{ ...base, fontFeatureSettings: `'rclt' 1, '${it.tag}' 1` }}>{it.sample}</span>
                   <span className="freezer-card-name">{it.name.replace(/\//g, '/\u200b')}</span>
                   {hid && <span className="freezer-card-warn">{conflictCardLine(hid.conflicts)}</span>}
-                  {it.locked && <span className="freezer-card-warn">{it.locked}</span>}
                 </button>
               )
             })}

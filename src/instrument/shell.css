@@ -1041,8 +1041,6 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
 }
 .freezer-card:hover:not(:disabled) { background: var(--surface-hi); border-color: var(--text-dim); }
-/* A ligature cv: listed, not freezable (the bake can't fuse a ligature). Dimmed, inert. */
-.freezer-card:disabled { cursor: default; opacity: .45; }
 .freezer-card:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .freezer-card.on,
 .freezer-card.on:hover:not(:disabled) { border-color: var(--freeze-gold); box-shadow: inset 0 0 0 1px var(--freeze-gold); }
