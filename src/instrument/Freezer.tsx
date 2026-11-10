@@ -9,14 +9,21 @@
 // bake can actually fuse into the cmap — ligature/contextual features (liga, calt, frac,
 // cvXX ligatures) can't be, and offering them would break what-you-preview-is-what-you-get.
 //
+// The sections are an accordion, one open at a time (issue #18: listing all ~70 cards at
+// once would triple the panel). Stylistic sets come first — whole-cut decisions — then the
+// character variants — single-letter ones — then figures. A closed section shows what in it
+// is frozen, the way a closed rail row shows its summary.
+//
 // Gold is the freezer's color language (its own hue, vs the four GEOM zone colors):
 // the frozen card's outline and name are gold here, and in the specimen the glyphs a freeze
 // governs flash gold when you toggle it or drag GEOM (see useFrozenGold in scenes).
+import { useState } from 'react'
 import { useInstrument } from './InstrumentProvider'
 import { effectiveAxes, liveThresholds } from './store'
 import { freezeConflicts, conflictCardLine, conflictPanelNote, type Conflict } from './freezeConflicts'
 import { renderVarSettings } from './render'
 import { SUBS } from '../data/substitutions'
+import { Chevron } from '../../shared/index' // wm-primitives (git submodule)
 import type { FeatureSet } from '../data/substitutions'
 
 type Item = { tag: string; name: string; sample: string }
@@ -60,32 +67,41 @@ const CV_SAMPLE: Record<string, string> = {
   cv04: 'æ', cv05: 'æ',
 }
 const NAME_BY_TAG: Record<string, string> = {}
-// A character variant someone froze (a preset does) — the Freezer lists only the ssXX
-// sets, so these get their own cards, built on demand rather than all 42 up front.
-// Ligature cvs (cv32+) have no SingleSubst and can't be frozen, so they never land here.
-const cvItem = (tag: string): Item | null => {
-  const cv = SUBS.charVariants.find(c => c.tag === tag)
-  if (!cv) return null
-  return { tag, name: cv.name ?? tag, sample: CV_SAMPLE[tag] ?? (asciiChars(cv) || tag) }
-}
+// Every freezable character variant, in cvNN order. Ligature cvs (cv32+) have no
+// SingleSubst (empty `subs`), so the bake can't fuse them and they are left out. The
+// figure variants (cv23–cv31: 0 1 5 6 9) go under Figures, beside Slashed zero, so neither
+// section runs longer than the Stylistic sets (issue #18's limit on the panel's length).
+const isFigure = (cv: FeatureSet): boolean => cv.chars.some(c => /^[0-9]$/.test(c))
+const cvToItem = (cv: FeatureSet): Item => ({ tag: cv.tag, name: cv.name ?? cv.tag, sample: CV_SAMPLE[cv.tag] ?? (asciiChars(cv) || cv.tag) })
+const FREEZABLE_CVS = SUBS.charVariants.filter(cv => Object.keys(cv.subs).length > 0)
+const CV_ITEMS: Item[] = FREEZABLE_CVS.filter(cv => !isFigure(cv)).map(cvToItem)
+const CV_FIGURE_ITEMS: Item[] = FREEZABLE_CVS.filter(isFigure).map(cvToItem)
 
 // Off the Freezer: ss17's font entries never apply; hidden until calbuild fixes the set.
 const HIDDEN_SS = new Set(['ss17'])
 
-// Stylistic sets in their natural ssNN order.
+// Stylistic sets in their natural ssNN order, then the letter character variants, then
+// figures (the figure styles, then the figure character variants).
 const SECTIONS: Section[] = [
-  { title: 'Figures', items: FIGURE_ITEMS },
-  // { title: 'Letters', items: LETTER_ITEMS },   // empty without `case`, so no heading
   {
     title: 'Stylistic sets',
     items: SUBS.stylisticSets.filter(ss => !HIDDEN_SS.has(ss.tag)).map(ss => ({ tag: ss.tag, name: nameFor(ss), sample: sampleFor(ss) })),
   },
+  { title: 'Character variants', items: CV_ITEMS },
+  { title: 'Figures', items: [...FIGURE_ITEMS, ...CV_FIGURE_ITEMS] },
+  // { title: 'Letters', items: LETTER_ITEMS },   // empty without `case`, so no heading
 ]
 
 for (const sec of SECTIONS) for (const it of sec.items) NAME_BY_TAG[it.tag] = it.name
 
 // The plain name for a frozen tag — the rail row's summary reads these instead of tags.
-export const freezerName = (tag: string): string => NAME_BY_TAG[tag] ?? cvItem(tag)?.name ?? tag
+export const freezerName = (tag: string): string => NAME_BY_TAG[tag] ?? tag
+
+// A closed section's one line: same grammar as the rail row's summary ("Humanist a · +2").
+const sectionSummary = (items: Item[], frozen: string[]): string => {
+  const on = items.filter(it => frozen.includes(it.tag))
+  return on.length ? `${on[0].name}${on.length > 1 ? ` · +${on.length - 1}` : ''}` : 'nothing frozen'
+}
 
 export function Freezer() {
   const { state, dispatch } = useInstrument()
@@ -109,10 +125,10 @@ export function Freezer() {
     fontVariationSettings: vs,
     fontOpticalSizing: 'none',
   }
-  // Every cvXX currently frozen (only a preset can do that) leads the list, so it can be
-  // seen and undone. Once unfrozen its card goes, like any other state it no longer has.
-  const fromPreset = frozen.filter(t => t.startsWith('cv')).map(cvItem).filter((it): it is Item => !!it)
-  const sections: Section[] = fromPreset.length ? [{ title: 'From your preset', items: fromPreset }, ...SECTIONS] : SECTIONS
+  // One section open at a time (or none). It opens on the first section holding something
+  // frozen, so a preset's character variant is in view; with nothing frozen, the sets.
+  const [open, setOpen] = useState<string | null>(
+    () => SECTIONS.find(sec => sec.items.some(it => frozen.includes(it.tag)))?.title ?? SECTIONS[0].title)
   // One undo grain per click (reset undoes in one step too).
   const toggle = (tag: string) => { dispatch({ type: 'pushHistory' }); dispatch({ type: 'toggleFrozenFeature', tag }) }
 
@@ -128,10 +144,17 @@ export function Freezer() {
 
       {hidden.length > 0 && <p className="freezer-conflict" role="status">{conflictPanelNote(hidden)}</p>}
 
-      {sections.map(section => (
+      {SECTIONS.map(section => {
+        const isOpen = open === section.title
+        return (
         <div className="freezer-section" key={section.title}>
-          <span className="freezer-section-title">{section.title}</span>
-          <div className="freezer-grid">
+          <button className={`freezer-acc${isOpen ? ' is-open' : ''}`} aria-expanded={isOpen}
+            onClick={() => setOpen(isOpen ? null : section.title)}>
+            <span className="freezer-section-title">{section.title}</span>
+            {!isOpen && <span className="freezer-acc-sum">{sectionSummary(section.items, frozen)}</span>}
+            <Chevron dir={isOpen ? 1 : -1} width={10} height={6} className="freezer-acc-chv" />
+          </button>
+          {isOpen && <div className="freezer-grid">
             {section.items.map(it => {
               const on = frozen.includes(it.tag)
               const hid = hidden.find(h => h.tag === it.tag)
@@ -149,9 +172,10 @@ export function Freezer() {
                 </button>
               )
             })}
-          </div>
+          </div>}
         </div>
-      ))}
+        )
+      })}
 
       <p className="freezer-note">
         Freezing makes a feature part of your default outlines. Toggle one — or drag GEOM —
