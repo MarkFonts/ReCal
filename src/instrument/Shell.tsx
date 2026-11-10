@@ -10,7 +10,7 @@ import { StyleScopeList, InlineEmphasisBubble, AxisSlider, nbMinus,
   type FitOptions, Chevron, AccentButton, Icon, ThemeSwitch, bootTheme } from '../../shared/index' // wm-primitives (git submodule)
 import { effectiveLimits,
   AXIS_RANGES, effectiveAxes, mergedAxes, previewDrifted, stateTag, defaultsDirty, glyphsEditedCount,
-  sectionDirty, type Section,
+  sectionDirty, type Section, DEFAULT_BUILD_NAME,
 } from './store'
 import { renderVarSettings, opszPreviewForSize } from './render'
 import { BOOT } from './boot'
@@ -22,7 +22,7 @@ import {
 } from './scenes'
 import Info from './Info'
 import { PRESETS, applyPreset } from './presets'
-import { applyUrlState, decodeDefaults } from './urlState'
+import { applyUrlState, decodeDefaults, encodeDefaults, syncQuery } from './urlState'
 import { ClampSlider } from './ClampSlider'
 import { Subset, subsetSummary } from './Subset'
 import { useFontEngine, type ExportConfig } from './useFontEngine'
@@ -1162,6 +1162,7 @@ export default function Shell() {
   // Deep-link boot: ?preset=Poppins or a fused landing page's window.__RECAL_BOOT
   // auto-applies a preset. Case-insensitive; unknown values are ignored. Referents
   // that are NOT presets (e.g. Gotham) resemble themselves via raw BOOT.axes instead.
+  const booted = useRef(false)   // the boot replay has run; the address bar may follow the state
   useEffect(() => {
     const want = BOOT.preset
     const p = want && PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
@@ -1175,7 +1176,25 @@ export default function Shell() {
     }
     // A shared link's ◆ layer (urlState.ts) lands on top: its keys are the specifics.
     applyUrlState(dispatch, decodeDefaults(window.location.search))
+    booted.current = true
   }, [dispatch])
+  // The address bar follows the ◆ layer: every change rewrites this file's keys in place
+  // (other keys stay), debounced so a drag writes once. Stock state leaves no query. The
+  // guard keeps the stock state from overwriting a shared link before the boot replay lands.
+  useEffect(() => {
+    if (!booted.current) return
+    const t = window.setTimeout(() => {
+      const q = encodeDefaults(state.defaults, {
+        shippedAxes: state.shipped, shippedThresholds: state.shippedThresholds,
+        buildName: state.buildName !== DEFAULT_BUILD_NAME ? state.buildName : undefined,
+        activePreset: state.activePreset,
+      })
+      const next = syncQuery(window.location.search, q)
+      if (next !== window.location.search)
+        window.history.replaceState(window.history.state, '', `${window.location.pathname}${next}${window.location.hash}`)
+    }, 150)
+    return () => window.clearTimeout(t)
+  }, [state.defaults, state.buildName, state.activePreset, state.shipped, state.shippedThresholds])
   // Lazy-load the referent webfont the first time Compare is turned on — the
   // stylesheet URL rides BOOT.compare.css, injected once, so pure-preview visitors
   // never fetch Google Fonts / the Adobe kit.
