@@ -230,22 +230,12 @@ function Rail({ engine, collapsed, onToggle }: { engine: ReturnType<typeof useFo
     VM_LABEL[d.vmetrics.preset] ?? d.vmetrics.preset,
     subsetSummary(d),
   ]
-  const frozen = (tag: string) => d.frozenAxes.includes(tag)
   const bodies: React.ReactNode[] = [
-    <div className="rail-row-body">
-      {/* A frozen axis leaves one axis to set: one slider per axis, the frozen one greyed (the same
-          swap Auto ascender makes in row 3), never a pad squeezed to a line */}
-      {frozen('GEOM') || frozen('wght')
-        ? <><ClampSlider tag="GEOM" label="GEOM" big={10} /><ClampSlider tag="wght" label="Weight" nudge={10} big={50} /></>
-        : <ShapePad />}
-    </div>,
+    <div className="rail-row-body"><ShapePad /></div>,
     <OpticalSize note={opszNote} onNote={() => setOpszNote(true)} />,
     <div className="rail-row-body">
       {/* Auto ascender: YTAS follows opsz, so only Sharpness is left to set; one axis, one slider */}
-      {d.autoAscender ? <ClampSlider tag="SHRP" label="Sharpness" big={10} />
-        : frozen('SHRP') || frozen('YTAS')
-          ? <><ClampSlider tag="SHRP" label="Sharpness" big={10} /><ClampSlider tag="YTAS" label="Ascender" nudge={10} big={50} /></>
-          : <AscenderPad />}
+      {d.autoAscender ? <ClampSlider tag="SHRP" label="Sharpness" big={10} /> : <AscenderPad />}
       <label className="rail-toggle" title={d.freezeOpsz ? AUTO_ASC_BLOCKED : undefined}
         style={d.freezeOpsz ? { opacity: .38, cursor: 'default' } : undefined}>
         <input type="checkbox" checked={d.autoAscender} disabled={d.freezeOpsz}
