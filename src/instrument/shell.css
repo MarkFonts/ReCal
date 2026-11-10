@@ -937,7 +937,7 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   color: var(--text-dim); transition: color var(--dur-fast, .12s) var(--ease, ease);
 }
 .shape-pad[data-held] .shape-pad-status { color: var(--text); }
-.shape-readout-lim { font-style: normal; color: var(--text-dim); margin-left: 6px; font-size: var(--type-micro-size, 0.5625rem); }
+.shape-readout-lim { font-style: normal; color: var(--text-dim); font-size: var(--type-micro-size, 0.5625rem); }
 @media (pointer: coarse) { .shape-pad-grab::after { inset: -17px; } }
 @media (prefers-reduced-motion: reduce) { .shape-pad-box, .shape-pad-grab, .shape-pad-status { transition: none; } }
 
@@ -972,14 +972,14 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 .subset-at { margin-left: auto; color: var(--text-dim); font-variant-numeric: tabular-nums; }
 .subset-charset { justify-content: space-between; }
 
-.shape-readout { display: flex; flex-wrap: wrap; gap: 6px; margin-top: -6px; }   /* two across; when both captions are long (a zone name, a clamp) the second drops to its own row */
-.shape-readout > div { flex: 1 1 calc(50% - 3px); min-width: max-content; }   /* equal halves; a caption wider than its half breaks the pair onto two rows, nothing else moves the seam */
+.shape-readout { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: -6px; }   /* two halves, always side by side; the seam never moves */
 .shape-readout > div {
-  display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; white-space: nowrap;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 4px; padding: 8px; min-width: 0;
   border: 1px solid var(--border-subtle); border-radius: var(--radius); background: var(--bg);
   font-size: var(--type-ui-size, 0.75rem);
 }
-.shape-readout > div > span:last-child { color: var(--marker-default); }
+.shape-readout > div > span:first-child { display: flex; flex-wrap: wrap; column-gap: 0.4em; align-items: baseline; white-space: nowrap; min-width: 0; }   /* label and range are whole units: when both can't fit, the range (or 'froze') drops under the label */
+.shape-readout > div > span:last-child { color: var(--marker-default); white-space: nowrap; flex-shrink: 0; }
 
 .rail-blank { display: flex; flex-direction: column; gap: var(--spacing-04, 12px); }
 .rail-blank-body { min-height: 260px; }
