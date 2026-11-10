@@ -25,6 +25,7 @@ const PAD_BOT = 24   // room for the status line under the lattice
 const COLS = 17      // dot lattice: x every 1/16 of the axis (GEOM every 6.25)
 const COL_PAD = 3    // horizontal padding of a column label (the pill when active)
 const ROWS = 4       // dot lattice: y every 1/3 of the axis (weight every 100)
+const BAND_H = 44    // the plot's height once one axis is frozen: a band, the live axis across
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
@@ -59,6 +60,12 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   const ly = effectiveLimits(state.defaults, y.tag)
   const fx = state.defaults.frozenAxes.includes(x.tag)
   const fy = state.defaults.frozenAxes.includes(y.tag) || !!yAuto
+  // One axis frozen: the pad shrinks to a band along the live one (the wrappers swap the axes
+  // so the live one is x), and the frozen value sits at the side where the range was.
+  // Both frozen: the whole grid stays, greyed.
+  const band = fy && !fx
+  const dead = fx && fy
+  const padH = band ? top + BAND_H + PAD_BOT : height
   const padRef = useRef<HTMLDivElement>(null)
   const [held, setHeld] = useState<Drag | null>(null)   // mirrors drag.current for the paint
 
@@ -177,12 +184,18 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     e.preventDefault(); e.stopPropagation()
   }
 
-  const yTop = (v: number) => `calc(${top}px + (100% - ${top + PAD_BOT}px) * ${1 - (v - yMin) / (yMax - yMin)})`
+  const yMid = `calc(${top}px + (100% - ${top + PAD_BOT}px) / 2)`
+  const yTop = (v: number) => band ? yMid : `calc(${top}px + (100% - ${top + PAD_BOT}px) * ${1 - (v - yMin) / (yMax - yMin)})`
   const xSpan = (a: number, b: number) => `calc((100% - ${2 * PAD_X}px) * ${(b - a) / (xMax - xMin)})`
   const ySpan = (a: number, b: number) => `calc((100% - ${top + PAD_BOT}px) * ${(b - a) / (yMax - yMin)})`
   const ylab = `shape-pad-ylab geom-num tnum${fy ? ' shape-pad-ylab--off' : ''}`
-  const box: CSSProperties = { left: axisLeft(lx[0], xMin, xMax), width: xSpan(lx[0], lx[1]), top: yTop(ly[1]), height: ySpan(ly[0], ly[1]) }
-  const dead = fx && fy
+  // the frame: the clamp, or the whole plot along a frozen axis (a frozen axis has no range to show)
+  const bx: [number, number] = fx ? [xMin, xMax] : lx
+  const by: [number, number] = fy ? [yMin, yMax] : ly
+  const box: CSSProperties = {
+    left: axisLeft(bx[0], xMin, xMax), width: xSpan(bx[0], bx[1]),
+    top: band ? `${top}px` : yTop(by[1]), height: band ? `calc(100% - ${top + PAD_BOT}px)` : ySpan(by[0], by[1]),
+  }
   const tag = (a: PadAxis) => a.tag.toUpperCase()
   const status = dead ? `${tag(x)} frozen at default`
     : !held ? STATUS_IDLE
@@ -201,13 +214,14 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   const view: PadView | null = size && {
     W: size.W, H: size.H, plotTop: plotTopPx, plotBottom: plotBotPx,
     px: v => PAD_X + (size.W - 2 * PAD_X) * ((v - xMin) / (xMax - xMin)),
-    py: v => plotTopPx + (plotBotPx - plotTopPx) * (1 - (v - yMin) / (yMax - yMin)),
+    py: v => band ? (plotTopPx + plotBotPx) / 2 : plotTopPx + (plotBotPx - plotTopPx) * (1 - (v - yMin) / (yMax - yMin)),
     x: { tag: x.tag, min: xMin, max: xMax, lim: lx, value: xv, frozen: fx },
     y: { tag: y.tag, min: yMin, max: yMax, lim: ly, value: yv, frozen: fy },
     zone: x.tag === 'GEOM' ? nearestZone : undefined,
     axes: effectiveAxes(state),
   }
   const showLayer = view && show ? <PadBubble v={view} show={show} /> : null
+  const dotMid = size ? `${((size.H - top - PAD_BOT) / 2) / (size.H - top - 9) * 100}%` : '50%'
 
   const grabber = (side: Side) => {
     const horiz = side === 'top' || side === 'bottom'
@@ -235,7 +249,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   return (
     <>
       <div ref={padRef} className="shape-pad" tabIndex={0} role="group"
-        style={{ '--pad-h': `${height}px`, '--pad-top': `${top}px` } as CSSProperties}
+        style={{ '--pad-h': `${padH}px`, '--pad-top': `${top}px` } as CSSProperties}
         aria-label={`${ariaLabel}. Arrow keys nudge.`}
         aria-disabled={dead || undefined}
         data-held={held?.kind}
@@ -243,18 +257,22 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         onKeyDown={onKeyDown}>
         {bands}
         <svg className="shape-pad-dots" aria-hidden="true">
-          {Array.from({ length: ROWS * COLS }, (_, i) => (
-            <circle key={i} cx={`${(i % COLS) / (COLS - 1) * 100}%`} cy={`${Math.floor(i / COLS) / (ROWS - 1) * 100}%`} r="1" />
+          {Array.from({ length: (band ? 1 : ROWS) * COLS }, (_, i) => (
+            <circle key={i} cx={`${(i % COLS) / (COLS - 1) * 100}%`} cy={band ? dotMid : `${Math.floor(i / COLS) / (ROWS - 1) * 100}%`} r="1" />
           ))}
         </svg>
         {cols}
         {/* outside the clamp the pad goes under a wash: the range is the lit part */}
-        <div className="shape-pad-dim" style={{ left: 0, width: axisLeft(lx[0], xMin, xMax), top: 0, bottom: 0 }} />
-        <div className="shape-pad-dim" style={{ left: axisLeft(lx[1], xMin, xMax), right: 0, top: 0, bottom: 0 }} />
-        <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: 0, height: box.top }} />
-        <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: yTop(ly[0]), bottom: 0 }} />
-        <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yMax}</span>
-        <span className={ylab} style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{yMin}</span>
+        <div className="shape-pad-dim" style={{ left: 0, width: axisLeft(bx[0], xMin, xMax), top: 0, bottom: 0 }} />
+        <div className="shape-pad-dim" style={{ left: axisLeft(bx[1], xMin, xMax), right: 0, top: 0, bottom: 0 }} />
+        {!band && <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: 0, height: box.top }} />}
+        {!band && <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: yTop(by[0]), bottom: 0 }} />}
+        {band
+          ? <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yAuto ? 'auto' : Math.round(yv)}</span>   /* where the max sat: clear of the right grabber */
+          : <>
+              <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yMax}</span>
+              <span className={ylab} style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{yMin}</span>
+            </>}
         {/* the clamp: a frame you can drag by its edge; its visual twin underneath takes no pointer */}
         <div className="shape-pad-box" style={box} aria-hidden="true" />
         {!dead && <div className="shape-pad-frame" style={box} {...handle('box')} />}
@@ -329,41 +347,53 @@ function ZoneCols({ active, lim }: { active: string; lim: [number, number] }) {
 }
 
 // Row 1: GEOM across, weight up, with the four zones as bands and "Cal" columns.
+const GEOM_AXIS: PadAxis = { tag: 'GEOM', nudge: 1, big: 10 }
+const WGHT_AXIS: PadAxis = { tag: 'wght', nudge: 10, big: 50 }
+const SHRP_AXIS: PadAxis = { tag: 'SHRP', nudge: 1, big: 10 }
+const YTAS_AXIS: PadAxis = { tag: 'YTAS', nudge: 10, big: 50 }
+
 export function ShapePad() {
   const { state, dispatch } = useInstrument()
   const geom = state.defaults.axes.GEOM
   const wght = state.defaults.axes.wght
   const active = nearestZone(geom)
+  const frozen = (tag: string) => state.defaults.frozenAxes.includes(tag)
+  // GEOM frozen, weight live: weight goes across (the zones and columns are GEOM's; they go)
+  const swap = frozen('GEOM') && !frozen('wght')
+  const geomLabel = `GEOM ${active}`
   return (
     <Pad
-      x={{ tag: 'GEOM', nudge: 1, big: 10 }} y={{ tag: 'wght', nudge: 10, big: 50 }}
-      top={42} height={213}
+      x={swap ? WGHT_AXIS : GEOM_AXIS} y={swap ? GEOM_AXIS : WGHT_AXIS}
+      top={swap ? 12 : 42} height={213}
       ariaLabel={`Shape: GEOM ${Math.round(geom)}, weight ${Math.round(wght)}`}
-      xLabel={`GEOM ${active}`} yLabel="Weight"
+      xLabel={swap ? 'Weight' : geomLabel} yLabel={swap ? geomLabel : 'Weight'}
       knobZone={active}
       onDragState={value => dispatch({ type: 'setGeomDragging', value })}
-      bands={LANDING_ZONES.map(z => (
+      bands={swap ? undefined : LANDING_ZONES.map(z => (
         <div key={z.label} className="shape-pad-band"
           style={{
             left: geomLeft(z.start), width: geomSpan(z.start, z.end),
             background: zoneBandBackground(z.label),
           }} />
       ))}
-      cols={<ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
+      cols={swap ? undefined : <ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
   )
 }
 
 // Row 3: Sharpness across, Ascender up. SHRP has no zones, so the pad is bare. With Auto
-// ascender on, YTAS follows the optical size, so the vertical locks.
+// ascender on, YTAS follows the optical size, so the vertical locks and the pad is a band.
+// Sharpness frozen with the ascender live: the ascender goes across instead.
 export function AscenderPad() {
   const { state } = useInstrument()
   const { SHRP, YTAS } = state.defaults.axes
   const auto = state.defaults.autoAscender
+  const frozen = (tag: string) => state.defaults.frozenAxes.includes(tag)
+  const swap = frozen('SHRP') && !auto && !frozen('YTAS')
   return (
     <Pad
-      x={{ tag: 'SHRP', nudge: 1, big: 10 }} y={{ tag: 'YTAS', nudge: 10, big: 50 }}
+      x={swap ? YTAS_AXIS : SHRP_AXIS} y={swap ? SHRP_AXIS : YTAS_AXIS}
       top={12} height={165}
       ariaLabel={`Ascender and Sharpness: Sharpness ${Math.round(SHRP)}, ascender ${auto ? 'auto' : Math.round(YTAS)}`}
-      xLabel="Sharpness" yLabel="Ascender" yAuto={auto} />
+      xLabel={swap ? 'Ascender' : 'Sharpness'} yLabel={swap ? 'Sharpness' : 'Ascender'} yAuto={auto && !swap} />
   )
 }
