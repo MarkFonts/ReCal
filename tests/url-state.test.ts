@@ -43,6 +43,12 @@ test('bad clamps are dropped, not thrown', () => {
   assert.equal(d.frozenAxes, undefined)
 })
 
+test('frozen figure styles survive a reload alongside ss/cv', () => {
+  const s = play('ff=cv02.ss16.tnum.zero.bogus.liga')
+  assert.deepEqual([...s.defaults.frozenFeatures].sort(), ['cv02', 'ss16', 'tnum', 'zero'])
+  assert.equal(enc(play(enc(s))), enc(s))
+})
+
 test('the legacy f key still freezes opsz', () => {
   const s = play('f=12')
   assert.equal(s.defaults.freezeOpsz, true)

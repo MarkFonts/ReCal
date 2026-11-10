@@ -165,7 +165,8 @@ export function decodeDefaults(search: string): DecodedState {
 
   const ff = p.get(K.features)
   if (ff) {
-    const tags = ff.split('.').filter(x => /^(ss|cv)\d{2}$/.test(x))
+    // ssXX/cvXX plus the Freezer's figure styles, which the encoder already writes here
+    const tags = ff.split('.').filter(x => /^(ss|cv)\d{2}$|^(tnum|pnum|zero)$/.test(x))
     if (tags.length) out.frozenFeatures = tags
   }
 

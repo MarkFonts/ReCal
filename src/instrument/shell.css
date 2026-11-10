@@ -1007,6 +1007,27 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); letter-spacing: var(--track-caps); text-transform: uppercase;
   color: var(--text-dim); padding: var(--spacing-03, 8px) var(--spacing-01, 4px) var(--spacing-01, 4px);
 }
+/* Accordion header (Freezer only; Vertical metrics keeps the plain title). The rail row's
+   grammar at the section's scale: the title, the house chevron on the right margin (down
+   when closed, up when open), and when closed what is frozen in it on a line beneath,
+   truncated so the box never changes width. A rule above each folder, as between rail rows. */
+.freezer-acc {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--spacing-03, 8px);
+  width: 100%; min-width: 0; padding: 0 var(--spacing-01, 4px) var(--spacing-03, 8px) 0; margin: 0;
+  border: 0; border-top: 1px solid var(--border-subtle);
+  background: none; color: var(--text-dim); font: inherit; text-align: left; cursor: pointer;
+}
+.freezer-acc .freezer-section-title { grid-column: 1; padding-bottom: 0; }
+.freezer-acc.is-open .freezer-section-title { color: var(--text); }
+.freezer-acc:hover .freezer-section-title { color: var(--text-muted); }
+.freezer-acc.is-open:hover .freezer-section-title { color: var(--text); }
+.freezer-acc:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
+.freezer-acc-chv { grid-column: 2; grid-row: 1; align-self: end; margin-bottom: 2px; color: var(--text-dim); }
+.freezer-acc-sum {
+  grid-column: 1 / -1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  padding: 2px var(--spacing-01, 4px) 0; font-family: var(--ui-font); font-size: var(--type-micro-size, 0.5625rem); color: var(--text-faint);
+}
+
 /* Glyph cards: two columns at the rail's width. The sample is the card — big, in the live
    font with the feature on; the plain form sits dimmed in one corner and the tag whispers
    in the other. Frozen = gold outline + gold name (a 1px border plus a 1px inset ring, so
