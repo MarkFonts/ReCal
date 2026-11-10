@@ -42,7 +42,7 @@ type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'   //
 type Drag = { kind: 'knob' | 'edge' | 'box'; side?: Side; pushed: boolean; x0: number; y0: number; rect: DOMRect; lx: [number, number]; ly: [number, number] }
 const STATUS_IDLE = 'Drag edges to clamp axes'
 
-function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, onDragState, bands, cols, bandLabel = true }: {
+function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, onDragState, bands, cols, bandLabel = true, aside }: {
   x: PadAxis; y: PadAxis
   top: number; height: number       // plot inset above the lattice (room for column labels), pad height
   ariaLabel: string
@@ -52,6 +52,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   onDragState?: (dragging: boolean) => void
   bands?: ReactNode; cols?: ReactNode
   bandLabel?: boolean               // the frozen value at the band's top right (default on)
+  aside?: ReactNode                 // a gutter right of the pad, past the axis maximum
 }) {
   const { state, dispatch } = useInstrument()
   const xv = state.defaults.axes[x.tag]
@@ -250,6 +251,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
 
   return (
     <>
+     <div className="shape-pad-row">
       <div ref={padRef} className="shape-pad" tabIndex={0} role="group"
         style={{ '--pad-h': `${padH}px`, '--pad-top': `${top}px` } as CSSProperties}
         aria-label={`${ariaLabel}. Arrow keys nudge.`}
@@ -288,6 +290,8 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         {showLayer}
         <span className="shape-pad-status" aria-live="polite">{status}</span>
       </div>
+      {aside}
+     </div>
       <div className="shape-readout">
         <div><span>{xLabel}{limX && <em className="shape-readout-lim tnum">{limX}</em>}</span><span className="tnum">{Math.round(xv)}</span></div>
         <div><span>{yLabel}{limY && <em className="shape-readout-lim tnum">{limY}</em>}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
@@ -348,20 +352,17 @@ function ZoneCols({ active, lim }: { active?: string; lim: [number, number] }) {
   )
 }
 
-// GEOM frozen: the zone it froze in keeps one strip and its "Cal" heading, pinned at the right.
-// Frozen in a gap: the column stays, empty.
-const PIN_W = 56
-function ZonePin({ zone }: { zone?: string }) {
+// GEOM frozen: its zone's column turns sideways. The strip runs along the band, and the "Cal"
+// heading sits in a gutter right of the pad, past the weight maximum. Frozen in a gap between
+// zones: the gutter stays, empty.
+function ZoneAside({ zone, top }: { zone?: string; top: number }) {
   const z = LANDING_ZONES.find(z => z.label === zone)
-  if (!z) return null
   return (
-    <div className="shape-pad-cols" aria-hidden="true">
-      <span className="shape-pad-col on" data-zone={zone}
-        style={{
-          fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${AXIS_RANGES.wght.min}, 'opsz' 8.2`,
-          letterSpacing: '0.03em', color: 'var(--bg)',
-          left: `calc(100% - ${PIN_W / 2}px)`, transform: 'translateX(calc(-50% + 0.015em))',
-        }}>Cal</span>
+    <div className="shape-pad-aside" style={{ paddingTop: top + BAND_H / 2 - 11 }} aria-hidden="true">
+      {z && (
+        <span className="shape-pad-col on" data-zone={zone}
+          style={{ fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${AXIS_RANGES.wght.min}, 'opsz' 8.2`, letterSpacing: '0.03em', color: 'var(--bg)' }}>Cal</span>
+      )}
     </div>
   )
 }
@@ -384,19 +385,20 @@ export function ShapePad() {
   return (
     <Pad
       x={swap ? WGHT_AXIS : GEOM_AXIS} y={swap ? GEOM_AXIS : WGHT_AXIS}
-      top={42} height={213} bandLabel={!swap}
+      top={swap ? 12 : 42} height={213} bandLabel={!swap}
+      aside={swap ? <ZoneAside zone={active} top={12} /> : undefined}
       ariaLabel={`Shape: GEOM ${Math.round(geom)}, weight ${Math.round(wght)}`}
       xLabel={swap ? 'Weight' : geomLabel} yLabel={swap ? geomLabel : 'Weight'}
       knobZone={active}
       onDragState={value => dispatch({ type: 'setGeomDragging', value })}
-      bands={swap ? active && <div className="shape-pad-band" style={{ right: 0, width: PIN_W, background: zoneBandBackground(active) }} /> : LANDING_ZONES.map(z => (
+      bands={swap ? active && <div className="shape-pad-band" style={{ left: 0, right: 0, top: 12, bottom: PAD_BOT, background: zoneBandBackground(active) }} /> : LANDING_ZONES.map(z => (
         <div key={z.label} className="shape-pad-band"
           style={{
             left: geomLeft(z.start), width: geomSpan(z.start, z.end),
             background: zoneBandBackground(z.label),
           }} />
       ))}
-      cols={swap ? <ZonePin zone={active} /> : <ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
+      cols={swap ? undefined : <ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
   )
 }
 
