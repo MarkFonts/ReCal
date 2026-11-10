@@ -1010,14 +1010,13 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
 /* Accordion header (Freezer only; Vertical metrics keeps the plain title). The rail row's
    grammar at the section's scale: the title, the house chevron on the right margin (down
    when closed, up when open), and when closed what is frozen in it on a line beneath,
-   truncated so the box never changes width. A rule between sections, as between rail rows. */
+   truncated so the box never changes width. A rule above each folder, as between rail rows. */
 .freezer-acc {
   display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: var(--spacing-03, 8px);
   width: 100%; min-width: 0; padding: 0 var(--spacing-01, 4px) var(--spacing-03, 8px) 0; margin: 0;
   border: 0; border-top: 1px solid var(--border-subtle);
   background: none; color: var(--text-dim); font: inherit; text-align: left; cursor: pointer;
 }
-.freezer-section:not(.freezer-section ~ .freezer-section) .freezer-acc { border-top: 0; }
 .freezer-acc .freezer-section-title { grid-column: 1; padding-bottom: 0; }
 .freezer-acc.is-open .freezer-section-title { color: var(--text); }
 .freezer-acc:hover .freezer-section-title { color: var(--text-muted); }
@@ -1042,6 +1041,8 @@ body:has(.canvas) .wm-ov-cols { left: var(--ov-left, 264px); right: var(--ov-rig
   transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
 }
 .freezer-card:hover:not(:disabled) { background: var(--surface-hi); border-color: var(--text-dim); }
+/* A ligature cv: listed, not freezable (the bake can't fuse a ligature). Dimmed, inert. */
+.freezer-card:disabled { cursor: default; opacity: .45; }
 .freezer-card:focus-visible { outline: 2px solid var(--text); outline-offset: 2px; }
 .freezer-card.on,
 .freezer-card.on:hover:not(:disabled) { border-color: var(--freeze-gold); box-shadow: inset 0 0 0 1px var(--freeze-gold); }

@@ -9,10 +9,10 @@
 // bake can actually fuse into the cmap — ligature/contextual features (liga, calt, frac,
 // cvXX ligatures) can't be, and offering them would break what-you-preview-is-what-you-get.
 //
-// The sections are an accordion, one open at a time (issue #18: listing all ~70 cards at
-// once would triple the panel). Stylistic sets come first — whole-cut decisions — then the
-// character variants — single-letter ones — then figures. A closed section shows what in it
-// is frozen, the way a closed rail row shows its summary.
+// Figures stay a plain section; the stylistic sets and the character variants are two
+// collapsible folders (issue #18: listing all ~60 of them at once would triple the panel).
+// Sets first — whole-cut decisions — then variants — single-letter ones. A closed folder
+// shows what in it is frozen, the way a closed rail row shows its summary.
 //
 // Gold is the freezer's color language (its own hue, vs the four GEOM zone colors):
 // the frozen card's outline and name are gold here, and in the specimen the glyphs a freeze
@@ -26,8 +26,8 @@ import { SUBS } from '../data/substitutions'
 import { Chevron } from '../../shared/index' // wm-primitives (git submodule)
 import type { FeatureSet } from '../data/substitutions'
 
-type Item = { tag: string; name: string; sample: string }
-type Section = { title: string; items: Item[] }
+type Item = { tag: string; name: string; sample: string; locked?: string }
+type Section = { title: string; items: Item[]; folder?: boolean }
 
 // Representative glyphs shown as base → variant: the first three ASCII letters/digits the
 // feature actually swaps (`chars`, read from the font's own GSUB). A few sets swap too many
@@ -67,29 +67,29 @@ const CV_SAMPLE: Record<string, string> = {
   cv04: 'æ', cv05: 'æ',
 }
 const NAME_BY_TAG: Record<string, string> = {}
-// Every freezable character variant, in cvNN order. Ligature cvs (cv32+) have no
-// SingleSubst (empty `subs`), so the bake can't fuse them and they are left out. The
-// figure variants (cv23–cv31: 0 1 5 6 9) go under Figures, beside Slashed zero, so neither
-// section runs longer than the Stylistic sets (issue #18's limit on the panel's length).
-const isFigure = (cv: FeatureSet): boolean => cv.chars.some(c => /^[0-9]$/.test(c))
-const cvToItem = (cv: FeatureSet): Item => ({ tag: cv.tag, name: cv.name ?? cv.tag, sample: CV_SAMPLE[cv.tag] ?? (asciiChars(cv) || cv.tag) })
-const FREEZABLE_CVS = SUBS.charVariants.filter(cv => Object.keys(cv.subs).length > 0)
-const CV_ITEMS: Item[] = FREEZABLE_CVS.filter(cv => !isFigure(cv)).map(cvToItem)
-const CV_FIGURE_ITEMS: Item[] = FREEZABLE_CVS.filter(isFigure).map(cvToItem)
+// Every character variant, in cvNN order. The ligature cvs (cv32+) have no SingleSubst
+// (empty `subs`), so the bake can't fuse them: they are listed for completeness but locked,
+// their sample the ligature their name ends in ("Constructed ffi" → ffi).
+const CV_ITEMS: Item[] = SUBS.charVariants.map(cv => {
+  const name = cv.name ?? cv.tag
+  return Object.keys(cv.subs).length > 0
+    ? { tag: cv.tag, name, sample: CV_SAMPLE[cv.tag] ?? (asciiChars(cv) || cv.tag) }
+    : { tag: cv.tag, name, sample: name.split(' ').pop() || cv.tag, locked: 'Ligature: can\u2019t be frozen' }
+})
 
 // Off the Freezer: ss17's font entries never apply; hidden until calbuild fixes the set.
 const HIDDEN_SS = new Set(['ss17'])
 
-// Stylistic sets in their natural ssNN order, then the letter character variants, then
-// figures (the figure styles, then the figure character variants).
+// Figures, then the two folders: stylistic sets in their natural ssNN order, then the
+// character variants in cvNN order.
 const SECTIONS: Section[] = [
+  { title: 'Figures', items: FIGURE_ITEMS },
+  // { title: 'Letters', items: LETTER_ITEMS },   // empty without `case`, so no heading
   {
-    title: 'Stylistic sets',
+    title: 'Stylistic sets', folder: true,
     items: SUBS.stylisticSets.filter(ss => !HIDDEN_SS.has(ss.tag)).map(ss => ({ tag: ss.tag, name: nameFor(ss), sample: sampleFor(ss) })),
   },
-  { title: 'Character variants', items: CV_ITEMS },
-  { title: 'Figures', items: [...FIGURE_ITEMS, ...CV_FIGURE_ITEMS] },
-  // { title: 'Letters', items: LETTER_ITEMS },   // empty without `case`, so no heading
+  { title: 'Character variants', folder: true, items: CV_ITEMS },
 ]
 
 for (const sec of SECTIONS) for (const it of sec.items) NAME_BY_TAG[it.tag] = it.name
@@ -125,10 +125,10 @@ export function Freezer() {
     fontVariationSettings: vs,
     fontOpticalSizing: 'none',
   }
-  // One section open at a time (or none). It opens on the first section holding something
-  // frozen, so a preset's character variant is in view; with nothing frozen, the sets.
-  const [open, setOpen] = useState<string | null>(
-    () => SECTIONS.find(sec => sec.items.some(it => frozen.includes(it.tag)))?.title ?? SECTIONS[0].title)
+  // Each folder opens and closes on its own; both start closed, their summaries saying what
+  // in them is frozen (a preset's character variant included).
+  const [open, setOpen] = useState<string[]>([])
+  const flip = (title: string) => setOpen(o => (o.includes(title) ? o.filter(t => t !== title) : [...o, title]))
   // One undo grain per click (reset undoes in one step too).
   const toggle = (tag: string) => { dispatch({ type: 'pushHistory' }); dispatch({ type: 'toggleFrozenFeature', tag }) }
 
@@ -145,23 +145,25 @@ export function Freezer() {
       {hidden.length > 0 && <p className="freezer-conflict" role="status">{conflictPanelNote(hidden)}</p>}
 
       {SECTIONS.map(section => {
-        const isOpen = open === section.title
+        const isOpen = !section.folder || open.includes(section.title)
         return (
         <div className="freezer-section" key={section.title}>
-          <button className={`freezer-acc${isOpen ? ' is-open' : ''}`} aria-expanded={isOpen}
-            onClick={() => setOpen(isOpen ? null : section.title)}>
-            <span className="freezer-section-title">{section.title}</span>
-            {!isOpen && <span className="freezer-acc-sum">{sectionSummary(section.items, frozen)}</span>}
-            <Chevron dir={isOpen ? 1 : -1} width={10} height={6} className="freezer-acc-chv" />
-          </button>
+          {section.folder ? (
+            <button className={`freezer-acc${isOpen ? ' is-open' : ''}`} aria-expanded={isOpen}
+              onClick={() => flip(section.title)}>
+              <span className="freezer-section-title">{section.title}</span>
+              {!isOpen && <span className="freezer-acc-sum">{sectionSummary(section.items, frozen)}</span>}
+              <Chevron dir={isOpen ? 1 : -1} width={10} height={6} className="freezer-acc-chv" />
+            </button>
+          ) : <span className="freezer-section-title">{section.title}</span>}
           {isOpen && <div className="freezer-grid">
             {section.items.map(it => {
               const on = frozen.includes(it.tag)
               const hid = hidden.find(h => h.tag === it.tag)
               return (
                 <button key={it.tag} className={`freezer-card${on ? ' on' : ''}`}
-                  onClick={() => toggle(it.tag)}
-                  title={`${it.tag} — ${it.name}`} aria-pressed={on}>
+                  onClick={() => toggle(it.tag)} disabled={!!it.locked}
+                  title={`${it.tag} — ${it.name}${it.locked ? ` (${it.locked})` : ''}`} aria-pressed={on}>
                   <span className="freezer-card-top" aria-hidden>
                     <span className="freezer-card-base" style={{ ...base, fontFeatureSettings: "'rclt' 1" }}>{it.sample}</span>
                     <span className="freezer-card-tag">{it.tag}</span>
@@ -169,6 +171,7 @@ export function Freezer() {
                   <span className="freezer-card-glyph" style={{ ...base, fontFeatureSettings: `'rclt' 1, '${it.tag}' 1` }}>{it.sample}</span>
                   <span className="freezer-card-name">{it.name.replace(/\//g, '/\u200b')}</span>
                   {hid && <span className="freezer-card-warn">{conflictCardLine(hid.conflicts)}</span>}
+                  {it.locked && <span className="freezer-card-warn">{it.locked}</span>}
                 </button>
               )
             })}
