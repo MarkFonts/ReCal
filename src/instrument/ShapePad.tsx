@@ -29,8 +29,9 @@ const BAND_H = 44    // the plot's height once one axis is frozen: a band, the l
 
 const clamp01 = (n: number) => Math.max(0, Math.min(1, n))
 
-export const nearestZone = (geom: number) =>
-  LANDING_ZONES.reduce((best, z) => (Math.abs(z.mid - geom) < Math.abs(best.mid - geom) ? z : best)).label
+// The zone a GEOM value lies in, or none: the zones leave gaps (10–15, 30–40, 60–80), and a value
+// in a gap belongs to no zone, so nothing lights and nothing is named.
+export const zoneAt = (geom: number) => LANDING_ZONES.find(z => geom >= z.start && geom <= z.end)?.label
 
 // An axis on a pad: the tag, and the keyboard step (⇧ = the big one).
 interface PadAxis { tag: string; nudge: number; big: number }
@@ -41,7 +42,7 @@ type Side = 'left' | 'right' | 'top' | 'bottom' | 'tl' | 'tr' | 'bl' | 'br'   //
 type Drag = { kind: 'knob' | 'edge' | 'box'; side?: Side; pushed: boolean; x0: number; y0: number; rect: DOMRect; lx: [number, number]; ly: [number, number] }
 const STATUS_IDLE = 'Drag edges to clamp axes'
 
-function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, onDragState, bands, cols }: {
+function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, onDragState, bands, cols, bandLabel = true }: {
   x: PadAxis; y: PadAxis
   top: number; height: number       // plot inset above the lattice (room for column labels), pad height
   ariaLabel: string
@@ -50,6 +51,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
   knobZone?: string
   onDragState?: (dragging: boolean) => void
   bands?: ReactNode; cols?: ReactNode
+  bandLabel?: boolean               // the frozen value at the band's top right (default on)
 }) {
   const { state, dispatch } = useInstrument()
   const xv = state.defaults.axes[x.tag]
@@ -217,7 +219,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     py: v => band ? (plotTopPx + plotBotPx) / 2 : plotTopPx + (plotBotPx - plotTopPx) * (1 - (v - yMin) / (yMax - yMin)),
     x: { tag: x.tag, min: xMin, max: xMax, lim: lx, value: xv, frozen: fx },
     y: { tag: y.tag, min: yMin, max: yMax, lim: ly, value: yv, frozen: fy },
-    zone: x.tag === 'GEOM' ? nearestZone : undefined,
+    zone: x.tag === 'GEOM' ? zoneAt : undefined,
     axes: effectiveAxes(state),
   }
   const showLayer = view && show ? <PadBubble v={view} show={show} /> : null
@@ -268,7 +270,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
         {!band && <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: 0, height: box.top }} />}
         {!band && <div className="shape-pad-dim" style={{ left: box.left, width: box.width, top: yTop(by[0]), bottom: 0 }} />}
         {band
-          ? <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yAuto ? 'auto' : Math.round(yv)}</span>   /* where the max sat: clear of the right grabber */
+          ? bandLabel && <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yAuto ? 'auto' : Math.round(yv)}</span>   /* where the max sat: clear of the right grabber */
           : <>
               <span className={ylab} style={{ top: top - 6 }} aria-hidden="true">{yMax}</span>
               <span className={ylab} style={{ bottom: PAD_BOT - 3 }} aria-hidden="true">{yMin}</span>
@@ -296,7 +298,7 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
 
 // Column labels sit centered on their band, clamped so none crosses the plot's inner edge.
 // Widths are measured (the glyphs are variable and the font loads late), so positions are px.
-function ZoneCols({ active, lim }: { active: string; lim: [number, number] }) {
+function ZoneCols({ active, lim }: { active?: string; lim: [number, number] }) {
   const { min: gMin, max: gMax } = AXIS_RANGES.GEOM
   const { min: wMin } = AXIS_RANGES.wght
   const colsRef = useRef<HTMLDivElement>(null)
@@ -346,6 +348,24 @@ function ZoneCols({ active, lim }: { active: string; lim: [number, number] }) {
   )
 }
 
+// GEOM frozen: the zone it froze in keeps one strip and its "Cal" heading, pinned at the right.
+// Frozen in a gap: the column stays, empty.
+const PIN_W = 56
+function ZonePin({ zone }: { zone?: string }) {
+  const z = LANDING_ZONES.find(z => z.label === zone)
+  if (!z) return null
+  return (
+    <div className="shape-pad-cols" aria-hidden="true">
+      <span className="shape-pad-col on" data-zone={zone}
+        style={{
+          fontVariationSettings: `'GEOM' ${z.sampleGeom}, 'wght' ${AXIS_RANGES.wght.min}, 'opsz' 8.2`,
+          letterSpacing: '0.03em', color: 'var(--bg)',
+          left: `calc(100% - ${PIN_W / 2}px)`, transform: 'translateX(calc(-50% + 0.015em))',
+        }}>Cal</span>
+    </div>
+  )
+}
+
 // Row 1: GEOM across, weight up, with the four zones as bands and "Cal" columns.
 const GEOM_AXIS: PadAxis = { tag: 'GEOM', nudge: 1, big: 10 }
 const WGHT_AXIS: PadAxis = { tag: 'wght', nudge: 10, big: 50 }
@@ -356,27 +376,27 @@ export function ShapePad() {
   const { state, dispatch } = useInstrument()
   const geom = state.defaults.axes.GEOM
   const wght = state.defaults.axes.wght
-  const active = nearestZone(geom)
+  const active = zoneAt(geom)
   const frozen = (tag: string) => state.defaults.frozenAxes.includes(tag)
-  // GEOM frozen, weight live: weight goes across (the zones and columns are GEOM's; they go)
+  // GEOM frozen, weight live: weight goes across; the frozen zone keeps a strip and heading at the right
   const swap = frozen('GEOM') && !frozen('wght')
-  const geomLabel = `GEOM ${active}`
+  const geomLabel = active ? `GEOM ${active}` : 'GEOM'   // a gap between zones names none
   return (
     <Pad
       x={swap ? WGHT_AXIS : GEOM_AXIS} y={swap ? GEOM_AXIS : WGHT_AXIS}
-      top={swap ? 12 : 42} height={213}
+      top={42} height={213} bandLabel={!swap}
       ariaLabel={`Shape: GEOM ${Math.round(geom)}, weight ${Math.round(wght)}`}
       xLabel={swap ? 'Weight' : geomLabel} yLabel={swap ? geomLabel : 'Weight'}
       knobZone={active}
       onDragState={value => dispatch({ type: 'setGeomDragging', value })}
-      bands={swap ? undefined : LANDING_ZONES.map(z => (
+      bands={swap ? active && <div className="shape-pad-band" style={{ right: 0, width: PIN_W, background: zoneBandBackground(active) }} /> : LANDING_ZONES.map(z => (
         <div key={z.label} className="shape-pad-band"
           style={{
             left: geomLeft(z.start), width: geomSpan(z.start, z.end),
             background: zoneBandBackground(z.label),
           }} />
       ))}
-      cols={swap ? undefined : <ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
+      cols={swap ? <ZonePin zone={active} /> : <ZoneCols active={active} lim={effectiveLimits(state.defaults, 'GEOM')} />} />
   )
 }
 
