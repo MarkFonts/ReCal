@@ -208,9 +208,18 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
     : `Clamping ${held.side === 'left' || held.side === 'right' ? tag(x) : tag(y)} ${held.side === 'right' || held.side === 'top' ? 'max' : 'min'}`
   const lim = (a: PadAxis, l: [number, number], frozen: boolean) => {
     const r = AXIS_RANGES[a.tag]
-    return frozen ? 'frozen' : l[0] === r.min && l[1] === r.max ? null : `${l[0]}–${l[1]}`
+    return frozen ? 'froze' : l[0] === r.min && l[1] === r.max ? null : `${l[0]}–${l[1]}`
   }
   const limX = lim(x, lx, fx), limY = yAuto ? null : lim(y, ly, fy)
+  // The readout captions alternate name ↔ range/froze once a second while either has one
+  // (one interval, so both swap in step); still under reduced motion.
+  const [alt, setAlt] = useState(false)
+  const swapping = !!(limX || limY)
+  useEffect(() => {
+    if (!swapping || window.matchMedia('(prefers-reduced-motion: reduce)').matches) { setAlt(false); return }
+    const id = window.setInterval(() => setAlt(a => !a), 1000)
+    return () => window.clearInterval(id)
+  }, [swapping])
 
   // The clamp readout layer.
   const plotTopPx = top, plotBotPx = size ? size.H - PAD_BOT : 0
@@ -293,8 +302,8 @@ function Pad({ x, y, top, height, ariaLabel, xLabel, yLabel, yAuto, knobZone, on
       {aside}
      </div>
       <div className="shape-readout">
-        <div><span>{xLabel}{limX && <em className="shape-readout-lim tnum">{limX}</em>}</span><span className="tnum">{Math.round(xv)}</span></div>
-        <div><span>{yLabel}{limY && <em className="shape-readout-lim tnum">{limY}</em>}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
+        <div data-frozen={fx || undefined}><span>{alt && limX ? <em className="shape-readout-alt tnum">{limX}</em> : xLabel}</span><span className="tnum">{Math.round(xv)}</span></div>
+        <div data-frozen={fy && !yAuto || undefined}><span>{alt && limY ? <em className="shape-readout-alt tnum">{limY}</em> : yLabel}</span><span className="tnum">{yAuto ? 'auto' : Math.round(yv)}</span></div>
       </div>
     </>
   )
