@@ -97,9 +97,9 @@ export const SEO_PRESETS = [
     opticalSizing: false,
     gf: 'Poppins:ital,wght@0,400;0,500;0,600;0,700;1,400;1,700',
     compare: { label: 'Poppins', family: "'Poppins', sans-serif", wghtRange: [400, 700], italic: true },
-    title: 'ReCal Sans — a tunable variable alternative to Poppins',
+    title: 'Variable Font Alternative to Poppins — ReCal Sans',
     description:
-      'Poppins is already free — so the reason to switch is control. ReCal Sans is a variable font you tune in the browser: a geometric axis, a real optical-size axis, and your own defaults baked into the file you download.',
+      'Poppins ships static weights only. ReCal Sans is variable, with a Poppins-style preset, a geometric axis, and real optical sizing you tune in the browser.',
     h1: 'A tunable, variable alternative to Poppins',
     body: [
       'Poppins is a clean geometric sans with near-monolinear strokes and circular bowls — deservedly popular for friendly, modern UI, and free under the OFL. So a "free alternative" pitch would be meaningless. The honest comparison is about control: Poppins ships one optical treatment across every size, and its perfect circles can feel generic at text sizes.',
@@ -146,9 +146,9 @@ export const SEO_PRESETS = [
     opticalSizing: true,
     gf: 'Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900',
     compare: { label: 'Inter', family: "'Inter', sans-serif", wghtRange: [100, 900], opszRange: [14, 32], italic: true },
-    title: 'ReCal Sans — a tunable variable alternative to Inter',
+    title: 'Inter Alternative with a Geometric Axis — ReCal Sans',
     description:
-      'Inter is already free and excellent — the reason to look further is voice. ReCal Sans adds a geometric-form axis Inter doesn’t have: one file that runs from accessibility-optimized shapes to geometric display, tuned and downloaded in the browser.',
+      'Inter is excellent; ReCal Sans adds the geometric-form axis it lacks, from accessibility-optimized to geometric display shapes. Tune it, then download.',
     h1: 'A tunable, variable alternative to Inter',
     body: [
       'Inter is the modern UI workhorse: a tall x-height screen grotesque with meticulous spacing, variable weight and optical sizing, free under the OFL. If you need neutral, Inter is close to unbeatable — and "free alternative" would be an empty pitch, because Inter costs nothing.',
@@ -200,9 +200,9 @@ export const SEO_PRESETS = [
     opticalSizing: false,
     gf: 'Geist:wght@100..900',
     compare: { label: 'Geist', family: "'Geist', sans-serif", wghtRange: [100, 900], italic: false },
-    title: 'ReCal Sans — a tunable variable alternative to Geist',
+    title: 'Geist Alternative with Optical Sizing — ReCal Sans',
     description:
-      'Geist is free and sharp — the reason to reach past it is control. ReCal Sans adds real optical sizing and a geometric-form axis you set yourself, then bake into a static font in the browser.',
+      'Geist has no optical sizing. ReCal Sans adds a real optical-size axis and a geometric-form axis you set yourself, then bake into a font in your browser.',
     h1: 'A tunable, variable alternative to Geist',
     body: [
       'Geist is a crisp, Swiss-leaning developer sans — variable weight, tight spacing, free under the OFL. It nails one voice extremely well: the terminal-adjacent modernism of the platform it was drawn for. It also ships without italics and without optical sizing.',
@@ -258,9 +258,9 @@ export const SEO_PRESETS = [
       // Headers read cleaner in Demi than the heavy Bold cut.
       headingWght: 600,
     },
-    title: 'ReCal Sans — a free variable alternative to Futura',
+    title: 'Free Futura Alternative — ReCal Sans Variable Font',
     description:
-      'ReCal Sans is a free, open-source variable geometric sans you can tune in the browser and download. If you reach for Futura, this is an OFL alternative with true geometric forms, tall ascenders, and a real optical-size axis.',
+      'A free Futura alternative with circles-first geometry and tall ascenders: an open-source (OFL) variable font you tune in the browser and download.',
     h1: 'A free, tunable alternative to Futura',
     body: [
       'Futura is the geometric sans — Paul Renner’s 1927 circles-and-triangles modernism, with its pointed apexes, long ascenders, and single-story a. Nearly a century on it still reads as "the future," and it is still licensed commercially, weight by weight.',
@@ -312,9 +312,9 @@ export const SEO_PRESETS = [
     axes: vs({ GEOM: 25, YTAS: 1600, SHRP: 100, opsz: 8 }),
     opticalSizing: false,
     compare: { label: 'Neutraface', family: 'sans-serif', italic: false },
-    title: 'ReCal Sans — a free variable alternative to Neutra',
+    title: 'Free Neutra Alternative — ReCal Sans Variable Font',
     description:
-      'ReCal Sans is a free, open-source variable sans you can tune in the browser and download. If you like Neutra’s architectural modernism, this is an OFL alternative with tall ascenders, sharp terminals, and real optical sizing.',
+      'A free Neutra alternative: tall ascenders, flat sharpened terminals, and real optical sizing in an open-source (OFL) variable font you tune online.',
     h1: 'A free, tunable alternative to Neutra',
     body: [
       'Neutra (and Neutraface after it) channels Richard Neutra’s mid-century architectural modernism: long elegant ascenders, low waists, flat sharp terminals — typography as signage. It is beautiful, distinctive, and commercially licensed.',
@@ -360,9 +360,9 @@ export const SEO_PRESETS = [
     axes: vs({ GEOM: 25, opsz: 20 }),
     opticalSizing: false,
     compare: { label: 'Circular', family: 'sans-serif', italic: false },
-    title: 'ReCal Sans — a free variable alternative to Circular',
+    title: 'Free Circular Alternative — ReCal Sans Variable Font',
     description:
-      'ReCal Sans is a free, open-source variable geometric sans you can tune in the browser and download. If you use Circular, this is a customizable, OFL alternative with a friendlier license and a real optical-size axis.',
+      'A free Circular alternative: that friendly geometric feel in an open-source (OFL) variable sans with real optical sizing. Tune it, then download.',
     h1: 'A free, tunable alternative to Circular',
     body: [
       'Circular is the friendly geometric that powered a decade of consumer brands — round bowls warmed up with humanist details, licensed from a boutique foundry at boutique prices. Its warmth is the point; its cost and closed license are the constraint.',
@@ -410,9 +410,9 @@ export const SEO_PRESETS = [
     opticalSizing: false,
     // No embeddable webfont → disabled compare control (label only, no css).
     compare: { label: 'Gotham', family: 'sans-serif', italic: false },
-    title: 'ReCal Sans — a free variable alternative to Gotham',
+    title: 'Free Gotham Alternative — ReCal Sans Variable Font',
     description:
-      'ReCal Sans is a free, open-source variable geometric sans you can tune in the browser and download. If you use Gotham, this is a customizable, OFL alternative with a real optical-size axis.',
+      'A free Gotham alternative: an open-source (OFL) variable sans with a Gotham-style preset and real optical sizing, tuned right in your browser.',
     h1: 'A free, tunable alternative to Gotham',
     body: [
       'Gotham is a confident American geometric sans — even strokes, a tall x-height, and squared-off geometry drawn from mid-century signage. It set a tone for a decade of branding, and it is licensed accordingly.',
@@ -458,9 +458,9 @@ export const SEO_PRESETS = [
     axes: vs({ GEOM: 25, opsz: 8 }),
     opticalSizing: false,
     compare: { label: 'GT America', family: 'sans-serif', italic: false },
-    title: 'ReCal Sans — a free variable alternative to GT America',
+    title: 'Free GT America Alternative — ReCal Sans Variable Font',
     description:
-      'ReCal Sans is a free, open-source variable sans you can tune in the browser and download. If you license GT America, this is a customizable, OFL alternative with an accessibility-to-geometric axis.',
+      'A free GT America alternative: an open-source (OFL) variable sans with an axis from accessibility-tuned to geometric forms. Tune it, then download.',
     h1: 'A free, tunable alternative to GT America',
     body: [
       'GT America is a versatile American-grotesque family that bridges 19th-century grotesques and mid-century neo-grotesques — an excellent, and paid, workhorse. Its breadth is the point; its cost and closed license are the constraint.',
