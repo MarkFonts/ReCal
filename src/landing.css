@@ -292,6 +292,8 @@
   :root[data-look="vice"][data-theme="dark"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
   :root[data-look="vice"][data-theme="dark"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
   :root[data-look="vice"][data-theme="dark"] .ui-menu { background: #2a0d5c; }
+  /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
+  :root[data-look="vice"][data-theme="dark"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
 
 @media (prefers-color-scheme: dark) {
 
@@ -336,5 +338,7 @@
   :root[data-look="vice"][data-theme="auto"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
   :root[data-look="vice"][data-theme="auto"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
   :root[data-look="vice"][data-theme="auto"] .ui-menu { background: #2a0d5c; }
+  /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
+  :root[data-look="vice"][data-theme="auto"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
 
 }
