@@ -59,6 +59,7 @@ const GLYPHS = {
   Poppins:      { sets: ['cv22', 'ss16'],         pending: ['ss16'] },
   Circular:     { sets: ['cv30', 'cv31'] },
   Inter:        { sets: ['ss16'],                 pending: ['ss16'] },
+  'GTA Art Deco': { sets: ['cv22'] },
 }
 
 /** The freeze list as a font-feature-settings value, for the pages and the OG cards. */
@@ -496,6 +497,58 @@ export const SEO_PRESETS = [
       title: 'Tuned toward GT America',
       paragraphs: [
         'A grotesque register — the plainspoken, workhorse feel GT America is licensed for, free under the OFL. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in.',
+      ],
+    },
+  },
+  {
+    slug: 'gta-art-deco',
+    referent: 'GTA Art Deco',
+    preset: 'GTA Art Deco',
+    // Not for sale at any price -- 'paid' only for the "free alternative" angle, which is
+    // still true: there is no way to license the original at all.
+    kind: 'paid',
+    // Leonida's own map, the setting the face was drawn for.
+    words: ['Vice City', 'Ocean Drive', 'Leonida Keys', 'Port Gellhorn', 'Grassrivers', 'Ambrosia', 'Mount Kalaga', 'Vice Beach'],
+    axes: vs({ GEOM: 25, SHRP: 80, opsz: 18 }),
+    opticalSizing: false,
+    // No embeddable webfont, and no outline SVG either: the font files are Rockstar's and
+    // unlicensed, so the comparison is a capture of Rockstar's own page set both ways.
+    compare: { label: 'GTA Art Deco', family: 'sans-serif', italic: false },
+    // The article's own Vice City look (landing.css .look-vice): a plum ground and gradient
+    // display type, drawn in CSS. No Rockstar art: their assets are theirs.
+    look: 'vice',
+    capture: {
+      referent: 'gta-art-deco-rockstar.jpg',
+      recal: 'gta-art-deco-recal.jpg',
+      alt: 'The GTA VI website’s “Vice City, USA.” headline and story paragraph',
+      caption: 'Rockstar’s GTA VI page, captured twice: in GTA Art Deco as shipped, then with the same CSS pointed at Cal Sans (GEOM 25, sharpness 80, opsz 18, cv22, weight 625). Six lines either way; one word moves.',
+    },
+    title: 'ReCal Sans — a free variable alternative to GTA Art Deco, the GTA VI typeface',
+    description:
+      'GTA Art Deco is the custom typeface Rockstar uses for Grand Theft Auto VI, and it is not for sale. ReCal Sans matches it in four settings: a free, open-source variable sans you can tune in the browser and download.',
+    h1: 'Cal Sans one-shots the GTA VI typeface',
+    body: [
+      'GTA Art Deco is the typeface Rockstar commissioned from Colophon for Grand Theft Auto VI: an American grotesk with geometric bones, first seen on the 2023 teaser site and since grown into Regular, Medium, Bold, and two condensed cuts. It sets every line of the game’s website. It is not for sale at any price.',
+      'ReCal Sans gets there in four settings: GEOM 25, sharpness 80, optical size frozen at 18, and the geometric y. Point Rockstar’s own page at it and the story paragraph still sets in six lines, with one word moving. Tune it further, then download a static TTF you own outright, free under the OFL.',
+    ],
+    faqWhy:
+      'Yes. GTA Art Deco itself is Rockstar’s private typeface and has never been sold. ReCal Sans is free and open-source under the SIL Open Font License, and GEOM 25, sharpness 80, optical size 18, and the geometric y put it in the same register, in a file you are allowed to use.',
+    faqDiff:
+      'GTA Art Deco is a closed family drawn for one game, with condensed cuts for its stacked headlines. ReCal Sans is one variable file you tune (GEOM, sharpness, a real optical-size axis, and ascender height) and freezes your settings into a static TTF on export. It has no condensed width.',
+    // Measured off Rockstar's page captured both ways at the same CSS size (ref/CleanShot
+    // 2026-11-22 01.02.44 and 01.03.05): x-height over cap height, V for the cap and the i
+    // stem for the x. GTA Art Deco 0.735, ReCal Sans 0.720.
+    xhPct: 'GTA Art Deco runs about 2% taller',
+    tell:
+      'The y. GTA Art Deco runs the tail out as one straight diagonal and cuts it flat, where most grotesks curl it back. Cal Sans already draws that y as cv22, its Geometric y, and freezing it is half the match. The rest is sharpness 80 on the terminals and optical size 18, which gives the open text spacing Rockstar sets its story copy in.',
+    loses:
+      'Width. GTA Art Deco ships condensed cuts for its stacked caps headings, the IN-GAME RADIO, SOUNDTRACK, AND SCORE blocks on the same page. ReCal Sans has no width axis, so that heading runs four lines where Rockstar’s runs three. In running text it holds; in those headings it cannot follow.',
+    xheight:
+      'At the same CSS size the two read as one size: the x-heights land within 3% of each other, and Cal Sans stands a touch taller in the caps.',
+    pitch: {
+      title: 'Tuned toward GTA Art Deco',
+      paragraphs: [
+        'The GTA VI register: an American grotesk with a straight-tailed y and crisp terminals, the face Rockstar commissioned and never sold. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },

@@ -268,7 +268,7 @@ ${appCss}
 <div id="root"></div>
 <!-- The article is the page's one grid root: .wm-lines puts its text on the 3px line, .wm-grid
      its column on the 24 with the house margin. The app above is outside it, in its own room. -->
-<main class="seo-below wm-lines" id="about">
+<main class="seo-below wm-lines${p.look ? ` look-${p.look}` : ''}" id="about">
 <article class="wrap wm-grid">
 <div class="seo-col">
   <div class="live-note"><span>▲ Live above, already set to ${esc(p.referent)}. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></span>
@@ -318,6 +318,17 @@ ${appCss}
 
   ${p.body.map(par => `<p>${esc(par)}</p>`).join('\n  ')}
 
+${p.capture ? `  <!-- The referent's own page, captured as shipped and with its CSS pointed at Cal Sans: for
+       a face with no licensable file this is the only honest comparison. Dark only on purpose:
+       it is a capture of a dark page, not a themed surface. -->
+  <figure class="capture-fig">
+    <div class="capture-lbl">${esc(p.referent)}</div>
+    <img src="${BASE}/compare/${p.capture.referent}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in ${esc(p.referent)}">
+    <div class="capture-lbl">Cal Sans</div>
+    <img src="${BASE}/compare/${p.capture.recal}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in Cal Sans">
+    <figcaption>${esc(p.capture.caption)}</figcaption>
+  </figure>
+` : ''}
   <a class="cta" href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Customize it above ↑</a>
 
   <!-- THE FOUR SECTIONS BELOW ARE WHY THESE PAGES ARE NOT EACH OTHER. Everything above

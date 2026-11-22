@@ -59,6 +59,9 @@ export const PRESETS: Preset[] = [
     thresholds: b => applyDelete('a', 0, 'A11Y', b) },
   { name: 'GT America', geom: 25, frozenOpsz: 8, frozen: ['cv02'],
     thresholds: b => applyDelete('a', 0, 'A11Y', b) },
+  // GTA VI's typeface (Colophon for Rockstar, 2023). The y is the match: cv22 is the
+  // straight, flat-cut tail GTA Art Deco draws.
+  { name: 'GTA Art Deco', geom: 25, shrp: 80, frozenOpsz: 18, frozen: ['cv22'] },
 ]
 
 export function applyPreset(dispatch: (a: Action) => void, p: Preset) {
