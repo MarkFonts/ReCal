@@ -290,7 +290,7 @@ ${appCss}
        (the light one is lazy, so it only loads once shown, and is alt="" -- the same card).
        og:image stays the dark JPG: a share preview has no theme. -->
   <figure class="card-fig">
-    <img class="card-img--dark" src="${ogImage}" width="1200" height="630" fetchpriority="high" decoding="async"
+    <img class="card-img--dark" src="${BASE}/og/${p.slug}.jpg" width="1200" height="630" fetchpriority="high" decoding="async"
          alt="${esc(ogAlt)}">
     <img class="card-img--light" src="${BASE}/og/${p.slug}-light.jpg" width="1200" height="630" loading="lazy" decoding="async"
          alt="">
