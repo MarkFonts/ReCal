@@ -20,7 +20,9 @@ const VIEWPORT = { width: 1200, height: 630 }
 const WHICH = process.argv[2] ?? 'all'
 const THEMES = WHICH === 'light' ? [true] : WHICH === 'dark' ? [false] : [false, true]
 
-const SLUGS = ['poppins', 'inter', 'geist', 'futura', 'neutra', 'circular', 'gotham', 'gt-america', 'gta-art-deco']
+// gta-art-deco is not here: its card is the house text over a synthwave scene, rendered by
+// scripts/render-og-synthwave.mjs from public/og/gta-art-deco.source.html.
+const SLUGS = ['poppins', 'inter', 'geist', 'futura', 'neutra', 'circular', 'gotham', 'gt-america']
 
 // The card's preset name, for the freeze table. cards.source.html carries axes only, so
 // without this a card renders whatever rclt gives it at those axes -- which is how the
@@ -28,7 +30,7 @@ const SLUGS = ['poppins', 'inter', 'geist', 'futura', 'neutra', 'circular', 'got
 // with opsz 8 trips a condition set that GEOM alone would not.
 const PRESET_OF = {
   poppins: 'Poppins', inter: 'Inter', geist: 'Geist', futura: 'Futura',
-  neutra: 'Neutra 2', circular: 'Circular', gotham: 'Gotham', 'gt-america': 'GT America', 'gta-art-deco': 'GTA Art Deco',
+  neutra: 'Neutra 2', circular: 'Circular', gotham: 'Gotham', 'gt-america': 'GT America',
 }
 
 async function renderCards() {
