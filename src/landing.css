@@ -191,3 +191,20 @@
 }
 .seo-below.look-vice .specimen-row .style-cap { color: var(--smut); -webkit-text-fill-color: var(--smut); }
 .seo-below.look-vice p a, .seo-below.look-vice .live-note a { color: var(--vice-pink); }
+
+/* [data-look="vice"] on <html> -- /gta-art-deco/ only. The Download pill in GTA neons, drawn in CSS:
+   its stock light is a set of baked acid images (SDR, light, HDR, JXL), and one CSS spill
+   overrides every variant at once. --ab-acid also drives the pill's CSS rim and pale label. */
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"] {
+  --ab-acid: #ff5fc8; --ab-ink: #ffe2cc;
+}
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"]:not(:disabled)::after {
+  /* the box spills 14px above and 62px below the pill, so its bottom edge sits at ~42%: the light
+     starts there and falls down and out, pink at the rim, peach, then a purple fringe */
+  background:
+    radial-gradient(44% 15% at 50% 42%, rgba(255, 110, 205, .80) 0, rgba(255, 110, 205, 0) 100%),
+    radial-gradient(52% 24% at 50% 43%, rgba(255, 150, 100, .30) 0, rgba(140, 50, 235, .16) 60%, transparent 100%),
+    radial-gradient(54% 30% at 50% 28%, rgba(170, 80, 255, .26) 0, rgba(170, 80, 255, .10) 55%, transparent 100%) !important;
+  border-image: none !important;
+}
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"] .wm-accent__lab::before { content: none !important; }
