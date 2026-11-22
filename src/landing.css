@@ -85,15 +85,15 @@
 .seo-below .card-fig { margin: 24px 0 0; max-width: 820px; }
 .seo-below .capture-fig { margin: 24px 0 0; max-width: 820px; display: grid; gap: 6px; }
 .seo-below .capture-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border-subtle, var(--sline)); }
-.seo-below .wipe { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-subtle, var(--sline)); }
+.seo-below .wipe { --pos: 50%; position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-subtle, var(--sline)); }
 .seo-below .wipe img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; }
 .seo-below .wipe .wipe-top { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
-.seo-below .wipe-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff;
+.seo-below .wipe-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff; /* color-lint: allow -- GTA page paint on its own fixed dark ground, not a themed ink */
   box-shadow: 0 0 0 1px rgba(10, 4, 40, .35), 0 0 14px rgba(255, 120, 220, .6); pointer-events: none; }
-.seo-below .wipe-line::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
-  border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(10, 4, 40, .45), 0 2px 10px rgba(10, 4, 40, .5); }
+.seo-below .wipe-line::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%);
+  border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(10, 4, 40, .45), 0 2px 10px rgba(10, 4, 40, .5); } /* color-lint: allow -- GTA page paint on its own fixed dark ground, not a themed ink */
 .seo-below .wipe-tags { display: flex; justify-content: space-between; margin-bottom: 6px;
-  color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; }
+  color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
 /* the input covers the figure: drag anywhere. Invisible, but it keeps focus, arrows and touch. */
 .seo-below .wipe-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; touch-action: pan-y; }
 .seo-below .wipe-range:focus-visible + * , .seo-below .wipe:has(.wipe-range:focus-visible) { outline: 2px solid var(--vice-pink, var(--signal-acid)); outline-offset: 3px; }
@@ -261,17 +261,17 @@
   :root[data-look="vice"][data-theme="dark"] .stage::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%),
-      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%),
+      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
+      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
       radial-gradient(1.6px 1.6px at 151px 88px, rgba(255,240,250,.9) 50%, transparent 52%),
-      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%),
-      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%),
-      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
+      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
+      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
       radial-gradient(2px 2px at 300px 120px, rgba(255,230,245,.8) 50%, transparent 52%);
     background-size: 233px 197px, 151px 139px, 347px 251px, 179px 223px, 281px 163px, 211px 239px, 523px 401px;
     /* the stars thin out toward the magenta horizon, like the card */
-    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
-            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%); /* color-lint: allow -- mask alpha, not ink */
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%); /* color-lint: allow -- mask alpha, not ink */
   }
   :root[data-look="vice"][data-theme="dark"] .stage-scroll { position: relative; z-index: 1; }
   /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
@@ -294,7 +294,7 @@
      states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
      dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
   :root[data-look="vice"][data-theme="dark"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
-  :root[data-look="vice"][data-theme="dark"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
+  :root[data-look="vice"][data-theme="dark"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); } /* color-lint: allow -- a light veil on the dark-only purple ground */
   :root[data-look="vice"][data-theme="dark"] .ui-menu { background: #2a0d5c; }
   /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
   :root[data-look="vice"][data-theme="dark"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
@@ -311,17 +311,17 @@
   :root[data-look="vice"][data-theme="auto"] .stage::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%),
-      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%),
+      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
+      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
       radial-gradient(1.6px 1.6px at 151px 88px, rgba(255,240,250,.9) 50%, transparent 52%),
-      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%),
-      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%),
-      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
+      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
+      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%), /* color-lint: allow -- synthwave stars: fixed white, the scene is dark-only */
       radial-gradient(2px 2px at 300px 120px, rgba(255,230,245,.8) 50%, transparent 52%);
     background-size: 233px 197px, 151px 139px, 347px 251px, 179px 223px, 281px 163px, 211px 239px, 523px 401px;
     /* the stars thin out toward the magenta horizon, like the card */
-    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
-            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%); /* color-lint: allow -- mask alpha, not ink */
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%); /* color-lint: allow -- mask alpha, not ink */
   }
   :root[data-look="vice"][data-theme="auto"] .stage-scroll { position: relative; z-index: 1; }
   /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
@@ -344,7 +344,7 @@
      states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
      dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
   :root[data-look="vice"][data-theme="auto"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
-  :root[data-look="vice"][data-theme="auto"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
+  :root[data-look="vice"][data-theme="auto"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); } /* color-lint: allow -- a light veil on the dark-only purple ground */
   :root[data-look="vice"][data-theme="auto"] .ui-menu { background: #2a0d5c; }
   /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
   :root[data-look="vice"][data-theme="auto"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
