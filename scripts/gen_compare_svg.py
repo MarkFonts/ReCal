@@ -42,6 +42,8 @@ FONTS = {
     "gt-america": ("GTAmerica Bold.otf",           "GTAmerica Regular.otf"),
     "circular":   ("CircularStd-Bold.otf",         "CircularStd-Book.otf"),
     "neutra":     ("Neutraface2Display-Bold.otf",  "Neutra2Text-Book.otf"),
+    # Rockstar's web cuts, as served (hashed .woff names): Bold heads the page, Regular sets it
+    "gta-art-deco": ("GTAArtDeco_Bold-s.p.0yn5.wm39fg.l.woff", "GTAArtDeco_Regular-s.p.0imfurdf3f-dg.woff"),
 }
 
 
@@ -49,7 +51,8 @@ def parse_pitch(slug):
     """Pull the pitch title + paragraphs for a slug out of seo-presets.mjs."""
     src = open(os.path.join(HERE, "seo-presets.mjs"), encoding="utf-8").read()
     i = src.find("slug: '%s'" % slug)
-    block = src[i:i + 4000]
+    j = src.find("\n    slug: '", i + 1)           # the entry ends where the next one starts
+    block = src[i:j if j > 0 else len(src)]
     title = re.search(r"pitch:\s*\{\s*title:\s*'([^']+)'", block).group(1)
     paras_blk = re.search(r"paragraphs:\s*\[(.*?)\]", block, re.S).group(1)
     paras = re.findall(r"'([^']+)'", paras_blk)
@@ -65,7 +68,12 @@ def load(name):
     glyph goes; fontTools draws WHAT it looks like."""
     path = os.path.join(REF, name)
     f = TTFont(path)
-    blob = hb.Blob.from_file_path(path)
+    if f.flavor:                                    # .woff/.woff2: HarfBuzz reads only sfnt
+        import io
+        raw = io.BytesIO(); f.flavor = None; f.save(raw)
+        blob = hb.Blob(raw.getvalue())
+    else:
+        blob = hb.Blob.from_file_path(path)
     hbfont = hb.Font(hb.Face(blob))
     return {
         "gs": f.getGlyphSet(),
@@ -160,5 +168,6 @@ def build(slug):
 
 
 if __name__ == "__main__":
-    for slug in FONTS:
+    import sys
+    for slug in (sys.argv[1:] or FONTS):            # e.g. python3 scripts/gen_compare_svg.py gta-art-deco
         build(slug)

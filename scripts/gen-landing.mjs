@@ -189,7 +189,7 @@ function page(p, all) {
   }
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="en"${p.look ? ` data-look="${p.look}"` : ''}>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -213,7 +213,7 @@ function page(p, all) {
 <meta name="twitter:description" content="${esc(p.description)}">
 <meta name="twitter:image" content="${ogImage}">
 <meta name="twitter:image:alt" content="${esc(ogAlt)}">
-<link rel="icon" type="image/svg+xml" href="${BASE}/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="${BASE}/${p.look ? `favicon-${p.look}.svg` : 'favicon.svg'}">
 <link rel="preload" href="${CAL_SANS}" as="font" type="font/ttf" crossorigin>
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <!-- Google tag (gtag.js) -->
@@ -268,7 +268,7 @@ ${appCss}
 <div id="root"></div>
 <!-- The article is the page's one grid root: .wm-lines puts its text on the 3px line, .wm-grid
      its column on the 24 with the house margin. The app above is outside it, in its own room. -->
-<main class="seo-below wm-lines" id="about">
+<main class="seo-below wm-lines${p.look ? ` look-${p.look}` : ''}" id="about">
 <article class="wrap wm-grid">
 <div class="seo-col">
   <div class="live-note"><span>▲ Live above, already set to ${esc(p.referent)}. <a href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Back to the tool</a></span>
@@ -290,7 +290,7 @@ ${appCss}
        (the light one is lazy, so it only loads once shown, and is alt="" -- the same card).
        og:image stays the dark JPG: a share preview has no theme. -->
   <figure class="card-fig">
-    <img class="card-img--dark" src="${ogImage}" width="1200" height="630" fetchpriority="high" decoding="async"
+    <img class="card-img--dark" src="${BASE}/og/${p.slug}.jpg" width="1200" height="630" fetchpriority="high" decoding="async"
          alt="${esc(ogAlt)}">
     <img class="card-img--light" src="${BASE}/og/${p.slug}-light.jpg" width="1200" height="630" loading="lazy" decoding="async"
          alt="">
@@ -318,6 +318,24 @@ ${appCss}
 
   ${p.body.map(par => `<p>${esc(par)}</p>`).join('\n  ')}
 
+${p.capture ? `  <!-- The referent's own page, captured as shipped and with its CSS pointed at Cal Sans: for
+       a face with no licensable file this is the only honest comparison. Dark only on purpose:
+       it is a capture of a dark page, not a themed surface. -->
+  <figure class="capture-fig">
+    <!-- A wipe: Cal Sans underneath, the referent on top clipped to the slider's position. The
+         range input is the whole control (keyboard, touch, screen readers); the line is paint. -->
+    <div class="wipe-tags" aria-hidden="true"><span>&larr; ${esc(p.referent)}</span><span>Cal Sans &rarr;</span></div>
+    <div class="wipe" style="--pos:50%">
+      <img src="${BASE}/compare/${p.capture.recal}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in Cal Sans">
+      <img class="wipe-top" src="${BASE}/compare/${p.capture.referent}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in ${esc(p.referent)}">
+      <span class="wipe-line" aria-hidden="true"></span>
+      <input class="wipe-range" type="range" min="0" max="100" value="50" step="0.5"
+             aria-label="Wipe between ${esc(p.referent)} (left) and Cal Sans (right)"
+             oninput="this.parentNode.style.setProperty('--pos', this.value + '%')">
+    </div>
+    <figcaption>${esc(p.capture.caption)}</figcaption>
+  </figure>
+` : ''}
   <a class="cta" href="#top" onclick="scrollTo({top:0,behavior:'smooth'});return false">Customize it above ↑</a>
 
   <!-- THE FOUR SECTIONS BELOW ARE WHY THESE PAGES ARE NOT EACH OTHER. Everything above

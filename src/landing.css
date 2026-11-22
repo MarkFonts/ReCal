@@ -83,6 +83,21 @@
 }
 
 .seo-below .card-fig { margin: 24px 0 0; max-width: 820px; }
+.seo-below .capture-fig { margin: 24px 0 0; max-width: 820px; display: grid; gap: 6px; }
+.seo-below .capture-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border-subtle, var(--sline)); }
+.seo-below .wipe { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-subtle, var(--sline)); }
+.seo-below .wipe img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; }
+.seo-below .wipe .wipe-top { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.seo-below .wipe-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff;
+  box-shadow: 0 0 0 1px rgba(10, 4, 40, .35), 0 0 14px rgba(255, 120, 220, .6); pointer-events: none; }
+.seo-below .wipe-line::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
+  border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(10, 4, 40, .45), 0 2px 10px rgba(10, 4, 40, .5); }
+.seo-below .wipe-tags { display: flex; justify-content: space-between; margin-bottom: 6px;
+  color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; }
+/* the input covers the figure: drag anywhere. Invisible, but it keeps focus, arrows and touch. */
+.seo-below .wipe-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; touch-action: pan-y; }
+.seo-below .wipe-range:focus-visible + * , .seo-below .wipe:has(.wipe-range:focus-visible) { outline: 2px solid var(--vice-pink, var(--signal-acid)); outline-offset: 3px; }
+.seo-below .capture-fig figcaption { margin-top: 6px; color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
 .seo-below .card-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border-subtle, var(--sline)); }
 /* Dark and light card, one visible at a time. Dark is the default (no data-theme, or dark); light shows
    under data-theme=light, and under auto when the OS is light. */
@@ -155,3 +170,183 @@
 
 .seo-below footer { margin-top: 48px; padding-top: 24px; box-shadow: inset 0 1px 0 var(--sline); }
 .seo-below footer a { color: var(--smut); }
+
+/* .look-vice -- /gta-art-deco/ only (seo-presets.mjs `look`). The article in the register of
+   the page it compares against: deep plum ground, display type in a pink-to-peach sunset
+   gradient. Pure CSS; no Rockstar artwork. Dark by design, so it holds under every theme
+   setting rather than flipping to the house light ramp. */
+.seo-below.look-vice {
+  --vice-ground: #1a1220; --vice-pink: #e8689f; --vice-peach: #f2cfa4; --vice-text: #ead8cf;
+  --sbg: var(--vice-ground); --sfg: var(--vice-text); --smut: color-mix(in srgb, var(--vice-text) 68%, transparent);
+  --text-dim: color-mix(in srgb, var(--vice-text) 60%, transparent);
+  /* the app's own tokens too: the house light ramp redefines them on :root, and the article's
+     prose reads them directly, so without these it went dark-on-plum under data-theme=light */
+  --text: var(--vice-text); --text-muted: var(--smut); --bg: var(--vice-ground); --text-rgb: 234, 216, 207;
+  --border: color-mix(in srgb, var(--vice-text) 18%, transparent); --border-subtle: var(--border);
+  background: var(--vice-ground); color: var(--vice-text);
+}
+.seo-below.look-vice h1, .seo-below.look-vice h2, .seo-below.look-vice .specimen-row {
+  background: linear-gradient(180deg, var(--vice-pink) 0%, var(--vice-peach) 100%);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.seo-below.look-vice .specimen-row .style-cap { color: var(--smut); -webkit-text-fill-color: var(--smut); }
+.seo-below.look-vice p a, .seo-below.look-vice .live-note a { color: var(--vice-pink); }
+
+/* [data-look="vice"] on <html> -- /gta-art-deco/ only. The Download pill in GTA neons, drawn in CSS:
+   its stock light is a set of baked acid images (SDR, light, HDR, JXL), and one CSS spill
+   overrides every variant at once. --ab-acid also drives the pill's CSS rim and pale label. */
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"] {
+  --ab-acid: #ff5fc8; --ab-ink: #ffe2cc;
+}
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"]:not(:disabled)::after {
+  /* the box spills 14px above and 62px below the pill, so its bottom edge sits at ~42%: the light
+     starts there and falls down and out, pink at the rim, peach, then a purple fringe */
+  background:
+    radial-gradient(44% 15% at 50% 42%, rgba(255, 110, 205, .80) 0, rgba(255, 110, 205, 0) 100%),
+    radial-gradient(52% 24% at 50% 43%, rgba(255, 150, 100, .30) 0, rgba(140, 50, 235, .16) 60%, transparent 100%),
+    radial-gradient(54% 30% at 50% 28%, rgba(170, 80, 255, .26) 0, rgba(170, 80, 255, .10) 55%, transparent 100%) !important;
+  border-image: none !important;
+}
+/* on hover the neon drifts a little, side to side, on top of the stock deepen (scale 1.1, .8s) */
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"]:hover:not(:disabled)::after { animation: vice-drift 2.6s ease-in-out infinite alternate; }
+/* `translate`, not transform or background-position: the stock hover scales via transform, and the glow's
+   background is !important, which an animation cannot override. translate composes with both. */
+@keyframes vice-drift { from { translate: -14px 0; } to { translate: 14px 0; } }
+@media (prefers-reduced-motion: reduce) { :root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"]:hover::after { animation: none; } }
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"] .wm-accent__lab::before { content: none !important; }
+
+/* The app's acid accents in GTA peach on /gta-art-deco/ (the knob, handles, Reset, tab underlines,
+   rings). tokens.css restates the acid per theme and again in display-p3; [data-theme] is always
+   set on <html>, so these selectors outrank all of those. Light keeps a darker peach for thin ink. */
+:root[data-look="vice"][data-theme] { --signal-acid: #ffb38a; --signal-acid-fill: #ffb38a; }
+:root[data-look="vice"][data-theme="light"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
+@media (prefers-color-scheme: light) {
+  :root[data-look="vice"][data-theme="auto"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
+}
+
+/* Peach in PQ: the fills the acid used (knob, edge grabbers, slider ticks, glyph cells) paint
+   peach-pq.avif, baked by wm-primitives' bake-pq-swatch.swift (1216 nits core -> 203 rim,
+   BT.2100 PQ) -- the same recipe as the zone swatches. background-color stays the SDR
+   fallback. Dark grounds only: a light ground has no brighter-than-white to boost into. */
+:root[data-look="vice"][data-theme="dark"] :is(.shape-pad-knob, .shape-pad-grab:hover, .shape-pad-grab[data-held],
+  .clamp-slider-grab:hover, .clamp-slider-grab[data-held], .gp .gp-cell:hover),
+:root[data-look="vice"][data-theme="dark"] :is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after {
+  background-color: var(--signal-acid-fill); background-image: url('peach-pq.avif');
+  background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-look="vice"][data-theme="auto"] :is(.shape-pad-knob, .shape-pad-grab:hover, .shape-pad-grab[data-held],
+    .clamp-slider-grab:hover, .clamp-slider-grab[data-held], .gp .gp-cell:hover),
+  :root[data-look="vice"][data-theme="auto"] :is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after {
+    background-color: var(--signal-acid-fill); background-image: url('peach-pq.avif');
+    background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit;
+  }
+}
+
+/* the letterbox band under the article takes the plum ground, so the page doesn't end on a black slab */
+:root[data-look="vice"] .seo-lb { background: #1a1220; }
+
+/* ── The synthwave easter egg: /gta-art-deco/ only, dark only (a light ground has no night sky).
+   Every scene in the app above sits on a purple-to-magenta ground with stars behind the type.
+   Scoped by selector, never by token: --bg and --surface also paint the rail, steppers, menus
+   and the pad, and the rail stays exactly as it is. */
+
+  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg).
+     Generated, not hand-stopped: wm-primitives blend('#1c0a5e', '#c8137f', { ease: 'ease-in',
+     stops: 10, space: 'oklab', dir: '180deg' }) -- the purple holds through the top, the
+     magenta rises toward the horizon, every stop an oklab mix. Chrome dithers a background
+     gradient itself, so no .wm-dither (that is for masks, per GRADIENTS.md). */
+  :root[data-look="vice"][data-theme="dark"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, color-mix(in oklab, #1c0a5e 96.57%, #c8137f) 14.49%, color-mix(in oklab, #1c0a5e 87.38%, #c8137f) 29.56%, color-mix(in oklab, #1c0a5e 74.07%, #c8137f) 44.59%, color-mix(in oklab, #1c0a5e 58.3%, #c8137f) 58.98%, color-mix(in oklab, #1c0a5e 41.7%, #c8137f) 72.13%, color-mix(in oklab, #1c0a5e 25.93%, #c8137f) 83.41%, color-mix(in oklab, #1c0a5e 12.62%, #c8137f) 92.22%, color-mix(in oklab, #1c0a5e 3.43%, #c8137f) 97.95%, #c8137f 100%); }
+  /* stars behind the proofed type: dots at mismatched tile sizes so the repeat never lines up */
+  :root[data-look="vice"][data-theme="dark"] .stage::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%),
+      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%),
+      radial-gradient(1.6px 1.6px at 151px 88px, rgba(255,240,250,.9) 50%, transparent 52%),
+      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%),
+      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%),
+      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(2px 2px at 300px 120px, rgba(255,230,245,.8) 50%, transparent 52%);
+    background-size: 233px 197px, 151px 139px, 347px 251px, 179px 223px, 281px 163px, 211px 239px, 523px 401px;
+    /* the stars thin out toward the magenta horizon, like the card */
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+  }
+  :root[data-look="vice"][data-theme="dark"] .stage-scroll { position: relative; z-index: 1; }
+  /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
+     only, so the rail and its pad keep the house greys */
+  :root[data-look="vice"][data-theme="dark"] .canvas { --border: #4a1696; --border-subtle: #3c1180; --sline: #4a1696; }
+  /* opaque --bg panels that would sit on the ground as black slabs: translucent plum instead */
+  :root[data-look="vice"][data-theme="dark"] .info-panel { background: rgba(28, 10, 94, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); --info-a: .95; --info-aa: .7; }
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try-pill,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try .try-btn,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try .style-menu-btn,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try .preview-reset,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .mode-row,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .mode-row .body-pairing,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .scene-bar .drawer-label { background-color: rgba(28, 10, 94, .55); }
+  /* glyphs: cells and the picker's panels let the ground through */
+  :root[data-look="vice"][data-theme="dark"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side) { background: transparent; }
+  :root[data-look="vice"][data-theme="dark"] .gp .gp-cell { background-color: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="dark"] .gp .gp-search { background: rgba(28, 10, 94, .45); }
+  /* the UI scene: fields, cards and panels tinted so the gradient reads through; hover and on
+     states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
+     dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
+  :root[data-look="vice"][data-theme="dark"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="dark"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
+  :root[data-look="vice"][data-theme="dark"] .ui-menu { background: #2a0d5c; }
+  /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
+  :root[data-look="vice"][data-theme="dark"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
+
+@media (prefers-color-scheme: dark) {
+
+  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg).
+     Generated, not hand-stopped: wm-primitives blend('#1c0a5e', '#c8137f', { ease: 'ease-in',
+     stops: 10, space: 'oklab', dir: '180deg' }) -- the purple holds through the top, the
+     magenta rises toward the horizon, every stop an oklab mix. Chrome dithers a background
+     gradient itself, so no .wm-dither (that is for masks, per GRADIENTS.md). */
+  :root[data-look="vice"][data-theme="auto"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, color-mix(in oklab, #1c0a5e 96.57%, #c8137f) 14.49%, color-mix(in oklab, #1c0a5e 87.38%, #c8137f) 29.56%, color-mix(in oklab, #1c0a5e 74.07%, #c8137f) 44.59%, color-mix(in oklab, #1c0a5e 58.3%, #c8137f) 58.98%, color-mix(in oklab, #1c0a5e 41.7%, #c8137f) 72.13%, color-mix(in oklab, #1c0a5e 25.93%, #c8137f) 83.41%, color-mix(in oklab, #1c0a5e 12.62%, #c8137f) 92.22%, color-mix(in oklab, #1c0a5e 3.43%, #c8137f) 97.95%, #c8137f 100%); }
+  /* stars behind the proofed type: dots at mismatched tile sizes so the repeat never lines up */
+  :root[data-look="vice"][data-theme="auto"] .stage::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%),
+      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%),
+      radial-gradient(1.6px 1.6px at 151px 88px, rgba(255,240,250,.9) 50%, transparent 52%),
+      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%),
+      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%),
+      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(2px 2px at 300px 120px, rgba(255,230,245,.8) 50%, transparent 52%);
+    background-size: 233px 197px, 151px 139px, 347px 251px, 179px 223px, 281px 163px, 211px 239px, 523px 401px;
+    /* the stars thin out toward the magenta horizon, like the card */
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+  }
+  :root[data-look="vice"][data-theme="auto"] .stage-scroll { position: relative; z-index: 1; }
+  /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
+     only, so the rail and its pad keep the house greys */
+  :root[data-look="vice"][data-theme="auto"] .canvas { --border: #4a1696; --border-subtle: #3c1180; --sline: #4a1696; }
+  /* opaque --bg panels that would sit on the ground as black slabs: translucent plum instead */
+  :root[data-look="vice"][data-theme="auto"] .info-panel { background: rgba(28, 10, 94, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); --info-a: .95; --info-aa: .7; }
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try-pill,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try .try-btn,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try .style-menu-btn,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try .preview-reset,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row .body-pairing,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .scene-bar .drawer-label { background-color: rgba(28, 10, 94, .55); }
+  /* glyphs: cells and the picker's panels let the ground through */
+  :root[data-look="vice"][data-theme="auto"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side) { background: transparent; }
+  :root[data-look="vice"][data-theme="auto"] .gp .gp-cell { background-color: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="auto"] .gp .gp-search { background: rgba(28, 10, 94, .45); }
+  /* the UI scene: fields, cards and panels tinted so the gradient reads through; hover and on
+     states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
+     dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
+  :root[data-look="vice"][data-theme="auto"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="auto"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
+  :root[data-look="vice"][data-theme="auto"] .ui-menu { background: #2a0d5c; }
+  /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
+  :root[data-look="vice"][data-theme="auto"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
+
+}

@@ -20,6 +20,8 @@ const VIEWPORT = { width: 1200, height: 630 }
 const WHICH = process.argv[2] ?? 'all'
 const THEMES = WHICH === 'light' ? [true] : WHICH === 'dark' ? [false] : [false, true]
 
+// gta-art-deco is not here: its card is the house text over a synthwave scene, rendered by
+// scripts/render-og-synthwave.mjs from public/og/gta-art-deco.source.html.
 const SLUGS = ['poppins', 'inter', 'geist', 'futura', 'neutra', 'circular', 'gotham', 'gt-america']
 
 // The card's preset name, for the freeze table. cards.source.html carries axes only, so

@@ -84,6 +84,8 @@ Testing/
 # Commercial reference fonts (for local SVG specimen work) — never distribute
 ref/*.otf
 ref/*.ttf
+ref/*.woff
+ref/*.woff2
 
 # bundled tests (npm test)
 tests/.build/
