@@ -1163,6 +1163,19 @@ export default function Shell() {
   // auto-applies a preset. Case-insensitive; unknown values are ignored. Referents
   // that are NOT presets (e.g. Gotham) resemble themselves via raw BOOT.axes instead.
   const booted = useRef(false)   // the boot replay has run; the address bar may follow the state
+  // A landing page's look (<html data-look>, set by gen-landing: /gta-art-deco/'s synthwave) belongs
+  // to the preset the page booted with. Moving sliders keeps it; choosing anything else in Start
+  // from (another preset, the default, Reset) takes it off; choosing the page's preset again puts it
+  // back. It only switches off once the preset has engaged, so the boot frame can't flash it away.
+  const pageLook = useRef(document.documentElement.dataset.look)
+  const lookEngaged = useRef(false)
+  useEffect(() => {
+    const look = pageLook.current
+    if (!look || !BOOT.preset) return
+    const onPagePreset = (state.activePreset ?? '').toLowerCase() === BOOT.preset.toLowerCase()
+    if (onPagePreset) { lookEngaged.current = true; document.documentElement.dataset.look = look }
+    else if (lookEngaged.current) delete document.documentElement.dataset.look
+  }, [state.activePreset])
   useEffect(() => {
     const want = BOOT.preset
     const p = want && PRESETS.find(x => x.name.toLowerCase() === want.toLowerCase())
