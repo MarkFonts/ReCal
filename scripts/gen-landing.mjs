@@ -322,10 +322,17 @@ ${p.capture ? `  <!-- The referent's own page, captured as shipped and with its 
        a face with no licensable file this is the only honest comparison. Dark only on purpose:
        it is a capture of a dark page, not a themed surface. -->
   <figure class="capture-fig">
-    <div class="capture-lbl">${esc(p.referent)}</div>
-    <img src="${BASE}/compare/${p.capture.referent}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in ${esc(p.referent)}">
-    <div class="capture-lbl">Cal Sans</div>
-    <img src="${BASE}/compare/${p.capture.recal}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in Cal Sans">
+    <!-- A wipe: Cal Sans underneath, the referent on top clipped to the slider's position. The
+         range input is the whole control (keyboard, touch, screen readers); the line is paint. -->
+    <div class="wipe-tags" aria-hidden="true"><span>&larr; ${esc(p.referent)}</span><span>Cal Sans &rarr;</span></div>
+    <div class="wipe" style="--pos:50%">
+      <img src="${BASE}/compare/${p.capture.recal}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in Cal Sans">
+      <img class="wipe-top" src="${BASE}/compare/${p.capture.referent}" width="1400" height="474" loading="lazy" decoding="async" alt="${esc(p.capture.alt)}, set in ${esc(p.referent)}">
+      <span class="wipe-line" aria-hidden="true"></span>
+      <input class="wipe-range" type="range" min="0" max="100" value="50" step="0.5"
+             aria-label="Wipe between ${esc(p.referent)} (left) and Cal Sans (right)"
+             oninput="this.parentNode.style.setProperty('--pos', this.value + '%')">
+    </div>
     <figcaption>${esc(p.capture.caption)}</figcaption>
   </figure>
 ` : ''}

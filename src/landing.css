@@ -85,7 +85,18 @@
 .seo-below .card-fig { margin: 24px 0 0; max-width: 820px; }
 .seo-below .capture-fig { margin: 24px 0 0; max-width: 820px; display: grid; gap: 6px; }
 .seo-below .capture-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border-subtle, var(--sline)); }
-.seo-below .capture-lbl { margin-top: 12px; color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
+.seo-below .wipe { position: relative; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-subtle, var(--sline)); }
+.seo-below .wipe img { display: block; width: 100%; height: auto; border: 0; border-radius: 0; }
+.seo-below .wipe .wipe-top { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.seo-below .wipe-line { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff;
+  box-shadow: 0 0 0 1px rgba(10, 4, 40, .35), 0 0 14px rgba(255, 120, 220, .6); pointer-events: none; }
+.seo-below .wipe-line::after { content: ''; position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px;
+  border-radius: 50%; background: #fff; box-shadow: 0 0 0 3px rgba(10, 4, 40, .45), 0 2px 10px rgba(10, 4, 40, .5); }
+.seo-below .wipe-tags { display: flex; justify-content: space-between; margin-bottom: 6px;
+  color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); line-height: 1.4; }
+/* the input covers the figure: drag anywhere. Invisible, but it keeps focus, arrows and touch. */
+.seo-below .wipe-range { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; touch-action: pan-y; }
+.seo-below .wipe-range:focus-visible + * , .seo-below .wipe:has(.wipe-range:focus-visible) { outline: 2px solid var(--vice-pink, var(--signal-acid)); outline-offset: 3px; }
 .seo-below .capture-fig figcaption { margin-top: 6px; color: var(--text-dim); font-size: var(--type-ui-size, 0.75rem); }
 .seo-below .card-fig img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--border-subtle, var(--sline)); }
 /* Dark and light card, one visible at a time. Dark is the default (no data-theme, or dark); light shows
