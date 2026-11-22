@@ -221,7 +221,9 @@ export function applyUrlState(dispatch: (a: Action) => void, d: DecodedState) {
     dispatch({ type: 'setFrozenOpszValue', value: d.frozenOpszValue ?? null })
   }
   if (d.autoAscender) dispatch({ type: 'setAutoAscender', value: true })
-  for (const tag of d.frozenFeatures ?? []) dispatch({ type: 'toggleFrozenFeature', tag })
+  // set, never toggle: the address bar now writes ff=, and on reload the boot preset has
+  // already frozen the same tags, so a toggle here un-froze them (every preset page)
+  for (const tag of d.frozenFeatures ?? []) dispatch({ type: 'setFrozenFeature', tag, frozen: true })
   for (const tag of d.frozenAxes ?? []) dispatch({ type: 'setFrozenAxis', tag, frozen: true })
   const subset: [SubsetOpt, boolean | string | undefined][] =
     [['subsetKeepFeatures', d.subsetKeepFeatures], ['subsetCharset', d.subsetCharset]]
