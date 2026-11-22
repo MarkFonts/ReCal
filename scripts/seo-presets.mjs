@@ -528,7 +528,7 @@ export const SEO_PRESETS = [
       'GTA Art Deco is the custom typeface Rockstar uses for Grand Theft Auto VI, and it is not for sale. ReCal Sans matches it in four settings: a free, open-source variable sans you can tune in the browser and download.',
     h1: 'Cal Sans one-shots the GTA VI typeface',
     body: [
-      'GTA Art Deco is the typeface Rockstar commissioned from Colophon for Grand Theft Auto VI: an American grotesk with geometric bones, first seen on the 2023 teaser site and since grown into Regular, Medium, Bold, and two condensed cuts. It sets every line of the game’s website. It is not for sale at any price.',
+      'GTA Art Deco is the typeface Rockstar commissioned from Colophon for Grand Theft Auto VI: a plain American grotesk that takes its name from one stylistic set of redrawn capitals. It arrived with the 2023 teaser site and has grown into Regular, Medium, Bold, and two condensed cuts. It sets every line of the game’s website, and it is not for sale at any price.',
       'ReCal Sans gets there in four settings: GEOM 25, sharpness 80, optical size frozen at 18, and the geometric y. Point Rockstar’s own page at it and the story paragraph still sets in six lines, with one word moving. Tune it further, then download a static TTF you own outright, free under the OFL.',
     ],
     faqWhy:
@@ -541,9 +541,9 @@ export const SEO_PRESETS = [
     // page captured both ways at one CSS size agrees: 0.735 vs 0.720.
     xhPct: 'GTA Art Deco runs about 3.5% taller',
     tell:
-      'The y. GTA Art Deco runs the tail out as one straight diagonal and cuts it flat, where most grotesks curl it back. Cal Sans already draws that y as cv22, its Geometric y, and freezing it is half the match. The rest is sharpness 80 on the terminals and optical size 18, which gives the open text spacing Rockstar sets its story copy in.',
+      'The y, and a set called Art Deco. GTA Art Deco runs the tail of its y out as one straight diagonal and cuts it flat. Cal Sans already draws exactly that y as cv22, its Geometric y, so half the match is free. The name comes from ss01, which Colophon labeled Art Deco inside the font: it redraws B, E, F, N, P, and R in an Ocean Drive register. Rockstar’s own site never turns it on. Everything there is set in the plain default, which is why four settings get Cal Sans this close.',
     loses:
-      'Width. GTA Art Deco ships condensed cuts for its stacked caps headings, the IN-GAME RADIO, SOUNDTRACK, AND SCORE blocks on the same page. ReCal Sans has no width axis, so that heading runs four lines where Rockstar’s runs three. In running text it holds; in those headings it cannot follow.',
+      'Two places. Width: GTA Art Deco ships condensed cuts for its stacked caps headings, the IN-GAME RADIO, SOUNDTRACK, AND SCORE blocks, and ReCal Sans has no width axis, so that heading runs four lines where Rockstar’s runs three. Even at regular width Cal Sans sets its caps about 4% wider. And the Art Deco set itself: Cal Sans has no answer to those six redrawn capitals, the one place the typeface earns its name. In running text it holds; in those two places it cannot follow.',
     xheight:
       'At the same CSS size the two read as one size: the x-heights land within 1% of each other (520 and 517 units), and Cal Sans stands about 3% taller in the caps (720 against 700).',
     pitch: {
