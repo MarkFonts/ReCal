@@ -92,6 +92,28 @@
 .para-block { margin: 0 0 12px; color: var(--text); font-weight: inherit; outline: none; caret-color: var(--text); }
 .para-block--h1, .para-block--h2, .para-block--h3 { margin-top: 12px; }
 .para-block:empty::before { content: '\200b'; color: transparent; }   /* keep empty blocks clickable */
+/* Read-more tail: the last loaded block fades its own ink (an opacity mask) instead of
+   wearing the shared --bg overlay, which painted a dark panel over any non-flat ground
+   (the synthwave page). Same eased ramp as Specimen.css, inverted to alpha.
+   no-clip + repeat-x: the mask runs past the block's sides, so hung quotes and
+   punctuation outside the measure fade with the line instead of being cut off. */
+.para-doc .specimen-fade { display: none; }
+.para-block:has(+ .specimen-fade) {
+  --fade-h: 13rem;   /* Specimen.css's fade height */
+  --fade-mask: linear-gradient(to bottom,
+    #000 calc(100% - var(--fade-h)),   /* color-lint: allow -- mask alpha, not ink */
+    rgb(0 0 0 / .92) calc(100% - var(--fade-h) * .75),
+    rgb(0 0 0 / .78) calc(100% - var(--fade-h) * .55),
+    rgb(0 0 0 / .55) calc(100% - var(--fade-h) * .35),
+    rgb(0 0 0 / .28) calc(100% - var(--fade-h) * .18),
+    transparent 100%);
+  -webkit-mask-image: var(--fade-mask);
+  mask-image: var(--fade-mask);
+  -webkit-mask-repeat: repeat-x;
+  mask-repeat: repeat-x;
+  -webkit-mask-clip: no-clip;
+  mask-clip: no-clip;
+}
 /* Compare swap — a line of text under the paragraph (fused SEO pages only). The
    button renders the target's name in the target font: the label is the preview. */
 /* "Set in <font>" caption — names the actual rendered font, flips with the toggle. */
