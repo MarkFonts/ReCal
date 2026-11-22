@@ -507,8 +507,8 @@ export const SEO_PRESETS = [
     // Not for sale at any price -- 'paid' only for the "free alternative" angle, which is
     // still true: there is no way to license the original at all.
     kind: 'paid',
-    // Leonida's own map, the setting the face was drawn for.
-    words: ['Vice City', 'Ocean Drive', 'Leonida Keys', 'Port Gellhorn', 'Grassrivers', 'Ambrosia', 'Mount Kalaga', 'Vice Beach'],
+    // Leonida's own map, the setting the face was drawn for, plus two lines of thirst (Mark's).
+    words: ['Vice City', 'Ocean Drive', 'Leonida Keys', 'Thirsty for Mandy', 'Port Gellhorn', 'Vicki, Call Me', 'Mount Kalaga', 'Vice Beach'],
     axes: vs({ GEOM: 25, SHRP: 80, opsz: 18 }),
     opticalSizing: false,
     // No embeddable webfont, and no outline SVG either: the font files are Rockstar's and

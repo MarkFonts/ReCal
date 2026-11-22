@@ -208,3 +208,12 @@
   border-image: none !important;
 }
 :root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"] .wm-accent__lab::before { content: none !important; }
+
+/* The app's acid accents in GTA peach on /gta-art-deco/ (the knob, handles, Reset, tab underlines,
+   rings). tokens.css restates the acid per theme and again in display-p3; [data-theme] is always
+   set on <html>, so these selectors outrank all of those. Light keeps a darker peach for thin ink. */
+:root[data-look="vice"][data-theme] { --signal-acid: #ffb38a; --signal-acid-fill: #ffb38a; }
+:root[data-look="vice"][data-theme="light"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
+@media (prefers-color-scheme: light) {
+  :root[data-look="vice"][data-theme="auto"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
+}

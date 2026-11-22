@@ -213,7 +213,7 @@ function page(p, all) {
 <meta name="twitter:description" content="${esc(p.description)}">
 <meta name="twitter:image" content="${ogImage}">
 <meta name="twitter:image:alt" content="${esc(ogAlt)}">
-<link rel="icon" type="image/svg+xml" href="${BASE}/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="${BASE}/${p.look ? `favicon-${p.look}.svg` : 'favicon.svg'}">
 <link rel="preload" href="${CAL_SANS}" as="font" type="font/ttf" crossorigin>
 <script type="application/ld+json">${JSON.stringify(jsonld)}</script>
 <!-- Google tag (gtag.js) -->
