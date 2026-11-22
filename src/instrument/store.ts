@@ -231,7 +231,8 @@ export type Action =
   | { type: 'setFreezeOpsz'; value: boolean }
   | { type: 'setFrozenOpszValue'; value: number | null }
   | { type: 'setAutoAscender'; value: boolean }
-  | { type: 'toggleFrozenFeature'; tag: string }             // freezer: pin/unpin an ssXX/cvXX form
+  | { type: 'toggleFrozenFeature'; tag: string }
+  | { type: 'setFrozenFeature'; tag: string; frozen: boolean }   // idempotent: a shared link replays onto a preset that may already hold it             // freezer: pin/unpin an ssXX/cvXX form
   | { type: 'setVMetrics'; value: VMetrics }                 // vmetrics: preset or hand-tuned metrics
   | { type: 'setRailGroup'; group: number }                  // rail descent section (transient UI)
   | { type: 'setActivePreset'; name: string | null }
@@ -307,6 +308,12 @@ export function reducer(s: InstrumentState, a: Action): InstrumentState {
       return { ...s, defaults: { ...s.defaults, frozenOpszValue: a.value } }
     case 'setAutoAscender':
       return { ...s, defaults: { ...s.defaults, autoAscender: a.value } }
+    case 'setFrozenFeature': {
+      const cur = s.defaults.frozenFeatures
+      if (cur.includes(a.tag) === a.frozen) return s
+      const next = a.frozen ? [...cur, a.tag] : cur.filter(t => t !== a.tag)
+      return { ...s, defaults: { ...s.defaults, frozenFeatures: next } }
+    }
     case 'toggleFrozenFeature': {
       const cur = s.defaults.frozenFeatures
       const next = cur.includes(a.tag) ? cur.filter(t => t !== a.tag) : [...cur, a.tag]

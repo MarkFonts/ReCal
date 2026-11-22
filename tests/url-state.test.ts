@@ -62,3 +62,12 @@ test('syncQuery rewrites only the keys urlState owns', () => {
   assert.equal(syncQuery('?g=60&lw=450-650', ''), '')          // back to stock: no query at all
   assert.equal(syncQuery('?scene=words', ''), '?scene=words')  // nothing of ours, nothing touched
 })
+
+test('a link replayed onto a preset that already froze its features keeps them frozen', () => {
+  // the reload path: boot applies the preset (cv22 + ss16 frozen), then the address bar's ff= replays
+  let s = createInitialState()
+  for (const tag of ['cv22', 'ss16']) s = reducer(s, { type: 'toggleFrozenFeature', tag } as Action)
+  s = play('ff=cv22.ss16', s)
+  assert.deepEqual([...s.defaults.frozenFeatures].sort(), ['cv22', 'ss16'])
+  assert.deepEqual([...play('ff=cv22.ss16').defaults.frozenFeatures].sort(), ['cv22', 'ss16'])   // and from stock
+})
