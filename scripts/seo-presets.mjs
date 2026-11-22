@@ -535,16 +535,17 @@ export const SEO_PRESETS = [
       'Yes. GTA Art Deco itself is Rockstar’s private typeface and has never been sold. ReCal Sans is free and open-source under the SIL Open Font License, and GEOM 25, sharpness 80, optical size 18, and the geometric y put it in the same register, in a file you are allowed to use.',
     faqDiff:
       'GTA Art Deco is a closed family drawn for one game, with condensed cuts for its stacked headlines. ReCal Sans is one variable file you tune (GEOM, sharpness, a real optical-size axis, and ascender height) and freezes your settings into a static TTF on export. It has no condensed width.',
-    // Measured off Rockstar's page captured both ways at the same CSS size (ref/CleanShot
-    // 2026-11-22 01.02.44 and 01.03.05): x-height over cap height, V for the cap and the i
-    // stem for the x. GTA Art Deco 0.735, ReCal Sans 0.720.
-    xhPct: 'GTA Art Deco runs about 2% taller',
+    // x-height over cap height. GTA Art Deco from its own OS/2 (520/700 = 0.743, all three
+    // cuts; ref/GTAArtDeco_*.woff, gitignored, Rockstar's terms forbid any other use).
+    // ReCal Sans from outlines at this preset, x and H tops (517/720 = 0.718). Rockstar's
+    // page captured both ways at one CSS size agrees: 0.735 vs 0.720.
+    xhPct: 'GTA Art Deco runs about 3.5% taller',
     tell:
       'The y. GTA Art Deco runs the tail out as one straight diagonal and cuts it flat, where most grotesks curl it back. Cal Sans already draws that y as cv22, its Geometric y, and freezing it is half the match. The rest is sharpness 80 on the terminals and optical size 18, which gives the open text spacing Rockstar sets its story copy in.',
     loses:
       'Width. GTA Art Deco ships condensed cuts for its stacked caps headings, the IN-GAME RADIO, SOUNDTRACK, AND SCORE blocks on the same page. ReCal Sans has no width axis, so that heading runs four lines where Rockstar’s runs three. In running text it holds; in those headings it cannot follow.',
     xheight:
-      'At the same CSS size the two read as one size: the x-heights land within 3% of each other, and Cal Sans stands a touch taller in the caps.',
+      'At the same CSS size the two read as one size: the x-heights land within 1% of each other (520 and 517 units), and Cal Sans stands about 3% taller in the caps (720 against 700).',
     pitch: {
       title: 'Tuned toward GTA Art Deco',
       paragraphs: [
