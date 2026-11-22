@@ -251,8 +251,12 @@
    Scoped by selector, never by token: --bg and --surface also paint the rail, steppers, menus
    and the pad, and the rail stays exactly as it is. */
 
-  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg) */
-  :root[data-look="vice"][data-theme="dark"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, #2b0d55 38%, #6a1478 74%, #b0127f 92%, #c8137f 100%); }
+  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg).
+     Generated, not hand-stopped: wm-primitives blend('#1c0a5e', '#c8137f', { ease: 'ease-in',
+     stops: 10, space: 'oklab', dir: '180deg' }) -- the purple holds through the top, the
+     magenta rises toward the horizon, every stop an oklab mix. Chrome dithers a background
+     gradient itself, so no .wm-dither (that is for masks, per GRADIENTS.md). */
+  :root[data-look="vice"][data-theme="dark"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, color-mix(in oklab, #1c0a5e 96.57%, #c8137f) 14.49%, color-mix(in oklab, #1c0a5e 87.38%, #c8137f) 29.56%, color-mix(in oklab, #1c0a5e 74.07%, #c8137f) 44.59%, color-mix(in oklab, #1c0a5e 58.3%, #c8137f) 58.98%, color-mix(in oklab, #1c0a5e 41.7%, #c8137f) 72.13%, color-mix(in oklab, #1c0a5e 25.93%, #c8137f) 83.41%, color-mix(in oklab, #1c0a5e 12.62%, #c8137f) 92.22%, color-mix(in oklab, #1c0a5e 3.43%, #c8137f) 97.95%, #c8137f 100%); }
   /* stars behind the proofed type: dots at mismatched tile sizes so the repeat never lines up */
   :root[data-look="vice"][data-theme="dark"] .stage::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
@@ -297,8 +301,12 @@
 
 @media (prefers-color-scheme: dark) {
 
-  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg) */
-  :root[data-look="vice"][data-theme="auto"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, #2b0d55 38%, #6a1478 74%, #b0127f 92%, #c8137f 100%); }
+  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg).
+     Generated, not hand-stopped: wm-primitives blend('#1c0a5e', '#c8137f', { ease: 'ease-in',
+     stops: 10, space: 'oklab', dir: '180deg' }) -- the purple holds through the top, the
+     magenta rises toward the horizon, every stop an oklab mix. Chrome dithers a background
+     gradient itself, so no .wm-dither (that is for masks, per GRADIENTS.md). */
+  :root[data-look="vice"][data-theme="auto"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, color-mix(in oklab, #1c0a5e 96.57%, #c8137f) 14.49%, color-mix(in oklab, #1c0a5e 87.38%, #c8137f) 29.56%, color-mix(in oklab, #1c0a5e 74.07%, #c8137f) 44.59%, color-mix(in oklab, #1c0a5e 58.3%, #c8137f) 58.98%, color-mix(in oklab, #1c0a5e 41.7%, #c8137f) 72.13%, color-mix(in oklab, #1c0a5e 25.93%, #c8137f) 83.41%, color-mix(in oklab, #1c0a5e 12.62%, #c8137f) 92.22%, color-mix(in oklab, #1c0a5e 3.43%, #c8137f) 97.95%, #c8137f 100%); }
   /* stars behind the proofed type: dots at mismatched tile sizes so the repeat never lines up */
   :root[data-look="vice"][data-theme="auto"] .stage::before {
     content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
