@@ -207,6 +207,12 @@
     radial-gradient(54% 30% at 50% 28%, rgba(170, 80, 255, .26) 0, rgba(170, 80, 255, .10) 55%, transparent 100%) !important;
   border-image: none !important;
 }
+/* on hover the neon drifts a little, side to side, on top of the stock deepen (scale 1.1, .8s) */
+:root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"]:hover:not(:disabled)::after { animation: vice-drift 2.6s ease-in-out infinite alternate; }
+/* `translate`, not transform or background-position: the stock hover scales via transform, and the glow's
+   background is !important, which an animation cannot override. translate composes with both. */
+@keyframes vice-drift { from { translate: -14px 0; } to { translate: 14px 0; } }
+@media (prefers-reduced-motion: reduce) { :root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"]:hover::after { animation: none; } }
 :root[data-look="vice"] .rail-dl .wm-accent[data-look="q5"] .wm-accent__lab::before { content: none !important; }
 
 /* The app's acid accents in GTA peach on /gta-art-deco/ (the knob, handles, Reset, tab underlines,
@@ -217,3 +223,25 @@
 @media (prefers-color-scheme: light) {
   :root[data-look="vice"][data-theme="auto"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
 }
+
+/* Peach in PQ: the fills the acid used (knob, edge grabbers, slider ticks, glyph cells) paint
+   peach-pq.avif, baked by wm-primitives' bake-pq-swatch.swift (1216 nits core -> 203 rim,
+   BT.2100 PQ) -- the same recipe as the zone swatches. background-color stays the SDR
+   fallback. Dark grounds only: a light ground has no brighter-than-white to boost into. */
+:root[data-look="vice"][data-theme="dark"] :is(.shape-pad-knob, .shape-pad-grab:hover, .shape-pad-grab[data-held],
+  .clamp-slider-grab:hover, .clamp-slider-grab[data-held], .gp .gp-cell:hover),
+:root[data-look="vice"][data-theme="dark"] :is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after {
+  background-color: var(--signal-acid-fill); background-image: url('peach-pq.avif');
+  background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-look="vice"][data-theme="auto"] :is(.shape-pad-knob, .shape-pad-grab:hover, .shape-pad-grab[data-held],
+    .clamp-slider-grab:hover, .clamp-slider-grab[data-held], .gp .gp-cell:hover),
+  :root[data-look="vice"][data-theme="auto"] :is(.try, .rail) .slider-row--track:is(:hover, :focus-within, .slider-row--engaged) .slider-label::after {
+    background-color: var(--signal-acid-fill); background-image: url('peach-pq.avif');
+    background-size: 512px 512px; background-position: center; background-repeat: no-repeat; dynamic-range-limit: no-limit;
+  }
+}
+
+/* the letterbox band under the article takes the plum ground, so the page doesn't end on a black slab */
+:root[data-look="vice"] .seo-lb { background: #1a1220; }
