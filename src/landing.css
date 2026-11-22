@@ -245,3 +245,94 @@
 
 /* the letterbox band under the article takes the plum ground, so the page doesn't end on a black slab */
 :root[data-look="vice"] .seo-lb { background: #1a1220; }
+
+/* ── The synthwave easter egg: /gta-art-deco/ only, dark only (a light ground has no night sky).
+   Every scene in the app above sits on a purple-to-magenta ground with stars behind the type.
+   Scoped by selector, never by token: --bg and --surface also paint the rail, steppers, menus
+   and the pad, and the rail stays exactly as it is. */
+
+  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg) */
+  :root[data-look="vice"][data-theme="dark"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, #2b0d55 38%, #6a1478 74%, #b0127f 92%, #c8137f 100%); }
+  /* stars behind the proofed type: dots at mismatched tile sizes so the repeat never lines up */
+  :root[data-look="vice"][data-theme="dark"] .stage::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%),
+      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%),
+      radial-gradient(1.6px 1.6px at 151px 88px, rgba(255,240,250,.9) 50%, transparent 52%),
+      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%),
+      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%),
+      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(2px 2px at 300px 120px, rgba(255,230,245,.8) 50%, transparent 52%);
+    background-size: 233px 197px, 151px 139px, 347px 251px, 179px 223px, 281px 163px, 211px 239px, 523px 401px;
+    /* the stars thin out toward the magenta horizon, like the card */
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+  }
+  :root[data-look="vice"][data-theme="dark"] .stage-scroll { position: relative; z-index: 1; }
+  /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
+     only, so the rail and its pad keep the house greys */
+  :root[data-look="vice"][data-theme="dark"] .canvas { --border: #4a1696; --border-subtle: #3c1180; --sline: #4a1696; }
+  :root[data-look="vice"][data-theme="dark"] .try-lbl { display: none; }
+  /* opaque --bg panels that would sit on the ground as black slabs: translucent plum instead */
+  :root[data-look="vice"][data-theme="dark"] .info-panel { background: rgba(28, 10, 94, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); --info-a: .95; --info-aa: .7; }
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try-pill,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try .try-btn,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try .style-menu-btn,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try .preview-reset,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .mode-row,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .mode-row .body-pairing,
+  :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .scene-bar .drawer-label { background-color: rgba(28, 10, 94, .55); }
+  /* glyphs: cells and the picker's panels let the ground through */
+  :root[data-look="vice"][data-theme="dark"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side, .gp .gp-cell) { background-color: rgba(28, 10, 94, .45); }
+  /* the UI scene: fields, cards and panels tinted so the gradient reads through; hover and on
+     states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
+     dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
+  :root[data-look="vice"][data-theme="dark"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="dark"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
+  :root[data-look="vice"][data-theme="dark"] .ui-menu { background: #2a0d5c; }
+
+@media (prefers-color-scheme: dark) {
+
+  /* the ground: one gradient on the whole preview area, rail excluded (it sits on --bg) */
+  :root[data-look="vice"][data-theme="auto"] .canvas { background: linear-gradient(180deg, #1c0a5e 0%, #2b0d55 38%, #6a1478 74%, #b0127f 92%, #c8137f 100%); }
+  /* stars behind the proofed type: dots at mismatched tile sizes so the repeat never lines up */
+  :root[data-look="vice"][data-theme="auto"] .stage::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(1.2px 1.2px at 23px 41px, rgba(255,255,255,.85) 50%, transparent 52%),
+      radial-gradient(1px 1px at 97px 13px, rgba(255,255,255,.6) 50%, transparent 52%),
+      radial-gradient(1.6px 1.6px at 151px 88px, rgba(255,240,250,.9) 50%, transparent 52%),
+      radial-gradient(1px 1px at 61px 127px, rgba(255,255,255,.5) 50%, transparent 52%),
+      radial-gradient(1.3px 1.3px at 211px 57px, rgba(255,255,255,.7) 50%, transparent 52%),
+      radial-gradient(1px 1px at 179px 171px, rgba(255,255,255,.45) 50%, transparent 52%),
+      radial-gradient(2px 2px at 300px 120px, rgba(255,230,245,.8) 50%, transparent 52%);
+    background-size: 233px 197px, 151px 139px, 347px 251px, 179px 223px, 281px 163px, 211px 239px, 523px 401px;
+    /* the stars thin out toward the magenta horizon, like the card */
+    -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+            mask-image: linear-gradient(180deg, #000 0%, #000 55%, transparent 95%);
+  }
+  :root[data-look="vice"][data-theme="auto"] .stage-scroll { position: relative; z-index: 1; }
+  /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
+     only, so the rail and its pad keep the house greys */
+  :root[data-look="vice"][data-theme="auto"] .canvas { --border: #4a1696; --border-subtle: #3c1180; --sline: #4a1696; }
+  :root[data-look="vice"][data-theme="auto"] .try-lbl { display: none; }
+  /* opaque --bg panels that would sit on the ground as black slabs: translucent plum instead */
+  :root[data-look="vice"][data-theme="auto"] .info-panel { background: rgba(28, 10, 94, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); --info-a: .95; --info-aa: .7; }
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try-pill,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try .try-btn,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try .style-menu-btn,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try .preview-reset,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row .body-pairing,
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .scene-bar .drawer-label { background-color: rgba(28, 10, 94, .55); }
+  /* glyphs: cells and the picker's panels let the ground through */
+  :root[data-look="vice"][data-theme="auto"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side, .gp .gp-cell) { background-color: rgba(28, 10, 94, .45); }
+  /* the UI scene: fields, cards and panels tinted so the gradient reads through; hover and on
+     states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
+     dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
+  :root[data-look="vice"][data-theme="auto"] :is(.ui-field, .ui-code, .ui-panel, .ui-card2, .coss-card) { background: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="auto"] :is(.ui-item.on, .ui-switch--off, .ui-track, .ui-bar, .ui-menu-item:hover) { background: rgba(255, 255, 255, .12); }
+  :root[data-look="vice"][data-theme="auto"] .ui-menu { background: #2a0d5c; }
+
+}
