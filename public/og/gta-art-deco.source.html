@@ -7,23 +7,24 @@
 @font-face{font-family:Cal;src:url("__CALSANS__") format("truetype");font-weight:400 700}
 html,body{margin:0;width:1200px;height:630px;overflow:hidden;background:#1c0a5e}
 .scene{position:absolute;inset:0}
-/* every line is the baked preset: GEOM 25, SHRP 80, opsz pinned per role, cv22 + ss16 */
+/* every line is the baked preset exactly: GEOM 25, SHRP 80, opsz frozen at 18 (the only
+   optical size the downloaded font can draw), cv22 + ss16 */
 .t{position:absolute;left:0;right:0;text-align:center;white-space:nowrap;color:#fff;font-family:Cal,sans-serif;font-optical-sizing:none;
   font-feature-settings:'kern' 1,'cv22' 1,'ss16' 1;text-shadow:0 2px 16px rgba(10,4,40,.7)}
 .eyebrow{top:44px;font-size:21px;letter-spacing:.16em;text-transform:uppercase;color:#ffe3f4;
-  font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 14}
-.lead{top:104px;font-size:60px;letter-spacing:-.02em;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 30}
-.sim{top:190px;font-size:21px;letter-spacing:.16em;text-transform:uppercase;color:#ffe3f4;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 14}
+  font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 18}
+.lead{top:104px;font-size:60px;letter-spacing:-.02em;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 18}
+.sim{top:190px;font-size:21px;letter-spacing:.16em;text-transform:uppercase;color:#ffe3f4;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 18}
 .word{top:222px;font-size:170px;line-height:1.06;letter-spacing:-.02em;font-weight:625;
   font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 18;
   /* the one effect on the card: a neon glow on the referent */
   text-shadow:0 0 14px rgba(255,120,220,.75),0 0 38px rgba(255,60,190,.55),0 0 80px rgba(255,40,170,.35),0 3px 18px rgba(10,4,40,.6)}
-.axes{top:490px;font-size:21px;font-variant-numeric:tabular-nums;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 8.1}
+.axes{top:490px;font-size:21px;font-variant-numeric:tabular-nums;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 18}
 /* the two lines on the grid: a teeny drop plus a wide, faint spread, so the cyan lines stop cutting the strokes */
 .axes,.foot{text-shadow:0 1px 1px rgba(10,4,40,.55),0 0 22px rgba(10,4,40,.38),0 0 44px rgba(10,4,40,.22)}
-.foot{text-shadow:0 1px 1px rgba(10,4,40,.75),0 0 22px rgba(10,4,40,.62),0 0 46px rgba(10,4,40,.42)}
+.axes,.foot{text-shadow:0 1px 1px rgba(10,4,40,.75),0 0 22px rgba(10,4,40,.62),0 0 46px rgba(10,4,40,.42)}
 .axes .k{color:#cfe9ff}.axes .v{color:#7ff6ff}
-.foot{top:540px;font-size:26px;color:#fff;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 16}
+.foot{top:540px;font-size:26px;color:#fff;font-variation-settings:'GEOM' 25,'SHRP' 80,'opsz' 18}
 </style></head><body><svg class="scene" viewBox="0 0 1200 630" width="1200" height="630" aria-hidden="true">
 <defs>
  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1c0a5e"/><stop offset=".55" stop-color="#4a0c8a"/><stop offset=".85" stop-color="#b0127f"/><stop offset="1" stop-color="#e3138f"/></linearGradient>
