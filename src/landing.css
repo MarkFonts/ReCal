@@ -273,7 +273,6 @@
   /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
      only, so the rail and its pad keep the house greys */
   :root[data-look="vice"][data-theme="dark"] .canvas { --border: #4a1696; --border-subtle: #3c1180; --sline: #4a1696; }
-  :root[data-look="vice"][data-theme="dark"] .try-lbl { display: none; }
   /* opaque --bg panels that would sit on the ground as black slabs: translucent plum instead */
   :root[data-look="vice"][data-theme="dark"] .info-panel { background: rgba(28, 10, 94, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); --info-a: .95; --info-aa: .7; }
   :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .try-pill,
@@ -284,7 +283,9 @@
   :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .mode-row .body-pairing,
   :root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .scene-bar .drawer-label { background-color: rgba(28, 10, 94, .55); }
   /* glyphs: cells and the picker's panels let the ground through */
-  :root[data-look="vice"][data-theme="dark"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side, .gp .gp-cell) { background-color: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="dark"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side) { background: transparent; }
+  :root[data-look="vice"][data-theme="dark"] .gp .gp-cell { background-color: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="dark"] .gp .gp-search { background: rgba(28, 10, 94, .45); }
   /* the UI scene: fields, cards and panels tinted so the gradient reads through; hover and on
      states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
      dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
@@ -316,7 +317,6 @@
   /* strokes inside the preview in a rich deep purple: the border tokens are redefined on .canvas
      only, so the rail and its pad keep the house greys */
   :root[data-look="vice"][data-theme="auto"] .canvas { --border: #4a1696; --border-subtle: #3c1180; --sline: #4a1696; }
-  :root[data-look="vice"][data-theme="auto"] .try-lbl { display: none; }
   /* opaque --bg panels that would sit on the ground as black slabs: translucent plum instead */
   :root[data-look="vice"][data-theme="auto"] .info-panel { background: rgba(28, 10, 94, .72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); --info-a: .95; --info-aa: .7; }
   :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .try-pill,
@@ -327,7 +327,9 @@
   :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row .body-pairing,
   :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .scene-bar .drawer-label { background-color: rgba(28, 10, 94, .55); }
   /* glyphs: cells and the picker's panels let the ground through */
-  :root[data-look="vice"][data-theme="auto"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side, .gp .gp-cell) { background-color: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="auto"] :is(.stage-pad--glyphs .gp, .stage-pad--glyphs .gp-side) { background: transparent; }
+  :root[data-look="vice"][data-theme="auto"] .gp .gp-cell { background-color: rgba(28, 10, 94, .45); }
+  :root[data-look="vice"][data-theme="auto"] .gp .gp-search { background: rgba(28, 10, 94, .45); }
   /* the UI scene: fields, cards and panels tinted so the gradient reads through; hover and on
      states a lighter veil (--surface-hi is a flat grey that would show as a dark patch); the
      dropdown keeps a deep, opaque purple so it stays legible over the cards it floats across */
