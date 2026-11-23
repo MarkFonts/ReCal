@@ -138,7 +138,8 @@ export function VMetricsScene() {
   // coincides exactly with Cap Height (1440), so their rules share one line (no gap); raising
   // YTAS lifts it above the cap. The rest are the font's recorded design metrics. Win
   // descent is a positive integer (usWinDescent).
-  const ascU = axes.YTAS ?? FONT_METRICS.cap
+  // YTAS is per-mille since Cal Sans 2.020 (720 = 1440 units at UPM 2000).
+  const ascU = axes.YTAS != null ? axes.YTAS * FONT_METRICS.upm / 1000 : FONT_METRICS.cap
   const winTop = yOf(vm.win.asc)
   const winBot = yOf(-vm.win.desc)
   const capY = yOf(FONT_METRICS.cap)

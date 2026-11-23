@@ -380,7 +380,7 @@ function ZoneAside({ zone, top }: { zone?: string; top: number }) {
 const GEOM_AXIS: PadAxis = { tag: 'GEOM', nudge: 1, big: 10 }
 const WGHT_AXIS: PadAxis = { tag: 'wght', nudge: 10, big: 50 }
 const SHRP_AXIS: PadAxis = { tag: 'SHRP', nudge: 1, big: 10 }
-const YTAS_AXIS: PadAxis = { tag: 'YTAS', nudge: 10, big: 50 }
+const YTAS_AXIS: PadAxis = { tag: 'YTAS', nudge: 5, big: 25 }
 
 export function ShapePad() {
   const { state, dispatch } = useInstrument()
