@@ -21,7 +21,7 @@ from fontTools.ttLib import TTFont
 from fontTools.varLib.instancer import instantiateVariableFont
 
 ROOT = Path(__file__).resolve().parent.parent
-FONT = ROOT / "public/fonts/CalSansVF.ttf"
+FONT = ROOT / "shared/fonts/CalSansVF.ttf"
 SUBS = ROOT / "src/data/substitutions.json"
 PRESETS_TS = ROOT / "src/instrument/presets.ts"
 OUT = ROOT / "public/geom/index.html"
@@ -80,7 +80,7 @@ def main():
     # question; what each variant looks like is not, so the shapes are drawn at one place
     # and the thresholds are stated as numbers.
     inst = instantiateVariableFont(
-        font, {"GEOM": 50, "opsz": 16, "wght": 400, "YTAS": 1440, "SHRP": 0, "ital": 0},
+        font, {"GEOM": 50, "opsz": 16, "wght": 400, "YTAS": 720, "SHRP": 0, "ital": 0},
         inplace=False)
     gset, glyf = inst.getGlyphSet(), inst["glyf"]
     order = set(inst.getGlyphOrder())
