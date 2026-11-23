@@ -550,7 +550,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward GTA Art Deco',
       paragraphs: [
-        'The Vice City, Leonida register. Sprayed like bullets all over the greatest game of the decade, the original GTA Art Deco typeface, by COLOPHON foundry, asks the question “what do you get when Gatsby drives Daisy down Ocean Drive on cocaine?” It’s exclusive to Rockstar IP. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
+        'The Vice City, Leonida register. Sprayed like bullets all over the greatest game of the decade, the original GTA Art Deco typeface, by COLOPHON foundry, asks the question “what do you get when Gatsby lets Daisy drive down Ocean Drive on cocaine?” It’s exclusive to Rockstar IP. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },
