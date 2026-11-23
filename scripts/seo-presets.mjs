@@ -248,7 +248,7 @@ export const SEO_PRESETS = [
     // No frozen glyph set for this referent (not in GLYPHS) -- words lean on Futura's
     // own story (Paul Renner, 1927 German Bauhaus) instead, and double as a diacritic check.
     words: ['Neue Form', 'Klare Linie', 'Bauhaus Kreis', 'Reine Geometrie', 'Kühne Zukunft', 'Cercle Parfait', 'Nouvelle Ère', 'Círculo Perfecto'],
-    axes: vs({ GEOM: 100, YTAS: 1600, SHRP: 100, opsz: 16 }),
+    axes: vs({ GEOM: 100, YTAS: 800, SHRP: 100, opsz: 16 }),
     opticalSizing: false,
     adobe: true,
     compare: {
@@ -308,9 +308,9 @@ export const SEO_PRESETS = [
     words: ['Yesterday Study', 'Runaway Season', 'Highway Habitat', 'Getaway Notes', 'Everyday Canvas', 'Halfway Draft', 'Layaway Cabinet', 'Anyway Statement'],
     // opsz 8, frozen like GT America's. Left unpinned, the specimen rode
     // font-optical-sizing:auto up to the axis ceiling of 45 -- and Cal Sans grows rounder
-    // and lifts its x-height as opsz rises, which is precisely what YTAS 1600 is here to
+    // and lifts its x-height as opsz rises, which is precisely what YTAS 800 is here to
     // fight. cv02 in GLYPHS holds the humanist 'a' against the swap GEOM 25 + opsz 8 trips.
-    axes: vs({ GEOM: 25, YTAS: 1600, SHRP: 100, opsz: 8 }),
+    axes: vs({ GEOM: 25, YTAS: 800, SHRP: 100, opsz: 8 }),
     opticalSizing: false,
     compare: { label: 'Neutraface', family: 'sans-serif', italic: false },
     title: 'Free Neutra Alternative — ReCal Sans Variable Font',
@@ -319,7 +319,7 @@ export const SEO_PRESETS = [
     h1: 'A free, tunable alternative to Neutra',
     body: [
       'Neutra (and Neutraface after it) channels Richard Neutra’s mid-century architectural modernism: long elegant ascenders, low waists, flat sharp terminals — typography as signage. It is beautiful, distinctive, and commercially licensed.',
-      'ReCal Sans can be tuned into that architectural register: raise the ascender axis to 1600, push terminal sharpness to full, and keep the construction clean. The result is free (OFL), variable, and optically sized — and the exported file bakes your proportions in, no styling required at the call site.',
+      'ReCal Sans can be tuned into that architectural register: raise the ascender axis to its maximum, push terminal sharpness to full, and keep the construction clean. The result is free (OFL), variable, and optically sized — and the exported file bakes your proportions in, no styling required at the call site.',
     ],
     // Per-referent FAQ copy. These two answers used to be one shared template with the
     // name swapped in -- the single largest duplicated block across the eight pages, and

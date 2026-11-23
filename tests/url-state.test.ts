@@ -34,11 +34,16 @@ test('a hostile link cannot leave the default outside its clamp', () => {
   assert.equal(s.defaults.axes.wght, 550)
 })
 
+test('pre-2.020 links carry YTAS in font units and are halved', () => {
+  assert.equal(decodeDefaults('y=1600').axes.YTAS, 800)
+  assert.equal(decodeDefaults('y=760').axes.YTAS, 760)
+})
+
 test('bad clamps are dropped, not thrown', () => {
   const d = decodeDefaults('lw=650-450&lg=abc&ly=1400-1700&li=0-1&fz=i.q')
   assert.equal(d.limits?.wght, undefined)
   assert.equal(d.limits?.GEOM, undefined)
-  assert.deepEqual(d.limits?.YTAS, [1440, 1600])
+  assert.deepEqual(d.limits?.YTAS, [720, 800])   // legacy font-unit clamp, halved then clipped
   assert.equal(d.limits?.ital, undefined)
   assert.equal(d.frozenAxes, undefined)
 })

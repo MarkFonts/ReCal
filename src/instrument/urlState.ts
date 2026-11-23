@@ -124,6 +124,10 @@ export interface DecodedState {
   subsetCharset?: DefaultsLayer['subsetCharset']
 }
 
+/* Links made before Cal Sans 2.020 carry YTAS in font units (1440–1600); the axis is
+   per-mille now (720–800), so halve anything that can only be the old scale. */
+const legacyYtas = (tag: string, v: number) => (tag === 'YTAS' && v > 1000 ? v / 2 : v)
+
 /* A shared link is untrusted input: anything unparseable is dropped rather than thrown, so
    one bad character costs that field and not the page. */
 export function decodeDefaults(search: string): DecodedState {
@@ -134,7 +138,7 @@ export function decodeDefaults(search: string): DecodedState {
     const raw = p.get(key)
     if (raw == null) continue
     const v = Number(raw)
-    if (Number.isFinite(v)) out.axes[tag] = clampAxis(tag, v)
+    if (Number.isFinite(v)) out.axes[tag] = clampAxis(tag, legacyYtas(tag, v))
   }
 
   const t = p.get(K.thresholds)
@@ -182,7 +186,7 @@ export function decodeDefaults(search: string): DecodedState {
     if (raw == null) continue
     const m = /^(-?\d+(?:\.\d+)?)-(-?\d+(?:\.\d+)?)$/.exec(raw)
     if (!m) continue
-    const lo = clampAxis(tag, Number(m[1])), hi = clampAxis(tag, Number(m[2]))
+    const lo = clampAxis(tag, legacyYtas(tag, Number(m[1]))), hi = clampAxis(tag, legacyYtas(tag, Number(m[2])))
     if (lo > hi) continue
     ;(out.limits ??= {})[tag] = [lo, hi]
   }
