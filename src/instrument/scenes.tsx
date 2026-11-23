@@ -568,6 +568,20 @@ const specimenOf = (source: string): string | null => {
   return p && !Array.isArray(p) ? p.specimen : null
 }
 
+/** The live selection inside `el` as [start, end] character offsets into its text, or
+ *  null when the selection is elsewhere. Return splits the block here. */
+const selectionOffsets = (el: HTMLElement): [number, number] | null => {
+  const sel = window.getSelection()
+  if (!sel || sel.rangeCount === 0) return null
+  const r = sel.getRangeAt(0)
+  if (!el.contains(r.startContainer) || !el.contains(r.endContainer)) return null
+  const at = (node: Node, off: number) => {
+    const pre = document.createRange(); pre.selectNodeContents(el); pre.setEnd(node, off)
+    return pre.toString().length
+  }
+  return [at(r.startContainer, r.startOffset), at(r.endContainer, r.endOffset)]
+}
+
 /** A specimen starts empty and fills in asynchronously — see the effect below. */
 const presetBlocks = (source: string): EBlock[] => {
   const p = TEXT_PRESETS[source] ?? TEXT_PRESETS.Sample
@@ -709,13 +723,20 @@ function Paragraph({ featStr, source, measure, paraStyles, fit, setSource }: Sce
       }
     } else if (e.key === 'Enter') {
       e.preventDefault()
+      // Return splits the block at the caret: the text before it stays, the text after
+      // it becomes a new paragraph. (It used to keep the whole text and append an empty
+      // block, so a Return mid-paragraph left the layout unchanged.) A selection is
+      // replaced by the break, as in any editor. Shift+Return does the same — blocks are
+      // this scene's only line-break model; the fitter has no hard break inside a block.
+      const [s, end] = selectionOffsets(el) ?? [text.length, text.length]
+      const head = text.slice(0, s), tail = text.slice(end)
       el.textContent = ''   // clear before the block re-renders styled (avoids duplicate)
       const newId = `n${seq.current++}`
       setBlocks(prev => {
         const idx = prev.findIndex(b => b.id === id); if (idx < 0) return prev
         const next = [...prev]
-        next[idx] = { ...next[idx], text }
-        next.splice(idx + 1, 0, { id: newId, type: 'p', text: '' })
+        next[idx] = { ...next[idx], text: head }
+        next.splice(idx + 1, 0, { id: newId, type: 'p', text: tail })
         return next
       })
       focus(newId)
