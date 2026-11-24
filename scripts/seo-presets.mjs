@@ -508,7 +508,7 @@ export const SEO_PRESETS = [
     // still true: there is no way to license the original at all.
     kind: 'paid',
     // Leonida's own map, the setting the face was drawn for, plus two lines of thirst (Mark's).
-    words: ['Vice City', 'Ocean Drive', 'Leonida Keys', 'Thirsty for Mandy', 'Port Gellhorn', 'Vicki, Call Me', 'Mount Kalaga', 'Vice Beach'],
+    words: ['Aventura', 'Ocean Drive', 'Riviera Beach', 'Thirsty for Mandy', 'Port Gellhorn', 'Vicki, Call Me', 'Mount Kalaga', 'Vice Beach'],
     axes: vs({ GEOM: 25, SHRP: 80, opsz: 18 }),
     opticalSizing: false,
     // No embeddable webfont, and no outline SVG either: the font files are Rockstar's and
@@ -550,7 +550,7 @@ export const SEO_PRESETS = [
     pitch: {
       title: 'Tuned toward GTA Art Deco',
       paragraphs: [
-        'The Vice City, Leonida register. Sprayed like bullets all over the greatest game of the decade, the original GTA Art Deco typeface, by COLOPHON foundry, asks the question “what do you get when Gatsby lets Daisy drive down Ocean Drive on cocaine?” It’s exclusive to Rockstar IP. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
+        'The Aventura, Leonida register. Sprayed like bullets all over the greatest game of the decade, the original GTA Art Deco typeface, by COLOPHON foundry, asks the question “what do you get when Gatsby lets Daisy drive down Ocean Drive on cocaine?” It’s exclusive to Rockstar IP. Everything here is live: drag the axes, edit this text, then download the font with your settings baked in. Free under the OFL.',
       ],
     },
   },
