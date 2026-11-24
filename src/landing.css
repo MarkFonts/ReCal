@@ -173,8 +173,8 @@
 
 /* .look-vice -- /gta-art-deco/ only (seo-presets.mjs `look`). The article in the register of
    the page it compares against: deep plum ground, display type in a pink-to-peach sunset
-   gradient. Pure CSS; no Rockstar artwork. Dark by design, so it holds under every theme
-   setting rather than flipping to the house light ramp. */
+   gradient. Pure CSS; no Rockstar artwork. Light mode swaps it for the warm-white VI-logo look
+   at the end of this file. */
 .seo-below.look-vice {
   --vice-ground: #1a1220; --vice-pink: #e8689f; --vice-peach: #f2cfa4; --vice-text: #ead8cf;
   --sbg: var(--vice-ground); --sfg: var(--vice-text); --smut: color-mix(in srgb, var(--vice-text) 68%, transparent);
@@ -217,11 +217,11 @@
 
 /* The app's acid accents in GTA peach on /gta-art-deco/ (the knob, handles, Reset, tab underlines,
    rings). tokens.css restates the acid per theme and again in display-p3; [data-theme] is always
-   set on <html>, so these selectors outrank all of those. Light keeps a darker peach for thin ink. */
+   set on <html>, so these selectors outrank all of those. Light takes the VI logo's pink, darker for thin ink. */
 :root[data-look="vice"][data-theme] { --signal-acid: #ffb38a; --signal-acid-fill: #ffb38a; }
-:root[data-look="vice"][data-theme="light"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
+:root[data-look="vice"][data-theme="light"] { --signal-acid: #d81b70; --signal-acid-fill: #ff2d87; }
 @media (prefers-color-scheme: light) {
-  :root[data-look="vice"][data-theme="auto"] { --signal-acid: #b4521f; --signal-acid-fill: #ff9a6a; }
+  :root[data-look="vice"][data-theme="auto"] { --signal-acid: #d81b70; --signal-acid-fill: #ff2d87; }
 }
 
 /* Peach in PQ: the fills the acid used (knob, edge grabbers, slider ticks, glyph cells) paint
@@ -356,4 +356,25 @@
   /* the UI board's load-in skeletons (shared/src/skeleton.css): a lavender veil, a pink sheen */
   :root[data-look="vice"][data-theme="auto"] .ui-skl { --sk-bar: rgba(170, 110, 255, .22); --sk-sheen: rgba(255, 120, 220, .28); }
 
+}
+
+/* ── The light look: /gta-art-deco/ under data-theme=light (and auto on a light OS). The night sky
+   stays dark-only; light mode is GTA VI's logo instead: a warm-white ground with the color in the
+   type, the headline and the article's display lines filled with its orange-pink-violet sunset.
+   Same scoping as the dark look: .canvas only, so the rail keeps the house light ramp. */
+:root[data-look="vice"][data-theme="light"] .canvas { background: #fffaf5; --bg: #fffaf5; --text: #2a1640; --text-muted: #7d6b8a; --border: #ead9e6; --border-subtle: #f2e6ef; --sline: #ead9e6; }
+:root[data-look="vice"][data-theme="light"] .canvas.wm-grid--bleed .mode-row .mode-label { background: #fffaf5; }
+:root[data-look="vice"][data-theme="light"] .para-block--h1 { background: linear-gradient(170deg, #ff7a2f 10%, #ff2d87 50%, #7a2cff 95%); -webkit-background-clip: text; background-clip: text; }
+:root[data-look="vice"][data-theme="light"] .para-block--h1 * { color: transparent; -webkit-text-fill-color: transparent; }
+:root[data-theme="light"] .seo-below.look-vice { --vice-ground: #fffaf5; --vice-text: #2a1640; --vice-pink: #e0207a; --text-rgb: 42, 22, 64; }
+:root[data-theme="light"] .seo-below.look-vice :is(h1, h2, .specimen-row) { background: linear-gradient(170deg, #ff7a2f 0%, #ff2d87 50%, #7a2cff 100%); -webkit-background-clip: text; background-clip: text; }
+:root[data-look="vice"][data-theme="light"] .seo-lb { background: #fffaf5; }
+@media (prefers-color-scheme: light) {
+  :root[data-look="vice"][data-theme="auto"] .canvas { background: #fffaf5; --bg: #fffaf5; --text: #2a1640; --text-muted: #7d6b8a; --border: #ead9e6; --border-subtle: #f2e6ef; --sline: #ead9e6; }
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row .mode-label { background: #fffaf5; }
+  :root[data-look="vice"][data-theme="auto"] .para-block--h1 { background: linear-gradient(170deg, #ff7a2f 10%, #ff2d87 50%, #7a2cff 95%); -webkit-background-clip: text; background-clip: text; }
+  :root[data-look="vice"][data-theme="auto"] .para-block--h1 * { color: transparent; -webkit-text-fill-color: transparent; }
+  :root[data-theme="auto"] .seo-below.look-vice { --vice-ground: #fffaf5; --vice-text: #2a1640; --vice-pink: #e0207a; --text-rgb: 42, 22, 64; }
+  :root[data-theme="auto"] .seo-below.look-vice :is(h1, h2, .specimen-row) { background: linear-gradient(170deg, #ff7a2f 0%, #ff2d87 50%, #7a2cff 100%); -webkit-background-clip: text; background-clip: text; }
+  :root[data-look="vice"][data-theme="auto"] .seo-lb { background: #fffaf5; }
 }
