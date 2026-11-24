@@ -14,6 +14,8 @@ import { effectiveLimits,
 } from './store'
 import { renderVarSettings, opszPreviewForSize } from './render'
 import { BOOT } from './boot'
+// the landing page's look as served, before the preset effect can take it off <html>
+const PAGE_LOOK = document.documentElement.dataset.look
 import {
   Modebar, Scene, SceneControls, FEATURE_CHIPS, SCENES, type SceneMode,
   DEFAULT_PARA_STYLES, PARA_STYLE_ORDER, PARA_STYLE_LABEL,
@@ -1009,7 +1011,12 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
   const [statics, setStatics] = useState(false)
   const footRef = useRef<HTMLDivElement>(null)
   const [wMin, wMax] = effectiveLimits(state.defaults, 'wght')   // the weight range the export keeps
-  const family = (state.buildName || 'ReCal Sans').trim() || 'ReCal Sans'
+  // /gta-art-deco/ (booted with <html data-look="vice">): while its own preset is on and the name
+  // is untouched, the build is ReCal Sans Reo, file and internal family both
+  const onViceLook = PAGE_LOOK === 'vice' && !!BOOT.preset
+    && (state.activePreset ?? '').toLowerCase() === BOOT.preset.toLowerCase()
+  const fallbackName = onViceLook ? 'ReCal Sans Reo' : 'ReCal Sans'
+  const family = (state.buildName && state.buildName !== DEFAULT_BUILD_NAME ? state.buildName : fallbackName).trim() || fallbackName
 
   // The exact export config for the current ◆ (deterministic → cacheable). Kept in a
   // ref so the pointer-vector listener always speculates on the latest config.
