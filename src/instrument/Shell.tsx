@@ -1012,10 +1012,10 @@ function DownloadFooter({ engine }: { engine: ReturnType<typeof useFontEngine> }
   const footRef = useRef<HTMLDivElement>(null)
   const [wMin, wMax] = effectiveLimits(state.defaults, 'wght')   // the weight range the export keeps
   // /gta-art-deco/ (booted with <html data-look="vice">): while its own preset is on and the name
-  // is untouched, the build is ReCal Sans Vice, file and internal family both
+  // is untouched, the build is ReCal Sans Reo, file and internal family both
   const onViceLook = PAGE_LOOK === 'vice' && !!BOOT.preset
     && (state.activePreset ?? '').toLowerCase() === BOOT.preset.toLowerCase()
-  const fallbackName = onViceLook ? 'ReCal Sans Vice' : 'ReCal Sans'
+  const fallbackName = onViceLook ? 'ReCal Sans Reo' : 'ReCal Sans'
   const family = (state.buildName && state.buildName !== DEFAULT_BUILD_NAME ? state.buildName : fallbackName).trim() || fallbackName
 
   // The exact export config for the current ◆ (deterministic → cacheable). Kept in a
