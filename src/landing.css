@@ -246,6 +246,13 @@
 /* the letterbox band under the article takes the plum ground, so the page doesn't end on a black slab */
 :root[data-look="vice"] .seo-lb { background: #1a1220; }
 
+/* the phone's Rebuilding / Updated status floats over the sub-tabs on an opaque --bg (shell.css), which is
+   the house grey; on the purple ground it read as a grey slab. The ground's top stop instead. */
+:root[data-look="vice"][data-theme="dark"] .canvas.wm-grid--bleed .mode-row .mode-label { background: #1c0a5e; }
+@media (prefers-color-scheme: dark) {
+  :root[data-look="vice"][data-theme="auto"] .canvas.wm-grid--bleed .mode-row .mode-label { background: #1c0a5e; }
+}
+
 /* ── The synthwave easter egg: /gta-art-deco/ only, dark only (a light ground has no night sky).
    Every scene in the app above sits on a purple-to-magenta ground with stars behind the type.
    Scoped by selector, never by token: --bg and --surface also paint the rail, steppers, menus
